@@ -13,7 +13,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="vi" data-yd-content-ready="true">
-      <body>
+      <body suppressHydrationWarning>
         {children}
       </body>
     </html>
