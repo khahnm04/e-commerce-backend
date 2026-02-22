@@ -30,6 +30,19 @@ spring:
     multipart:
       max-file-size: 30MB # Tối đa 1 file là 10MB
       max-request-size: 10MB  # Tổng cả request tối đa 50MB
+  jackson:
+    mapper:
+      ACCEPT_CASE_INSENSITIVE_ENUMS: true
+
+# MyBatis Configuration
+mybatis:
+  mapper-locations: classpath:mapper/**/*.xml
+  type-aliases-package: com.khahnm04.ecommerce.modules
+  configuration:
+    map-underscore-to-camel-case: true
+    cache-enabled: false
+    lazy-loading-enabled: true
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
 
 logging:
   level:

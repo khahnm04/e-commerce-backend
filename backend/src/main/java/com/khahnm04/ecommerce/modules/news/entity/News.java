@@ -1,10 +1,11 @@
 package com.khahnm04.ecommerce.modules.news.entity;
 
-import com.khahnm04.ecommerce.shared.enums.NewsStatus;
-import com.khahnm04.ecommerce.shared.entity.BaseEntity;
+import com.khahnm04.ecommerce.common.entity.BaseEntity;
+import com.khahnm04.ecommerce.modules.news.enums.NewsStatus;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 import java.time.LocalDateTime;
 
 @Entity
@@ -14,9 +15,11 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "news")
+@SQLDelete(sql = "UPDATE news SET deleted_at = NOW() WHERE id = ?")
+@SQLRestriction("deleted_at IS NULL")
 public class News extends BaseEntity<Long> {
 
-    @Column(name = "title", nullable = false, length = 500)
+    @Column(name = "title", nullable = false)
     private String title;
 
     @Column(name = "slug", nullable = false, unique = true)
@@ -31,15 +34,15 @@ public class News extends BaseEntity<Long> {
     @Column(name = "content", nullable = false, columnDefinition = "LONGTEXT")
     private String content;
 
-    @Builder.Default
-    @Column(name = "is_featured")
-    private Boolean isFeatured = false;
+    @Column(name = "view_count")
+    private Long viewCount;
 
-    @Builder.Default
-    @ColumnDefault("'PENDING'")
+    @Column(name = "is_featured")
+    private Boolean isFeatured;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
-    private NewsStatus status = NewsStatus.DRAFT;
+    private NewsStatus status;
 
     @Column(name = "published_at")
     private LocalDateTime publishedAt;

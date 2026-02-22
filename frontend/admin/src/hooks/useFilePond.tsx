@@ -1,17 +1,15 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { useEffect } from 'react';
-import * as FilePond from 'filepond';
-import 'filepond/dist/filepond.min.css';
-import FilePondPluginImagePreview from 'filepond-plugin-image-preview';
-import FilePondPluginFileValidateType from 'filepond-plugin-file-validate-type';
-import 'filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css';
+import { useEffect } from "react";
+import * as FilePond from "filepond";
 
-// Đăng ký plugin một lần duy nhất
+import "filepond/dist/filepond.min.css";
+import FilePondPluginImagePreview from "filepond-plugin-image-preview";
+import FilePondPluginFileValidateType from "filepond-plugin-file-validate-type";
+import "filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css";
+
 let isRegistered = false;
 
 export const useFilePond = () => {
   useEffect(() => {
-    // Chỉ đăng ký plugin 1 lần
     if (!isRegistered) {
       FilePond.registerPlugin(
         FilePondPluginImagePreview,
@@ -20,25 +18,21 @@ export const useFilePond = () => {
       isRegistered = true;
     }
 
-    // Khởi tạo FilePond cho tất cả elements
-    const listFileponeImage = document.querySelectorAll("[filepond-image]");
+    const inputs = document.querySelectorAll<HTMLInputElement>(
+      "input.filepond"
+    );
 
-    const instances: any[] = [];
+    const instances = Array.from(inputs).map(input =>
+      FilePond.create(input, {
+        allowMultiple: false,
+        acceptedFileTypes: ["image/*"],
+        labelIdle:
+          '<span>+</span>',
+      })
+    );
 
-    if (listFileponeImage.length > 0) {
-      listFileponeImage.forEach(fileponeImage => {
-        const instance = FilePond.create(fileponeImage, {
-          labelIdle: "+"
-        });
-        instances.push(instance);
-      });
-    }
-
-    // Cleanup khi component unmount
     return () => {
-      instances.forEach(instance => {
-        instance.destroy();
-      });
+      instances.forEach(instance => instance.destroy());
     };
   }, []);
 };

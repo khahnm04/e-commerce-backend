@@ -1,0 +1,591 @@
+Bây giờ hãy nhìn và học phong cách code trong các module khác và code các module còn lại (tôi đã phân các module theo các folder rõ ràng rồi đó) gồm có các api như sau:
+
+LƯU Ý:
+- entity của các module còn lại hãy lấy trong file db ecommerce datn.sql bên trong thư mục database nhé (lưu ý cấm thay đổi file db ecommerce datn.sql bên trong thư mục database ).
+- module nào code vào bên trong thư mục của module đó (tôi đã phân các module theo các folder rõ ràng rồi đó)
+- Tôi đã tạo sẵn entity cho các module còn lại rồi nhé.
+- hãy bỏ hết các @SuperBuilder trong source code của tôi ra và thay bằng @Builder thôi nhé
+
+
+TẤT CẢ CÁC MODULE CÒN LẠI - DANH SÁCH API
+
+🛒 MODULE CART
+1. Lấy giỏ hàng của khách
+API: GET /api/v1/cart
+Chức năng: Lấy giỏ hàng hiện tại của customer đang login
+
+2. Thêm sản phẩm vào giỏ
+API: POST /api/v1/cart/items
+Chức năng: Thêm product variant vào giỏ
+
+3. Cập nhật số lượng
+API: PUT /api/v1/cart/items/{itemId}
+Chức năng: Cập nhật quantity của 1 item
+
+4. Xóa sản phẩm khỏi giỏ
+API: DELETE /api/v1/cart/items/{itemId}
+Chức năng: Xóa item khỏi giỏ
+
+5. Xóa toàn bộ giỏ hàng
+API: DELETE /api/v1/cart
+Chức năng: Xóa tất cả items trong giỏ
+
+6. Áp dụng coupon
+API: PATCH /api/v1/cart/apply-coupon
+Chức năng: Áp dụng mã giảm giá vào giỏ
+
+7. Hủy coupon
+API: PATCH /api/v1/cart/remove-coupon
+Chức năng: Gỡ coupon khỏi giỏ
+
+
+📦 MODULE ORDER
+8. Tạo đơn hàng
+API: POST /api/v1/orders
+Chức năng: Tạo order từ cart (customer)
+
+9. Danh sách đơn hàng của tôi
+API: GET /api/v1/orders
+Chức năng: Lấy orders của customer đang login
+
+10. Chi tiết đơn hàng
+API: GET /api/v1/orders/{id}
+Chức năng: Xem chi tiết 1 order
+
+11. Hủy đơn hàng
+API: POST /api/v1/orders/{id}/cancel
+Chức năng: Customer hủy đơn (nếu chưa xử lý)
+
+12. Danh sách đơn hàng (Admin)
+API: GET /api/v1/admin/orders
+Chức năng: Lấy tất cả orders (filter, pagination)
+
+13. Chi tiết đơn hàng (Admin)
+API: GET /api/v1/admin/orders/{id}
+Chức năng: Xem chi tiết order với đầy đủ info
+
+14. Cập nhật trạng thái đơn
+API: PATCH /api/v1/admin/orders/{id}/status
+Chức năng: Cập nhật order status (PENDING → PROCESSING → SHIPPING → COMPLETED)
+
+15. Phân công nhân viên
+API: PATCH /api/v1/admin/orders/{id}/assign
+Chức năng: Assign order cho employee xử lý
+
+16. Cập nhật thông tin giao hàng
+API: PUT /api/v1/admin/orders/{id}/shipping
+Chức năng: Cập nhật địa chỉ, ngày giao hàng
+
+17. Xác nhận đơn hàng
+API: POST /api/v1/admin/orders/{id}/confirm
+Chức năng: Xác nhận đơn hàng
+
+18. Hoàn thành đơn hàng
+API: POST /api/v1/admin/orders/{id}/complete
+Chức năng: Đánh dấu đơn hoàn thành
+
+19. Hủy đơn hàng (Admin)
+API: POST /api/v1/admin/orders/{id}/cancel
+Chức năng: Admin hủy đơn với lý do
+
+20. Thống kê đơn hàng
+API: GET /api/v1/admin/orders/statistics
+Chức năng: Tổng đơn, doanh thu theo ngày/tháng
+
+
+💳 MODULE PAYMENT
+21. Tạo thanh toán
+API: POST /api/v1/payments
+Chức năng: Tạo payment cho order
+
+22. Danh sách thanh toán
+API: GET /api/v1/admin/payments
+Chức năng: Lấy tất cả payments (filter)
+
+23. Chi tiết thanh toán
+API: GET /api/v1/admin/payments/{id}
+Chức năng: Xem chi tiết payment
+
+24. Cập nhật trạng thái thanh toán
+API: PATCH /api/v1/admin/payments/{id}/status
+Chức năng: Cập nhật payment status (PENDING → PAID → FAILED)
+
+25. Xác nhận thanh toán
+API: POST /api/v1/admin/payments/{id}/confirm
+Chức năng: Xác nhận đã nhận tiền
+
+26. Hoàn tiền
+API: POST /api/v1/admin/payments/{id}/refund
+Chức năng: Hoàn tiền cho khách
+
+27. Webhook thanh toán
+API: POST /api/v1/payments/webhook/{gateway}
+Chức năng: Nhận webhook từ VNPay, Momo, ZaloPay
+
+
+🎁 MODULE PROMOTION
+28. Tạo coupon
+API: POST /api/v1/admin/coupons
+Chức năng: Tạo mã giảm giá mới
+
+29. Danh sách coupons
+API: GET /api/v1/admin/coupons
+Chức năng: Lấy tất cả coupons (filter)
+
+30. Danh sách coupons đã xóa
+API: GET /api/v1/admin/coupons/deleted
+Chức năng: Lấy coupons đã soft delete
+
+31. Chi tiết coupon
+API: GET /api/v1/admin/coupons/{id}
+Chức năng: Xem chi tiết coupon
+
+32. Cập nhật coupon
+API: PUT /api/v1/admin/coupons/{id}
+Chức năng: Sửa thông tin coupon
+
+33. Kích hoạt/Vô hiệu hóa
+API: PATCH /api/v1/admin/coupons/{id}/active
+Chức năng: Bật/tắt coupon
+
+34. Xóa coupon
+API: DELETE /api/v1/admin/coupons/{id}
+Chức năng: Soft delete coupon
+
+35. Khôi phục coupon
+API: PATCH /api/v1/admin/coupons/{id}/restore
+Chức năng: Restore coupon đã xóa
+
+36. Kiểm tra coupon
+API: POST /api/v1/coupons/validate
+Chức năng: Validate coupon code (public)
+
+37. Lịch sử sử dụng coupon
+API: GET /api/v1/admin/coupons/{id}/usages
+Chức năng: Xem ai đã dùng coupon này
+
+
+📰 MODULE NEWS
+38. Tạo bài viết
+API: POST /api/v1/admin/news
+Chức năng: Tạo tin tức mới
+
+39. Danh sách bài viết
+API: GET /api/v1/admin/news
+Chức năng: Lấy tất cả news (filter)
+
+40. Danh sách news đã xóa
+API: GET /api/v1/admin/news/deleted
+Chức năng: Lấy news đã soft delete
+
+41. Chi tiết bài viết
+API: GET /api/v1/admin/news/{id}
+Chức năng: Xem chi tiết news
+
+42. Cập nhật bài viết
+API: PUT /api/v1/admin/news/{id}
+Chức năng: Sửa news
+
+43. Cập nhật trạng thái
+API: PATCH /api/v1/admin/news/{id}/status
+Chức năng: Cập nhật status (DRAFT/PUBLISHED)
+
+44. Xóa bài viết
+API: DELETE /api/v1/admin/news/{id}
+Chức năng: Soft delete news
+
+45. Khôi phục bài viết
+API: PATCH /api/v1/admin/news/{id}/restore
+Chức năng: Restore news
+
+46. Gắn sản phẩm vào bài viết
+API: POST /api/v1/admin/news/{id}/products
+Chức năng: Link products với news
+
+47. Gỡ sản phẩm khỏi bài viết
+API: DELETE /api/v1/admin/news/{id}/products/{productId}
+Chức năng: Unlink product
+
+48. Danh sách news (Public)
+API: GET /api/v1/news
+Chức năng: Lấy news published cho website
+
+49. Chi tiết news (Public)
+API: GET /api/v1/news/{slug}
+Chức năng: Xem chi tiết 1 bài viết
+
+50. Tin nổi bật
+API: GET /api/v1/news/featured
+Chức năng: Lấy tin nổi bật (is_featured=true)
+
+
+🖼️ MODULE BANNER
+51. Tạo banner
+API: POST /api/v1/admin/banners
+Chức năng: Tạo banner mới
+
+52. Danh sách banners
+API: GET /api/v1/admin/banners
+Chức năng: Lấy tất cả banners
+
+53. Danh sách banners đã xóa
+API: GET /api/v1/admin/banners/deleted
+Chức năng: Lấy banners đã xóa
+
+54. Chi tiết banner
+API: GET /api/v1/admin/banners/{id}
+Chức năng: Xem chi tiết banner
+
+55. Cập nhật banner
+API: PUT /api/v1/admin/banners/{id}
+Chức năng: Sửa banner
+
+56. Cập nhật trạng thái
+API: PATCH /api/v1/admin/banners/{id}/status
+Chức năng: Cập nhật status (ACTIVE/INACTIVE)
+
+57. Sắp xếp banner
+API: PATCH /api/v1/admin/banners/reorder
+Chức năng: Thay đổi display_order
+
+58. Xóa banner
+API: DELETE /api/v1/admin/banners/{id}
+Chức năng: Soft delete banner
+
+59. Khôi phục banner
+API: PATCH /api/v1/admin/banners/{id}/restore
+Chức năng: Restore banner
+
+60. Lấy banners theo vị trí (Public)
+API: GET /api/v1/banners?position={position}
+Chức năng: Lấy banners cho website theo vị trí (HOME, SIDEBAR...)
+
+
+🔧 MODULE WARRANTY
+61. Tạo phiếu bảo hành
+API: POST /api/v1/admin/warranties
+Chức năng: Tạo warranty record mới
+
+62. Danh sách phiếu bảo hành
+API: GET /api/v1/admin/warranties
+Chức năng: Lấy tất cả warranties (filter)
+
+63. Chi tiết phiếu bảo hành
+API: GET /api/v1/admin/warranties/{id}
+Chức năng: Xem chi tiết warranty
+
+64. Cập nhật phiếu bảo hành
+API: PUT /api/v1/admin/warranties/{id}
+Chức năng: Cập nhật thông tin warranty
+
+65. Cập nhật trạng thái
+API: PATCH /api/v1/admin/warranties/{id}/status
+Chức năng: Cập nhật status (PENDING → IN_PROGRESS → COMPLETED/REJECTED)
+
+66. Bắt đầu sửa chữa
+API: POST /api/v1/admin/warranties/{id}/start-repair
+Chức năng: Bắt đầu xử lý bảo hành
+
+67. Hoàn thành bảo hành
+API: POST /api/v1/admin/warranties/{id}/complete
+Chức năng: Đánh dấu hoàn thành
+
+68. Từ chối bảo hành
+API: POST /api/v1/admin/warranties/{id}/reject
+Chức năng: Từ chối warranty với lý do
+
+69. Kiểm tra bảo hành (Public)
+API: GET /api/v1/warranties/check/{serialCode}
+Chức năng: Tra cứu bảo hành bằng IMEI/Serial
+
+70. Lịch sử bảo hành của serial
+API: GET /api/v1/admin/warranties/serial/{serialId}
+Chức năng: Xem lịch sử BH của 1 serial
+
+📈 MODULE DASHBOARD/REPORTS
+71. Tổng quan Dashboard
+API: GET /api/v1/admin/dashboard
+Chức năng: KPIs tổng quan (doanh thu, đơn hàng, tồn kho...)
+
+72. Báo cáo doanh thu
+API: GET /api/v1/admin/reports/revenue
+Chức năng: Doanh thu theo ngày/tháng/năm
+
+73. Báo cáo sản phẩm bán chạy
+API: GET /api/v1/admin/reports/best-sellers
+Chức năng: Top sản phẩm bán chạy
+
+74. Báo cáo khách hàng
+API: GET /api/v1/admin/reports/customers
+Chức năng: Khách hàng mới, top khách VIP
+
+75. Báo cáo nhân viên
+API: GET /api/v1/admin/reports/employees
+Chức năng: Hiệu suất nhân viên
+
+76. Báo cáo tồn kho
+API: GET /api/v1/admin/reports/inventory
+Chức năng: Tồn kho theo chi nhánh/kho
+
+
+MODULE INVENTORY - DANH SÁCH API ĐẦY ĐỦ
+
+📦 WAREHOUSES (Kho hàng)
+1. Tạo kho mới
+API: POST /api/v1/admin/warehouses
+Chức năng: Tạo warehouse mới
+
+2. Danh sách kho
+API: GET /api/v1/admin/warehouses
+Chức năng: Lấy danh sách warehouses (filter, pagination)
+
+3. Danh sách kho đã xóa
+API: GET /api/v1/admin/warehouses/deleted
+Chức năng: Lấy warehouses đã soft delete
+
+4. Chi tiết kho
+API: GET /api/v1/admin/warehouses/{id}
+Chức năng: Xem chi tiết warehouse (kèm statistics)
+
+5. Cập nhật kho
+API: PUT /api/v1/admin/warehouses/{id}
+Chức năng: Cập nhật thông tin warehouse
+
+6. Cập nhật trạng thái kho
+API: PATCH /api/v1/admin/warehouses/{id}/status
+Chức năng: Cập nhật status (ACTIVE/INACTIVE)
+
+7. Xóa mềm kho
+API: DELETE /api/v1/admin/warehouses/{id}/soft-delete
+Chức năng: Soft delete warehouse
+
+8. Khôi phục kho
+API: PATCH /api/v1/admin/warehouses/{id}/restore
+Chức năng: Restore warehouse đã xóa
+
+9. Thao tác hàng loạt
+API: PATCH /api/v1/admin/warehouses/bulk
+Chức năng: Bulk delete/restore/update status
+
+
+🏭 SUPPLIERS (Nhà cung cấp)
+10. Tạo nhà cung cấp
+API: POST /api/v1/admin/suppliers
+Chức năng: Tạo supplier mới
+
+11. Danh sách nhà cung cấp
+API: GET /api/v1/admin/suppliers
+Chức năng: Lấy danh sách suppliers (filter, pagination)
+
+12. Danh sách suppliers đã xóa
+API: GET /api/v1/admin/suppliers/deleted
+Chức năng: Lấy suppliers đã soft delete
+
+13. Chi tiết nhà cung cấp
+API: GET /api/v1/admin/suppliers/{id}
+Chức năng: Xem chi tiết supplier (kèm statistics)
+
+14. Cập nhật nhà cung cấp
+API: PUT /api/v1/admin/suppliers/{id}
+Chức năng: Cập nhật thông tin supplier
+
+15. Cập nhật trạng thái supplier
+API: PATCH /api/v1/admin/suppliers/{id}/status
+Chức năng: Cập nhật status (ACTIVE/INACTIVE)
+
+16. Xóa mềm supplier
+API: DELETE /api/v1/admin/suppliers/{id}/soft-delete
+Chức năng: Soft delete supplier
+
+17. Khôi phục supplier
+API: PATCH /api/v1/admin/suppliers/{id}/restore
+Chức năng: Restore supplier đã xóa
+
+18. Thao tác hàng loạt
+API: PATCH /api/v1/admin/suppliers/bulk
+Chức năng: Bulk actions
+
+
+🔢 SERIAL NUMBERS (IMEI/Serial)
+19. Danh sách serial
+API: GET /api/v1/admin/serial-numbers
+Chức năng: Lấy danh sách serials (filter: variant, warehouse, status)
+
+20. Chi tiết serial
+API: GET /api/v1/admin/serial-numbers/{id}
+Chức năng: Xem chi tiết serial (kèm movement history)
+
+21. Kiểm tra serial
+API: GET /api/v1/admin/serial-numbers/check/{serialCode}
+Chức năng: Check serial có tồn tại và trạng thái
+
+22. Tạo serial hàng loạt
+API: POST /api/v1/admin/serial-numbers/batch
+Chức năng: Tạo nhiều serial cùng lúc (khi nhập hàng)
+
+23. Cập nhật trạng thái serial
+API: PATCH /api/v1/admin/serial-numbers/{id}/status
+Chức năng: Update status (IN_STOCK → DEFECTIVE/WARRANTY...)
+
+24. Lịch sử di chuyển serial
+API: GET /api/v1/admin/serial-numbers/{id}/history
+Chức năng: Xem lịch sử movement logs của serial
+
+25. Phân bổ serial cho đơn hàng
+API: POST /api/v1/admin/serial-numbers/allocate
+Chức năng: Chọn serial để bán (gọi từ Order module)
+
+
+📥 IMPORT ORDERS (Phiếu nhập hàng)
+26. Tạo phiếu nhập
+API: POST /api/v1/admin/import-orders
+Chức năng: Tạo import order mới (status: PENDING)
+
+27. Danh sách phiếu nhập
+API: GET /api/v1/admin/import-orders
+Chức năng: Lấy danh sách imports (filter, pagination)
+
+28. Chi tiết phiếu nhập
+API: GET /api/v1/admin/import-orders/{id}
+Chức năng: Xem chi tiết import (kèm details)
+
+29. Thêm serial vào phiếu nhập
+API: POST /api/v1/admin/import-orders/{id}/items
+Chức năng: Quét IMEI thêm vào phiếu nhập (có thể gọi nhiều lần)
+
+30. Xóa serial khỏi phiếu nhập
+API: DELETE /api/v1/admin/import-orders/{id}/items/{detailId}
+Chức năng: Xóa serial khỏi phiếu (chỉ khi PENDING)
+
+31. Hoàn tất phiếu nhập
+API: POST /api/v1/admin/import-orders/{id}/complete
+Chức năng: Hoàn thành nhập hàng (status: COMPLETED)
+
+32. Hủy phiếu nhập
+API: POST /api/v1/admin/import-orders/{id}/cancel
+Chức năng: Hủy phiếu nhập (xóa tất cả serials)
+
+
+🔄 TRANSFER ORDERS (Phiếu điều chuyển)
+33. Tạo phiếu điều chuyển
+API: POST /api/v1/admin/transfer-orders
+Chức năng: Tạo transfer order (from → to warehouse)
+
+34. Danh sách phiếu điều chuyển
+API: GET /api/v1/admin/transfer-orders
+Chức năng: Lấy danh sách transfers (filter, pagination)
+
+35. Chi tiết phiếu điều chuyển
+API: GET /api/v1/admin/transfer-orders/{id}
+Chức năng: Xem chi tiết transfer (kèm details)
+
+36. Thêm serial vào phiếu chuyển
+API: POST /api/v1/admin/transfer-orders/{id}/items
+Chức năng: Chọn serials để chuyển kho
+
+37. Xóa serial khỏi phiếu chuyển
+API: DELETE /api/v1/admin/transfer-orders/{id}/items/{detailId}
+Chức năng: Xóa serial khỏi phiếu (chỉ khi PENDING)
+
+38. Bắt đầu vận chuyển
+API: POST /api/v1/admin/transfer-orders/{id}/start-shipping
+Chức năng: Xe đi (status: IN_TRANSIT)
+
+39. Hoàn tất điều chuyển
+API: POST /api/v1/admin/transfer-orders/{id}/complete
+Chức năng: Kho đích đã nhận hàng (status: COMPLETED)
+
+40. Hủy phiếu chuyển
+API: POST /api/v1/admin/transfer-orders/{id}/cancel
+Chức năng: Hủy điều chuyển
+
+
+✅ INVENTORY CHECKS (Kiểm kê)
+41. Tạo phiếu kiểm kê
+API: POST /api/v1/admin/inventory-checks
+Chức năng: Tạo inventory check (tự động tính system_quantity)
+
+42. Danh sách phiếu kiểm kê
+API: GET /api/v1/admin/inventory-checks
+Chức năng: Lấy danh sách checks (filter, pagination)
+
+43. Chi tiết phiếu kiểm kê
+API: GET /api/v1/admin/inventory-checks/{id}
+Chức năng: Xem chi tiết check (kèm details)
+
+44. Cập nhật số lượng thực tế
+API: PUT /api/v1/admin/inventory-checks/{id}/details/{detailId}
+Chức năng: Nhập actual_quantity cho từng variant
+
+45. Hoàn tất kiểm kê
+API: POST /api/v1/admin/inventory-checks/{id}/complete
+Chức năng: Hoàn thành kiểm kê (tự động điều chỉnh nếu có chênh lệch)
+
+46. Hủy kiểm kê
+API: POST /api/v1/admin/inventory-checks/{id}/cancel
+Chức năng: Hủy phiếu kiểm kê
+
+
+📊 INVENTORY SUMMARY (Tổng hợp tồn kho)
+47. Tổng hợp tồn kho
+API: GET /api/v1/admin/inventory-summary
+Chức năng: Lấy tồn kho (filter: warehouse, variant, branch)
+
+48. Tồn kho theo sản phẩm
+API: GET /api/v1/admin/inventory-summary/by-product/{productId}
+Chức năng: Xem tồn kho tất cả variants của 1 product
+
+49. Tồn kho theo kho
+API: GET /api/v1/admin/inventory-summary/by-warehouse/{warehouseId}
+Chức năng: Xem tất cả sản phẩm trong 1 kho
+
+50. Rebuild inventory summary
+API: POST /api/v1/admin/inventory-summary/rebuild
+Chức năng: Tính lại toàn bộ tồn kho (maintenance)
+
+
+📈 REPORTS (Báo cáo Inventory)
+51. Báo cáo sắp hết hàng
+API: GET /api/v1/admin/reports/low-stock
+Chức năng: Sản phẩm sắp hết (available_quantity < threshold)
+
+52. Báo cáo giá trị tồn kho
+API: GET /api/v1/admin/reports/inventory-value
+Chức năng: Tổng giá trị tồn kho theo warehouse/branch/category
+
+53. Báo cáo di chuyển tồn kho
+API: GET /api/v1/admin/reports/stock-movement
+Chức năng: Nhập/xuất/chuyển kho theo thời gian
+
+54. Báo cáo hàng tồn lâu
+API: GET /api/v1/admin/reports/inventory-aging
+Chức năng: Sản phẩm nằm kho lâu (>90 ngày)
+
+55. Dashboard tổng quan inventory
+API: GET /api/v1/admin/dashboard/inventory-overview
+Chức năng: KPIs tồn kho (total, value, low-stock, alerts)
+
+
+📱 PUBLIC APIs (Cho website)
+56. Kiểm tra tồn kho sản phẩm
+API: GET /api/v1/inventory/check?variantId={id}&warehouseId={id}
+Chức năng: Check xem sản phẩm còn hàng không (public)
+
+57. Tồn kho tại các chi nhánh
+API: GET /api/v1/inventory/availability?variantId={id}
+Chức năng: Xem variant này còn ở chi nhánh nào
+
+
+🔧 MOVEMENT LOGS (Audit Trail)
+58. Lịch sử di chuyển
+API: GET /api/v1/admin/serial-movement-logs
+Chức năng: Xem tất cả movement logs (filter: serial, warehouse, type, date)
+
+59. Lịch sử theo serial
+API: GET /api/v1/admin/serial-movement-logs/serial/{serialId}
+Chức năng: Xem lịch sử di chuyển của 1 serial
+
+60. Lịch sử theo kho
+API: GET /api/v1/admin/serial-movement-logs/warehouse/{warehouseId}
+Chức năng: Xem tất cả di chuyển của 1 kho
+

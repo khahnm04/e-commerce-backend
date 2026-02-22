@@ -1,23 +1,33 @@
 package com.khahnm04.ecommerce.modules.cart.service;
 
-import com.khahnm04.ecommerce.modules.cart.dto.request.CartItemRequest;
+import com.khahnm04.ecommerce.modules.cart.dto.request.AddCartItemRequest;
+import com.khahnm04.ecommerce.modules.cart.dto.request.ApplyCouponRequest;
+import com.khahnm04.ecommerce.modules.cart.dto.request.UpdateCartItemRequest;
 import com.khahnm04.ecommerce.modules.cart.dto.response.CartResponse;
+import com.khahnm04.ecommerce.modules.cart.dto.response.CartSummaryResponse;
+import com.khahnm04.ecommerce.modules.cart.dto.response.CartValidationResponse;
+import java.util.List;
 
 public interface CartService {
 
-    // Lấy giỏ hàng của user đang đăng nhập
     CartResponse getMyCart();
 
-    // Thêm sản phẩm vào giỏ
-    void addToCart(CartItemRequest request);
+    CartResponse addItemToCart(AddCartItemRequest request);
 
-    // Cập nhật số lượng item (ví dụ: tăng từ 1 lên 2)
-    void updateCartItem(Long itemId, Integer quantity);
+    CartResponse updateCartItem(Long itemId, UpdateCartItemRequest request);
 
-    // Xóa 1 món khỏi giỏ
     void removeCartItem(Long itemId);
 
-    // Xóa sạch giỏ hàng
     void clearCart();
+
+    CartResponse applyCoupon(ApplyCouponRequest request);
+
+    CartResponse removeCoupon();
+
+    CartSummaryResponse getCartSummary();
+
+    List<CartValidationResponse> validateCart();
+
+    int getCartItemCount();
 
 }

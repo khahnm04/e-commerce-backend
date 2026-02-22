@@ -1,10 +1,12 @@
 package com.khahnm04.ecommerce.modules.storage.controller;
 
-import com.khahnm04.ecommerce.shared.dto.ApiResponse;
+import com.khahnm04.ecommerce.common.dto.ApiResponse;
+import com.khahnm04.ecommerce.modules.storage.dto.CloudinarySignatureResponse;
 import com.khahnm04.ecommerce.modules.storage.service.CloudinaryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -20,10 +22,24 @@ public class UploadController {
 
     private final CloudinaryService cloudinaryService;
 
+    /**
+     * Endpoint để lấy signature cho Signed Upload.
+     * Client gọi endpoint này trước khi upload trực tiếp lên Cloudinary.
+     *
+     * @return Signature và các thông tin cần thiết để upload
+     */
+    @GetMapping("/signature")
+    public ApiResponse<CloudinarySignatureResponse> getUploadSignature() {
+        CloudinarySignatureResponse signatureData = cloudinaryService.generateSignature();
+        return ApiResponse.<CloudinarySignatureResponse>builder()
+                .message("Signature generated successfully")
+                .data(signatureData)
+                .build();
+    }
+
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse<List<String>> uploadFiles(
-            @RequestPart("files") List<MultipartFile> files
-    ) {
+            @RequestPart("files") List<MultipartFile> files) {
         List<String> urls = cloudinaryService.uploadFiles(files);
         return ApiResponse.<List<String>>builder()
                 .message("Upload " + urls.size() + " files successfully")

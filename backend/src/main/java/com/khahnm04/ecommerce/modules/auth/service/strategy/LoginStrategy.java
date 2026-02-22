@@ -1,7 +1,7 @@
 package com.khahnm04.ecommerce.modules.auth.service.strategy;
 
 import com.khahnm04.ecommerce.modules.auth.dto.request.LoginRequest;
-import com.khahnm04.ecommerce.modules.user.entity.User;
+import com.khahnm04.ecommerce.modules.auth.entity.User;
 
 public interface LoginStrategy {
 

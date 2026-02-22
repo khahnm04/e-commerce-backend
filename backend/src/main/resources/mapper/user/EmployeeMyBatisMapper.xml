@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.khahnm04.ecommerce.modules.user.mapper.EmployeeMyBatisMapper">
+
+    <resultMap id="EmployeeResponseMap" type="com.khahnm04.ecommerce.modules.user.dto.response.EmployeeResponse">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="code" column="code"/>
+        <result property="fullName" column="full_name"/>
+        <result property="email" column="email"/>
+        <result property="phoneNumber" column="phone_number"/>
+        <result property="jobTitle" column="job_title"/>
+        <result property="branch" column="branch"/>
+        <result property="dateOfBirth" column="date_of_birth"/>
+        <result property="gender" column="gender" typeHandler="org.apache.ibatis.type.EnumTypeHandler"/>
+        <result property="avatarUrl" column="avatar_url"/>
+        <result property="status" column="status" typeHandler="org.apache.ibatis.type.EnumTypeHandler"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="createdBy" column="created_by"/>
+        <result property="updatedAt" column="updated_at"/>
+        <result property="updatedBy" column="updated_by"/>
+        <result property="deletedAt" column="deleted_at"/>
+    </resultMap>
+
+    <sql id="baseColumns">
+        e.id,
+        e.user_id,
+        e.code,
+        e.job_title,
+        e.deleted_at,
+        u.full_name,
+        u.email,
+        u.phone_number,
+        u.date_of_birth,
+        u.gender,
+        u.avatar_url,
+        u.status,
+        u.created_at,
+        b.name AS branch
+    </sql>
+
+    <sql id="updatedFields">
+        CASE
+            WHEN u.updated_at IS NULL THEN e.updated_at
+            WHEN e.updated_at IS NULL THEN u.updated_at
+            WHEN u.updated_at > e.updated_at THEN u.updated_at
+            ELSE e.updated_at
+        END AS updated_at,
+        CASE
+            WHEN u.updated_at IS NULL THEN eu.full_name
+            WHEN e.updated_at IS NULL THEN uu.full_name
+            WHEN u.updated_at > e.updated_at THEN uu.full_name
+            ELSE eu.full_name
+        END AS updated_by,
+        uc.full_name AS created_by
+    </sql>
+
+    <sql id="baseFromJoinForSelect">
+        FROM employees e
+        INNER JOIN users u ON e.user_id = u.id
+        LEFT JOIN branches b ON e.branch_id = b.id
+        LEFT JOIN users uc ON u.created_by = uc.id
+        LEFT JOIN users eu ON e.updated_by = eu.id
+        LEFT JOIN users uu ON u.updated_by = uu.id
+    </sql>
+
+    <sql id="baseFromJoinForCount">
+        FROM employees e
+        INNER JOIN users u ON e.user_id = u.id
+        LEFT JOIN branches b ON e.branch_id = b.id
+    </sql>
+
+    <sql id="whereClause">
+        <where>
+            <!-- Deleted filter -->
+            <choose>
+                <when test="isDeleted">
+                    AND e.deleted_at IS NOT NULL
+                </when>
+                <otherwise>
+                    AND e.deleted_at IS NULL
+                </otherwise>
+            </choose>
+
+            <!-- Keyword search -->
+            <if test="keyword != null and keyword != ''">
+                AND (
+                    u.full_name LIKE CONCAT('%', #{keyword}, '%')
+                    OR e.code LIKE CONCAT('%', #{keyword}, '%')
+                    OR u.email LIKE CONCAT('%', #{keyword}, '%')
+                    OR u.phone_number LIKE CONCAT('%', #{keyword}, '%')
+                )
+            </if>
+
+            <!-- Branch filter -->
+            <if test="branchId != null">
+                AND b.id = #{branchId}
+            </if>
+
+            <!-- Status filter -->
+            <if test="status != null">
+                AND u.status = #{status}
+            </if>
+
+            <!-- Date range filter -->
+            <if test="startDate != null">
+                AND e.created_at >= #{startDate}
+                AND (CASE
+                    WHEN u.updated_at IS NULL THEN e.updated_at
+                    WHEN e.updated_at IS NULL THEN u.updated_at
+                    WHEN u.updated_at > e.updated_at THEN u.updated_at
+                    ELSE e.updated_at
+                END) >= #{startDate}
+            </if>
+
+            <!-- Date range filter -->
+            <if test="endDate != null">
+                <![CDATA[
+                AND e.created_at <= DATE_ADD(#{endDate}, INTERVAL 1 DAY) - INTERVAL 1 SECOND
+                AND (CASE
+                    WHEN u.updated_at IS NULL THEN e.updated_at
+                    WHEN e.updated_at IS NULL THEN u.updated_at
+                    WHEN u.updated_at > e.updated_at THEN u.updated_at
+                    ELSE e.updated_at
+                END) <= DATE_ADD(#{endDate}, INTERVAL 1 DAY) - INTERVAL 1 SECOND
+                ]]>
+            </if>
+        </where>
+    </sql>
+
+    <select id="findAllWithFilterAndSearch" resultMap="EmployeeResponseMap">
+        SELECT
+            <include refid="baseColumns"/>,
+            <include refid="updatedFields"/>
+        <include refid="baseFromJoinForSelect"/>
+        <include refid="whereClause"/>
+        ORDER BY ${sortColumn} ${sortDirection}
+        LIMIT #{limit}
+        OFFSET #{offset}
+    </select>
+
+    <select id="countWithFilterAndSearch" resultType="long">
+        SELECT COUNT(*)
+        <include refid="baseFromJoinForCount"/>
+        <include refid="whereClause"/>
+    </select>
+
+</mapper>

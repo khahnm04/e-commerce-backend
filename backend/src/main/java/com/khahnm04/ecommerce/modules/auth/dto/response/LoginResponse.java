@@ -12,5 +12,6 @@ public class LoginResponse implements Serializable {
 
     private Long id;
     private String fullName;
+    private String avatarUrl;
 
 }

@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.khahnm04.ecommerce.modules.catalog.mapper.mybaits.ProductMyBatisMapper">
+
+    <resultMap id="ProductResponseMap" type="com.khahnm04.ecommerce.modules.catalog.dto.response.ProductResponse">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="slug" column="slug"/>
+        <result property="productCode" column="product_code"/>
+        <result property="brandId" column="brand_id"/>
+        <result property="brandName" column="brand_name"/>
+        <result property="hasSerialNumber" column="has_serial_number"/>
+        <result property="warrantyMonths" column="warranty_months"/>
+        <result property="price" column="price"/>
+        <result property="oldPrice" column="old_price"/>
+        <result property="thumbnail" column="thumbnail"/>
+        <result property="shortDescription" column="short_description"/>
+        <result property="metaTitle" column="meta_title"/>
+        <result property="metaDescription" column="meta_description"/>
+        <result property="status" column="status" typeHandler="org.apache.ibatis.type.EnumTypeHandler"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="createdBy" column="created_by"/>
+        <result property="updatedAt" column="updated_at"/>
+        <result property="updatedBy" column="updated_by"/>
+        <result property="deletedAt" column="deleted_at"/>
+    </resultMap>
+
+    <sql id="baseColumns">
+        p.id,
+        p.name,
+        p.slug,
+        p.product_code,
+        p.brand_id,
+        p.has_serial_number,
+        p.warranty_months,
+        p.price,
+        p.old_price,
+        p.thumbnail,
+        p.short_description,
+        p.meta_title,
+        p.meta_description,
+        p.status,
+        p.created_at,
+        p.deleted_at
+    </sql>
+
+    <sql id="updatedFields">
+        p.updated_at,
+        br.name AS brand_name,
+        uc.full_name AS created_by,
+        uu.full_name AS updated_by
+    </sql>
+
+    <sql id="baseFromJoinForSelect">
+        FROM products p
+        LEFT JOIN brands br ON p.brand_id = br.id
+        LEFT JOIN users uc ON p.created_by = uc.id
+        LEFT JOIN users uu ON p.updated_by = uu.id
+    </sql>
+
+    <sql id="baseFromJoinForCount">
+        FROM products p
+    </sql>
+
+    <sql id="whereClause">
+        <where>
+            <!-- Deleted filter -->
+            <choose>
+                <when test="isDeleted">
+                    AND p.deleted_at IS NOT NULL
+                </when>
+                <otherwise>
+                    AND p.deleted_at IS NULL
+                </otherwise>
+            </choose>
+
+            <!-- Keyword search: search in name, slug, product_code -->
+            <if test="keyword != null and keyword != ''">
+                AND (
+                    p.name LIKE CONCAT('%', #{keyword}, '%')
+                    OR p.slug LIKE CONCAT('%', #{keyword}, '%')
+                    OR p.product_code LIKE CONCAT('%', #{keyword}, '%')
+                )
+            </if>
+
+            <!-- Status filter -->
+            <if test="status != null">
+                AND p.status = #{status}
+            </if>
+
+            <!-- Brand filter -->
+            <if test="brandId != null">
+                AND p.brand_id = #{brandId}
+            </if>
+
+            <!-- Category filter -->
+            <if test="categoryId != null">
+                AND EXISTS (
+                    SELECT 1 FROM product_categories pc
+                    WHERE pc.product_id = p.id AND pc.category_id = #{categoryId}
+                )
+            </if>
+
+            <!-- Date range filter -->
+            <if test="startDate != null">
+                AND p.created_at >= #{startDate}
+                AND p.updated_at >= #{startDate}
+            </if>
+
+            <!-- Date range filter -->
+            <if test="endDate != null">
+                <![CDATA[
+                AND p.created_at <= DATE_ADD(#{endDate}, INTERVAL 1 DAY) - INTERVAL 1 SECOND
+                AND p.updated_at <= DATE_ADD(#{endDate}, INTERVAL 1 DAY) - INTERVAL 1 SECOND
+                ]]>
+            </if>
+        </where>
+    </sql>
+
+    <select id="findAllWithFilterAndSearch" resultMap="ProductResponseMap">
+        SELECT
+            <include refid="baseColumns"/>,
+            <include refid="updatedFields"/>
+        <include refid="baseFromJoinForSelect"/>
+        <include refid="whereClause"/>
+        ORDER BY ${sortColumn} ${sortDirection}
+        LIMIT #{limit}
+        OFFSET #{offset}
+    </select>
+
+    <select id="countWithFilterAndSearch" resultType="long">
+        SELECT COUNT(*)
+        <include refid="baseFromJoinForCount"/>
+        <include refid="whereClause"/>
+    </select>
+
+</mapper>

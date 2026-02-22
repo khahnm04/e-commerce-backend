@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.khahnm04.ecommerce.modules.inventory.mapper.mybatis.WarehouseMyBatisMapper">
+
+    <resultMap id="WarehouseResponseMap" type="com.khahnm04.ecommerce.modules.inventory.dto.response.WarehouseResponse">
+        <id property="id" column="id"/>
+        <result property="branchId" column="branch_id"/>
+        <result property="branchName" column="branch_name"/>
+        <result property="code" column="code"/>
+        <result property="name" column="name"/>
+        <result property="type" column="type" javaType="com.khahnm04.ecommerce.modules.inventory.enums.WarehouseType"/>
+        <result property="capacity" column="capacity"/>
+        <result property="status" column="status" javaType="com.khahnm04.ecommerce.modules.inventory.enums.WarehouseStatus"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="createdBy" column="created_by"/>
+        <result property="updatedAt" column="updated_at"/>
+        <result property="updatedBy" column="updated_by"/>
+        <result property="deletedAt" column="deleted_at"/>
+    </resultMap>
+
+    <sql id="baseColumns">
+        w.id,
+        w.branch_id,
+        w.code,
+        w.name,
+        w.type,
+        w.capacity,
+        w.status,
+        w.created_at,
+        w.deleted_at
+    </sql>
+
+    <sql id="updatedFields">
+        w.updated_at,
+        br.name AS branch_name,
+        uc.full_name AS created_by,
+        uu.full_name AS updated_by
+    </sql>
+
+    <sql id="baseFromJoinForSelect">
+        FROM warehouses w
+        INNER JOIN branches br ON w.branch_id = br.id
+        LEFT JOIN users uc ON w.created_by = uc.id
+        LEFT JOIN users uu ON w.updated_by = uu.id
+    </sql>
+
+    <sql id="baseFromJoinForCount">
+        FROM warehouses w
+    </sql>
+
+    <sql id="whereClause">
+        <where>
+            <!-- Deleted filter -->
+            <choose>
+                <when test="isDeleted">
+                    AND w.deleted_at IS NOT NULL
+                </when>
+                <otherwise>
+                    AND w.deleted_at IS NULL
+                </otherwise>
+            </choose>
+
+            <!-- Branch filter -->
+            <if test="branchId != null">
+                AND w.branch_id = #{branchId}
+            </if>
+
+            <!-- Type filter -->
+            <if test="type != null">
+                AND w.type = #{type}
+            </if>
+
+            <!-- Status filter -->
+            <if test="status != null">
+                AND w.status = #{status}
+            </if>
+
+            <!-- Keyword search -->
+            <if test="keyword != null and keyword != ''">
+                AND (
+                    w.code LIKE CONCAT('%', #{keyword}, '%')
+                    OR w.name LIKE CONCAT('%', #{keyword}, '%')
+                )
+            </if>
+
+            <!-- Date range filter -->
+            <if test="startDate != null">
+                AND w.created_at >= #{startDate}
+            </if>
+
+            <!-- Date range filter -->
+            <if test="endDate != null">
+                <![CDATA[
+                AND w.created_at <= DATE_ADD(#{endDate}, INTERVAL 1 DAY) - INTERVAL 1 SECOND
+                ]]>
+            </if>
+        </where>
+    </sql>
+
+    <select id="findAllWithFilterAndSearch" resultMap="WarehouseResponseMap">
+        SELECT
+            <include refid="baseColumns"/>,
+            <include refid="updatedFields"/>
+        <include refid="baseFromJoinForSelect"/>
+        <include refid="whereClause"/>
+        ORDER BY ${sortColumn} ${sortDirection}
+        LIMIT #{limit}
+        OFFSET #{offset}
+    </select>
+
+    <select id="countWithFilterAndSearch" resultType="long">
+        SELECT COUNT(*)
+        <include refid="baseFromJoinForCount"/>
+        <include refid="whereClause"/>
+    </select>
+
+</mapper>

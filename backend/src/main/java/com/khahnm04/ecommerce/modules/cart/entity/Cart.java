@@ -1,13 +1,12 @@
 package com.khahnm04.ecommerce.modules.cart.entity;
 
-import com.khahnm04.ecommerce.modules.user.entity.User;
+import com.khahnm04.ecommerce.modules.user.entity.Customer;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Getter
@@ -16,29 +15,26 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "carts")
-public class Cart {
+public class Cart implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false)
     private Long id;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "customer_id", nullable = false, unique = true)
+    private Customer customer;
 
     @Column(name = "coupon_code")
     private String couponCode;
 
     @CreationTimestamp
-    @Column(name = "created_at", updatable = false)
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false, unique = true)
-    private User user;
-
-    @Builder.Default
-    @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<CartItem> cartItems = new ArrayList<>();
 
 }

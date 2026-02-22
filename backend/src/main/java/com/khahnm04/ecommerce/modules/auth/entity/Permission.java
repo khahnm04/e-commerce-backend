@@ -19,6 +19,9 @@ public class Permission {
     @Column(name = "id", nullable = false)
     private Long id;
 
+    @Column(name = "code", unique = true, nullable = false, length = 50)
+    private String code;
+
     @Column(name = "name", nullable = false)
     private String name;
 

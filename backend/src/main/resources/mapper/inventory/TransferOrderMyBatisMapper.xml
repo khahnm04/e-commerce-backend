@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.khahnm04.ecommerce.modules.inventory.mapper.mybatis.TransferOrderMyBatisMapper">
+
+    <resultMap id="TransferOrderResponseMap" type="com.khahnm04.ecommerce.modules.inventory.dto.response.TransferOrderResponse">
+        <id property="id" column="id"/>
+        <result property="code" column="code"/>
+        <result property="fromWarehouseId" column="from_warehouse_id"/>
+        <result property="fromWarehouseName" column="from_warehouse_name"/>
+        <result property="toWarehouseId" column="to_warehouse_id"/>
+        <result property="toWarehouseName" column="to_warehouse_name"/>
+        <result property="transferDate" column="transfer_date"/>
+        <result property="totalQuantity" column="total_quantity"/>
+        <result property="status" column="status" javaType="com.khahnm04.ecommerce.modules.inventory.enums.TransferOrderStatus"/>
+        <result property="shippingMethod" column="shipping_method"/>
+        <result property="receivedDate" column="received_date"/>
+        <result property="notes" column="notes"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="createdBy" column="created_by"/>
+        <result property="updatedAt" column="updated_at"/>
+        <result property="updatedBy" column="updated_by"/>
+        <result property="deletedAt" column="deleted_at"/>
+    </resultMap>
+
+    <resultMap id="TransferDetailResponseMap" type="com.khahnm04.ecommerce.modules.inventory.dto.response.TransferDetailResponse">
+        <id property="id" column="id"/>
+        <result property="serialNumberId" column="serial_number_id"/>
+        <result property="serialCode" column="serial_code"/>
+        <result property="productVariantId" column="product_variant_id"/>
+        <result property="productVariantSku" column="product_variant_sku"/>
+        <result property="productVariantName" column="product_variant_name"/>
+        <result property="createdAt" column="created_at"/>
+    </resultMap>
+
+    <sql id="baseColumns">
+        t.id,
+        t.code,
+        t.from_warehouse_id,
+        t.to_warehouse_id,
+        t.transfer_date,
+        t.total_quantity,
+        t.status,
+        t.shipping_method,
+        t.received_date,
+        t.notes,
+        t.created_at,
+        t.deleted_at
+    </sql>
+
+    <sql id="updatedFields">
+        t.updated_at,
+        fw.name AS from_warehouse_name,
+        tw.name AS to_warehouse_name,
+        uc.full_name AS created_by,
+        uu.full_name AS updated_by
+    </sql>
+
+    <sql id="baseFromJoinForSelect">
+        FROM transfer_orders t
+        LEFT JOIN warehouses fw ON t.from_warehouse_id = fw.id
+        LEFT JOIN warehouses tw ON t.to_warehouse_id = tw.id
+        LEFT JOIN users uc ON t.created_by = uc.id
+        LEFT JOIN users uu ON t.updated_by = uu.id
+    </sql>
+
+    <sql id="baseFromJoinForCount">
+        FROM transfer_orders t
+    </sql>
+
+    <sql id="whereClause">
+        <where>
+            AND t.deleted_at IS NULL
+
+            <!-- From Warehouse filter -->
+            <if test="fromWarehouseId != null">
+                AND t.from_warehouse_id = #{fromWarehouseId}
+            </if>
+
+            <!-- To Warehouse filter -->
+            <if test="toWarehouseId != null">
+                AND t.to_warehouse_id = #{toWarehouseId}
+            </if>
+
+            <!-- Status filter -->
+            <if test="status != null">
+                AND t.status = #{status}
+            </if>
+
+            <!-- Keyword search -->
+            <if test="keyword != null and keyword != ''">
+                AND (
+                    t.code LIKE CONCAT('%', #{keyword}, '%')
+                    OR t.notes LIKE CONCAT('%', #{keyword}, '%')
+                )
+            </if>
+
+            <!-- Date range filter -->
+            <if test="startDate != null">
+                AND t.transfer_date >= #{startDate}
+            </if>
+
+            <!-- Date range filter -->
+            <if test="endDate != null">
+                <![CDATA[
+                AND t.transfer_date <= DATE_ADD(#{endDate}, INTERVAL 1 DAY) - INTERVAL 1 SECOND
+                ]]>
+            </if>
+        </where>
+    </sql>
+
+    <select id="findAllWithFilterAndSearch" resultMap="TransferOrderResponseMap">
+        SELECT
+            <include refid="baseColumns"/>,
+            <include refid="updatedFields"/>
+        <include refid="baseFromJoinForSelect"/>
+        <include refid="whereClause"/>
+        ORDER BY ${sortColumn} ${sortDirection}
+        LIMIT #{limit}
+        OFFSET #{offset}
+    </select>
+
+    <select id="countWithFilterAndSearch" resultType="long">
+        SELECT COUNT(*)
+        <include refid="baseFromJoinForCount"/>
+        <include refid="whereClause"/>
+    </select>
+
+    <select id="findDetailsByTransferOrderId" resultMap="TransferDetailResponseMap">
+        SELECT
+            td.id,
+            td.serial_number_id,
+            sn.serial_code,
+            sn.product_variant_id,
+            pv.sku AS product_variant_sku,
+            pv.name AS product_variant_name,
+            td.created_at
+        FROM transfer_details td
+        LEFT JOIN serial_numbers sn ON td.serial_number_id = sn.id
+        LEFT JOIN product_variants pv ON sn.product_variant_id = pv.id
+        WHERE td.transfer_order_id = #{transferOrderId}
+        ORDER BY td.created_at ASC
+    </select>
+
+</mapper>

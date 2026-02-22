@@ -13,13 +13,16 @@ import java.util.Set;
 @AllArgsConstructor
 public class RoleRequest implements Serializable {
 
-    @NotBlank(message = "name cannot be blank")
+    @NotBlank(message = "ROLE_CODE_REQUIRED")
+    private String code;
+
+    @NotBlank(message = "ROLE_NAME_REQUIRED")
     private String name;
 
-    @NotBlank(message = "description cannot be blank")
+    @NotBlank(message = "ROLE_DESCRIPTION_REQUIRED")
     private String description;
 
-    @NotEmpty(message = "permissions cannot be blank")
+    @NotEmpty(message = "ROLE_PERMISSIONS_REQUIRED")
     private Set<Long> permissions;
 
 }

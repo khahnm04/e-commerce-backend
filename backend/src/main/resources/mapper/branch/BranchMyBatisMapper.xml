@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.khahnm04.ecommerce.modules.branch.mapper.BranchMyBatisMapper">
+
+    <resultMap id="BranchResponseMap" type="com.khahnm04.ecommerce.modules.branch.dto.response.BranchResponse">
+        <id property="id" column="id"/>
+        <result property="code" column="code"/>
+        <result property="name" column="name"/>
+        <result property="addressDetail" column="address_detail"/>
+        <result property="ward" column="ward"/>
+        <result property="district" column="district"/>
+        <result property="city" column="city"/>
+        <result property="latitude" column="latitude"/>
+        <result property="longitude" column="longitude"/>
+        <result property="phoneNumber" column="phone_number"/>
+        <result property="email" column="email"/>
+        <result property="openingHours" column="opening_hours"/>
+        <result property="status" column="status" typeHandler="org.apache.ibatis.type.EnumTypeHandler"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="createdBy" column="created_by"/>
+        <result property="updatedAt" column="updated_at"/>
+        <result property="updatedBy" column="updated_by"/>
+        <result property="deletedAt" column="deleted_at"/>
+    </resultMap>
+
+    <sql id="baseColumns">
+        b.id,
+        b.code,
+        b.name,
+        b.address_detail,
+        b.ward,
+        b.district,
+        b.city,
+        b.latitude,
+        b.longitude,
+        b.phone_number,
+        b.email,
+        b.opening_hours,
+        b.status,
+        b.created_at,
+        b.deleted_at
+    </sql>
+
+    <sql id="updatedFields">
+        b.updated_at,
+        uc.full_name AS created_by,
+        uu.full_name AS updated_by
+    </sql>
+
+    <sql id="baseFromJoinForSelect">
+        FROM branches b
+        LEFT JOIN users uc ON b.created_by = uc.id
+        LEFT JOIN users uu ON b.updated_by = uu.id
+    </sql>
+
+    <sql id="baseFromJoinForCount">
+        FROM branches b
+    </sql>
+
+    <sql id="whereClause">
+        <where>
+            <!-- Deleted filter -->
+            <choose>
+                <when test="isDeleted">
+                    AND b.deleted_at IS NOT NULL
+                </when>
+                <otherwise>
+                    AND b.deleted_at IS NULL
+                </otherwise>
+            </choose>
+
+            <!-- Keyword search: search in multiple fields -->
+            <if test="keyword != null and keyword != ''">
+                AND (
+                    b.code LIKE CONCAT('%', #{keyword}, '%')
+                    OR b.name LIKE CONCAT('%', #{keyword}, '%')
+                    OR b.phone_number LIKE CONCAT('%', #{keyword}, '%')
+                    OR b.email LIKE CONCAT('%', #{keyword}, '%')
+                    OR b.address_detail LIKE CONCAT('%', #{keyword}, '%')
+                    OR b.city LIKE CONCAT('%', #{keyword}, '%')
+                    OR b.district LIKE CONCAT('%', #{keyword}, '%')
+                )
+            </if>
+
+            <!-- Status filter -->
+            <if test="status != null">
+                AND b.status = #{status}
+            </if>
+
+            <!-- Date range filter -->
+            <if test="startDate != null">
+                AND b.created_at >= #{startDate}
+                AND b.updated_at >= #{startDate}
+            </if>
+
+            <!-- Date range filter -->
+            <if test="endDate != null">
+                <![CDATA[
+                AND b.created_at <= DATE_ADD(#{endDate}, INTERVAL 1 DAY) - INTERVAL 1 SECOND
+                AND b.updated_at <= DATE_ADD(#{endDate}, INTERVAL 1 DAY) - INTERVAL 1 SECOND
+                ]]>
+            </if>
+        </where>
+    </sql>
+
+    <select id="findAllWithFilterAndSearch" resultMap="BranchResponseMap">
+        SELECT
+            <include refid="baseColumns"/>,
+            <include refid="updatedFields"/>
+        <include refid="baseFromJoinForSelect"/>
+        <include refid="whereClause"/>
+        ORDER BY ${sortColumn} ${sortDirection}
+        LIMIT #{limit}
+        OFFSET #{offset}
+    </select>
+
+    <select id="countWithFilterAndSearch" resultType="long">
+        SELECT COUNT(*)
+        <include refid="baseFromJoinForCount"/>
+        <include refid="whereClause"/>
+    </select>
+
+</mapper>

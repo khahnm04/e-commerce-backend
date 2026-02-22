@@ -1,10 +1,12 @@
 package com.khahnm04.ecommerce.modules.user.entity;
 
-import com.khahnm04.ecommerce.shared.enums.AddressType;
-import com.khahnm04.ecommerce.shared.entity.BaseEntity;
+import com.khahnm04.ecommerce.modules.user.enums.AddressType;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+import java.io.Serializable;
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -13,42 +15,62 @@ import org.hibernate.annotations.ColumnDefault;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "addresses")
-public class Address extends BaseEntity<Long> {
+public class Address implements Serializable {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false)
+    private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "customer_id", nullable = false)
+    private Customer customer;
 
     @Column(name = "receiver_name", nullable = false)
     private String receiverName;
 
-    @Column(name = "receiver_phone", nullable = false, length = 15)
+    @Column(name = "receiver_phone", nullable = false)
     private String receiverPhone;
 
-    @Column(name = "province", nullable = false)
-    private String province;
+    @Column(name = "province_code")
+    private Integer provinceCode;
 
-    @Column(name = "district", nullable = false)
-    private String district;
+    @Column(name = "province_name", nullable = false)
+    private String provinceName;
 
-    @Column(name = "ward", nullable = false)
-    private String ward;
+    @Column(name = "district_code")
+    private Integer districtCode;
+
+    @Column(name = "district_name", nullable = false)
+    private String districtName;
+
+    @Column(name = "ward_code")
+    private String wardCode;
+
+    @Column(name = "ward_name", nullable = false)
+    private String wardName;
 
     @Column(name = "detail_address", nullable = false)
     private String detailAddress;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "address_type")
+    @Builder.Default
+    private AddressType addressType = AddressType.HOME;
+
     @Column(name = "address_name")
     private String addressName;
 
-    @Builder.Default
-    @ColumnDefault("'HOME'")
-    @Enumerated(EnumType.STRING)
-    @Column(name = "address_type")
-    private AddressType addressType = AddressType.HOME;
-
-    @Builder.Default
-    @ColumnDefault("0")
     @Column(name = "is_default")
+    @Builder.Default
     private Boolean isDefault = false;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @CreationTimestamp
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 
 }

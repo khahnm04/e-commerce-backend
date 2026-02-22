@@ -1,12 +1,10 @@
 package com.khahnm04.ecommerce.modules.auth.controller;
 
-import com.khahnm04.ecommerce.shared.constant.TokenConstants;
+import com.khahnm04.ecommerce.common.constant.TokenConstants;
 import com.khahnm04.ecommerce.modules.auth.dto.request.LoginRequest;
-import com.khahnm04.ecommerce.modules.auth.dto.request.RegisterRequest;
 import com.khahnm04.ecommerce.modules.auth.dto.response.LoginResponse;
-import com.khahnm04.ecommerce.modules.auth.dto.response.RegisterResponse;
 import com.khahnm04.ecommerce.modules.auth.service.AuthService;
-import com.khahnm04.ecommerce.shared.dto.ApiResponse;
+import com.khahnm04.ecommerce.common.dto.ApiResponse;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -18,16 +16,6 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthService authService;
-
-    @PostMapping("/register")
-    ApiResponse<RegisterResponse> register(
-        @Valid @RequestBody RegisterRequest request
-    ) {
-        return ApiResponse.<RegisterResponse>builder()
-                .data(authService.register(request))
-                .message("register successful")
-                .build();
-    }
 
     @PostMapping("/login")
     ApiResponse<LoginResponse> login(
