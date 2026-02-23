@@ -12,8 +12,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="vi">
-      <body>
+    <html lang="vi" data-yd-content-ready="true" __processed_e76ec79d-5567-4306-bbec-c0bbeb003d7c__="true">
+      <body suppressHydrationWarning>
         {children}
       </body>
     </html>

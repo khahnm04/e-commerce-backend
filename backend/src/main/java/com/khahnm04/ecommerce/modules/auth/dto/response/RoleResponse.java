@@ -13,6 +13,7 @@ import java.util.Set;
 public class RoleResponse implements Serializable {
 
     private Long id;
+    private String code;
     private String name;
     private String description;
     private Set<String> permissions;

@@ -3,13 +3,18 @@ import { ReactNode } from "react";
 import { CustomSelect } from "./CustomSelect";
 import { FilterItem, TableFilter } from "./TableFilter";
 
+interface SelectOption {
+  id: string | number;
+  name: string;
+}
+
 export type FilterConfig = {
   type: "select" | "date" | "input" | "custom";
   id: string;
   className?: string;
-  value?: any;
-  onChange?: (val: any) => void;
-  options?: any[];
+  value?: string | number;
+  onChange?: (val: string | number) => void;
+  options?: SelectOption[];
   placeholder?: string;
   render?: () => ReactNode;
 };
@@ -24,16 +29,16 @@ export const DynamicTableFilter = ({
   return (
     <>
       <TableFilter>
-        {filters.map((item: any) => (
+        {filters.map((item: FilterConfig) => (
           <FilterItem
             key={item.id}
             className={item.className}
           >
             {item.type === "select" && (
               <CustomSelect
-                value={item.value}
-                onChange={item.onChange}
-                options={item.options}
+                value={item.value ?? ""}
+                onChange={item.onChange ?? (() => { })}
+                options={item.options ?? []}
                 placeholder={item.placeholder}
               />
             )}

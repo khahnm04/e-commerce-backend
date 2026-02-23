@@ -14,9 +14,9 @@
         <result property="jobTitle" column="job_title"/>
         <result property="branch" column="branch"/>
         <result property="dateOfBirth" column="date_of_birth"/>
-        <result property="gender" column="gender" typeHandler="org.apache.ibatis.type.EnumTypeHandler"/>
+        <result property="gender" column="gender"/>
         <result property="avatarUrl" column="avatar_url"/>
-        <result property="status" column="status" typeHandler="org.apache.ibatis.type.EnumTypeHandler"/>
+        <result property="status" column="status"/>
         <result property="createdAt" column="created_at"/>
         <result property="createdBy" column="created_by"/>
         <result property="updatedAt" column="updated_at"/>

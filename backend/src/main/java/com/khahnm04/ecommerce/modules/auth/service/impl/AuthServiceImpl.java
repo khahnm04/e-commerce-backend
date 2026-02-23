@@ -11,7 +11,6 @@ import com.khahnm04.ecommerce.modules.auth.entity.RedisToken;
 import com.khahnm04.ecommerce.common.exception.AppException;
 import com.khahnm04.ecommerce.common.exception.ErrorCode;
 import com.khahnm04.ecommerce.modules.auth.repository.RedisTokenRepository;
-import com.khahnm04.ecommerce.modules.auth.repository.RoleRepository;
 import com.khahnm04.ecommerce.modules.auth.service.AuthService;
 import com.khahnm04.ecommerce.modules.auth.service.JwtService;
 import com.khahnm04.ecommerce.modules.auth.service.strategy.LoginStrategy;
@@ -21,7 +20,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.text.ParseException;
@@ -34,9 +32,7 @@ import java.util.*;
 public class AuthServiceImpl implements AuthService {
 
     private final RedisTokenRepository redisTokenRepository;
-    private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
-    private final RoleRepository roleRepository;
     private final JwtService jwtService;
     private final List<LoginStrategy> loginStrategies;
     private final CookieProperties cookieProperties;
@@ -109,6 +105,8 @@ public class AuthServiceImpl implements AuthService {
 
             TokenPayload accessToken = jwtService.generateAccessToken(user);
             addAccessTokenCookies(response, accessToken.getToken());
+
+            log.info("refresh token success");
         } catch (ParseException e) {
             log.error("cannot refresh token");
             throw new AppException(ErrorCode.UNAUTHENTICATED);

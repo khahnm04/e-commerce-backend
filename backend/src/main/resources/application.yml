@@ -30,9 +30,6 @@ spring:
     multipart:
       max-file-size: 30MB # Tối đa 1 file là 10MB
       max-request-size: 10MB  # Tổng cả request tối đa 50MB
-  jackson:
-    mapper:
-      ACCEPT_CASE_INSENSITIVE_ENUMS: true
 
 # MyBatis Configuration
 mybatis:
@@ -64,5 +61,5 @@ cloudinary:
 
 jwt:
   signerKey: "${SIGNER_KEY}"
-  access-token-expiration: 36000 # in seconds
-  refresh-token-expiration: 2592000 # in seconds
+  access-token-expiration: 360 # in seconds
+  refresh-token-expiration: 3600 # in seconds

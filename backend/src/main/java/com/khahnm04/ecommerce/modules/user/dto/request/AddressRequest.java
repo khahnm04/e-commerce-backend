@@ -1,6 +1,5 @@
 package com.khahnm04.ecommerce.modules.user.dto.request;
 
-import com.khahnm04.ecommerce.common.validation.enums.ValidEnum;
 import com.khahnm04.ecommerce.common.validation.phone.ValidPhoneNumber;
 import com.khahnm04.ecommerce.modules.user.enums.AddressType;
 import jakarta.validation.constraints.NotBlank;

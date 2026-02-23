@@ -1,7 +1,6 @@
 package com.khahnm04.ecommerce.modules.auth.dto.request;
 
 import com.khahnm04.ecommerce.common.validation.email.ValidEmail;
-import com.khahnm04.ecommerce.common.validation.enums.ValidEnum;
 import com.khahnm04.ecommerce.common.validation.phone.ValidPhoneNumber;
 import com.khahnm04.ecommerce.modules.auth.enums.UserStatus;
 import com.khahnm04.ecommerce.modules.auth.enums.Gender;

@@ -6,7 +6,6 @@ import com.khahnm04.ecommerce.common.entity.BaseEntity;
 import com.khahnm04.ecommerce.modules.auth.enums.Gender;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.SQLRestriction;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -80,11 +79,7 @@ public class User extends BaseEntity<Long> implements UserDetails {
     private String loginIp;
 
     @ManyToMany
-    @JoinTable(
-        name = "user_roles",
-        joinColumns = @JoinColumn(name = "user_id"),
-        inverseJoinColumns = @JoinColumn(name = "role_id")
-    )
+    @JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
     @OrderBy("name ASC")
     private Set<Role> roles;
 
@@ -95,7 +90,8 @@ public class User extends BaseEntity<Long> implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        if (roles == null) return List.of();
+        if (roles == null)
+            return List.of();
         return roles.stream()
                 .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getName()))
                 .toList();

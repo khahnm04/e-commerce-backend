@@ -3,6 +3,7 @@ import { useState, useRef, useEffect, MouseEvent } from "react";
 import { FaGear, FaUserGear, FaArrowRightFromBracket } from "react-icons/fa6"; // Updated icons
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { authApi } from "@/services/auth.service";
 
 interface UserDropdownProps {
   userName: string;
@@ -28,11 +29,13 @@ export const UserDropdown = ({ userName, userRole, avatarSrc }: UserDropdownProp
     };
   }, []);
 
-  const handleLogout = () => {
-    // Implement actual logout logic here
-    console.log("Logging out...");
-    // For now, redirect to login page
-    router.push("/login");
+  const handleLogout = async () => {
+    try {
+      await authApi.logout();
+      router.push("/login");
+    } catch {
+      alert("Đăng xuất thất bại");
+    }
     setShowDropdown(false);
   };
 

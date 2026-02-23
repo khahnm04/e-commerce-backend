@@ -190,12 +190,6 @@ public class CustomerServiceImpl implements CustomerService {
 
     // ======================== Private methods ========================
 
-    /**
-     * @param request   Filter and search parameters
-     * @param pageable  Pagination information
-     * @param isDeleted true for deleted customers, false for active
-     * @return Page of CustomerResponse
-     */
     private Page<CustomerResponse> getAllWithFilterAndSearch(CustomerFilterRequest request, Pageable pageable,
             boolean isDeleted) {
         String keyword = StringUtils.hasText(request.getKeyword())

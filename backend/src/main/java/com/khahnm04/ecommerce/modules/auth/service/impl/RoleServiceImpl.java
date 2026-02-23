@@ -75,6 +75,15 @@ public class RoleServiceImpl implements RoleService {
         }
         List<Permission> permissions = permissionRepository.findAllById(permissionIds);
         if (permissions.size() != permissionIds.size()) {
+            List<Long> foundIds = permissions.stream()
+                    .map(Permission::getId)
+                    .toList();
+
+            List<Long> missingIds = permissionIds.stream()
+                    .filter(id -> !foundIds.contains(id))
+                    .toList();
+
+            log.error("Failed to assign permissions to role: {}. Missing Permission IDs: {}", role.getName(), missingIds);
             throw new AppException(ErrorCode.PERMISSION_NOT_FOUND);
         }
         role.setPermissions(new HashSet<>(permissions));

@@ -4,95 +4,150 @@ import {
   FaBoxOpen,
   FaBoxesStacked,
   FaBullhorn,
+  FaCartShopping,
   FaGift,
   FaGaugeHigh,
   FaGear,
+  FaIndustry,
   FaListCheck,
   FaListUl,
   FaNewspaper,
+  FaPalette,
   FaPowerOff,
+  FaSliders,
   FaStore,
   FaTag,
   FaUserGear,
   FaUsers,
   FaWarehouse,
-  FaBell
+  FaBell,
+  FaShieldHalved
 } from "react-icons/fa6";
-import { SiderMenu } from "./SiderMenu";
+import { SiderMenu, SiderItem } from "./SiderMenu";
 
 export const Sider = (props: {
   activeSider: boolean;
   setActiveSider: (value: boolean) => void;
 }) => {
-  const menuList1 = [
+
+  const mainMenu: SiderItem[] = [
     {
       name: "Tổng quan",
       link: "/",
       icon: FaGaugeHigh
     },
     {
-      name: "Quản lý danh mục",
-      link: "/categories",
-      icon: FaListUl
+      name: "Sản phẩm",
+      icon: FaCartShopping,
+      children: [
+        {
+          name: "Quản lý nhãn hàng",
+          link: "/brands",
+          icon: FaIndustry
+        },
+        {
+          name: "Quản lý danh mục",
+          link: "/categories",
+          icon: FaListUl
+        },
+        {
+          name: "Quản lý sản phẩm",
+          link: "/products",
+          icon: FaBoxOpen
+        },
+        {
+          name: "Biến thể sản phẩm",
+          link: "/product-variants",
+          icon: FaBoxesStacked
+        },
+        {
+          name: "Quản lý thuộc tính",
+          link: "/attributes",
+          icon: FaTag
+        },
+        {
+          name: "Quản lý biến thể",
+          link: "/variants",
+          icon: FaSliders
+        },
+        {
+          name: "Giá trị biến thể",
+          link: "/variant-values",
+          icon: FaPalette
+        },
+      ]
     },
     {
-      name: "Quản lý sản phẩm",
-      link: "/products",
-      icon: FaBoxOpen
+      name: "Kinh doanh",
+      icon: FaListCheck,
+      children: [
+        {
+          name: "Quản lý đơn hàng",
+          link: "/orders",
+          icon: FaListCheck
+        },
+        {
+          name: "Mã giảm giá",
+          link: "/coupons",
+          icon: FaGift
+        },
+      ]
     },
     {
-      name: "Thuộc tính sản phẩm",
-      link: "/product-attributes",
-      icon: FaTag
+      name: "Kho & Chi nhánh",
+      icon: FaWarehouse,
+      children: [
+        {
+          name: "Thông tin kho",
+          link: "/inventories",
+          icon: FaWarehouse
+        },
+        {
+          name: "Quản lý chi nhánh",
+          link: "/branches",
+          icon: FaStore
+        },
+      ]
     },
     {
-      name: "Biến thể sản phẩm",
-      link: "/product-variants",
-      icon: FaBoxesStacked
+      name: "Nội dung",
+      icon: FaNewspaper,
+      children: [
+        {
+          name: "Banner / Marketing",
+          link: "/banners",
+          icon: FaBullhorn
+        },
+        {
+          name: "Tin tức / Bài viết",
+          link: "/news",
+          icon: FaNewspaper
+        },
+      ]
     },
     {
-      name: "Quản lý đơn hàng",
-      link: "/orders",
-      icon: FaListCheck
-    },
-    {
-      name: "Thông tin kho",
-      link: "/inventories",
-      icon: FaWarehouse
-    },
-    {
-      name: "Quản lý chi nhánh",
-      link: "/branches",
-      icon: FaStore
-    },
-    {
-      name: "Banner / Marketing",
-      link: "/banners",
-      icon: FaBullhorn
-    },
-    {
-      name: "Tin tức / Bài viết",
-      link: "/news",
-      icon: FaNewspaper
-    },
-    {
-      name: "Mã giảm giá",
-      link: "/coupons",
-      icon: FaGift
-    },
-    {
-      name: "Quản lý người dùng",
-      link: "/users",
+      name: "Khách hàng",
+      link: "/customers",
       icon: FaUsers
+    },
+    {
+      name: "Nhân viên",
+      link: "/employees",
+      icon: FaUserGear
     },
     {
       name: "Thông báo",
       link: "/notifications",
       icon: FaBell
     },
-  ]
+    {
+      name: "Nhóm quyền",
+      link: "/roles",
+      icon: FaShieldHalved
+    },
+  ];
 
-  const menuList2 = [
+  const bottomMenu: SiderItem[] = [
     {
       name: "Cài đặt chung",
       link: "/settings",
@@ -109,10 +164,10 @@ export const Sider = (props: {
       icon: FaPowerOff,
       isLogout: true
     }
-  ]
+  ];
 
   const { activeSider, setActiveSider } = props;
-  const [activeMenu, setActiveMenu] = useState(menuList1[0].name);
+  const [activeMenu, setActiveMenu] = useState("Tổng quan");
 
   return (
     <>
@@ -120,13 +175,13 @@ export const Sider = (props: {
         lg:top-[70px] top-0 left-0 overflow-y-auto [&::-webkit-scrollbar]:w-[3px] [&::-webkit-scrollbar-thumb]:bg-[#ddd] z-[999] 
         lg:block ${activeSider ? 'block' : 'hidden'}`}>
         <SiderMenu
-          menuList={menuList1}
+          menuList={mainMenu}
           activeMenu={activeMenu}
           setActiveMenu={setActiveMenu}
         />
         <hr className="border border-[#E0E0E0] my-[16px] mx-0" />
         <SiderMenu
-          menuList={menuList2}
+          menuList={bottomMenu}
           activeMenu={activeMenu}
           setActiveMenu={setActiveMenu}
         />
