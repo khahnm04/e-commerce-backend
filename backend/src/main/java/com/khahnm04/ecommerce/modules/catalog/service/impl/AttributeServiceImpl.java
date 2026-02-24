@@ -8,11 +8,9 @@ import com.khahnm04.ecommerce.common.util.SortUtils;
 import com.khahnm04.ecommerce.modules.catalog.dto.request.AttributeBulkActionRequest;
 import com.khahnm04.ecommerce.modules.catalog.dto.request.AttributeFilterRequest;
 import com.khahnm04.ecommerce.modules.catalog.dto.request.AttributeRequest;
-
 import com.khahnm04.ecommerce.modules.catalog.dto.response.AttributeResponse;
 import com.khahnm04.ecommerce.modules.catalog.entity.Attribute;
 import com.khahnm04.ecommerce.modules.catalog.enums.AttributeSortField;
-
 import com.khahnm04.ecommerce.modules.catalog.mapper.AttributeMapper;
 import com.khahnm04.ecommerce.modules.catalog.mapper.mybaits.AttributeMyBatisMapper;
 import com.khahnm04.ecommerce.modules.catalog.repository.AttributeRepository;

@@ -1,6 +1,5 @@
 import { Metadata } from "next";
 import RoleList from "./_components/RoleList";
-import { Pagination } from "@/components/common/Pagination";
 import { Breadcrumb } from "@/components/common/Breadcrumb";
 
 export const metadata: Metadata = {
@@ -24,9 +23,6 @@ export default function RolePage() {
       />
 
       <RoleList />
-
-      {/* API might not have pagination for roles, but keeping standard layout */}
-      <Pagination />
     </main>
   )
 }

@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @Setter
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class ApiResponse <T> implements Serializable {
+public class ApiResponse<T> implements Serializable {
 
     @Builder.Default
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")

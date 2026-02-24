@@ -8,7 +8,7 @@ app:
       secure: ${COOKIE_SECURE:false}
       http-only: true
       same-site: Lax
-      access-token-max-age: 3600s
+      access-token-max-age: 600s
       refresh-token-max-age: 86400s
 
 spring:
@@ -63,5 +63,5 @@ cloudinary:
 
 jwt:
   signerKey: "${SIGNER_KEY}"
-  access-token-expiration: 3600 # in seconds (1 hour)
+  access-token-expiration: 600 # in seconds (1 hour)
   refresh-token-expiration: 86400 # in seconds (24 hours)

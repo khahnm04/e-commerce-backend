@@ -10,3 +10,7 @@ export const ROLE_TABLE_HEADERS = [
 export const ROLE_ACTION_OPTIONS = [
     { id: "delete", name: "Xóa" },
 ];
+
+export const ROLE_TRASH_ACTION_OPTIONS = [
+    { id: "restore", name: "Khôi phục" },
+];

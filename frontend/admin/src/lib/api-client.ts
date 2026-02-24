@@ -1,12 +1,21 @@
-import { authApi } from "@/services/auth/auth.service";
-
 let isRefreshing = false;
 let refreshPromise: Promise<boolean> | null = null;
 
 const refreshToken = async (): Promise<boolean> => {
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL;
   try {
-    await authApi.refresh();
-    return true;
+    const res = await fetch(`${baseUrl}/auth/refresh`, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+    });
+
+    if (!res.ok) {
+      return false;
+    }
+
+    const data = await res.json();
+    return data?.success === true;
   } catch {
     return false;
   }
@@ -35,25 +44,33 @@ export const sendRequest = async <T>(
     data = {};
   }
 
-  // Về Access token: Nếu lỗi là 1000 (Unauthenticated), tự động gọi refresh token
-  if (res.status === 401 && data?.code === 1000 && !endpoint.includes("/auth/refresh") && !endpoint.includes("/auth/login")) {
+  // Access token hết hạn (code 1000) → tự động gọi refresh token
+  if (
+    res.status === 401 &&
+    data?.code === 1000 &&
+    !endpoint.includes("/auth/refresh") &&
+    !endpoint.includes("/auth/login")
+  ) {
+    // Chỉ cho 1 request gọi refresh, các request khác chờ
     if (!isRefreshing) {
       isRefreshing = true;
-      refreshPromise = refreshToken();
+      refreshPromise = refreshToken().finally(() => {
+        isRefreshing = false;
+      });
     }
 
     const refreshSuccess = await refreshPromise;
-    isRefreshing = false;
     refreshPromise = null;
 
     if (refreshSuccess) {
-      // Gọi lại request ban đầu với cookie HTTP-only mới (sẽ được tự động gửi kèm fetch credentials)
+      // Retry request ban đầu với access_token mới (cookie HTTP-only tự động gửi kèm)
       res = await fetch(`${baseUrl}${endpoint}`, {
         ...options,
         headers,
       });
       data = await res.json();
     } else {
+      // Refresh token cũng hết hạn → redirect login
       if (typeof window !== "undefined" && window.location.pathname !== "/login") {
         window.location.href = "/login";
       }
@@ -61,8 +78,12 @@ export const sendRequest = async <T>(
     }
   }
 
-  // Về Refresh token: Nếu lỗi là 1002, bắt người dùng login lại
-  if (res.status === 401 && data?.code === 1002 && !endpoint.includes("/auth/login")) {
+  // Refresh token hết hạn (code 1002) → bắt login lại
+  if (
+    res.status === 401 &&
+    data?.code === 1002 &&
+    !endpoint.includes("/auth/login")
+  ) {
     if (typeof window !== "undefined" && window.location.pathname !== "/login") {
       window.location.href = "/login";
     }

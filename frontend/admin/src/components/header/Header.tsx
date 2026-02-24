@@ -128,8 +128,8 @@ export const Header = (props: {
                 className="w-[24px] h-auto"
               />
               <span className="h-[16px] min-w-[16px] bg-[#F93C65] font-[700] text-[12px] text-[#FFFFFF] py-0 px-[4px] rounded-[25px] absolute top-[-5px] right-[-4px]">
-                  {unreadCount}
-                </span>
+                {unreadCount}
+              </span>
             </div>
 
             {showNotificationDropdown && (
@@ -161,7 +161,7 @@ export const Header = (props: {
               </div>
             )}
           </div>
-          <UserDropdown userName="Le Van A" userRole="Admin" avatarSrc="assets/images/avatar.jpg" />
+          <UserDropdown userName="Le Van A" userRole="Admin" avatarSrc="/assets/images/avatar.jpg" />
           <button
             className="lg:hidden inline-block text-[24px] bg-transparent p-0 border-0 cursor-pointer"
             onClick={() => setActiveSider(!activeSider)}

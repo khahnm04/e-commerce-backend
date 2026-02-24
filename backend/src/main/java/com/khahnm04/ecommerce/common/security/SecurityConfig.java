@@ -49,12 +49,11 @@ public class SecurityConfig {
                     request.requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS).permitAll()
                             .anyRequest().authenticated())
 
-            .oauth2ResourceServer(oauth2 ->
-                    oauth2.jwt(jwtConfigurer -> jwtConfigurer
-                            .decoder(jwtDecoderConfig)
-                            .jwtAuthenticationConverter(jwtAuthenticationConverter()))
-                            .authenticationEntryPoint(new JwtAuthenticationEntryPoint()) // Catch exception when Unauthenticated
-                            .bearerTokenResolver(cookieBearerTokenResolver))
+            .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwtConfigurer -> jwtConfigurer
+                    .decoder(jwtDecoderConfig)
+                    .jwtAuthenticationConverter(jwtAuthenticationConverter()))
+                    .authenticationEntryPoint(new JwtAuthenticationEntryPoint()) // Catch exception when Unauthenticated
+                    .bearerTokenResolver(cookieBearerTokenResolver))
 
             .csrf(AbstractHttpConfigurer::disable)
             .cors(cors -> cors.configurationSource(corsConfigurationSource()));
@@ -69,8 +68,7 @@ public class SecurityConfig {
 
     @Bean
     public DaoAuthenticationProvider daoAuthenticationProvider() {
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-        provider.setUserDetailsService(userDetailsService);
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
         provider.setPasswordEncoder(passwordEncoder);
         return provider;
     }

@@ -5,7 +5,6 @@ import com.khahnm04.ecommerce.modules.auth.dto.response.RoleResponse;
 import com.khahnm04.ecommerce.modules.auth.entity.Permission;
 import com.khahnm04.ecommerce.modules.auth.entity.Role;
 import org.mapstruct.*;
-
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -16,6 +15,8 @@ public interface RoleMapper {
     Role toRole(RoleRequest request);
 
     @Mapping(target = "permissions", expression = "java(mapPermissionsToCode(role.getPermissions()))")
+    @Mapping(target = "createdBy", source = "createdBy.fullName")
+    @Mapping(target = "updatedBy", source = "updatedBy.fullName")
     RoleResponse toRoleResponse(Role role);
 
     @Mapping(target = "permissions", ignore = true)

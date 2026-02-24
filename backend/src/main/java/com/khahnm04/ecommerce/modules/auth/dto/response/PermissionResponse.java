@@ -14,6 +14,7 @@ public class PermissionResponse implements Serializable {
     private Long id;
     private String code;
     private String name;
+    private String module;
     private String description;
     private LocalDateTime createdAt;
 

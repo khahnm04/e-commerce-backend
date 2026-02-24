@@ -39,7 +39,7 @@ CREATE TABLE `permissions` (
   `id` bigint PRIMARY KEY AUTO_INCREMENT,
   `code` varchar(50) UNIQUE NOT NULL,
   `name` varchar(255) NOT NULL,
-  `module` varchar(50),
+  `module` varchar(255),
   `description` text,
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP
 );

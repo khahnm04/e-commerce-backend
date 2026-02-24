@@ -24,6 +24,7 @@ import {
   FaShieldHalved
 } from "react-icons/fa6";
 import { SiderMenu, SiderItem } from "./SiderMenu";
+import { TiMessages } from "react-icons/ti";
 
 export const Sider = (props: {
   activeSider: boolean;
@@ -139,6 +140,11 @@ export const Sider = (props: {
       name: "Thông báo",
       link: "/notifications",
       icon: FaBell
+    },
+    {
+      name: "Tin nhắn",
+      link: "/messages",
+      icon: TiMessages
     },
     {
       name: "Nhóm quyền",
