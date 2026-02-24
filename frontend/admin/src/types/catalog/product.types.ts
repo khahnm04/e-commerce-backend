@@ -1,5 +1,5 @@
 import { ProductStatus } from "@/constants/enums";
-import { BaseEntity } from "./base.types";
+import { BaseEntity } from "../common/base.types";
 
 export interface ProductAttributeValueResponse {
     id: number;

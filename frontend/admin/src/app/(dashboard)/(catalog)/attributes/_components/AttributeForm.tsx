@@ -11,8 +11,8 @@ import {
   CreateAttributeSchema,
   CreateAttributeValues,
 } from "@/app/(dashboard)/(catalog)/attributes/attribute.schema";
-import { attributeService } from "@/services/attribute.service";
-import { AttributeResponse } from "@/types/attribute.types";
+import { attributeService } from "@/services/catalog/attribute.service";
+import { AttributeResponse } from "@/types/catalog/attribute.types";
 
 interface AttributeFormProps {
   initialData?: AttributeResponse;

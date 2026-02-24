@@ -5,7 +5,7 @@ import { TableCheckbox } from "@/components/common/TableCheckbox";
 import { TableImage } from "@/components/common/TableImage";
 import { UserTimestamp } from "@/components/common/UserTimestamp";
 import { CustomSelect } from "@/components/common/CustomSelect";
-import { ProductResponse } from "@/types/product.types";
+import { ProductResponse } from "@/types/catalog/product.types";
 
 const STATUS_OPTIONS = [
   { id: "ACTIVE", name: "Hoạt động" },

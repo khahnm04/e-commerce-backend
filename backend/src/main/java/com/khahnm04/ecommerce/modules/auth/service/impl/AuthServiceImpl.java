@@ -101,7 +101,7 @@ public class AuthServiceImpl implements AuthService {
             SignedJWT signedJWT = jwtService.verifyRefreshToken(token);
 
             User user = userRepository.findByIdentifier(signedJWT.getJWTClaimsSet().getSubject())
-                    .orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED));
+                    .orElseThrow(() -> new AppException(ErrorCode.REFRESH_TOKEN_FAILED));
 
             TokenPayload accessToken = jwtService.generateAccessToken(user);
             addAccessTokenCookies(response, accessToken.getToken());
@@ -109,7 +109,7 @@ public class AuthServiceImpl implements AuthService {
             log.info("refresh token success");
         } catch (ParseException e) {
             log.error("cannot refresh token");
-            throw new AppException(ErrorCode.UNAUTHENTICATED);
+            throw new AppException(ErrorCode.REFRESH_TOKEN_FAILED);
         }
     }
 
@@ -130,7 +130,7 @@ public class AuthServiceImpl implements AuthService {
                 .httpOnly(cookieProperties.isHttpOnly())
                 .secure(cookieProperties.isSecure())
                 .domain(cookieProperties.getDomain())
-                .path("/api/v1/auth")
+                .path("/")
                 .maxAge(cookieProperties.getRefreshTokenMaxAge())
                 .sameSite(cookieProperties.getSameSite())
                 .build();
@@ -153,7 +153,7 @@ public class AuthServiceImpl implements AuthService {
         ResponseCookie refreshTokenCookie = ResponseCookie.from(TokenConstants.REFRESH_TOKEN, "")
                 .maxAge(0)
                 .domain(cookieProperties.getDomain())
-                .path("/api/v1/auth")
+                .path("/")
                 .httpOnly(cookieProperties.isHttpOnly())
                 .secure(cookieProperties.isSecure())
                 .sameSite(cookieProperties.getSameSite())

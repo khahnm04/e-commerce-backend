@@ -17,8 +17,8 @@ import {
   CreateCustomerValues,
   UpdateCustomerValues,
 } from "@/app/(dashboard)/(user)/customers/customer.schema";
-import { customerService } from "@/services/customer.service";
-import { CustomerResponse } from "@/types/customer.types";
+import { customerService } from "@/services/user/customer.service";
+import { CustomerResponse } from "@/types/user/customer.types";
 
 const STATUS_OPTIONS = [
   { id: "ACTIVE", name: "Hoạt động" },

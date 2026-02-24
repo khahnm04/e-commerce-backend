@@ -6,10 +6,10 @@ import { AttributeTableRow } from "./AttributeTableRow";
 import { ConfirmModal } from "@/components/common/ConfirmModal";
 import { useTableManager } from "@/hooks/useTableManager";
 import { useApiData } from "@/hooks/useApiData";
-import { ATTRIBUTE_TABLE_HEADERS, ATTRIBUTE_ACTION_OPTIONS } from "@/constants/attribute.constants";
+import { ATTRIBUTE_TABLE_HEADERS, ATTRIBUTE_ACTION_OPTIONS } from "@/constants/catalog/attribute.constants";
 import { TableControl } from "@/components/common/TableControl";
-import { attributeService } from "@/services/attribute.service";
-import { AttributeResponse } from "@/types/attribute.types";
+import { attributeService } from "@/services/catalog/attribute.service";
+import { AttributeResponse } from "@/types/catalog/attribute.types";
 
 export default function AttributeList({ isTrash = false }: { isTrash?: boolean }) {
     const { searchTerm, setSearchTerm, actionFilter, setActionFilter, isModalOpen, selectedItem, handleOpenDeleteModal, handleCloseModal } = useTableManager<AttributeResponse>();

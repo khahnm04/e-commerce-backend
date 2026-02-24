@@ -1,6 +1,6 @@
 import { sendRequest } from "@/lib/api-client";
-import { ApiResponse } from "@/types/api.types";
-import { Category, CategoryPayload } from "@/types/category.types";
+import { ApiResponse } from "@/types/common/api.types";
+import { Category, CategoryPayload } from "@/types/catalog/category.types";
 
 const BASE_ENDPOINT = "/admin/categories";
 

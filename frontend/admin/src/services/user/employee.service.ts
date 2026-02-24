@@ -1,6 +1,6 @@
 import { sendRequest } from "@/lib/api-client";
-import { ApiResponse } from "@/types/api.types";
-import { EmployeeResponse, EmployeeCreationRequest, EmployeeUpdateRequest, EmployeeUpdateStatusRequest, EmployeeFilterRequest, EmployeeBulkActionRequest } from "@/types/employee.types";
+import { ApiResponse } from "@/types/common/api.types";
+import { EmployeeResponse, EmployeeCreationRequest, EmployeeUpdateRequest, EmployeeUpdateStatusRequest, EmployeeFilterRequest, EmployeeBulkActionRequest } from "@/types/user/employee.types";
 
 const BASE_ENDPOINT = "/admin/employees";
 

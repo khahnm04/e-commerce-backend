@@ -3,7 +3,7 @@ import { ActionGroup } from "@/components/common/ActionGroup";
 import { TableCell } from "@/components/common/TableCell";
 import { TableCheckbox } from "@/components/common/TableCheckbox";
 import { UserTimestamp } from "@/components/common/UserTimestamp";
-import { VariantValueResponse } from "@/types/variant-value.types";
+import { VariantValueResponse } from "@/types/catalog/variant-value.types";
 
 interface Props { item: VariantValueResponse; index: number; isTrash?: boolean; onDeleteClick?: () => void; isSelected?: boolean; onSelect?: () => void; }
 

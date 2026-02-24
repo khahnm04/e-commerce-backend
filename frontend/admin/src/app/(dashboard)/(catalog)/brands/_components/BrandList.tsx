@@ -6,10 +6,10 @@ import { BrandTableRow } from "./BrandTableRow";
 import { ConfirmModal } from "@/components/common/ConfirmModal";
 import { useTableManager } from "@/hooks/useTableManager";
 import { useApiData } from "@/hooks/useApiData";
-import { BRAND_TABLE_HEADERS, BRAND_STATUS_OPTIONS, BRAND_ACTION_OPTIONS } from "@/constants/brand.constants";
+import { BRAND_TABLE_HEADERS, BRAND_STATUS_OPTIONS, BRAND_ACTION_OPTIONS } from "@/constants/catalog/brand.constants";
 import { TableControl } from "@/components/common/TableControl";
-import { brandService } from "@/services/brand.service";
-import { BrandResponse } from "@/types/brand.types";
+import { brandService } from "@/services/catalog/brand.service";
+import { BrandResponse } from "@/types/catalog/brand.types";
 
 interface BrandListProps { isTrash?: boolean; }
 

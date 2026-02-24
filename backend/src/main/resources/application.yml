@@ -1,31 +1,33 @@
 server:
-  port: 8080
+  port: ${PORT:8080}
 
 app:
   security:
     cookie:
-      domain: localhost
-      secure: false
+      domain: ${COOKIE_DOMAIN:localhost}
+      secure: ${COOKIE_SECURE:false}
       http-only: true
       same-site: Lax
-      access-token-max-age: 30d
-      refresh-token-max-age: 30d
+      access-token-max-age: 3600s
+      refresh-token-max-age: 86400s
 
 spring:
+  config:
+    import: "optional:file:.env[.properties]"
   application:
     name: e-commerce
   datasource:
-    url: "jdbc:mysql://localhost:3306/db_ecommerce"
-    username: root
-    password: root
+    url: "jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:db_ecommerce}"
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:root}
   jpa:
     hibernate:
       ddl-auto: update
     show-sql: true
   data:
     redis:
-      host: localhost
-      port: 6379
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
   servlet:
     multipart:
       max-file-size: 30MB # Tối đa 1 file là 10MB
@@ -61,5 +63,5 @@ cloudinary:
 
 jwt:
   signerKey: "${SIGNER_KEY}"
-  access-token-expiration: 360 # in seconds
-  refresh-token-expiration: 3600 # in seconds
+  access-token-expiration: 3600 # in seconds (1 hour)
+  refresh-token-expiration: 86400 # in seconds (24 hours)

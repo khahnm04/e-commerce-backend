@@ -2,8 +2,8 @@
 import { useEffect, useState } from "react";
 import { Breadcrumb } from "@/components/common/Breadcrumb";
 import BrandForm from "../_components/BrandForm";
-import { brandService } from "@/services/brand.service";
-import { BrandResponse } from "@/types/brand.types";
+import { brandService } from "@/services/catalog/brand.service";
+import { BrandResponse } from "@/types/catalog/brand.types";
 import { use } from "react";
 
 export default function BrandEditPage({

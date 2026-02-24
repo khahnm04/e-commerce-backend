@@ -6,10 +6,10 @@ import { ProductVariantTableRow } from "./ProductVariantTableRow";
 import { ConfirmModal } from "@/components/common/ConfirmModal";
 import { useTableManager } from "@/hooks/useTableManager";
 import { useApiData } from "@/hooks/useApiData";
-import { PRODUCT_VARIANT_TABLE_HEADERS, PRODUCT_VARIANT_STATUS_OPTIONS, PRODUCT_VARIANT_ACTION_OPTIONS } from "@/constants/product-variant.constants";
+import { PRODUCT_VARIANT_TABLE_HEADERS, PRODUCT_VARIANT_STATUS_OPTIONS, PRODUCT_VARIANT_ACTION_OPTIONS } from "@/constants/catalog/product-variant.constants";
 import { TableControl } from "@/components/common/TableControl";
-import { productVariantService } from "@/services/productVariant.service";
-import { ProductVariantResponse } from "@/types/product-variant.types";
+import { productVariantService } from "@/services/catalog/productVariant.service";
+import { ProductVariantResponse } from "@/types/catalog/product-variant.types";
 
 export default function ProductVariantList({ isTrash = false }: { isTrash?: boolean }) {
     const { searchTerm, setSearchTerm, actionFilter, setActionFilter, statusFilter, setStatusFilter, isModalOpen, selectedItem, handleOpenDeleteModal, handleCloseModal } = useTableManager<ProductVariantResponse>();

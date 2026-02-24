@@ -1,6 +1,6 @@
 import { sendRequest } from "@/lib/api-client";
-import { ApiResponse } from "@/types/api.types";
-import { BrandResponse, BrandRequest, BrandFilterRequest, BrandBulkActionRequest } from "@/types/brand.types";
+import { ApiResponse } from "@/types/common/api.types";
+import { BrandResponse, BrandRequest, BrandFilterRequest, BrandBulkActionRequest } from "@/types/catalog/brand.types";
 
 const BASE_ENDPOINT = "/admin/brands";
 

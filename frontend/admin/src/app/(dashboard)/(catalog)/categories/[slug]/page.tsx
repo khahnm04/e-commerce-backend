@@ -2,8 +2,8 @@
 import { useEffect, useState } from "react";
 import { Breadcrumb } from "@/components/common/Breadcrumb";
 import CategoryForm from "../_components/CategoryForm";
-import { categoryService } from "@/services/category.service";
-import { Category } from "@/types/category.types";
+import { categoryService } from "@/services/catalog/category.service";
+import { Category } from "@/types/catalog/category.types";
 import { use } from "react";
 
 export default function CategoryPage({

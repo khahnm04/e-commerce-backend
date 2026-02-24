@@ -44,6 +44,7 @@ public class GlobalExceptionHandler {
                 .code(ErrorCode.UNCATEGORIZED_EXCEPTION.getCode())
                 .message(ErrorCode.UNCATEGORIZED_EXCEPTION.getMessage())
                 .path(request.getRequestURI())
+                .method(request.getMethod())
                 .build();
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
     }
@@ -56,6 +57,28 @@ public class GlobalExceptionHandler {
                 .code(errorCode.getCode())
                 .message(errorCode.getMessage())
                 .path(request.getRequestURI())
+                .method(request.getMethod())
+                .build();
+        return ResponseEntity.status(errorCode.getStatusCode()).body(errorResponse);
+    }
+
+    @ExceptionHandler(value = org.springframework.web.bind.MissingRequestCookieException.class)
+    ResponseEntity<ErrorResponse> handlingMissingRequestCookieException(
+            org.springframework.web.bind.MissingRequestCookieException exception, HttpServletRequest request) {
+        ErrorCode errorCode = ErrorCode.VALIDATION_EXCEPTION;
+        if (com.khahnm04.ecommerce.common.constant.TokenConstants.REFRESH_TOKEN.equals(exception.getCookieName())) {
+            errorCode = ErrorCode.REFRESH_TOKEN_FAILED;
+        } else if (com.khahnm04.ecommerce.common.constant.TokenConstants.ACCESS_TOKEN
+                .equals(exception.getCookieName())) {
+            errorCode = ErrorCode.UNAUTHENTICATED;
+        }
+
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .code(errorCode.getCode())
+                .message(errorCode.getMessage())
+                .path(request.getRequestURI())
+                .method(request.getMethod())
                 .build();
         return ResponseEntity.status(errorCode.getStatusCode()).body(errorResponse);
     }

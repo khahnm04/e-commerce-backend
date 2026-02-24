@@ -11,8 +11,8 @@ import {
   CreateVariantSchema,
   CreateVariantValues,
 } from "@/app/(dashboard)/(catalog)/variants/variant.schema";
-import { variantService } from "@/services/variant.service";
-import { VariantResponse } from "@/types/variant.types";
+import { variantService } from "@/services/catalog/variant.service";
+import { VariantResponse } from "@/types/catalog/variant.types";
 
 interface VariantFormProps {
   initialData?: VariantResponse;

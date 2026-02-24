@@ -3,7 +3,7 @@ import { ActionGroup } from "@/components/common/ActionGroup";
 import { TableCell } from "@/components/common/TableCell";
 import { TableCheckbox } from "@/components/common/TableCheckbox";
 import { UserTimestamp } from "@/components/common/UserTimestamp";
-import { AttributeResponse } from "@/types/attribute.types";
+import { AttributeResponse } from "@/types/catalog/attribute.types";
 
 interface Props { item: AttributeResponse; index: number; isTrash?: boolean; onDeleteClick?: () => void; isSelected?: boolean; onSelect?: () => void; }
 

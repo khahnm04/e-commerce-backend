@@ -2,8 +2,8 @@
 import { useEffect, useState } from "react";
 import { Breadcrumb } from "@/components/common/Breadcrumb";
 import EmployeeForm from "../_components/EmployeeForm";
-import { employeeService } from "@/services/employee.service";
-import { EmployeeResponse } from "@/types/employee.types";
+import { employeeService } from "@/services/user/employee.service";
+import { EmployeeResponse } from "@/types/user/employee.types";
 import { use } from "react";
 
 export default function EmployeeEditPage({

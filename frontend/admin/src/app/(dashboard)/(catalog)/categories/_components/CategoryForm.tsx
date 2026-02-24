@@ -18,13 +18,13 @@ import { FormImageUpload } from "@/components/form/FormImageUpload";
 import { FormEditorWrapper } from "@/components/form/FormEditorWrapper";
 import { FormButton } from "@/components/form/FormButton";
 import { FormBackLink } from "@/components/form/FormBackLink";
-import { parentOptions, statusOptions } from "@/constants/category.constants";
+import { parentOptions, statusOptions } from "@/constants/catalog/category.constants";
 import {
   CreateCategorySchema,
   CreateCategoryValues
 } from "@/app/(dashboard)/(catalog)/categories/category.schema";
-import { categoryService } from "@/services/category.service";
-import { CategoryPayload } from "@/types/category.types";
+import { categoryService } from "@/services/catalog/category.service";
+import { CategoryPayload } from "@/types/catalog/category.types";
 import { CategoryStatus } from "@/constants/enums";
 
 interface CategoryFormProps {

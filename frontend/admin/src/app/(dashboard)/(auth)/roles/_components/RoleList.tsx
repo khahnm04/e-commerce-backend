@@ -4,10 +4,10 @@ import { DataTable } from "@/components/common/DataTable";
 import { ConfirmModal } from "@/components/common/ConfirmModal";
 import { useTableManager } from "@/hooks/useTableManager";
 import { useApiData } from "@/hooks/useApiData";
-import { ROLE_TABLE_HEADERS, ROLE_ACTION_OPTIONS } from "@/constants/role.constants";
+import { ROLE_TABLE_HEADERS, ROLE_ACTION_OPTIONS } from "@/constants/auth/role.constants";
 import { TableControl } from "@/components/common/TableControl";
-import { roleService } from "@/services/role.service";
-import { RoleResponse } from "@/types/role.types";
+import { roleService } from "@/services/auth/role.service";
+import { RoleResponse } from "@/types/auth/role.types";
 import { RoleTableRow } from "./RoleTableRow";
 
 export default function RoleList() {

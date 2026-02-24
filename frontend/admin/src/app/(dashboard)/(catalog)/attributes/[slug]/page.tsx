@@ -2,8 +2,8 @@
 import { useEffect, useState } from "react";
 import { Breadcrumb } from "@/components/common/Breadcrumb";
 import AttributeForm from "../_components/AttributeForm";
-import { attributeService } from "@/services/attribute.service";
-import { AttributeResponse } from "@/types/attribute.types";
+import { attributeService } from "@/services/catalog/attribute.service";
+import { AttributeResponse } from "@/types/catalog/attribute.types";
 import { use } from "react";
 
 export default function AttributeEditPage({

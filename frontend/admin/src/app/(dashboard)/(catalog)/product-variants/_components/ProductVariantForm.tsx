@@ -12,10 +12,10 @@ import {
   CreateProductVariantSchema,
   CreateProductVariantValues,
 } from "@/app/(dashboard)/(catalog)/product-variants/product-variant.schema";
-import { productVariantService } from "@/services/productVariant.service";
-import { productService } from "@/services/product.service";
-import { ProductVariantResponse } from "@/types/product-variant.types";
-import { ProductResponse } from "@/types/product.types";
+import { productVariantService } from "@/services/catalog/productVariant.service";
+import { productService } from "@/services/catalog/product.service";
+import { ProductVariantResponse } from "@/types/catalog/product-variant.types";
+import { ProductResponse } from "@/types/catalog/product.types";
 
 interface ProductVariantFormProps {
   initialData?: ProductVariantResponse;

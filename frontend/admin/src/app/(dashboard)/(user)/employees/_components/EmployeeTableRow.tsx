@@ -6,8 +6,8 @@ import { TableCheckbox } from "@/components/common/TableCheckbox";
 import { TableImage } from "@/components/common/TableImage";
 import { UserTimestamp } from "@/components/common/UserTimestamp";
 import { CustomSelect } from "@/components/common/CustomSelect";
-import { EMPLOYEE_STATUS_OPTIONS } from "@/constants/employee.constants";
-import { EmployeeResponse } from "@/types/employee.types";
+import { EMPLOYEE_STATUS_OPTIONS } from "@/constants/user/employee.constants";
+import { EmployeeResponse } from "@/types/user/employee.types";
 
 interface EmployeeTableRowProps {
     item: EmployeeResponse;

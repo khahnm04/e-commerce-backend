@@ -6,8 +6,8 @@ import { TableCheckbox } from "@/components/common/TableCheckbox";
 import { TableImage } from "@/components/common/TableImage";
 import { UserTimestamp } from "@/components/common/UserTimestamp";
 import { CustomSelect } from "@/components/common/CustomSelect";
-import { STATUS_OPTIONS } from "@/constants/category.constants";
-import { Category } from "@/types/category.types";
+import { STATUS_OPTIONS } from "@/constants/catalog/category.constants";
+import { Category } from "@/types/catalog/category.types";
 
 interface CategoryTableRowProps {
   item: Category;

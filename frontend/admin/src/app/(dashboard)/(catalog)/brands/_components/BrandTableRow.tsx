@@ -5,8 +5,8 @@ import { TableCheckbox } from "@/components/common/TableCheckbox";
 import { TableImage } from "@/components/common/TableImage";
 import { UserTimestamp } from "@/components/common/UserTimestamp";
 import { CustomSelect } from "@/components/common/CustomSelect";
-import { BRAND_STATUS_OPTIONS } from "@/constants/brand.constants";
-import { BrandResponse } from "@/types/brand.types";
+import { BRAND_STATUS_OPTIONS } from "@/constants/catalog/brand.constants";
+import { BrandResponse } from "@/types/catalog/brand.types";
 
 interface Props {
   item: BrandResponse;

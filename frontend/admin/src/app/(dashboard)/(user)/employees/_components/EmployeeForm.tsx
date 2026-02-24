@@ -17,8 +17,8 @@ import {
   CreateEmployeeValues,
   UpdateEmployeeValues,
 } from "@/app/(dashboard)/(user)/employees/employee.schema";
-import { employeeService } from "@/services/employee.service";
-import { EmployeeResponse } from "@/types/employee.types";
+import { employeeService } from "@/services/user/employee.service";
+import { EmployeeResponse } from "@/types/user/employee.types";
 
 const STATUS_OPTIONS = [
   { id: "ACTIVE", name: "Hoạt động" },

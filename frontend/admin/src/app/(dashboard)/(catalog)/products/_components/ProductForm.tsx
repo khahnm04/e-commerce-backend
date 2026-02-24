@@ -13,7 +13,7 @@ import { FormImageUpload } from "@/components/form/FormImageUpload";
 import { FormEditorWrapper } from "@/components/form/FormEditorWrapper";
 import { FormButton } from "@/components/form/FormButton";
 import { FormBackLink } from "@/components/form/FormBackLink";
-import { BRAND_OPTIONS, PRODUCT_STATUS_FORM_OPTIONS } from "@/constants/product.constants";
+import { BRAND_OPTIONS, PRODUCT_STATUS_FORM_OPTIONS } from "@/constants/catalog/product.constants";
 import { CreateProductSchema, CreateProductValues } from "@/app/(dashboard)/(catalog)/products/product.schema";
 
 interface ProductFormProps {

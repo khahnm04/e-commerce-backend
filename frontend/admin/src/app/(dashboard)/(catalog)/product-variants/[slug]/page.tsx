@@ -2,8 +2,8 @@
 import { useEffect, useState } from "react";
 import { Breadcrumb } from "@/components/common/Breadcrumb";
 import ProductVariantForm from "../_components/ProductVariantForm";
-import { productVariantService } from "@/services/productVariant.service";
-import { ProductVariantResponse } from "@/types/product-variant.types";
+import { productVariantService } from "@/services/catalog/productVariant.service";
+import { ProductVariantResponse } from "@/types/catalog/product-variant.types";
 import { use } from "react";
 
 export default function ProductVariantEditPage({

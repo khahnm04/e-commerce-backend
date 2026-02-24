@@ -1,6 +1,6 @@
 import { sendRequest } from "@/lib/api-client";
-import { ApiResponse } from "@/types/api.types";
-import { AttributeResponse, AttributeRequest, AttributeFilterRequest, AttributeBulkActionRequest } from "@/types/attribute.types";
+import { ApiResponse } from "@/types/common/api.types";
+import { AttributeResponse, AttributeRequest, AttributeFilterRequest, AttributeBulkActionRequest } from "@/types/catalog/attribute.types";
 
 const BASE_ENDPOINT = "/admin/attributes";
 

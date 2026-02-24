@@ -4,7 +4,8 @@ import { IconType } from "react-icons";
 import { useRouter, usePathname } from "next/navigation";
 import { useState } from "react";
 import { FaChevronDown } from "react-icons/fa6";
-import { authApi } from "@/services/auth.service";
+import { authApi } from "@/services/auth/auth.service";
+import { ConfirmModal } from "@/components/common/ConfirmModal";
 
 export type MenuItem = {
   name: string;
@@ -43,6 +44,7 @@ export const SiderMenu = (props: {
   };
 
   const [openGroups, setOpenGroups] = useState<string[]>(getInitialOpenGroups);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   const toggleGroup = (groupName: string) => {
     setOpenGroups(prev =>
@@ -52,15 +54,23 @@ export const SiderMenu = (props: {
     );
   };
 
-  const handleClick = async (item: MenuItem) => {
-    setActiveMenu(item.name);
+  const handleClick = (e: React.MouseEvent, item: MenuItem) => {
     if (item.isLogout) {
-      try {
-        await authApi.logout();
-        router.push("/login");
-      } catch {
-        alert("Đăng xuất thất bại");
-      }
+      e.preventDefault();
+      setShowLogoutModal(true);
+      return;
+    }
+    setActiveMenu(item.name);
+  };
+
+  const handleLogoutConfirm = async () => {
+    try {
+      await authApi.logout();
+      router.push("/login");
+    } catch {
+      alert("Đăng xuất thất bại");
+    } finally {
+      setShowLogoutModal(false);
     }
   };
 
@@ -72,7 +82,7 @@ export const SiderMenu = (props: {
     <li key={item.name}>
       <Link
         href={item.link}
-        onClick={() => handleClick(item)}
+        onClick={(e) => handleClick(e, item)}
         className={`flex items-center gap-[10px] py-[11px] px-[16px] ml-[24px] mr-[10px] rounded-[6px] font-[600] text-[14px] relative 
           ${activeMenu === item.name
             ? 'bg-[var(--color-primary)] before:absolute before:left-[-24px] before:top-0 before:h-full before:w-[4.5px] before:rounded-[0_4px_4px_0] before:bg-[var(--color-primary)] before:content-[\'\']'
@@ -123,7 +133,7 @@ export const SiderMenu = (props: {
               <li key={child.name}>
                 <Link
                   href={child.link}
-                  onClick={() => handleClick(child)}
+                  onClick={(e) => handleClick(e, child)}
                   className={`flex items-center gap-[10px] py-[10px] pl-[52px] pr-[16px] mr-[10px] rounded-[0_6px_6px_0] font-[600] text-[13px] relative
                     ${activeMenu === child.name
                       ? 'bg-[var(--color-primary)] text-white before:absolute before:left-[24px] before:top-0 before:h-full before:w-[4.5px] before:rounded-[0_4px_4px_0] before:bg-[var(--color-primary)] before:content-[\'\']'
@@ -142,10 +152,20 @@ export const SiderMenu = (props: {
   };
 
   return (
-    <ul className="list-none p-0 my-[11px] mx-0">
-      {menuList.map(item =>
-        isMenuGroup(item) ? renderMenuGroup(item) : renderMenuItem(item)
-      )}
-    </ul>
+    <>
+      <ul className="list-none p-0 my-[11px] mx-0">
+        {menuList.map(item =>
+          isMenuGroup(item) ? renderMenuGroup(item) : renderMenuItem(item)
+        )}
+      </ul>
+
+      <ConfirmModal
+        isOpen={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
+        onConfirm={handleLogoutConfirm}
+        title="Xác nhận đăng xuất"
+        message="Bạn có chắc chắn muốn đăng xuất khỏi hệ thống không?"
+      />
+    </>
   );
 };

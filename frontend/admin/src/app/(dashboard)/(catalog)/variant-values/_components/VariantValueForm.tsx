@@ -12,10 +12,10 @@ import {
   CreateVariantValueSchema,
   CreateVariantValueValues,
 } from "@/app/(dashboard)/(catalog)/variant-values/variant-value.schema";
-import { variantValueService } from "@/services/variantValue.service";
-import { variantService } from "@/services/variant.service";
-import { VariantValueResponse } from "@/types/variant-value.types";
-import { VariantResponse } from "@/types/variant.types";
+import { variantValueService } from "@/services/catalog/variantValue.service";
+import { variantService } from "@/services/catalog/variant.service";
+import { VariantValueResponse } from "@/types/catalog/variant-value.types";
+import { VariantResponse } from "@/types/catalog/variant.types";
 
 interface VariantValueFormProps {
   initialData?: VariantValueResponse;

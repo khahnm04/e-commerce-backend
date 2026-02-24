@@ -8,9 +8,9 @@ import { FormInput } from "@/components/form/FormInput";
 import { FormButton } from "@/components/form/FormButton";
 import { FormBackLink } from "@/components/form/FormBackLink";
 import { CreateRoleSchema, CreateRoleValues } from "../role.schema";
-import { roleService } from "@/services/role.service";
-import { permissionService } from "@/services/permission.service";
-import { PermissionResponse, RoleResponse, RoleRequest } from "@/types/role.types";
+import { roleService } from "@/services/auth/role.service";
+import { permissionService } from "@/services/auth/permission.service";
+import { PermissionResponse, RoleResponse, RoleRequest } from "@/types/auth/role.types";
 
 interface RoleFormProps {
   initialData?: RoleResponse;

@@ -4,8 +4,8 @@ import { TableCell } from "@/components/common/TableCell";
 import { TableCheckbox } from "@/components/common/TableCheckbox";
 import { UserTimestamp } from "@/components/common/UserTimestamp";
 import { CustomSelect } from "@/components/common/CustomSelect";
-import { PRODUCT_VARIANT_STATUS_OPTIONS } from "@/constants/product-variant.constants";
-import { ProductVariantResponse } from "@/types/product-variant.types";
+import { PRODUCT_VARIANT_STATUS_OPTIONS } from "@/constants/catalog/product-variant.constants";
+import { ProductVariantResponse } from "@/types/catalog/product-variant.types";
 
 interface Props { item: ProductVariantResponse; index: number; isTrash?: boolean; onDeleteClick?: () => void; onStatusChange?: (id: string | number, newStatus: string) => void; isSelected?: boolean; onSelect?: () => void; }
 

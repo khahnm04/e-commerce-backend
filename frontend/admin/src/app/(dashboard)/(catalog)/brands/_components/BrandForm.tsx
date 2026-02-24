@@ -12,8 +12,8 @@ import { CustomSelect } from "@/components/common/CustomSelect";
 import { FormButton } from "@/components/form/FormButton";
 import { FormBackLink } from "@/components/form/FormBackLink";
 import { CreateBrandSchema, CreateBrandValues } from "@/app/(dashboard)/(catalog)/brands/brand.schema";
-import { brandService } from "@/services/brand.service";
-import { BrandResponse } from "@/types/brand.types";
+import { brandService } from "@/services/catalog/brand.service";
+import { BrandResponse } from "@/types/catalog/brand.types";
 
 const STATUS_OPTIONS = [
   { id: "ACTIVE", name: "Hoạt động" },

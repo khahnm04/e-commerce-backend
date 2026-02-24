@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
-import { ApiResponse, PageMetadata } from "@/types/api.types";
+import { ApiResponse, PageMetadata } from "@/types/common/api.types";
 
 interface UseApiDataOptions<T> {
   fetchFn: () => Promise<ApiResponse<T[]>>;

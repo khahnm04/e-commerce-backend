@@ -1,6 +1,6 @@
 import { sendRequest } from "@/lib/api-client";
-import { ApiResponse } from "@/types/api.types";
-import { VariantResponse, VariantRequest, VariantFilterRequest, VariantBulkActionRequest } from "@/types/variant.types";
+import { ApiResponse } from "@/types/common/api.types";
+import { VariantResponse, VariantRequest, VariantFilterRequest, VariantBulkActionRequest } from "@/types/catalog/variant.types";
 
 const BASE_ENDPOINT = "/admin/variants";
 

@@ -25,8 +25,9 @@ public enum ErrorCode {
     // =================================================================
     UNAUTHENTICATED(1000, "Unauthenticated", HttpStatus.UNAUTHORIZED),
     UNAUTHORIZED(1001, "You do not have permission", HttpStatus.FORBIDDEN),
-    TOKEN_CREATION_FAILED(1002, "Token creation failed", HttpStatus.INTERNAL_SERVER_ERROR),
-    LOGIN_IDENTIFIER_REQUIRED(1003, "Missing login identifier", HttpStatus.BAD_REQUEST),
+    REFRESH_TOKEN_FAILED(1002, "Refresh token failed", HttpStatus.UNAUTHORIZED),
+    TOKEN_CREATION_FAILED(1003, "Token creation failed", HttpStatus.INTERNAL_SERVER_ERROR),
+    LOGIN_IDENTIFIER_REQUIRED(1004, "Missing login identifier", HttpStatus.BAD_REQUEST),
 
     ROLE_CODE_REQUIRED(1100, "Role code cannot be blank", HttpStatus.BAD_REQUEST),
     ROLE_NAME_REQUIRED(1101, "Role name cannot be blank", HttpStatus.BAD_REQUEST),

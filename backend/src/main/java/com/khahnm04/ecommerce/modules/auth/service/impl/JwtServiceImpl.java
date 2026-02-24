@@ -68,11 +68,11 @@ public class JwtServiceImpl implements JwtService {
     public SignedJWT verifyRefreshToken(String token) {
         SignedJWT signedJWT = verifyToken(token);
         if (!isExistTokenInRedis(signedJWT)) {
-            throw new AppException(ErrorCode.UNAUTHENTICATED);
+            throw new AppException(ErrorCode.REFRESH_TOKEN_FAILED);
         }
         return signedJWT;
     }
-    
+
     private TokenPayload generateToken(User user, String typeToken) {
         JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
 
@@ -100,7 +100,7 @@ public class JwtServiceImpl implements JwtService {
         JWTClaimsSet jwtClaimsSet = claimsBuilder.build();
 
         Payload payload = new Payload(jwtClaimsSet.toJSONObject());
-        JWSObject jwsObject = new JWSObject(header,payload);
+        JWSObject jwsObject = new JWSObject(header, payload);
 
         try {
             jwsObject.sign(new MACSigner(signerKey.getBytes()));

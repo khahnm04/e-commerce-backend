@@ -1,4 +1,4 @@
-import { BaseEntity } from "./base.types";
+import { BaseEntity } from "../common/base.types";
 
 export interface VariantValueResponse extends BaseEntity {
     variantId: number;

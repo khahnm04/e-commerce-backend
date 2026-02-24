@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import RoleForm from "../_components/RoleForm";
 import { Breadcrumb } from "@/components/common/Breadcrumb";
-import { roleService } from "@/services/role.service";
+import { roleService } from "@/services/auth/role.service";
 
 export const metadata: Metadata = {
     title: "Cập nhật nhóm quyền",

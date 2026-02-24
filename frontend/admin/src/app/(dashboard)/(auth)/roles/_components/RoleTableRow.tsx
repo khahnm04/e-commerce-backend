@@ -3,7 +3,7 @@ import { ActionGroup } from "@/components/common/ActionGroup";
 import { TableCell } from "@/components/common/TableCell";
 import { TableCheckbox } from "@/components/common/TableCheckbox";
 import { UserTimestamp } from "@/components/common/UserTimestamp";
-import { RoleResponse } from "@/types/role.types";
+import { RoleResponse } from "@/types/auth/role.types";
 
 interface RoleTableRowProps {
   item: RoleResponse;

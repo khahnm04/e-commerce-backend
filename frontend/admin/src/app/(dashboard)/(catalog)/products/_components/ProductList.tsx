@@ -7,8 +7,8 @@ import { ConfirmModal } from "@/components/common/ConfirmModal";
 import { useTableManager } from "@/hooks/useTableManager";
 import { useApiData } from "@/hooks/useApiData";
 import { TableControl } from "@/components/common/TableControl";
-import { productService } from "@/services/product.service";
-import { ProductResponse } from "@/types/product.types";
+import { productService } from "@/services/catalog/product.service";
+import { ProductResponse } from "@/types/catalog/product.types";
 
 const TABLE_HEADERS = ["Tên sản phẩm", "Ảnh", "Mã", "Giá", "Nhãn hàng", "Trạng thái", "Tạo bởi", "Cập nhật bởi", "Hành động"];
 const STATUS_OPTIONS = [{ id: "", name: "Tất cả" }, { id: "ACTIVE", name: "Hoạt động" }, { id: "INACTIVE", name: "Tạm dừng" }, { id: "OUT_OF_STOCK", name: "Hết hàng" }, { id: "PENDING", name: "Chờ duyệt" }, { id: "DISCONTINUED", name: "Ngừng kinh doanh" }];

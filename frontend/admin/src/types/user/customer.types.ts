@@ -1,5 +1,5 @@
 import { UserStatus, Gender } from "@/constants/enums";
-import { BaseEntity } from "./base.types";
+import { BaseEntity } from "../common/base.types";
 
 // === Response (matches CustomerResponse.java) ===
 

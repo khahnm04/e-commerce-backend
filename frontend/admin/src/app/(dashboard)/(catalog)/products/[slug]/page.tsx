@@ -2,8 +2,8 @@
 import { useEffect, useState } from "react";
 import { Breadcrumb } from "@/components/common/Breadcrumb";
 import ProductForm from "../_components/ProductForm";
-import { productService } from "@/services/product.service";
-import { ProductResponse } from "@/types/product.types";
+import { productService } from "@/services/catalog/product.service";
+import { ProductResponse } from "@/types/catalog/product.types";
 import { use } from "react";
 
 export default function ProductDetailPage({

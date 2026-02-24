@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AuthInput } from "@/components/auth/AuthInput";
 import { getLoginSchema, LoginFormValues, LoginMode } from "../login.schemas";
-import { authApi } from "@/services/auth.service";
+import { authApi } from "@/services/auth/auth.service";
 
 const LOGIN_CONFIG = {
   phone: {
@@ -52,6 +52,7 @@ export default function FormLogin() {
           : { email: data.accountName, password: data.password };
 
       const result = await authApi.login(body);
+      console.log(result);
       if (!result.success) {
         console.error(result.message);
         return;

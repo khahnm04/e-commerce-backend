@@ -1,6 +1,6 @@
 import { sendRequest } from "@/lib/api-client";
-import { ApiResponse } from "@/types/api.types";
-import { RoleResponse, RoleRequest } from "@/types/role.types";
+import { ApiResponse } from "@/types/common/api.types";
+import { RoleResponse, RoleRequest } from "@/types/auth/role.types";
 
 const BASE_ENDPOINT = "/admin/roles";
 

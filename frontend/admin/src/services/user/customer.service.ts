@@ -1,6 +1,6 @@
 import { sendRequest } from "@/lib/api-client";
-import { ApiResponse } from "@/types/api.types";
-import { CustomerResponse, CustomerCreationRequest, CustomerUpdateRequest, CustomerUpdateStatusRequest, CustomerFilterRequest, CustomerBulkActionRequest } from "@/types/customer.types";
+import { ApiResponse } from "@/types/common/api.types";
+import { CustomerResponse, CustomerCreationRequest, CustomerUpdateRequest, CustomerUpdateStatusRequest, CustomerFilterRequest, CustomerBulkActionRequest } from "@/types/user/customer.types";
 
 const BASE_ENDPOINT = "/admin/customers";
 

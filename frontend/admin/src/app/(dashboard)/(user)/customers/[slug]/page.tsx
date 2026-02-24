@@ -2,8 +2,8 @@
 import { useEffect, useState } from "react";
 import { Breadcrumb } from "@/components/common/Breadcrumb";
 import CustomerForm from "../_components/CustomerForm";
-import { customerService } from "@/services/customer.service";
-import { CustomerResponse } from "@/types/customer.types";
+import { customerService } from "@/services/user/customer.service";
+import { CustomerResponse } from "@/types/user/customer.types";
 import { use } from "react";
 
 export default function CustomerEditPage({

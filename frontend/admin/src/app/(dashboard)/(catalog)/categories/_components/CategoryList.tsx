@@ -6,10 +6,10 @@ import { CategoryTableRow } from "./CategoryTableRow";
 import { ConfirmModal } from "@/components/common/ConfirmModal";
 import { useTableManager } from "@/hooks/useTableManager";
 import { useApiData } from "@/hooks/useApiData";
-import { CATEGORY_TABLE_HEADERS, STATUS_OPTIONS, ACTION_OPTIONS } from "@/constants/category.constants";
+import { CATEGORY_TABLE_HEADERS, STATUS_OPTIONS, ACTION_OPTIONS } from "@/constants/catalog/category.constants";
 import { TableControl } from "@/components/common/TableControl";
-import { categoryService } from "@/services/category.service";
-import { Category } from "@/types/category.types";
+import { categoryService } from "@/services/catalog/category.service";
+import { Category } from "@/types/catalog/category.types";
 
 interface CategoryListProps { isTrash?: boolean; }
 

@@ -6,10 +6,10 @@ import { VariantTableRow } from "./VariantTableRow";
 import { ConfirmModal } from "@/components/common/ConfirmModal";
 import { useTableManager } from "@/hooks/useTableManager";
 import { useApiData } from "@/hooks/useApiData";
-import { VARIANT_TABLE_HEADERS, VARIANT_ACTION_OPTIONS } from "@/constants/variant.constants";
+import { VARIANT_TABLE_HEADERS, VARIANT_ACTION_OPTIONS } from "@/constants/catalog/variant.constants";
 import { TableControl } from "@/components/common/TableControl";
-import { variantService } from "@/services/variant.service";
-import { VariantResponse } from "@/types/variant.types";
+import { variantService } from "@/services/catalog/variant.service";
+import { VariantResponse } from "@/types/catalog/variant.types";
 
 export default function VariantList({ isTrash = false }: { isTrash?: boolean }) {
     const { searchTerm, setSearchTerm, actionFilter, setActionFilter, isModalOpen, selectedItem, handleOpenDeleteModal, handleCloseModal } = useTableManager<VariantResponse>();
