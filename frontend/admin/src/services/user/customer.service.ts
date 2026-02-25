@@ -24,6 +24,9 @@ export const customerService = {
   getById: (id: number | string) =>
     sendRequest<ApiResponse<CustomerResponse>>(`${BASE_ENDPOINT}/${id}`, { method: "GET", credentials: "include" }),
 
+  getDeletedById: (id: number | string) =>
+    sendRequest<ApiResponse<CustomerResponse>>(`${BASE_ENDPOINT}/deleted/${id}`, { method: "GET", credentials: "include" }),
+
   create: (payload: CustomerCreationRequest) =>
     sendRequest<ApiResponse<CustomerResponse>>(`${BASE_ENDPOINT}`, { method: "POST", body: JSON.stringify(payload), credentials: "include" }),
 
@@ -41,4 +44,7 @@ export const customerService = {
 
   bulkAction: (payload: CustomerBulkActionRequest) =>
     sendRequest<ApiResponse<void>>(`${BASE_ENDPOINT}/bulk`, { method: "PATCH", body: JSON.stringify(payload), credentials: "include" }),
+
+  changePassword: (id: number | string, payload: { currentPassword: string; newPassword: string; confirmNewPassword: string }) =>
+    sendRequest<ApiResponse<void>>(`${BASE_ENDPOINT}/${id}/change-password`, { method: "PATCH", body: JSON.stringify(payload), credentials: "include" }),
 };

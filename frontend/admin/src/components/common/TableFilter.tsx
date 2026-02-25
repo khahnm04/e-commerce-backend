@@ -3,9 +3,10 @@ import { FaFilter, FaRotateLeft } from "react-icons/fa6"
 
 interface TableFilterProps {
   children?: ReactNode
+  onClearFilter?: () => void
 }
 
-export const TableFilter = ({ children }: TableFilterProps) => {
+export const TableFilter = ({ children, onClearFilter }: TableFilterProps) => {
   return (
     <>
       <div className="inline-flex flex-wrap border border-[#D5D5D5] bg-[#FFFFFF] rounded-[14px] mb-[15px]">
@@ -15,7 +16,10 @@ export const TableFilter = ({ children }: TableFilterProps) => {
 
         {children}
 
-        <div className="lg:px-[24px] lg:py-[12px] px-[15px] py-[10px] inline-flex items-center gap-[12px] border-[#D5D5D5] font-[700] text-[14px] text-[#EA0234] cursor-pointer">
+        <div
+          className="lg:px-[24px] lg:py-[12px] px-[15px] py-[10px] inline-flex items-center gap-[12px] border-[#D5D5D5] font-[700] text-[14px] text-[#EA0234] cursor-pointer hover:opacity-70 transition-opacity"
+          onClick={onClearFilter}
+        >
           <FaRotateLeft className="text-[15px]" /> Xóa bộ lọc
         </div>
       </div>

@@ -92,6 +92,11 @@
                 AND u.status = #{status}
             </if>
 
+            <!-- Gender filter -->
+            <if test="gender != null">
+                AND u.gender = #{gender}
+            </if>
+
             <!-- Date range filter -->
             <if test="startDate != null">
                 AND c.created_at >= #{startDate}

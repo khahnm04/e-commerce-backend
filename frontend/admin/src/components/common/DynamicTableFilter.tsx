@@ -17,18 +17,25 @@ export type FilterConfig = {
   options?: SelectOption[];
   placeholder?: string;
   render?: () => ReactNode;
+  // Date range fields
+  startValue?: string;
+  endValue?: string;
+  onStartChange?: (val: string) => void;
+  onEndChange?: (val: string) => void;
 };
 
 interface DynamicTableFilterProps {
   filters: FilterConfig[];
+  onClearFilter?: () => void;
 }
 
 export const DynamicTableFilter = ({
-  filters
+  filters,
+  onClearFilter
 }: DynamicTableFilterProps) => {
   return (
     <>
-      <TableFilter>
+      <TableFilter onClearFilter={onClearFilter}>
         {filters.map((item: FilterConfig) => (
           <FilterItem
             key={item.id}
@@ -44,9 +51,19 @@ export const DynamicTableFilter = ({
             )}
             {item.type === "date" && (
               <>
-                <input type="date" className="border-0 outline-none font-[700] text-[14px] text-[var(--color-text)] cursor-pointer w-[110px]" />
+                <input
+                  type="date"
+                  className="border-0 outline-none font-[700] text-[14px] text-[var(--color-text)] cursor-pointer w-[110px]"
+                  value={item.startValue ?? ""}
+                  onChange={(e) => item.onStartChange?.(e.target.value)}
+                />
                 <span>-</span>
-                <input type="date" className="border-0 outline-none font-[700] text-[14px] text-[var(--color-text)] cursor-pointer w-[110px]" />
+                <input
+                  type="date"
+                  className="border-0 outline-none font-[700] text-[14px] text-[var(--color-text)] cursor-pointer w-[110px]"
+                  value={item.endValue ?? ""}
+                  onChange={(e) => item.onEndChange?.(e.target.value)}
+                />
               </>
             )}
             {item.type === "custom" && item.render && item.render()}

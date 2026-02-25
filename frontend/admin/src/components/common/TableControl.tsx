@@ -17,6 +17,7 @@ interface TableControlProps {
 
   // Filters
   filterList?: FilterConfig[];
+  onClearFilter?: () => void;
 
   // Bulk Actions
   actionFilter: string | number;
@@ -33,6 +34,7 @@ export const TableControl = ({
   searchTerm,
   onSearchChange,
   filterList = [],
+  onClearFilter,
   actionFilter,
   onActionFilterChange,
   actionOptions,
@@ -41,7 +43,7 @@ export const TableControl = ({
   return (
     <>
       {!isTrash && filterList.length > 0 && (
-        <DynamicTableFilter filters={filterList} />
+        <DynamicTableFilter filters={filterList} onClearFilter={onClearFilter} />
       )}
 
       <TableAction

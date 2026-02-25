@@ -95,18 +95,13 @@ export const Sider = (props: {
       ]
     },
     {
-      name: "Kho & Chi nhánh",
+      name: "Kho vận",
       icon: FaWarehouse,
       children: [
         {
           name: "Thông tin kho",
           link: "/inventories",
           icon: FaWarehouse
-        },
-        {
-          name: "Quản lý chi nhánh",
-          link: "/branches",
-          icon: FaStore
         },
       ]
     },
@@ -125,6 +120,11 @@ export const Sider = (props: {
           icon: FaNewspaper
         },
       ]
+    },
+    {
+      name: "Chi nhánh",
+      link: "/branches",
+      icon: FaStore
     },
     {
       name: "Khách hàng",

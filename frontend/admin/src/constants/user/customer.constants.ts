@@ -26,6 +26,10 @@ export const CUSTOMER_ACTION_OPTIONS = [
     { id: "delete", name: "Xóa" },
 ];
 
+export const CUSTOMER_TRASH_ACTION_OPTIONS = [
+    { id: "restore", name: "Khôi phục" },
+];
+
 export const GENDER_OPTIONS = [
     { id: "", name: "Tất cả" },
     { id: "MALE", name: "Nam" },

@@ -14,6 +14,7 @@ interface CustomSelectProps {
   onChange: (val: string | number) => void;
   placeholder?: string;
   classNameCustom?: string;
+  disabled?: boolean;
 }
 
 export const CustomSelect = ({
@@ -21,7 +22,8 @@ export const CustomSelect = ({
   value,
   onChange,
   placeholder = "Chọn...",
-  classNameCustom = ""
+  classNameCustom = "",
+  disabled = false
 }: CustomSelectProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [openUp, setOpenUp] = useState(false);
@@ -50,6 +52,8 @@ export const CustomSelect = ({
   }, []);
 
   const handleToggle = () => {
+    if (disabled) return;
+
     if (!isOpen && triggerRef.current) {
       const rect = triggerRef.current.getBoundingClientRect();
       const DROPDOWN_MAX_HEIGHT = 300;

@@ -1,5 +1,6 @@
 package com.khahnm04.ecommerce.modules.user.dto.request;
 
+import com.khahnm04.ecommerce.modules.auth.enums.Gender;
 import com.khahnm04.ecommerce.modules.auth.enums.UserStatus;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -28,6 +29,8 @@ public class CustomerFilterRequest implements Serializable {
     private String sort = "createdAt,desc";
 
     private UserStatus status;
+
+    private Gender gender;
 
     private String keyword;
 

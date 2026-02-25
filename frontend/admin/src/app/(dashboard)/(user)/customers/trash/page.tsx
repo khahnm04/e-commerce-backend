@@ -1,6 +1,5 @@
 import { Metadata } from "next";
 import CustomerList from "../_components/CustomerList";
-import { Pagination } from "@/components/common/Pagination";
 import { Breadcrumb } from "@/components/common/Breadcrumb";
 
 export const metadata: Metadata = {
@@ -12,7 +11,7 @@ export default function CustomerTrashPage() {
   return (
     <main>
       <h1 className="mt-0 mb-[5px] font-[700] text-[32px] text-[var(--color-text)]">
-        Thùng rác - Khách hàng
+        Thùng rác khách hàng
       </h1>
 
       <Breadcrumb
@@ -25,8 +24,6 @@ export default function CustomerTrashPage() {
       />
 
       <CustomerList isTrash={true} />
-
-      <Pagination />
     </main>
   );
 }

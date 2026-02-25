@@ -55,6 +55,7 @@ export interface CustomerFilterRequest {
     size?: number;
     sort?: string;
     status?: UserStatus;
+    gender?: Gender;
     keyword?: string;
     startDate?: string;
     endDate?: string;

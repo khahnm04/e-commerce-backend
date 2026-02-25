@@ -4,6 +4,7 @@ import com.khahnm04.ecommerce.modules.auth.entity.User;
 import com.khahnm04.ecommerce.modules.auth.repository.UserRepository;
 import com.khahnm04.ecommerce.common.constant.TokenConstants;
 import com.khahnm04.ecommerce.common.security.CookieProperties;
+import com.khahnm04.ecommerce.modules.auth.dto.request.ChangePasswordRequest;
 import com.khahnm04.ecommerce.modules.auth.dto.request.LoginRequest;
 import com.khahnm04.ecommerce.modules.auth.dto.response.LoginResponse;
 import com.khahnm04.ecommerce.modules.auth.dto.response.TokenPayload;
@@ -20,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.text.ParseException;
@@ -36,6 +38,7 @@ public class AuthServiceImpl implements AuthService {
     private final JwtService jwtService;
     private final List<LoginStrategy> loginStrategies;
     private final CookieProperties cookieProperties;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     @Transactional
@@ -111,6 +114,29 @@ public class AuthServiceImpl implements AuthService {
             log.error("cannot refresh token");
             throw new AppException(ErrorCode.REFRESH_TOKEN_FAILED);
         }
+    }
+
+    @Override
+    @Transactional
+    public void changePassword(Long userId, ChangePasswordRequest request) {
+        if (!request.getNewPassword().equals(request.getConfirmNewPassword())) {
+            throw new AppException(ErrorCode.PASSWORD_CONFIRMATION_MISMATCH);
+        }
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+            throw new AppException(ErrorCode.PASSWORD_NOT_MATCH);
+        }
+
+        if (passwordEncoder.matches(request.getNewPassword(), user.getPassword())) {
+            throw new AppException(ErrorCode.NEW_PASSWORD_SAME_AS_OLD);
+        }
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+        log.info("Changed password for user with id: {}", userId);
     }
 
     private void addAccessTokenCookies(HttpServletResponse response, String accessToken) {

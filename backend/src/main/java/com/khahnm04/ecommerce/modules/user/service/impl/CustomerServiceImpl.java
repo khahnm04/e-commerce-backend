@@ -89,6 +89,13 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
+    public CustomerResponse getDeletedCustomerDetailById(Long id) {
+        Customer customer = customerRepository.findDeletedCustomerById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.CUSTOMER_NOT_FOUND));
+        return customerMapper.toResponse(customer);
+    }
+
+    @Override
     @Transactional
     public CustomerResponse updateCustomer(Long id, CustomerUpdateRequest request) {
         Customer customer = this.getCustomerById(id);
@@ -204,6 +211,7 @@ public class CustomerServiceImpl implements CustomerService {
         List<CustomerResponse> content = customerMyBatisMapper.findAllWithFilterAndSearch(
                 keyword,
                 request.getStatus(),
+                request.getGender(),
                 request.getStartDate(),
                 request.getEndDate(),
                 isDeleted,
@@ -215,6 +223,7 @@ public class CustomerServiceImpl implements CustomerService {
         long total = customerMyBatisMapper.countWithFilterAndSearch(
                 keyword,
                 request.getStatus(),
+                request.getGender(),
                 request.getStartDate(),
                 request.getEndDate(),
                 isDeleted);

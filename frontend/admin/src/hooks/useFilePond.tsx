@@ -8,7 +8,12 @@ import "filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css";
 
 let isRegistered = false;
 
-export const useFilePond = () => {
+interface UseFilePondOptions {
+  onAddFile?: (file: File) => void;
+  onRemoveFile?: () => void;
+}
+
+export const useFilePond = (options?: UseFilePondOptions) => {
   useEffect(() => {
     if (!isRegistered) {
       FilePond.registerPlugin(
@@ -28,11 +33,20 @@ export const useFilePond = () => {
         acceptedFileTypes: ["image/*"],
         labelIdle:
           '<span>+</span>',
+        onaddfile: (_error, fileItem) => {
+          if (!_error && fileItem?.file && options?.onAddFile) {
+            options.onAddFile(fileItem.file as File);
+          }
+        },
+        onremovefile: () => {
+          options?.onRemoveFile?.();
+        },
       })
     );
 
     return () => {
       instances.forEach(instance => instance.destroy());
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 };
