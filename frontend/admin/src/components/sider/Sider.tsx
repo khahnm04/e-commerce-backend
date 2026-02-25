@@ -1,5 +1,6 @@
 "use client"
-import { useState } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { usePathname } from "next/navigation";
 import {
   FaBoxOpen,
   FaBoxesStacked,
@@ -173,7 +174,49 @@ export const Sider = (props: {
   ];
 
   const { activeSider, setActiveSider } = props;
-  const [activeMenu, setActiveMenu] = useState("Tổng quan");
+  const pathname = usePathname();
+
+  // Collect all menu items (flat) from both menus
+  const allMenuItems = useMemo(() => {
+    const items: { name: string; link: string }[] = [];
+    const collect = (list: SiderItem[]) => {
+      for (const item of list) {
+        if ("children" in item) {
+          for (const child of item.children) {
+            items.push({ name: child.name, link: child.link });
+          }
+        } else {
+          items.push({ name: item.name, link: item.link });
+        }
+      }
+    };
+    collect(mainMenu);
+    collect(bottomMenu);
+    return items;
+  }, []);
+
+  // Find the active menu based on pathname (longest match wins)
+  const getActiveMenuFromPath = useCallback((path: string): string => {
+    let bestMatch = "Tổng quan";
+    let bestLength = 0;
+    for (const item of allMenuItems) {
+      if (item.link === "/" && path === "/") {
+        return item.name;
+      }
+      if (item.link !== "/" && path.startsWith(item.link) && item.link.length > bestLength) {
+        bestMatch = item.name;
+        bestLength = item.link.length;
+      }
+    }
+    return bestMatch;
+  }, [allMenuItems]);
+
+  const [activeMenu, setActiveMenu] = useState(() => getActiveMenuFromPath(pathname));
+
+  // Sync active menu when pathname changes (e.g. navigating via links in the page)
+  useEffect(() => {
+    setActiveMenu(getActiveMenuFromPath(pathname));
+  }, [pathname, getActiveMenuFromPath]);
 
   return (
     <>

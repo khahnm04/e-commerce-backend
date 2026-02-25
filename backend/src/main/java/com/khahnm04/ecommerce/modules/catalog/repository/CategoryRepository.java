@@ -52,12 +52,12 @@ public interface CategoryRepository extends JpaRepository<Category, Long>, JpaSp
     void softDeleteAllByIds(@Param("ids") List<Long> ids, @Param("now") LocalDateTime now);
 
     @Modifying
-    @Query("""
-                UPDATE Category c
-                SET c.deletedAt = NULL
-                WHERE c.path LIKE :pathPrefix%
-                AND c.deletedAt BETWEEN :startTime AND :endTime
-            """)
+    @Query(value = """
+                UPDATE categories
+                SET deleted_at = NULL
+                WHERE path LIKE CONCAT(:pathPrefix, '%')
+                AND deleted_at BETWEEN :startTime AND :endTime
+            """, nativeQuery = true)
     void restoreDescendantsByTimeRange(
             @Param("pathPrefix") String pathPrefix,
             @Param("startTime") LocalDateTime startTime,

@@ -33,6 +33,8 @@ export default function CategoryList({ isTrash = false }: { isTrash?: boolean })
   const [debouncedSearch, setDebouncedSearch] = useState(searchTerm);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [parentFilter, setParentFilter] = useState<string | number>("");
+  const [parentOptions, setParentOptions] = useState<{ id: string | number; name: string }[]>([]);
   const isFirstLoad = useRef(true);
 
   // Debounce search term
@@ -43,11 +45,26 @@ export default function CategoryList({ isTrash = false }: { isTrash?: boolean })
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
+  // Fetch parent category options for filter
+  useEffect(() => {
+    const fetchParents = async () => {
+      try {
+        const res = await categoryService.getAll({ size: 99 });
+        const categories = (res.data ?? []).map(c => ({ id: String(c.id), name: c.name }));
+        setParentOptions([{ id: "", name: "Tất cả" }, ...categories]);
+      } catch {
+        // ignore
+      }
+    };
+    fetchParents();
+  }, []);
+
   const fetchFn = useCallback(
     () => isTrash
       ? categoryService.getAllDeleted({
         keyword: debouncedSearch || undefined,
         status: (statusFilter as string) || undefined,
+        parentId: parentFilter ? Number(parentFilter) : undefined,
         startDate: startDate || undefined,
         endDate: endDate || undefined,
         page,
@@ -56,12 +73,13 @@ export default function CategoryList({ isTrash = false }: { isTrash?: boolean })
       : categoryService.getAll({
         keyword: debouncedSearch || undefined,
         status: (statusFilter as string) || undefined,
+        parentId: parentFilter ? Number(parentFilter) : undefined,
         startDate: startDate || undefined,
         endDate: endDate || undefined,
         page,
         size: pageSize,
       } as any),
-    [isTrash, debouncedSearch, statusFilter, startDate, endDate, page, pageSize]
+    [isTrash, debouncedSearch, statusFilter, parentFilter, startDate, endDate, page, pageSize]
   );
 
   const { data: categoryData, meta, loading, reload } = useApiData<CategoryResponse>({ fetchFn });
@@ -154,8 +172,14 @@ export default function CategoryList({ isTrash = false }: { isTrash?: boolean })
 
   const handleClearFilter = () => {
     setStatusFilter("");
+    setParentFilter("");
     setStartDate("");
     setEndDate("");
+    setPage(1);
+  };
+
+  const handleParentFilterChange = (value: string | number) => {
+    setParentFilter(value);
     setPage(1);
   };
 
@@ -167,6 +191,14 @@ export default function CategoryList({ isTrash = false }: { isTrash?: boolean })
       onChange: handleStatusFilterChange,
       options: CATEGORY_STATUS_OPTIONS,
       placeholder: "Trạng thái"
+    },
+    {
+      type: "select",
+      id: "parentId",
+      value: parentFilter,
+      onChange: handleParentFilterChange,
+      options: parentOptions,
+      placeholder: "Danh mục cha"
     },
     {
       type: "date",

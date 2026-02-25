@@ -45,8 +45,9 @@ export default function CategoryForm({ initialData, isReadOnly = false }: Catego
   ]);
   const isEditMode = !!initialData;
 
-  // Fetch parent category options
+  // Fetch parent category options (skip in read-only mode)
   useEffect(() => {
+    if (isReadOnly) return;
     const fetchCategories = async () => {
       try {
         const res = await categoryService.getAll({ size: 99 });
@@ -59,7 +60,7 @@ export default function CategoryForm({ initialData, isReadOnly = false }: Catego
       }
     };
     fetchCategories();
-  }, [initialData]);
+  }, [initialData, isReadOnly]);
 
   const handleAddFile = useCallback((file: File) => {
     setSelectedFile(file);
@@ -86,6 +87,7 @@ export default function CategoryForm({ initialData, isReadOnly = false }: Catego
   } = useForm<CreateCategoryValues | UpdateCategoryValues>({
     resolver: zodResolver(schema),
     defaultValues: {
+      ...(isEditMode ? { id: initialData.id } : {}),
       name: initialData?.name || "",
       slug: initialData?.slug || "",
       description: initialData?.description || "",
@@ -157,7 +159,7 @@ export default function CategoryForm({ initialData, isReadOnly = false }: Catego
         />
 
         <FormInput
-          label="Slug"
+          label="Đường dẫn tĩnh (Slug)"
           id="slug"
           placeholder="Tự động tạo nếu để trống"
           {...register("slug")}
@@ -176,19 +178,23 @@ export default function CategoryForm({ initialData, isReadOnly = false }: Catego
               >
                 Danh mục cha
               </label>
-              <CustomSelect
-                options={parentOptions}
-                value={field.value ? String(field.value) : ""}
-                onChange={(val) => field.onChange(val ? Number(val) : null)}
-                placeholder="Chọn danh mục cha"
-                disabled={isReadOnly}
-                classNameCustom={`
-                  bg-[#F5F6FA] border border-[#D5D5D5] rounded-[4px]
-                  px-[22px] font-[500] text-[14px] text-[var(--color-text)]
-                  w-full h-[52px] !block
-                  ${isReadOnly ? 'opacity-60 cursor-not-allowed' : ''}
-                `}
-              />
+              {isReadOnly ? (
+                <div className="bg-[#F5F6FA] border border-[#D5D5D5] rounded-[4px] px-[22px] font-[500] text-[14px] text-[var(--color-text)] w-full h-[52px] flex items-center opacity-60 cursor-not-allowed">
+                  {initialData?.parentName || "Không có (Danh mục gốc)"}
+                </div>
+              ) : (
+                <CustomSelect
+                  options={parentOptions}
+                  value={field.value ? String(field.value) : ""}
+                  onChange={(val) => field.onChange(val ? Number(val) : null)}
+                  placeholder="Chọn danh mục cha"
+                  classNameCustom={`
+                    bg-[#F5F6FA] border border-[#D5D5D5] rounded-[4px]
+                    px-[22px] font-[500] text-[14px] text-[var(--color-text)]
+                    w-full h-[52px] !block
+                  `}
+                />
+              )}
             </div>
           )}
         />
@@ -238,7 +244,32 @@ export default function CategoryForm({ initialData, isReadOnly = false }: Catego
           disabled={isReadOnly}
         />
 
-        {/* Icon upload */}
+        {/* SEO fields */}
+        <FormInput
+          label="Tiêu đề SEO (Meta Title)"
+          id="metaTitle"
+          {...register("metaTitle")}
+          error={errors.metaTitle?.message}
+          disabled={isReadOnly}
+        />
+
+        <FormInput
+          label="Mô tả SEO (Meta Description)"
+          id="metaDescription"
+          {...register("metaDescription")}
+          error={errors.metaDescription?.message}
+          disabled={isReadOnly}
+        />
+
+        <FormInput
+          label="Từ khóa SEO (Meta Keywords)"
+          id="metaKeywords"
+          {...register("metaKeywords")}
+          error={errors.metaKeywords?.message}
+          disabled={isReadOnly}
+        />
+
+        {/* Icon upload - moved to bottom */}
         {isReadOnly ? (
           <div className="md:col-span-2">
             <label className="block font-[600] text-[14px] text-[#606060] mb-[11px]">
@@ -273,31 +304,6 @@ export default function CategoryForm({ initialData, isReadOnly = false }: Catego
             )}
           </div>
         )}
-
-        {/* SEO fields */}
-        <FormInput
-          label="Meta Title"
-          id="metaTitle"
-          {...register("metaTitle")}
-          error={errors.metaTitle?.message}
-          disabled={isReadOnly}
-        />
-
-        <FormInput
-          label="Meta Description"
-          id="metaDescription"
-          {...register("metaDescription")}
-          error={errors.metaDescription?.message}
-          disabled={isReadOnly}
-        />
-
-        <FormInput
-          label="Meta Keywords"
-          id="metaKeywords"
-          {...register("metaKeywords")}
-          error={errors.metaKeywords?.message}
-          disabled={isReadOnly}
-        />
 
         {/* Submit button */}
         {!isReadOnly && (

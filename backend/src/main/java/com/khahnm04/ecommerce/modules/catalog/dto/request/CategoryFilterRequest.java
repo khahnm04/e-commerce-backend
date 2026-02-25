@@ -37,8 +37,6 @@ public class CategoryFilterRequest implements Serializable {
 
     private String keyword;
 
-    private String dateType;
-
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate startDate;
 

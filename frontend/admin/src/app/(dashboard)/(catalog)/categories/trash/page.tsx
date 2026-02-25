@@ -11,7 +11,7 @@ export default function CategoryTrashPage() {
   return (
     <main>
       <h1 className="mt-0 mb-[5px] font-[700] text-[32px] text-[var(--color-text)]">
-        Thùng rác - Danh mục
+        Thùng rác danh mục
       </h1>
 
       <Breadcrumb
