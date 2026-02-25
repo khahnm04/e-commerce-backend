@@ -18,8 +18,14 @@ public class CookieBearerTokenResolver implements BearerTokenResolver {
 
         String requestPath = request.getServletPath();
 
-        for (String publicPath : SecurityConfig.PUBLIC_ENDPOINTS) {
-            if (pathMatcher.match(publicPath, requestPath)) {
+        for (String publicPath : SecurityConfig.PUBLIC_POST_ENDPOINTS) {
+            if (pathMatcher.match(publicPath, requestPath) && request.getMethod().equalsIgnoreCase("POST")) {
+                return null;
+            }
+        }
+
+        for (String publicPath : SecurityConfig.PUBLIC_GET_ENDPOINTS) {
+            if (pathMatcher.match(publicPath, requestPath) && request.getMethod().equalsIgnoreCase("GET")) {
                 return null;
             }
         }

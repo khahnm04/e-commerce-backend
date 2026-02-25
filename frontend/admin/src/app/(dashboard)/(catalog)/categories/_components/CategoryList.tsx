@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import React, { useState, useCallback } from "react";
 import { FilterConfig } from "@/components/common/DynamicTableFilter";

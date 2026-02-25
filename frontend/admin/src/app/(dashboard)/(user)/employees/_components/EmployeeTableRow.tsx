@@ -11,9 +11,9 @@ import { EmployeeResponse } from "@/types/user/employee.types";
 
 interface EmployeeTableRowProps {
     item: EmployeeResponse;
-    index: number;
     isTrash?: boolean;
     onDeleteClick?: () => void;
+    onRestoreClick?: () => void;
     onStatusChange?: (id: string | number, newStatus: string) => void;
     isSelected?: boolean;
     onSelect?: () => void;
@@ -21,9 +21,9 @@ interface EmployeeTableRowProps {
 
 export const EmployeeTableRow = ({
     item,
-    index,
     isTrash = false,
     onDeleteClick,
+    onRestoreClick,
     onStatusChange,
     isSelected,
     onSelect
@@ -119,9 +119,11 @@ export const EmployeeTableRow = ({
             <td className="py-[8px] px-[15px] text-center border-b border-[rgba(151,151,151,0.6)] text-[14px] font-[600] text-[var(--color-text)]">
                 <ActionGroup
                     isTrash={isTrash}
-                    editLink={`/employees/${item.id}`}
+                    editLink={isTrash ? undefined : `/employees/${item.id}`}
+                    viewLink={isTrash ? `/employees/trash/${item.id}` : undefined}
                     onDelete={onDeleteClick || (() => { })}
-                    onRestore={() => console.log("Restore Employee", item.id)}
+                    onRestore={onRestoreClick || (() => { })}
+                    hideDelete={isTrash}
                 />
             </td>
         </tr>

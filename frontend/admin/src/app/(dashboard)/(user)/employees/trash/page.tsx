@@ -1,10 +1,9 @@
 import { Metadata } from "next";
 import EmployeeList from "../_components/EmployeeList";
-import { Pagination } from "@/components/common/Pagination";
 import { Breadcrumb } from "@/components/common/Breadcrumb";
 
 export const metadata: Metadata = {
-    title: "Thùng rác - Nhân viên",
+    title: "Thùng rác nhân viên",
     description: "Danh sách nhân viên đã xóa.",
 };
 
@@ -12,7 +11,7 @@ export default function EmployeeTrashPage() {
     return (
         <main>
             <h1 className="mt-0 mb-[5px] font-[700] text-[32px] text-[var(--color-text)]">
-                Thùng rác - Nhân viên
+                Thùng rác nhân viên
             </h1>
 
             <Breadcrumb
@@ -25,8 +24,6 @@ export default function EmployeeTrashPage() {
             />
 
             <EmployeeList isTrash={true} />
-
-            <Pagination />
         </main>
     );
 }

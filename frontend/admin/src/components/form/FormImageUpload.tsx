@@ -1,5 +1,4 @@
 import React from "react";
-import { useFilePond } from "@/hooks/useFilePond";
 
 interface FormImageUploadProps
   extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -13,7 +12,6 @@ export const FormImageUpload = ({
   className = "",
   ...props
 }: FormImageUploadProps) => {
-  useFilePond();
 
   return (
     <div

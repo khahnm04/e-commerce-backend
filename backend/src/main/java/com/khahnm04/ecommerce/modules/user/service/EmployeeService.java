@@ -17,6 +17,8 @@ public interface EmployeeService {
 
     EmployeeResponse getEmployeeDetailById(Long id);
 
+    EmployeeResponse getDeletedEmployeeDetailById(Long id);
+
     EmployeeResponse updateEmployee(Long id, EmployeeUpdateRequest request);
 
     void updateEmployeeStatus(Long id, EmployeeUpdateStatusRequest status);

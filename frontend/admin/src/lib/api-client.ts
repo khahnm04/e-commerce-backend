@@ -91,6 +91,11 @@ export const sendRequest = async <T>(
   }
 
   if (!res.ok) {
+    if (data?.errors && Array.isArray(data.errors) && data.errors.length > 0) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const errorMsg = data.errors.map((e: any) => `${e.field || 'Lỗi'}: ${e.message}`).join("\n");
+      throw new Error(errorMsg);
+    }
     throw new Error(data?.message || "Có lỗi xảy ra khi gọi API");
   }
 

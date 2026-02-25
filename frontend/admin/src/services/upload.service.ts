@@ -45,6 +45,8 @@ export const uploadToCloudinary = async (file: File): Promise<string> => {
     });
 
     if (!res.ok) {
+        const errorBody = await res.text();
+        console.error("Cloudinary upload error:", res.status, errorBody);
         throw new Error("Upload ảnh lên Cloudinary thất bại!");
     }
 

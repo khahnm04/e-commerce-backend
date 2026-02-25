@@ -39,7 +39,6 @@ public class EmployeeUpdateRequest implements Serializable {
 
     private LocalDate dateOfBirth;
 
-    @NotBlank(message = "EMPLOYEE_AVATAR_URL_REQUIRED")
     private String avatarUrl;
 
     private Gender gender;

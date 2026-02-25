@@ -24,6 +24,9 @@ export const employeeService = {
   getById: (id: number | string) =>
     sendRequest<ApiResponse<EmployeeResponse>>(`${BASE_ENDPOINT}/${id}`, { method: "GET", credentials: "include" }),
 
+  getDeletedById: (id: number | string) =>
+    sendRequest<ApiResponse<EmployeeResponse>>(`${BASE_ENDPOINT}/deleted/${id}`, { method: "GET", credentials: "include" }),
+
   create: (payload: EmployeeCreationRequest) =>
     sendRequest<ApiResponse<EmployeeResponse>>(`${BASE_ENDPOINT}`, { method: "POST", body: JSON.stringify(payload), credentials: "include" }),
 

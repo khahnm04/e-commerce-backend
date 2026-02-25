@@ -72,21 +72,22 @@ export const CustomSelect = ({
   return (
     <div
       ref={containerRef}
-      className={`relative w-fit ${classNameCustom}`}
+      className={`relative w-fit max-w-full ${classNameCustom}`}
     >
       {/* Trigger */}
       <div
         ref={triggerRef}
         onClick={handleToggle}
         className="
-          flex items-center justify-between gap-2 cursor-pointer
+          flex items-center gap-2 cursor-pointer
           w-full h-full
           py-2 px-1
           font-[700] text-[14px]
           hover:opacity-70 transition-opacity
+          overflow-hidden
         "
       >
-        <span className="whitespace-nowrap">
+        <span className="whitespace-nowrap overflow-hidden text-ellipsis">
           {selectedLabel || placeholder}
         </span>
 

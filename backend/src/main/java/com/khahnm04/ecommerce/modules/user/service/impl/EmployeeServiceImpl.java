@@ -89,7 +89,14 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public EmployeeResponse getEmployeeDetailById(Long id) {
-        return employeeMapper.toResponse(this.getEmployeeById(id));
+        return this.buildUserResponse(this.getEmployeeById(id));
+    }
+
+    @Override
+    public EmployeeResponse getDeletedEmployeeDetailById(Long id) {
+        Employee employee = employeeRepository.findDeletedEmployeeById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.EMPLOYEE_NOT_FOUND));
+        return this.buildUserResponse(employee);
     }
 
     @Override
@@ -111,7 +118,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         employeeRepository.save(employee);
 
         log.info("Updated employee with id: {}", id);
-        return employeeMapper.toResponse(employee);
+        return this.buildUserResponse(employee);
     }
 
     @Override

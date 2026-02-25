@@ -27,3 +27,14 @@ export const EMPLOYEE_ACTION_OPTIONS = [
     { id: "LOCKED", name: "Bị khóa" },
     { id: "delete", name: "Xóa" },
 ];
+
+export const EMPLOYEE_TRASH_ACTION_OPTIONS = [
+    { id: "restore", name: "Khôi phục" },
+];
+
+export const EMPLOYEE_GENDER_OPTIONS = [
+    { id: "", name: "Tất cả" },
+    { id: "MALE", name: "Nam" },
+    { id: "FEMALE", name: "Nữ" },
+    { id: "OTHER", name: "Khác" },
+];

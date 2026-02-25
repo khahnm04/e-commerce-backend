@@ -33,30 +33,36 @@ public class SecurityConfig {
     private final CustomUserDetailsService userDetailsService;
     private final CookieBearerTokenResolver cookieBearerTokenResolver;
 
-    public static final String[] PUBLIC_ENDPOINTS = {
+    public static final String[] PUBLIC_POST_ENDPOINTS = {
             "/api/v1/auth/login",
             "/api/v1/auth/register",
-            "/api/v1/auth/refresh"
+            "/api/v1/auth/refresh",
+            "/api/v1/upload"
+    };
+
+    public static final String[] PUBLIC_GET_ENDPOINTS = {
+            "/api/v1/upload/signature"
     };
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .sessionManagement(session ->
-                    session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-            .authorizeHttpRequests(request ->
-                    request.requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS).permitAll()
-                            .anyRequest().authenticated())
+                .authorizeHttpRequests(
+                        request -> request.requestMatchers(HttpMethod.POST, PUBLIC_POST_ENDPOINTS).permitAll()
+                                .requestMatchers(HttpMethod.GET, PUBLIC_GET_ENDPOINTS).permitAll()
+                                .anyRequest().authenticated())
 
-            .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwtConfigurer -> jwtConfigurer
-                    .decoder(jwtDecoderConfig)
-                    .jwtAuthenticationConverter(jwtAuthenticationConverter()))
-                    .authenticationEntryPoint(new JwtAuthenticationEntryPoint()) // Catch exception when Unauthenticated
-                    .bearerTokenResolver(cookieBearerTokenResolver))
+                .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwtConfigurer -> jwtConfigurer
+                        .decoder(jwtDecoderConfig)
+                        .jwtAuthenticationConverter(jwtAuthenticationConverter()))
+                        .authenticationEntryPoint(new JwtAuthenticationEntryPoint()) // Catch exception when
+                                                                                     // Unauthenticated
+                        .bearerTokenResolver(cookieBearerTokenResolver))
 
-            .csrf(AbstractHttpConfigurer::disable)
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()));
+                .csrf(AbstractHttpConfigurer::disable)
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()));
 
         return http.build();
     }
