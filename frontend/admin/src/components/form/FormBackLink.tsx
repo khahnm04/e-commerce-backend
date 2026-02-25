@@ -12,7 +12,7 @@ export const FormBackLink = ({ href, children, className = "" }: FormBackLinkPro
     <div className={`inner-back text-center mt-[30px] ${className}`}>
       <Link
         href={href}
-        className="font-[700] text-[18px] text-[var(--color-primary)] underline hover:no-underline transition-all"
+        className="font-[700] text-[18px] text-[var(--color-primary)] underline hover:no-underline transition-all cursor-pointer"
       >
         {children || "Quay lại danh sách"} {/* Nếu không truyền text thì lấy mặc định */}
       </Link>

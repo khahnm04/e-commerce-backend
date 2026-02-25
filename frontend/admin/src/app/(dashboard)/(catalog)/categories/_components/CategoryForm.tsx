@@ -23,7 +23,7 @@ import {
 } from "@/app/(dashboard)/(catalog)/categories/category.schema";
 import { categoryService } from "@/services/catalog/category.service";
 import { CategoryResponse } from "@/types/catalog/category.types";
-import { uploadToCloudinary } from "@/services/upload.service";
+import { uploadToCloudinary } from "@/services/upload/upload.service";
 
 const STATUS_OPTIONS = [
   { id: "ACTIVE", name: "Hoạt động" },

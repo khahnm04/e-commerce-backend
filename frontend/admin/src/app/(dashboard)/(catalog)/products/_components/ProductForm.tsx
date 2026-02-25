@@ -27,7 +27,7 @@ import { brandService } from "@/services/catalog/brand.service";
 import { categoryService } from "@/services/catalog/category.service";
 import { BrandResponse } from "@/types/catalog/brand.types";
 import { CategoryResponse } from "@/types/catalog/category.types";
-import { uploadToCloudinary } from "@/services/upload.service";
+import { uploadToCloudinary } from "@/services/upload/upload.service";
 
 const STATUS_OPTIONS = [
   { id: "ACTIVE", name: "Hoạt động" },

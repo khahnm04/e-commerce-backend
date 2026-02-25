@@ -137,6 +137,11 @@ export const Sider = (props: {
       icon: FaUserGear
     },
     {
+      name: "Nhóm quyền",
+      link: "/roles",
+      icon: FaShieldHalved
+    },
+    {
       name: "Thông báo",
       link: "/notifications",
       icon: FaBell
@@ -145,11 +150,6 @@ export const Sider = (props: {
       name: "Tin nhắn",
       link: "/messages",
       icon: TiMessages
-    },
-    {
-      name: "Nhóm quyền",
-      link: "/roles",
-      icon: FaShieldHalved
     },
   ];
 

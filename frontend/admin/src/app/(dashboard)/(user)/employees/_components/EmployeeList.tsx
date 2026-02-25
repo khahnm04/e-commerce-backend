@@ -15,7 +15,7 @@ import {
 } from "@/constants/user/employee.constants";
 import { TableControl } from "@/components/common/TableControl";
 import { employeeService } from "@/services/user/employee.service";
-import { branchService } from "@/services/branch.service";
+import { branchService } from "@/services/branch/branch.service";
 import { EmployeeResponse } from "@/types/user/employee.types";
 import { EmployeeTableRow } from "./EmployeeTableRow";
 

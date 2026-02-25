@@ -23,7 +23,7 @@ import {
 } from "@/app/(dashboard)/(catalog)/brands/brand.schema";
 import { brandService } from "@/services/catalog/brand.service";
 import { BrandResponse } from "@/types/catalog/brand.types";
-import { uploadToCloudinary } from "@/services/upload.service";
+import { uploadToCloudinary } from "@/services/upload/upload.service";
 
 const STATUS_OPTIONS = [
   { id: "ACTIVE", name: "Hoạt động" },
@@ -67,6 +67,7 @@ export default function BrandForm({ initialData, isReadOnly = false }: BrandForm
   } = useForm<CreateBrandValues | UpdateBrandValues>({
     resolver: zodResolver(schema),
     defaultValues: {
+      ...(isEditMode ? { id: initialData.id } : {}),
       name: initialData?.name || "",
       slug: initialData?.slug || "",
       description: initialData?.description || "",
@@ -136,7 +137,7 @@ export default function BrandForm({ initialData, isReadOnly = false }: BrandForm
         />
 
         <FormInput
-          label="Slug"
+          label="Đường dẫn tĩnh (Slug)"
           id="slug"
           placeholder="Tự động tạo nếu để trống"
           {...register("slug")}
@@ -198,7 +199,32 @@ export default function BrandForm({ initialData, isReadOnly = false }: BrandForm
           disabled={isReadOnly}
         />
 
-        {/* Logo upload */}
+        {/* SEO fields */}
+        <FormInput
+          label="Tiêu đề SEO (Meta Title)"
+          id="metaTitle"
+          {...register("metaTitle")}
+          error={errors.metaTitle?.message}
+          disabled={isReadOnly}
+        />
+
+        <FormInput
+          label="Mô tả SEO (Meta Description)"
+          id="metaDescription"
+          {...register("metaDescription")}
+          error={errors.metaDescription?.message}
+          disabled={isReadOnly}
+        />
+
+        <FormInput
+          label="Từ khóa SEO (Meta Keywords)"
+          id="metaKeywords"
+          {...register("metaKeywords")}
+          error={errors.metaKeywords?.message}
+          disabled={isReadOnly}
+        />
+
+        {/* Logo upload - moved to bottom */}
         {isReadOnly ? (
           <div className="md:col-span-2">
             <label className="block font-[600] text-[14px] text-[#606060] mb-[11px]">
@@ -233,31 +259,6 @@ export default function BrandForm({ initialData, isReadOnly = false }: BrandForm
             )}
           </div>
         )}
-
-        {/* SEO fields */}
-        <FormInput
-          label="Meta Title"
-          id="metaTitle"
-          {...register("metaTitle")}
-          error={errors.metaTitle?.message}
-          disabled={isReadOnly}
-        />
-
-        <FormInput
-          label="Meta Description"
-          id="metaDescription"
-          {...register("metaDescription")}
-          error={errors.metaDescription?.message}
-          disabled={isReadOnly}
-        />
-
-        <FormInput
-          label="Meta Keywords"
-          id="metaKeywords"
-          {...register("metaKeywords")}
-          error={errors.metaKeywords?.message}
-          disabled={isReadOnly}
-        />
 
         {/* Submit button */}
         {!isReadOnly && (

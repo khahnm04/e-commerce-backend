@@ -23,7 +23,7 @@ import {
 } from "@/app/(dashboard)/(user)/employees/employee.schema";
 import { employeeService } from "@/services/user/employee.service";
 import { EmployeeResponse } from "@/types/user/employee.types";
-import { uploadToCloudinary } from "@/services/upload.service";
+import { uploadToCloudinary } from "@/services/upload/upload.service";
 import { roleService } from "@/services/auth/role.service";
 import { RoleResponse } from "@/types/auth/role.types";
 

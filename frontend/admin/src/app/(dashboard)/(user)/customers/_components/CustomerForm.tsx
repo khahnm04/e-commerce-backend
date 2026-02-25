@@ -23,7 +23,7 @@ import {
 } from "@/app/(dashboard)/(user)/customers/customer.schema";
 import { customerService } from "@/services/user/customer.service";
 import { CustomerResponse } from "@/types/user/customer.types";
-import { uploadToCloudinary } from "@/services/upload.service";
+import { uploadToCloudinary } from "@/services/upload/upload.service";
 
 const STATUS_OPTIONS = [
   { id: "ACTIVE", name: "Hoạt động" },

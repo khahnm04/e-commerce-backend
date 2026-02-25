@@ -27,7 +27,7 @@ export const ActionGroup = ({
           <>
             {viewLink && (
               <Link
-                className="inline-block px-[16.5px] py-[8.5px] border-r border-[#D5D5D5] text-[15px] text-[#3B82F6] hover:bg-blue-50 transition-colors"
+                className="inline-block px-[16.5px] py-[8.5px] border-r border-[#D5D5D5] text-[15px] text-[#3B82F6] hover:bg-blue-50 cursor-pointer transition-colors"
                 href={viewLink}
                 title="Xem chi tiết"
               >
@@ -58,7 +58,7 @@ export const ActionGroup = ({
         ) : (
           <>
             <Link
-              className="inline-block px-[16.5px] py-[8.5px] border-r border-[#D5D5D5] text-[15px] text-[rgba(0, 0, 0, 0.6)] hover:bg-gray-50 transition-colors"
+              className="inline-block px-[16.5px] py-[8.5px] border-r border-[#D5D5D5] text-[15px] text-[rgba(0, 0, 0, 0.6)] hover:bg-gray-50 cursor-pointer transition-colors"
               href={editLink}
               title="Chỉnh sửa"
             >

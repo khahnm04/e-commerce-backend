@@ -83,7 +83,7 @@ export const SiderMenu = (props: {
       <Link
         href={item.link}
         onClick={(e) => handleClick(e, item)}
-        className={`flex items-center gap-[10px] py-[11px] px-[16px] ml-[24px] mr-[10px] rounded-[6px] font-[600] text-[14px] relative 
+        className={`flex items-center gap-[10px] py-[11px] px-[16px] ml-[24px] mr-[10px] rounded-[6px] font-[600] text-[14px] relative cursor-pointer
           ${activeMenu === item.name
             ? 'bg-[var(--color-primary)] before:absolute before:left-[-24px] before:top-0 before:h-full before:w-[4.5px] before:rounded-[0_4px_4px_0] before:bg-[var(--color-primary)] before:content-[\'\']'
             : ''
@@ -134,7 +134,7 @@ export const SiderMenu = (props: {
                 <Link
                   href={child.link}
                   onClick={(e) => handleClick(e, child)}
-                  className={`flex items-center gap-[10px] py-[10px] pl-[52px] pr-[16px] mr-[10px] rounded-[0_6px_6px_0] font-[600] text-[13px] relative
+                  className={`flex items-center gap-[10px] py-[10px] pl-[52px] pr-[16px] mr-[10px] rounded-[0_6px_6px_0] font-[600] text-[13px] relative cursor-pointer
                     ${activeMenu === child.name
                       ? 'bg-[var(--color-primary)] text-white before:absolute before:left-[24px] before:top-0 before:h-full before:w-[4.5px] before:rounded-[0_4px_4px_0] before:bg-[var(--color-primary)] before:content-[\'\']'
                       : 'text-[var(--color-text)] opacity-80 hover:opacity-100 hover:bg-[#F4F5F9]'
