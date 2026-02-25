@@ -15,6 +15,7 @@ import { FormImageUpload } from "@/components/form/FormImageUpload";
 import { CustomSelect } from "@/components/common/CustomSelect";
 import { FormButton } from "@/components/form/FormButton";
 import { FormBackLink } from "@/components/form/FormBackLink";
+import { FormEditorWrapper } from "@/components/form/FormEditorWrapper";
 import {
   CreateProductSchema,
   UpdateProductSchema,
@@ -27,7 +28,11 @@ import { brandService } from "@/services/catalog/brand.service";
 import { categoryService } from "@/services/catalog/category.service";
 import { BrandResponse } from "@/types/catalog/brand.types";
 import { CategoryResponse } from "@/types/catalog/category.types";
+import { attributeService } from "@/services/catalog/attribute.service";
+import { AttributeResponse } from "@/types/catalog/attribute.types";
 import { uploadToCloudinary } from "@/services/upload/upload.service";
+import { FaPlus, FaTrashCan } from "react-icons/fa6";
+import { useTinyMCE } from "@/hooks/useTinyMCE";
 
 const STATUS_OPTIONS = [
   { id: "ACTIVE", name: "Hoạt động" },
@@ -36,6 +41,21 @@ const STATUS_OPTIONS = [
   { id: "PENDING", name: "Chờ duyệt" },
   { id: "DISCONTINUED", name: "Ngừng bán" },
 ];
+
+interface AttributeRow {
+  id?: number;
+  attributeId: number;
+  value: string;
+}
+
+interface ImageRow {
+  id?: number;
+  imageUrl: string;
+  displayOrder: number;
+  file?: File;
+  previewUrl?: string;
+  isUploading?: boolean;
+}
 
 interface ProductFormProps {
   initialData?: ProductResponse;
@@ -49,10 +69,18 @@ export default function ProductForm({ initialData, isReadOnly = false }: Product
   const [previewUrl, setPreviewUrl] = useState<string>(initialData?.thumbnail || "");
   const [allBrands, setAllBrands] = useState<BrandResponse[]>([]);
   const [allCategories, setAllCategories] = useState<CategoryResponse[]>([]);
+  const [allAttributes, setAllAttributes] = useState<AttributeResponse[]>([]);
+  const [attributeRows, setAttributeRows] = useState<AttributeRow[]>(
+    initialData?.attributes?.map(a => ({ id: a.id, attributeId: a.attributeId, value: a.value })) || []
+  );
+  const [imageRows, setImageRows] = useState<ImageRow[]>(
+    initialData?.images?.map(img => ({ id: img.id, imageUrl: img.imageUrl, displayOrder: img.displayOrder, previewUrl: img.imageUrl })) || []
+  );
   const isEditMode = !!initialData;
 
-  // Fetch brands
+  // Fetch brands (skip in read-only mode)
   useEffect(() => {
+    if (isReadOnly) return;
     const fetchBrands = async () => {
       try {
         const res = await brandService.getAll({ size: 99 });
@@ -62,10 +90,11 @@ export default function ProductForm({ initialData, isReadOnly = false }: Product
       }
     };
     fetchBrands();
-  }, []);
+  }, [isReadOnly]);
 
-  // Fetch categories
+  // Fetch categories (skip in read-only mode)
   useEffect(() => {
+    if (isReadOnly) return;
     const fetchCategories = async () => {
       try {
         const res = await categoryService.getAll({ size: 99 });
@@ -75,7 +104,27 @@ export default function ProductForm({ initialData, isReadOnly = false }: Product
       }
     };
     fetchCategories();
-  }, []);
+  }, [isReadOnly]);
+
+  // Fetch attributes (skip in read-only mode)
+  useEffect(() => {
+    if (isReadOnly) return;
+    const fetchAttributes = async () => {
+      try {
+        const res = await attributeService.getAll({ size: 99 });
+        setAllAttributes(res.data ?? []);
+      } catch {
+        // ignore
+      }
+    };
+    fetchAttributes();
+  }, [isReadOnly]);
+
+  // TinyMCE editor for description
+  const { TinyMCEEditorComponent } = useTinyMCE({
+    initialValue: initialData?.description || "",
+    height: 350,
+  });
 
   const handleAddFile = useCallback((file: File) => {
     setSelectedFile(file);
@@ -114,6 +163,7 @@ export default function ProductForm({ initialData, isReadOnly = false }: Product
   } = useForm<CreateProductValues | UpdateProductValues>({
     resolver: zodResolver(schema),
     defaultValues: {
+      ...(isEditMode ? { id: initialData.id } : {}),
       name: initialData?.name || "",
       slug: initialData?.slug || "",
       productCode: initialData?.productCode || "",
@@ -151,6 +201,17 @@ export default function ProductForm({ initialData, isReadOnly = false }: Product
         thumbnailUrl = await uploadToCloudinary(selectedFile);
       }
 
+      // Upload all new images to Cloudinary
+      const uploadedImages: { id?: number; imageUrl: string; displayOrder: number }[] = [];
+      for (const img of imageRows) {
+        if (img.file) {
+          const url = await uploadToCloudinary(img.file);
+          uploadedImages.push({ id: img.id, imageUrl: url, displayOrder: img.displayOrder });
+        } else if (img.imageUrl) {
+          uploadedImages.push({ id: img.id, imageUrl: img.imageUrl, displayOrder: img.displayOrder });
+        }
+      }
+
       const payload = {
         name: data.name!,
         slug: data.slug || data.name!.toLowerCase().replace(/\s+/g, "-"),
@@ -167,6 +228,12 @@ export default function ProductForm({ initialData, isReadOnly = false }: Product
         metaDescription: data.metaDescription,
         status: data.status,
         categoryIds: data.categoryIds || [],
+        attributes: attributeRows.filter(a => a.attributeId && a.value).map(a => ({
+          ...(a.id ? { id: a.id } : {}),
+          attributeId: Number(a.attributeId),
+          value: a.value,
+        })),
+        images: uploadedImages,
       };
 
       if (isEditMode) {
@@ -203,7 +270,7 @@ export default function ProductForm({ initialData, isReadOnly = false }: Product
         />
 
         <FormInput
-          label="Slug"
+          label="Đường dẫn tĩnh (Slug)"
           id="slug"
           placeholder="Tự động tạo nếu để trống"
           {...register("slug")}
@@ -231,19 +298,23 @@ export default function ProductForm({ initialData, isReadOnly = false }: Product
               >
                 Nhãn hàng
               </label>
-              <CustomSelect
-                options={brandOptions}
-                value={field.value ? String(field.value) : ""}
-                onChange={(val) => field.onChange(val ? Number(val) : 0)}
-                placeholder="Chọn nhãn hàng"
-                disabled={isReadOnly}
-                classNameCustom={`
-                  bg-[#F5F6FA] border border-[#D5D5D5] rounded-[4px]
-                  px-[22px] font-[500] text-[14px] text-[var(--color-text)]
-                  w-full h-[52px] !block
-                  ${isReadOnly ? 'opacity-60 cursor-not-allowed' : ''}
-                `}
-              />
+              {isReadOnly ? (
+                <div className="bg-[#F5F6FA] border border-[#D5D5D5] rounded-[4px] px-[22px] font-[500] text-[14px] text-[var(--color-text)] w-full h-[52px] flex items-center opacity-60 cursor-not-allowed">
+                  {initialData?.brandName || "Không có"}
+                </div>
+              ) : (
+                <CustomSelect
+                  options={brandOptions}
+                  value={field.value ? String(field.value) : ""}
+                  onChange={(val) => field.onChange(val ? Number(val) : 0)}
+                  placeholder="Chọn nhãn hàng"
+                  classNameCustom={`
+                    bg-[#F5F6FA] border border-[#D5D5D5] rounded-[4px]
+                    px-[22px] font-[500] text-[14px] text-[var(--color-text)]
+                    w-full h-[52px] !block
+                  `}
+                />
+              )}
               {(errors as any).brandId?.message && (
                 <p className="text-red-500 text-[13px] mt-[6px]">{(errors as any).brandId.message}</p>
               )}
@@ -317,11 +388,20 @@ export default function ProductForm({ initialData, isReadOnly = false }: Product
           disabled={isReadOnly}
         />
 
+        {/* SEO fields */}
         <FormInput
-          label="Mô tả chi tiết"
-          id="description"
-          {...register("description")}
-          error={(errors as any).description?.message}
+          label="Tiêu đề SEO (Meta Title)"
+          id="metaTitle"
+          {...register("metaTitle")}
+          error={(errors as any).metaTitle?.message}
+          disabled={isReadOnly}
+        />
+
+        <FormInput
+          label="Mô tả SEO (Meta Description)"
+          id="metaDescription"
+          {...register("metaDescription")}
+          error={(errors as any).metaDescription?.message}
           disabled={isReadOnly}
         />
 
@@ -396,7 +476,182 @@ export default function ProductForm({ initialData, isReadOnly = false }: Product
           )}
         />
 
-        {/* Row 7: Thumbnail upload */}
+        {/* Attributes section - full width */}
+        <div className="md:col-span-2">
+          <label className="block font-[600] text-[14px] text-[#606060] mb-[11px]">
+            Thuộc tính sản phẩm
+          </label>
+          {isReadOnly ? (
+            <div className="bg-[#F5F6FA] border border-[#D5D5D5] rounded-[4px] p-[16px]">
+              {initialData?.attributes && initialData.attributes.length > 0 ? (
+                <div className="flex flex-wrap gap-[12px]">
+                  {initialData.attributes.map((attr, idx) => (
+                    <div key={idx} className="bg-white border border-[#D5D5D5] rounded-[6px] px-[14px] py-[8px] text-[13px]">
+                      <span className="font-[600] text-[#606060]">{attr.attributeName}:</span>{" "}
+                      <span className="text-[var(--color-text)]">{attr.value}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-gray-400 text-sm italic">Chưa có thuộc tính</p>
+              )}
+            </div>
+          ) : (
+            <div className="bg-[#F5F6FA] border border-[#D5D5D5] rounded-[4px] p-[16px] space-y-[12px]">
+              {attributeRows.map((row, idx) => (
+                <div key={idx} className="flex items-center gap-[12px]">
+                  <div className="flex-1">
+                    <CustomSelect
+                      options={[
+                        { id: "", name: "Chọn thuộc tính" },
+                        ...allAttributes.map(a => ({ id: String(a.id), name: a.name })),
+                      ]}
+                      value={row.attributeId ? String(row.attributeId) : ""}
+                      onChange={(val) => {
+                        const updated = [...attributeRows];
+                        updated[idx] = { ...updated[idx], attributeId: Number(val) };
+                        setAttributeRows(updated);
+                      }}
+                      placeholder="Chọn thuộc tính"
+                      classNameCustom="bg-white border border-[#D5D5D5] rounded-[4px] px-[12px] font-[500] text-[14px] text-[var(--color-text)] w-full h-[44px] !block"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <input
+                      type="text"
+                      value={row.value}
+                      onChange={(e) => {
+                        const updated = [...attributeRows];
+                        updated[idx] = { ...updated[idx], value: e.target.value };
+                        setAttributeRows(updated);
+                      }}
+                      placeholder="Giá trị"
+                      className="bg-white border border-[#D5D5D5] rounded-[4px] px-[12px] font-[500] text-[14px] text-[var(--color-text)] w-full h-[44px] outline-none focus:border-blue-400 transition-colors"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setAttributeRows(prev => prev.filter((_, i) => i !== idx))}
+                    className="text-[#EF3826] hover:bg-red-50 p-[10px] rounded-[6px] cursor-pointer transition-colors"
+                    title="Xóa thuộc tính"
+                  >
+                    <FaTrashCan className="text-[14px]" />
+                  </button>
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={() => setAttributeRows(prev => [...prev, { attributeId: 0, value: "" }])}
+                className="inline-flex items-center gap-[6px] text-[13px] font-[600] text-[var(--color-primary)] hover:bg-blue-50 px-[14px] py-[8px] rounded-[6px] cursor-pointer transition-colors border border-dashed border-blue-300"
+              >
+                <FaPlus className="text-[11px]" /> Thêm thuộc tính
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Images section - full width */}
+        <div className="md:col-span-2">
+          <label className="block font-[600] text-[14px] text-[#606060] mb-[11px]">
+            Ảnh sản phẩm
+          </label>
+          {isReadOnly ? (
+            <div className="bg-[#F5F6FA] border border-[#D5D5D5] rounded-[4px] p-[16px]">
+              {initialData?.images && initialData.images.length > 0 ? (
+                <div className="flex flex-wrap gap-[12px]">
+                  {initialData.images
+                    .sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0))
+                    .map((img, idx) => (
+                      <div key={idx} className="relative">
+                        <img
+                          src={img.imageUrl}
+                          alt={`Ảnh ${idx + 1}`}
+                          className="w-[120px] h-[120px] object-cover rounded-[8px] border border-[#D5D5D5]"
+                        />
+                        <span className="absolute bottom-[4px] right-[4px] bg-black/60 text-white text-[11px] px-[6px] py-[2px] rounded-[4px]">
+                          #{img.displayOrder ?? idx}
+                        </span>
+                      </div>
+                    ))}
+                </div>
+              ) : (
+                <p className="text-gray-400 text-sm italic">Không có ảnh sản phẩm</p>
+              )}
+            </div>
+          ) : (
+            <div className="bg-[#F5F6FA] border border-[#D5D5D5] rounded-[4px] p-[16px] space-y-[12px]">
+              {imageRows.map((row, idx) => (
+                <div key={idx} className="flex items-center gap-[12px]">
+                  {/* Preview */}
+                  {row.previewUrl ? (
+                    <img
+                      src={row.previewUrl}
+                      alt={`Ảnh ${idx + 1}`}
+                      className="w-[60px] h-[60px] object-cover rounded-[6px] border border-[#D5D5D5] flex-shrink-0"
+                    />
+                  ) : (
+                    <div className="w-[60px] h-[60px] bg-[#E5E7EB] rounded-[6px] flex items-center justify-center text-gray-400 text-[11px] flex-shrink-0">
+                      No img
+                    </div>
+                  )}
+                  {/* File input */}
+                  <div className="flex-1">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const updated = [...imageRows];
+                          updated[idx] = {
+                            ...updated[idx],
+                            file,
+                            previewUrl: URL.createObjectURL(file),
+                          };
+                          setImageRows(updated);
+                        }
+                      }}
+                      className="bg-white border border-[#D5D5D5] rounded-[4px] px-[12px] py-[8px] font-[500] text-[13px] text-[var(--color-text)] w-full cursor-pointer file:mr-[10px] file:py-[4px] file:px-[12px] file:rounded-[4px] file:border-0 file:bg-blue-50 file:text-blue-700 file:font-[600] file:text-[12px] file:cursor-pointer"
+                    />
+                  </div>
+                  {/* Display order */}
+                  <div className="w-[80px]">
+                    <input
+                      type="number"
+                      value={row.displayOrder}
+                      onChange={(e) => {
+                        const updated = [...imageRows];
+                        updated[idx] = { ...updated[idx], displayOrder: Number(e.target.value) };
+                        setImageRows(updated);
+                      }}
+                      placeholder="Thứ tự"
+                      className="bg-white border border-[#D5D5D5] rounded-[4px] px-[10px] font-[500] text-[13px] text-[var(--color-text)] w-full h-[44px] outline-none focus:border-blue-400 transition-colors text-center"
+                    />
+                  </div>
+                  {/* Remove */}
+                  <button
+                    type="button"
+                    onClick={() => setImageRows(prev => prev.filter((_, i) => i !== idx))}
+                    className="text-[#EF3826] hover:bg-red-50 p-[10px] rounded-[6px] cursor-pointer transition-colors"
+                    title="Xóa ảnh"
+                  >
+                    <FaTrashCan className="text-[14px]" />
+                  </button>
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={() => setImageRows(prev => [...prev, { imageUrl: "", displayOrder: prev.length, previewUrl: "" }])}
+                className="inline-flex items-center gap-[6px] text-[13px] font-[600] text-[var(--color-primary)] hover:bg-blue-50 px-[14px] py-[8px] rounded-[6px] cursor-pointer transition-colors border border-dashed border-blue-300"
+              >
+                <FaPlus className="text-[11px]" /> Thêm ảnh
+              </button>
+            </div>
+          )}
+        </div>
+
+
+        {/* Thumbnail upload */}
         {isReadOnly ? (
           <div className="md:col-span-2">
             <label className="block font-[600] text-[14px] text-[#606060] mb-[11px]">
@@ -432,22 +687,32 @@ export default function ProductForm({ initialData, isReadOnly = false }: Product
           </div>
         )}
 
-        {/* SEO fields */}
-        <FormInput
-          label="Meta Title"
-          id="metaTitle"
-          {...register("metaTitle")}
-          error={(errors as any).metaTitle?.message}
-          disabled={isReadOnly}
-        />
-
-        <FormInput
-          label="Meta Description"
-          id="metaDescription"
-          {...register("metaDescription")}
-          error={(errors as any).metaDescription?.message}
-          disabled={isReadOnly}
-        />
+        {/* Mô tả chi tiết - TinyMCE - full width */}
+        <div className="md:col-span-2">
+          <label className="block font-[600] text-[14px] text-[#606060] mb-[11px]">
+            Mô tả chi tiết
+          </label>
+          {isReadOnly ? (
+            <div
+              className="bg-[#F5F6FA] border border-[#D5D5D5] rounded-[4px] p-[16px] prose prose-sm max-w-none text-[14px] text-[var(--color-text)]"
+              dangerouslySetInnerHTML={{ __html: initialData?.description || '<p class="text-gray-400 italic">Chưa có mô tả</p>' }}
+            />
+          ) : (
+            <Controller
+              control={control}
+              name="description"
+              render={({ field }) => (
+                <FormEditorWrapper label="">
+                  {React.cloneElement(TinyMCEEditorComponent as React.ReactElement, {
+                    onEditorChange: (content: string) => {
+                      field.onChange(content);
+                    },
+                  })}
+                </FormEditorWrapper>
+              )}
+            />
+          )}
+        </div>
 
         {/* Submit button */}
         {!isReadOnly && (

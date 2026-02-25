@@ -16,6 +16,16 @@ const ProductBase = z.object({
   metaDescription: z.string().optional().default(""),
   status: z.enum(["ACTIVE", "INACTIVE", "OUT_OF_STOCK", "PENDING", "DISCONTINUED"]).default("ACTIVE"),
   categoryIds: z.array(z.number()).optional().default([]),
+  attributes: z.array(z.object({
+    id: z.number().optional(),
+    attributeId: z.number(),
+    value: z.string().min(1, "Giá trị không được để trống"),
+  })).optional().default([]),
+  images: z.array(z.object({
+    id: z.number().optional(),
+    imageUrl: z.string().min(1, "URL ảnh không được để trống"),
+    displayOrder: z.number().optional().default(0),
+  })).optional().default([]),
 });
 
 export const CreateProductSchema = ProductBase;

@@ -16,6 +16,8 @@ import {
 } from "@/constants/catalog/product.constants";
 import { TableControl } from "@/components/common/TableControl";
 import { productService } from "@/services/catalog/product.service";
+import { brandService } from "@/services/catalog/brand.service";
+import { categoryService } from "@/services/catalog/category.service";
 import { ProductResponse } from "@/types/catalog/product.types";
 import { ProductTableRow } from "./ProductTableRow";
 
@@ -33,6 +35,10 @@ export default function ProductList({ isTrash = false }: { isTrash?: boolean }) 
   const [debouncedSearch, setDebouncedSearch] = useState(searchTerm);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [brandFilter, setBrandFilter] = useState<string | number>("");
+  const [categoryFilter, setCategoryFilter] = useState<string | number>("");
+  const [brandOptions, setBrandOptions] = useState<{ id: string | number; name: string }[]>([]);
+  const [categoryOptions, setCategoryOptions] = useState<{ id: string | number; name: string }[]>([]);
   const isFirstLoad = useRef(true);
 
   // Debounce search term
@@ -43,11 +49,30 @@ export default function ProductList({ isTrash = false }: { isTrash?: boolean }) 
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
+  // Fetch brand and category options for filters
+  useEffect(() => {
+    const fetchOptions = async () => {
+      try {
+        const [brandRes, catRes] = await Promise.all([
+          brandService.getAll({ size: 99 }),
+          categoryService.getAll({ size: 99 }),
+        ]);
+        setBrandOptions([{ id: "", name: "Tất cả" }, ...(brandRes.data ?? []).map(b => ({ id: String(b.id), name: b.name }))]);
+        setCategoryOptions([{ id: "", name: "Tất cả" }, ...(catRes.data ?? []).map(c => ({ id: String(c.id), name: c.name }))]);
+      } catch {
+        // ignore
+      }
+    };
+    fetchOptions();
+  }, []);
+
   const fetchFn = useCallback(
     () => isTrash
       ? productService.getAllDeleted({
         keyword: debouncedSearch || undefined,
         status: (statusFilter as string) || undefined,
+        brandId: brandFilter ? Number(brandFilter) : undefined,
+        categoryId: categoryFilter ? Number(categoryFilter) : undefined,
         startDate: startDate || undefined,
         endDate: endDate || undefined,
         page,
@@ -56,12 +81,14 @@ export default function ProductList({ isTrash = false }: { isTrash?: boolean }) 
       : productService.getAll({
         keyword: debouncedSearch || undefined,
         status: (statusFilter as string) || undefined,
+        brandId: brandFilter ? Number(brandFilter) : undefined,
+        categoryId: categoryFilter ? Number(categoryFilter) : undefined,
         startDate: startDate || undefined,
         endDate: endDate || undefined,
         page,
         size: pageSize,
       } as any),
-    [isTrash, debouncedSearch, statusFilter, startDate, endDate, page, pageSize]
+    [isTrash, debouncedSearch, statusFilter, brandFilter, categoryFilter, startDate, endDate, page, pageSize]
   );
 
   const { data: productData, meta, loading, reload } = useApiData<ProductResponse>({ fetchFn });
@@ -154,8 +181,20 @@ export default function ProductList({ isTrash = false }: { isTrash?: boolean }) 
 
   const handleClearFilter = () => {
     setStatusFilter("");
+    setBrandFilter("");
+    setCategoryFilter("");
     setStartDate("");
     setEndDate("");
+    setPage(1);
+  };
+
+  const handleBrandFilterChange = (value: string | number) => {
+    setBrandFilter(value);
+    setPage(1);
+  };
+
+  const handleCategoryFilterChange = (value: string | number) => {
+    setCategoryFilter(value);
     setPage(1);
   };
 
@@ -167,6 +206,22 @@ export default function ProductList({ isTrash = false }: { isTrash?: boolean }) 
       onChange: handleStatusFilterChange,
       options: PRODUCT_STATUS_OPTIONS,
       placeholder: "Trạng thái"
+    },
+    {
+      type: "select",
+      id: "brandId",
+      value: brandFilter,
+      onChange: handleBrandFilterChange,
+      options: brandOptions,
+      placeholder: "Nhãn hàng"
+    },
+    {
+      type: "select",
+      id: "categoryId",
+      value: categoryFilter,
+      onChange: handleCategoryFilterChange,
+      options: categoryOptions,
+      placeholder: "Danh mục"
     },
     {
       type: "date",
