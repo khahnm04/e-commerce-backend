@@ -1,4 +1,5 @@
 "use client"
+import { useMemo } from "react";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa6";
 import { CustomSelect } from "./CustomSelect";
 import { PageMetadata } from "@/types/common/api.types";
@@ -17,6 +18,12 @@ const PAGE_SIZE_OPTIONS = [
 ];
 
 export const Pagination = ({ meta, onPageChange, onPageSizeChange }: PaginationProps) => {
+  // Hooks must be called before any early returns (Rules of Hooks)
+  const pageOptions = useMemo(() => Array.from({ length: meta?.totalPages ?? 0 }, (_, i) => ({
+    id: i + 1,
+    name: `Trang ${i + 1}`,
+  })), [meta?.totalPages]);
+
   if (!meta || meta.totalElements === 0) return null;
 
   const { pageNo, pageSize, totalElements, totalPages } = meta;
@@ -26,11 +33,6 @@ export const Pagination = ({ meta, onPageChange, onPageSizeChange }: PaginationP
 
   const startItem = (pageNo - 1) * pageSize + 1;
   const endItem = Math.min(pageNo * pageSize, totalElements);
-
-  const pageOptions = Array.from({ length: totalPages }, (_, i) => ({
-    id: i + 1,
-    name: `Trang ${i + 1}`,
-  }));
 
   return (
     <div className="flex items-center gap-[16px] mt-[16px] flex-wrap">

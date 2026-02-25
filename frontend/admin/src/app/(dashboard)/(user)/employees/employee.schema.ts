@@ -22,7 +22,10 @@ export const CreateEmployeeSchema = EmployeeBase.extend({
   path: ["confirmPassword"],
 });
 
-export const UpdateEmployeeSchema = EmployeeBase;
+export const UpdateEmployeeSchema = EmployeeBase.extend({
+  password: z.string().optional(),
+  confirmPassword: z.string().optional(),
+});
 
 export type CreateEmployeeValues = z.infer<typeof CreateEmployeeSchema>;
 export type UpdateEmployeeValues = z.infer<typeof UpdateEmployeeSchema>;

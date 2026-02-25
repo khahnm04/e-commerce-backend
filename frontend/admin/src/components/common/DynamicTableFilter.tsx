@@ -53,14 +53,16 @@ export const DynamicTableFilter = ({
               <>
                 <input
                   type="date"
-                  className="border-0 outline-none font-[700] text-[14px] text-[var(--color-text)] cursor-pointer w-[110px]"
+                  className="border-0 outline-none font-[700] text-[14px]
+                    text-[var(--color-text)] cursor-pointer w-[110px]"
                   value={item.startValue ?? ""}
                   onChange={(e) => item.onStartChange?.(e.target.value)}
                 />
                 <span>-</span>
                 <input
                   type="date"
-                  className="border-0 outline-none font-[700] text-[14px] text-[var(--color-text)] cursor-pointer w-[110px]"
+                  className="border-0 outline-none font-[700] text-[14px]
+                    text-[var(--color-text)] cursor-pointer w-[110px]"
                   value={item.endValue ?? ""}
                   onChange={(e) => item.onEndChange?.(e.target.value)}
                 />

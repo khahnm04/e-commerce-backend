@@ -7,6 +7,7 @@ import { UserTimestamp } from "@/components/common/UserTimestamp";
 import { CustomSelect } from "@/components/common/CustomSelect";
 import { CATEGORY_STATUS_OPTIONS } from "@/constants/catalog/category.constants";
 import { CategoryResponse } from "@/types/catalog/category.types";
+import { getStatusColorClass } from "@/lib/format-utils";
 
 interface CategoryTableRowProps {
   item: CategoryResponse;
@@ -29,17 +30,6 @@ export const CategoryTableRow = ({
 }: CategoryTableRowProps) => {
 
   const updateStatusOptions = CATEGORY_STATUS_OPTIONS.filter(opt => opt.id !== "");
-
-  const getStatusColorClass = (status: string) => {
-    switch (status) {
-      case "ACTIVE":
-        return "text-[#10B981]";
-      case "INACTIVE":
-        return "text-[#F59E0B]";
-      default:
-        return "";
-    }
-  };
 
   return (
     <tr>
@@ -99,7 +89,11 @@ export const CategoryTableRow = ({
         />
       </TableCell>
 
-      <td className="py-[8px] px-[15px] text-center border-b border-[rgba(151,151,151,0.6)] text-[14px] font-[600] text-[var(--color-text)]">
+      <td
+        className="py-[8px] px-[15px] text-center border-b
+          border-[rgba(151,151,151,0.6)] text-[14px] font-[600]
+          text-[var(--color-text)]"
+      >
         <ActionGroup
           isTrash={isTrash}
           editLink={isTrash ? undefined : `/categories/${item.slug || item.id}`}

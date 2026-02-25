@@ -43,7 +43,10 @@ export const TableControl = ({
   return (
     <>
       {!isTrash && filterList.length > 0 && (
-        <DynamicTableFilter filters={filterList} onClearFilter={onClearFilter} />
+        <DynamicTableFilter
+          filters={filterList}
+          onClearFilter={onClearFilter}
+        />
       )}
 
       <TableAction
@@ -53,8 +56,11 @@ export const TableControl = ({
         createLabel={isTrash ? undefined : createLabel}
         trashLink={isTrash ? undefined : trashLink}
       >
-        <div className="lg:px-[24px] lg:py-[12px] px-[15px] py-[10px] w-[180px] flex justify-center items-center gap-[12px]
-         border-r border-[#D5D5D5] font-[700] text-[14px] text-[var(--color-text)]">
+        <div
+          className="lg:px-[24px] lg:py-[12px] px-[15px] py-[10px] w-[180px]
+            flex justify-center items-center gap-[12px] border-r
+            border-[#D5D5D5] font-[700] text-[14px] text-[var(--color-text)]"
+        >
           <CustomSelect
             value={actionFilter}
             onChange={onActionFilterChange}
@@ -62,10 +68,14 @@ export const TableControl = ({
             placeholder="Hành động"
           />
         </div>
-        <div className="lg:px-[24px] lg:py-[12px] px-[15px] py-[10px] inline-flex items-center gap-[12px] border-[#D5D5D5]
-         font-[700] text-[14px] text-[var(--color-text)]">
+        <div
+          className="lg:px-[24px] lg:py-[12px] px-[15px] py-[10px]
+            inline-flex items-center gap-[12px] border-[#D5D5D5]
+            font-[700] text-[14px] text-[var(--color-text)]"
+        >
           <button
-            className="bg-transparent border-0 font-[600] text-[14px] text-[#EA0234] cursor-pointer hover:underline"
+            className="bg-transparent border-0 font-[600] text-[14px]
+              text-[#EA0234] cursor-pointer hover:underline"
             onClick={onApplyAction}
           >
             Áp dụng

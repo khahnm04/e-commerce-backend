@@ -21,6 +21,4 @@ export const BRAND_ACTION_OPTIONS = [
     { id: "delete", name: "Xóa" },
 ];
 
-export const BRAND_TRASH_ACTION_OPTIONS = [
-    { id: "restore", name: "Khôi phục" },
-];
+export { TRASH_ACTION_OPTIONS as BRAND_TRASH_ACTION_OPTIONS } from "@/constants/common.constants";

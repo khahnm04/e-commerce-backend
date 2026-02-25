@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useMemo } from "react";
 import dynamic from "next/dynamic";
 import type { Editor as TinyMCEEditor } from "tinymce";
 
@@ -22,7 +22,7 @@ export function useTinyMCE({
 }: UseTinyMCEProps = {}) {
   const editorRef = useRef<TinyMCEEditor | null>(null);
 
-  const TinyMCEEditorComponent = (
+  const TinyMCEEditorComponent = useMemo(() => (
     <Editor
       apiKey={process.env.NEXT_PUBLIC_API_KEY_TINYMCE}
       onInit={(_, editor) => (editorRef.current = editor)}
@@ -61,7 +61,8 @@ export function useTinyMCE({
           "body { font-family:Helvetica,Arial,sans-serif; font-size:14px; }",
       }}
     />
-  );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  ), [initialValue, height]);
 
   return { TinyMCEEditorComponent, editorRef };
 }

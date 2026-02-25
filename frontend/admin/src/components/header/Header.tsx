@@ -80,7 +80,10 @@ export const Header = (props: {
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (notificationDropdownRef.current && !notificationDropdownRef.current.contains(event.target as Node)) {
+      if (
+        notificationDropdownRef.current &&
+        !notificationDropdownRef.current.contains(event.target as Node)
+      ) {
         setShowNotificationDropdown(false);
       }
     };
@@ -105,7 +108,10 @@ export const Header = (props: {
 
   return (
     <>
-      <header className="bg-[#FFFFFF] border-b border-[#E0E0E0] h-[70px] fixed top-0 left-0 w-full z-[900] flex">
+      <header
+        className="bg-[#FFFFFF] border-b border-[#E0E0E0] h-[70px]
+          fixed top-0 left-0 w-full z-[900] flex"
+      >
         {/* Logo */}
         <div className="sm:w-[240px] w-auto sm:ml-0 ml-[15px] flex items-center justify-center">
           <Link
@@ -119,7 +125,10 @@ export const Header = (props: {
         {/* End Logo */}
 
         {/* Right */}
-        <div className="flex-1 flex justify-end items-center sm:gap-[40px] gap-[20px] sm:mr-[30px] mr-[15px]">
+        <div
+          className="flex-1 flex justify-end items-center
+            sm:gap-[40px] gap-[20px] sm:mr-[30px] mr-[15px]"
+        >
           <div className="relative cursor-pointer" ref={notificationDropdownRef}>
             <div onClick={() => setShowNotificationDropdown(!showNotificationDropdown)} className="relative">
               <img
@@ -127,23 +136,36 @@ export const Header = (props: {
                 alt=""
                 className="w-[24px] h-auto"
               />
-              <span className="h-[16px] min-w-[16px] bg-[#F93C65] font-[700] text-[12px] text-[#FFFFFF] py-0 px-[4px] rounded-[25px] absolute top-[-5px] right-[-4px]">
+              <span
+                className="h-[16px] min-w-[16px] bg-[#F93C65] font-[700]
+                  text-[12px] text-[#FFFFFF] py-0 px-[4px] rounded-[25px]
+                  absolute top-[-5px] right-[-4px]"
+              >
                 {unreadCount}
               </span>
             </div>
 
             {showNotificationDropdown && (
-              <div className="absolute right-0 mt-2 w-[300px] bg-white rounded-[8px] shadow-lg border border-[#E0E0E0] overflow-hidden z-10">
+              <div
+                className="absolute right-0 mt-2 w-[300px] bg-white
+                  rounded-[8px] shadow-lg border border-[#E0E0E0]
+                  overflow-hidden z-10"
+              >
                 <div className="p-4 border-b border-[#E0E0E0] font-bold text-[16px]">Thông báo</div>
                 <div className="max-h-[300px] overflow-y-auto">
                   {notifications.length > 0 ? (
                     notifications.map((notif) => (
                       <div
                         key={notif.id}
-                        className={`p-4 border-b border-[#E0E0E0] hover:bg-gray-50 cursor-pointer ${!notif.read ? 'bg-blue-50' : ''}`}
+                        className={`p-4 border-b border-[#E0E0E0]
+                          hover:bg-gray-50 cursor-pointer
+                          ${!notif.read ? 'bg-blue-50' : ''}`}
                         onClick={() => handleNotificationClick(notif.id)}
                       >
-                        <div className={`font-semibold text-[14px] ${!notif.read ? 'text-blue-700' : 'text-gray-800'}`}>
+                        <div
+                          className={`font-semibold text-[14px]
+                            ${!notif.read ? 'text-blue-700' : 'text-gray-800'}`}
+                        >
                           {notif.title}
                           {!notif.read && <span className="ml-2 w-2 h-2 bg-blue-500 rounded-full inline-block"></span>}
                         </div>
@@ -161,7 +183,11 @@ export const Header = (props: {
               </div>
             )}
           </div>
-          <UserDropdown userName="Le Van A" userRole="Admin" avatarSrc="/assets/images/avatar.jpg" />
+          <UserDropdown
+            userName="Le Van A"
+            userRole="Admin"
+            avatarSrc="/assets/images/avatar.jpg"
+          />
           <button
             className="lg:hidden inline-block text-[24px] bg-transparent p-0 border-0 cursor-pointer"
             onClick={() => setActiveSider(!activeSider)}

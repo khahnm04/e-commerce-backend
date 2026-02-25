@@ -15,7 +15,6 @@ export interface CloudinarySignatureResponse {
 export const getUploadSignature = () =>
     sendRequest<ApiResponse<CloudinarySignatureResponse>>("/upload/signature", {
         method: "GET",
-        credentials: "include",
     });
 
 /**

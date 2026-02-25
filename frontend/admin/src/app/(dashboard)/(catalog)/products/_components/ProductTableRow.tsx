@@ -7,6 +7,7 @@ import { UserTimestamp } from "@/components/common/UserTimestamp";
 import { CustomSelect } from "@/components/common/CustomSelect";
 import { PRODUCT_STATUS_OPTIONS } from "@/constants/catalog/product.constants";
 import { ProductResponse } from "@/types/catalog/product.types";
+import { getStatusColorClass, formatCurrency } from "@/lib/format-utils";
 
 interface ProductTableRowProps {
   item: ProductResponse;
@@ -28,25 +29,7 @@ export const ProductTableRow = ({
   onSelect
 }: ProductTableRowProps) => {
   const updateStatusOptions = PRODUCT_STATUS_OPTIONS.filter(opt => opt.id !== "");
-
-  const getStatusColorClass = (status: string) => {
-    switch (status) {
-      case "ACTIVE":
-        return "text-[#10B981]";
-      case "INACTIVE":
-        return "text-[#F59E0B]";
-      case "OUT_OF_STOCK":
-        return "text-[#EF4444]";
-      case "PENDING":
-        return "text-[#3B82F6]";
-      case "DISCONTINUED":
-        return "text-[#6B7280]";
-      default:
-        return "";
-    }
-  };
-
-  const formattedPrice = new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(item.price);
+  const formattedPrice = formatCurrency(item.price);
 
   return (
     <tr>
@@ -104,7 +87,11 @@ export const ProductTableRow = ({
         />
       </TableCell>
 
-      <td className="py-[8px] px-[15px] text-center border-b border-[rgba(151,151,151,0.6)] text-[14px] font-[600] text-[var(--color-text)]">
+      <td
+        className="py-[8px] px-[15px] text-center border-b
+          border-[rgba(151,151,151,0.6)] text-[14px] font-[600]
+          text-[var(--color-text)]"
+      >
         <ActionGroup
           isTrash={isTrash}
           editLink={isTrash ? undefined : `/products/${item.slug || item.id}`}

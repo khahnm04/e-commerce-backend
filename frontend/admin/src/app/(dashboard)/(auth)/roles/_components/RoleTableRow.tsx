@@ -59,7 +59,11 @@ export const RoleTableRow = ({
         />
       </TableCell>
 
-      <td className="py-[8px] px-[15px] text-center border-b border-[rgba(151,151,151,0.6)] text-[14px] font-[600] text-[var(--color-text)]">
+      <td
+        className="py-[8px] px-[15px] text-center border-b
+          border-[rgba(151,151,151,0.6)] text-[14px] font-[600]
+          text-[var(--color-text)]"
+      >
         {isTrash ? (
           <ActionGroup
             isTrash={true}

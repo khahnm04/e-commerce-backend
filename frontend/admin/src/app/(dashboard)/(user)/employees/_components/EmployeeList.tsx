@@ -1,12 +1,11 @@
 "use client";
-import React, { useState, useCallback, useEffect, useRef } from "react";
-import { toast } from "react-hot-toast";
+import React, { useCallback, useMemo } from "react";
 import { FilterConfig } from "@/components/common/DynamicTableFilter";
 import { DataTable } from "@/components/common/DataTable";
 import { ConfirmModal } from "@/components/common/ConfirmModal";
 import { Pagination } from "@/components/common/Pagination";
-import { useTableManager } from "@/hooks/useTableManager";
-import { useApiData } from "@/hooks/useApiData";
+import { useListPage } from "@/hooks/useListPage";
+import { useSelectOptions } from "@/hooks/useSelectOptions";
 import {
   EMPLOYEE_TABLE_HEADERS,
   EMPLOYEE_STATUS_OPTIONS,
@@ -19,185 +18,70 @@ import { branchService } from "@/services/branch/branch.service";
 import { EmployeeResponse } from "@/types/user/employee.types";
 import { EmployeeTableRow } from "./EmployeeTableRow";
 
+interface BranchSimple {
+  id: number;
+  name: string;
+}
+
+const mapBranchToOption = (item: BranchSimple) => ({
+  id: String(item.id),
+  name: item.name,
+});
+
 export default function EmployeeList({ isTrash = false }: { isTrash?: boolean }) {
-  const {
-    searchTerm, setSearchTerm,
-    actionFilter, setActionFilter,
-    statusFilter, setStatusFilter,
-    isModalOpen, selectedItem,
-    handleOpenDeleteModal, handleCloseModal,
-  } = useTableManager<EmployeeResponse>();
+  const branchOptions = useSelectOptions<BranchSimple>({
+    fetchFn: branchService.getAll as (params: Record<string, unknown>) => ReturnType<typeof branchService.getAll>,
+    mapFn: mapBranchToOption,
+  });
 
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
-  const [debouncedSearch, setDebouncedSearch] = useState(searchTerm);
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-  const [branchFilter, setBranchFilter] = useState<string | number>("");
-  const [branchOptions, setBranchOptions] = useState<{ id: string | number; name: string }[]>([{ id: "", name: "Tất cả" }]);
-  const isFirstLoad = useRef(true);
-
-  // Fetch branch options
-  useEffect(() => {
-    const fetchBranches = async () => {
-      try {
-        const res = await branchService.getAll();
-        const branches = (res.data ?? []).map(b => ({ id: String(b.id), name: b.name }));
-        setBranchOptions([{ id: "", name: "Tất cả" }, ...branches]);
-      } catch {
-        // ignore
-      }
-    };
-    fetchBranches();
-  }, []);
-
-  // Debounce search term
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(searchTerm);
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [searchTerm]);
-
-  const fetchFn = useCallback(
-    () => isTrash
-      ? employeeService.getAllDeleted({
-        keyword: debouncedSearch || undefined,
-        status: (statusFilter as string) || undefined,
-        branchId: branchFilter ? Number(branchFilter) : undefined,
-        startDate: startDate || undefined,
-        endDate: endDate || undefined,
-        page,
-        size: pageSize,
-      } as Parameters<typeof employeeService.getAllDeleted>[0])
-      : employeeService.getAll({
-        keyword: debouncedSearch || undefined,
-        status: (statusFilter as string) || undefined,
-        branchId: branchFilter ? Number(branchFilter) : undefined,
-        startDate: startDate || undefined,
-        endDate: endDate || undefined,
-        page,
-        size: pageSize,
-      } as Parameters<typeof employeeService.getAll>[0]),
-    [isTrash, debouncedSearch, statusFilter, branchFilter, startDate, endDate, page, pageSize]
+  const buildFilterParams = useCallback(
+    ({ keyword, page, size, filters, dateRange }: Parameters<NonNullable<Parameters<typeof useListPage>[0]["buildFilterParams"]>>[0]) => ({
+      keyword,
+      page,
+      size,
+      status: (filters.status as string) || undefined,
+      branchId: filters.branchId ? Number(filters.branchId) : undefined,
+      startDate: dateRange.startDate || undefined,
+      endDate: dateRange.endDate || undefined,
+    }),
+    []
   );
 
-  const { data: employeeData, meta, loading, reload } = useApiData<EmployeeResponse>({ fetchFn });
+  const {
+    searchTerm, handleSearchChange,
+    setPage, handlePageSizeChange,
+    filters, setFilter, dateRange, setStartDate, setEndDate,
+    handleClearFilter,
+    actionFilter, setActionFilter,
+    data, meta, loading, isFirstLoad,
+    isSelected, isSelectAll,
+    handleSelectAll, handleSelectItem,
+    isModalOpen, selectedItem,
+    handleOpenDeleteModal, handleCloseModal,
+    handleConfirmDelete, handleRestore,
+    handleStatusChange, handleApplyAction,
+  } = useListPage<EmployeeResponse, Parameters<typeof employeeService.getAll>[0]>({
+    service: employeeService,
+    isTrash,
+    entityName: "nhân viên",
+    bulkActionKey: "employees",
+    buildFilterParams,
+  });
 
-  useEffect(() => {
-    if (!loading) isFirstLoad.current = false;
-  }, [loading]);
-
-  const [selectedIds, setSelectedIds] = useState<(string | number)[]>([]);
-
-  const handleSelectAll = () => {
-    setSelectedIds(
-      selectedIds.length === employeeData.length && employeeData.length > 0
-        ? []
-        : employeeData.map(i => i.id)
-    );
-  };
-
-  const handleSelectItem = (id: string | number) => {
-    setSelectedIds(prev =>
-      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
-    );
-  };
-
-  const handleConfirmDelete = async () => {
-    if (selectedItem) {
-      await employeeService.softDelete(selectedItem.id);
-      reload();
-    }
-    handleCloseModal();
-  };
-
-  const handleRestore = async (id: number) => {
-    try {
-      await employeeService.restore(id);
-      toast.success("Khôi phục nhân viên thành công!");
-      reload();
-    } catch (error: unknown) {
-      const err = error as Error;
-      toast.error(err?.message || "Có lỗi xảy ra khi khôi phục!");
-    }
-  };
-
-  const handleStatusChange = async (id: string | number, newStatus: string) => {
-    try {
-      await employeeService.updateStatus(id, {
-        status: newStatus as EmployeeResponse["status"],
-      });
-      toast.success("Cập nhật trạng thái thành công!");
-      reload();
-    } catch (error: unknown) {
-      const err = error as Error;
-      toast.error(err?.message || "Có lỗi xảy ra!");
-    }
-  };
-
-  const handleApplyAction = async () => {
-    if (!actionFilter || selectedIds.length === 0) {
-      toast.error("Vui lòng chọn ít nhất 1 nhân viên và hành động!");
-      return;
-    }
-    try {
-      await employeeService.bulkAction({
-        employees: selectedIds.map(id => Number(id)),
-        action: String(actionFilter),
-      });
-      toast.success("Thực hiện hành động thành công!");
-      setSelectedIds([]);
-      setActionFilter("");
-      reload();
-    } catch (error: unknown) {
-      const err = error as Error;
-      toast.error(err?.message || "Có lỗi xảy ra!");
-    }
-  };
-
-  const handleSearchChange = (val: string) => {
-    setSearchTerm(val);
-    setPage(1);
-  };
-
-  const handlePageSizeChange = (size: number) => {
-    setPageSize(size);
-    setPage(1);
-  };
-
-  const handleStatusFilterChange = (value: string | number) => {
-    setStatusFilter(value);
-    setPage(1);
-  };
-
-  const handleBranchFilterChange = (value: string | number) => {
-    setBranchFilter(value);
-    setPage(1);
-  };
-
-  const handleClearFilter = () => {
-    setStatusFilter("");
-    setBranchFilter("");
-    setStartDate("");
-    setEndDate("");
-    setPage(1);
-  };
-
-  const filterList: FilterConfig[] = [
+  const filterList: FilterConfig[] = useMemo(() => [
     {
       type: "select",
       id: "status",
-      value: statusFilter,
-      onChange: handleStatusFilterChange,
+      value: filters.status ?? "",
+      onChange: (val: string | number) => setFilter("status", val),
       options: EMPLOYEE_STATUS_OPTIONS,
       placeholder: "Trạng thái"
     },
     {
       type: "select",
       id: "branch",
-      value: branchFilter,
-      onChange: handleBranchFilterChange,
+      value: filters.branchId ?? "",
+      onChange: (val: string | number) => setFilter("branchId", val),
       options: branchOptions,
       placeholder: "Chi nhánh"
     },
@@ -205,14 +89,14 @@ export default function EmployeeList({ isTrash = false }: { isTrash?: boolean })
       type: "date",
       id: "date-range",
       className: "!w-auto",
-      startValue: startDate,
-      endValue: endDate,
-      onStartChange: (val: string) => { setStartDate(val); setPage(1); },
-      onEndChange: (val: string) => { setEndDate(val); setPage(1); },
+      startValue: dateRange.startDate,
+      endValue: dateRange.endDate,
+      onStartChange: setStartDate,
+      onEndChange: setEndDate,
     },
-  ];
+  ], [filters, branchOptions, dateRange, setFilter, setStartDate, setEndDate]);
 
-  if (loading && isFirstLoad.current) return <div className="text-center py-10 text-[var(--color-text)]">Đang tải dữ liệu...</div>;
+  if (loading && isFirstLoad) return <div className="text-center py-10 text-[var(--color-text)]">Đang tải dữ liệu...</div>;
 
   return (
     <>
@@ -232,10 +116,10 @@ export default function EmployeeList({ isTrash = false }: { isTrash?: boolean })
 
       <DataTable
         headers={EMPLOYEE_TABLE_HEADERS}
-        isSelectAll={employeeData.length > 0 && selectedIds.length === employeeData.length}
+        isSelectAll={isSelectAll}
         onSelectAll={handleSelectAll}
       >
-        {employeeData.map((item) => (
+        {data.map((item) => (
           <EmployeeTableRow
             key={item.id}
             item={item}
@@ -243,7 +127,7 @@ export default function EmployeeList({ isTrash = false }: { isTrash?: boolean })
             onDeleteClick={() => handleOpenDeleteModal(item)}
             onRestoreClick={() => handleRestore(item.id)}
             onStatusChange={handleStatusChange}
-            isSelected={selectedIds.includes(item.id)}
+            isSelected={isSelected(item.id)}
             onSelect={() => handleSelectItem(item.id)}
           />
         ))}

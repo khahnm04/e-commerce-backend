@@ -6,5 +6,5 @@ const BASE_ENDPOINT = "/admin/permissions";
 
 export const permissionService = {
     getAll: () =>
-        sendRequest<ApiResponse<PermissionResponse[]>>(`${BASE_ENDPOINT}`, { method: "GET", credentials: "include" }),
+        sendRequest<ApiResponse<PermissionResponse[]>>(`${BASE_ENDPOINT}`, { method: "GET" }),
 };

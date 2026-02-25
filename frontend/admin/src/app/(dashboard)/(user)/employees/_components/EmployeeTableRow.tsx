@@ -8,6 +8,7 @@ import { UserTimestamp } from "@/components/common/UserTimestamp";
 import { CustomSelect } from "@/components/common/CustomSelect";
 import { EMPLOYEE_STATUS_OPTIONS } from "@/constants/user/employee.constants";
 import { EmployeeResponse } from "@/types/user/employee.types";
+import { getStatusColorClass } from "@/lib/format-utils";
 
 interface EmployeeTableRowProps {
     item: EmployeeResponse;
@@ -30,21 +31,6 @@ export const EmployeeTableRow = ({
 }: EmployeeTableRowProps) => {
 
     const updateStatusOptions = EMPLOYEE_STATUS_OPTIONS.filter(opt => opt.id !== "");
-
-    const getStatusColorClass = (status: string) => {
-        switch (status) {
-            case "ACTIVE":
-                return "text-[#10B981]";
-            case "INACTIVE":
-                return "text-[#F59E0B]";
-            case "BANNED":
-                return "text-[#EF4444]";
-            case "LOCKED":
-                return "text-[#6B7280]";
-            default:
-                return "";
-        }
-    };
 
     return (
         <tr>
@@ -116,7 +102,11 @@ export const EmployeeTableRow = ({
                 />
             </TableCell>
 
-            <td className="py-[8px] px-[15px] text-center border-b border-[rgba(151,151,151,0.6)] text-[14px] font-[600] text-[var(--color-text)]">
+            <td
+                className="py-[8px] px-[15px] text-center border-b
+                    border-[rgba(151,151,151,0.6)] text-[14px] font-[600]
+                    text-[var(--color-text)]"
+            >
                 <ActionGroup
                     isTrash={isTrash}
                     editLink={isTrash ? undefined : `/employees/${item.id}`}

@@ -26,6 +26,4 @@ export const PRODUCT_ACTION_OPTIONS = [
   { id: "delete", name: "Xóa" },
 ];
 
-export const PRODUCT_TRASH_ACTION_OPTIONS = [
-  { id: "restore", name: "Khôi phục" },
-];
+export { TRASH_ACTION_OPTIONS as PRODUCT_TRASH_ACTION_OPTIONS } from "@/constants/common.constants";

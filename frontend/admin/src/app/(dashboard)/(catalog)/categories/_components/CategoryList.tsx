@@ -1,13 +1,11 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import React, { useState, useCallback, useEffect, useRef } from "react";
-import { toast } from "react-hot-toast";
+import React, { useCallback, useMemo } from "react";
 import { FilterConfig } from "@/components/common/DynamicTableFilter";
 import { DataTable } from "@/components/common/DataTable";
 import { ConfirmModal } from "@/components/common/ConfirmModal";
 import { Pagination } from "@/components/common/Pagination";
-import { useTableManager } from "@/hooks/useTableManager";
-import { useApiData } from "@/hooks/useApiData";
+import { useListPage } from "@/hooks/useListPage";
+import { useSelectOptions } from "@/hooks/useSelectOptions";
 import {
   CATEGORY_TABLE_HEADERS,
   CATEGORY_STATUS_OPTIONS,
@@ -19,184 +17,65 @@ import { categoryService } from "@/services/catalog/category.service";
 import { CategoryResponse } from "@/types/catalog/category.types";
 import { CategoryTableRow } from "./CategoryTableRow";
 
+const mapToOption = (item: { id: number; name: string }) => ({
+  id: String(item.id),
+  name: item.name,
+});
+
 export default function CategoryList({ isTrash = false }: { isTrash?: boolean }) {
-  const {
-    searchTerm, setSearchTerm,
-    actionFilter, setActionFilter,
-    statusFilter, setStatusFilter,
-    isModalOpen, selectedItem,
-    handleOpenDeleteModal, handleCloseModal,
-  } = useTableManager<CategoryResponse>();
+  const parentOptions = useSelectOptions<CategoryResponse>({
+    fetchFn: categoryService.getAll,
+    mapFn: mapToOption,
+  });
 
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
-  const [debouncedSearch, setDebouncedSearch] = useState(searchTerm);
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-  const [parentFilter, setParentFilter] = useState<string | number>("");
-  const [parentOptions, setParentOptions] = useState<{ id: string | number; name: string }[]>([]);
-  const isFirstLoad = useRef(true);
-
-  // Debounce search term
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(searchTerm);
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [searchTerm]);
-
-  // Fetch parent category options for filter
-  useEffect(() => {
-    const fetchParents = async () => {
-      try {
-        const res = await categoryService.getAll({ size: 99 });
-        const categories = (res.data ?? []).map(c => ({ id: String(c.id), name: c.name }));
-        setParentOptions([{ id: "", name: "Tất cả" }, ...categories]);
-      } catch {
-        // ignore
-      }
-    };
-    fetchParents();
-  }, []);
-
-  const fetchFn = useCallback(
-    () => isTrash
-      ? categoryService.getAllDeleted({
-        keyword: debouncedSearch || undefined,
-        status: (statusFilter as string) || undefined,
-        parentId: parentFilter ? Number(parentFilter) : undefined,
-        startDate: startDate || undefined,
-        endDate: endDate || undefined,
-        page,
-        size: pageSize,
-      } as any)
-      : categoryService.getAll({
-        keyword: debouncedSearch || undefined,
-        status: (statusFilter as string) || undefined,
-        parentId: parentFilter ? Number(parentFilter) : undefined,
-        startDate: startDate || undefined,
-        endDate: endDate || undefined,
-        page,
-        size: pageSize,
-      } as any),
-    [isTrash, debouncedSearch, statusFilter, parentFilter, startDate, endDate, page, pageSize]
+  const buildFilterParams = useCallback(
+    ({ keyword, page, size, filters, dateRange }: Parameters<NonNullable<Parameters<typeof useListPage>[0]["buildFilterParams"]>>[0]) => ({
+      keyword,
+      page,
+      size,
+      status: (filters.status as string) || undefined,
+      parentId: filters.parentId ? Number(filters.parentId) : undefined,
+      startDate: dateRange.startDate || undefined,
+      endDate: dateRange.endDate || undefined,
+    }),
+    []
   );
 
-  const { data: categoryData, meta, loading, reload } = useApiData<CategoryResponse>({ fetchFn });
+  const {
+    searchTerm, handleSearchChange,
+    setPage, handlePageSizeChange,
+    filters, setFilter, dateRange, setStartDate, setEndDate,
+    handleClearFilter,
+    actionFilter, setActionFilter,
+    data, meta, loading, isFirstLoad,
+    isSelected, isSelectAll,
+    handleSelectAll, handleSelectItem,
+    isModalOpen, selectedItem,
+    handleOpenDeleteModal, handleCloseModal,
+    handleConfirmDelete, handleRestore,
+    handleStatusChange, handleApplyAction,
+  } = useListPage<CategoryResponse, Parameters<typeof categoryService.getAll>[0]>({
+    service: categoryService,
+    isTrash,
+    entityName: "danh mục",
+    bulkActionKey: "categories",
+    buildFilterParams,
+  });
 
-  useEffect(() => {
-    if (!loading) isFirstLoad.current = false;
-  }, [loading]);
-
-  const [selectedIds, setSelectedIds] = useState<(string | number)[]>([]);
-
-  const handleSelectAll = () => {
-    setSelectedIds(
-      selectedIds.length === categoryData.length && categoryData.length > 0
-        ? []
-        : categoryData.map(i => i.id)
-    );
-  };
-
-  const handleSelectItem = (id: string | number) => {
-    setSelectedIds(prev =>
-      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
-    );
-  };
-
-  const handleConfirmDelete = async () => {
-    if (selectedItem) {
-      await categoryService.softDelete(selectedItem.id);
-      toast.success("Xóa danh mục thành công!");
-      reload();
-    }
-    handleCloseModal();
-  };
-
-  const handleRestore = async (id: number) => {
-    try {
-      await categoryService.restore(id);
-      toast.success("Khôi phục danh mục thành công!");
-      reload();
-    } catch (error: unknown) {
-      const err = error as Error;
-      toast.error(err?.message || "Có lỗi xảy ra khi khôi phục!");
-    }
-  };
-
-  const handleStatusChange = async (id: string | number, newStatus: string) => {
-    try {
-      await categoryService.updateStatus(id, { status: newStatus });
-      toast.success("Cập nhật trạng thái thành công!");
-      reload();
-    } catch (error: unknown) {
-      const err = error as Error;
-      toast.error(err?.message || "Có lỗi xảy ra!");
-    }
-  };
-
-  const handleApplyAction = async () => {
-    if (!actionFilter || selectedIds.length === 0) {
-      toast.error("Vui lòng chọn ít nhất 1 danh mục và hành động!");
-      return;
-    }
-    try {
-      await categoryService.bulkAction({
-        categories: selectedIds.map(id => Number(id)),
-        action: String(actionFilter),
-      });
-      toast.success("Thực hiện hành động thành công!");
-      setSelectedIds([]);
-      setActionFilter("");
-      reload();
-    } catch (error: unknown) {
-      const err = error as Error;
-      toast.error(err?.message || "Có lỗi xảy ra!");
-    }
-  };
-
-  const handleSearchChange = (val: string) => {
-    setSearchTerm(val);
-    setPage(1);
-  };
-
-  const handlePageSizeChange = (size: number) => {
-    setPageSize(size);
-    setPage(1);
-  };
-
-  const handleStatusFilterChange = (value: string | number) => {
-    setStatusFilter(value);
-    setPage(1);
-  };
-
-  const handleClearFilter = () => {
-    setStatusFilter("");
-    setParentFilter("");
-    setStartDate("");
-    setEndDate("");
-    setPage(1);
-  };
-
-  const handleParentFilterChange = (value: string | number) => {
-    setParentFilter(value);
-    setPage(1);
-  };
-
-  const filterList: FilterConfig[] = [
+  const filterList: FilterConfig[] = useMemo(() => [
     {
       type: "select",
       id: "status",
-      value: statusFilter,
-      onChange: handleStatusFilterChange,
+      value: filters.status ?? "",
+      onChange: (val: string | number) => setFilter("status", val),
       options: CATEGORY_STATUS_OPTIONS,
       placeholder: "Trạng thái"
     },
     {
       type: "select",
       id: "parentId",
-      value: parentFilter,
-      onChange: handleParentFilterChange,
+      value: filters.parentId ?? "",
+      onChange: (val: string | number) => setFilter("parentId", val),
       options: parentOptions,
       placeholder: "Danh mục cha"
     },
@@ -204,14 +83,14 @@ export default function CategoryList({ isTrash = false }: { isTrash?: boolean })
       type: "date",
       id: "date-range",
       className: "!w-auto",
-      startValue: startDate,
-      endValue: endDate,
-      onStartChange: (val: string) => { setStartDate(val); setPage(1); },
-      onEndChange: (val: string) => { setEndDate(val); setPage(1); },
+      startValue: dateRange.startDate,
+      endValue: dateRange.endDate,
+      onStartChange: setStartDate,
+      onEndChange: setEndDate,
     },
-  ];
+  ], [filters, parentOptions, dateRange, setFilter, setStartDate, setEndDate]);
 
-  if (loading && isFirstLoad.current) return <div className="text-center py-10 text-[var(--color-text)]">Đang tải dữ liệu...</div>;
+  if (loading && isFirstLoad) return <div className="text-center py-10 text-[var(--color-text)]">Đang tải dữ liệu...</div>;
 
   return (
     <>
@@ -231,10 +110,10 @@ export default function CategoryList({ isTrash = false }: { isTrash?: boolean })
 
       <DataTable
         headers={CATEGORY_TABLE_HEADERS}
-        isSelectAll={categoryData.length > 0 && selectedIds.length === categoryData.length}
+        isSelectAll={isSelectAll}
         onSelectAll={handleSelectAll}
       >
-        {categoryData.map((item) => (
+        {data.map((item) => (
           <CategoryTableRow
             key={item.id}
             item={item}
@@ -242,7 +121,7 @@ export default function CategoryList({ isTrash = false }: { isTrash?: boolean })
             onDeleteClick={() => handleOpenDeleteModal(item)}
             onRestoreClick={() => handleRestore(item.id)}
             onStatusChange={handleStatusChange}
-            isSelected={selectedIds.includes(item.id)}
+            isSelected={isSelected(item.id)}
             onSelect={() => handleSelectItem(item.id)}
           />
         ))}

@@ -21,6 +21,4 @@ export const CATEGORY_ACTION_OPTIONS = [
   { id: "delete", name: "Xóa" },
 ];
 
-export const CATEGORY_TRASH_ACTION_OPTIONS = [
-  { id: "restore", name: "Khôi phục" },
-];
+export { TRASH_ACTION_OPTIONS as CATEGORY_TRASH_ACTION_OPTIONS } from "@/constants/common.constants";

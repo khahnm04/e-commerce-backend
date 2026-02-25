@@ -11,3 +11,17 @@ export interface BaseEntity {
 
   deletedAt?: string | null;
 }
+
+export interface BaseFilterRequest {
+  page?: number;
+  size?: number;
+  sort?: string;
+  keyword?: string;
+  dateType?: string;
+  startDate?: string;
+  endDate?: string;
+}
+
+export interface BaseBulkActionRequest {
+  action: string;
+}

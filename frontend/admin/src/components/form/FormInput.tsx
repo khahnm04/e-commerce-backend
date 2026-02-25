@@ -15,7 +15,8 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
     return (
       <div className={`inner-group relative ${className}`}>
         <label
-          className="inner-label block font-[600] text-[14px] text-[#606060] mb-[11px]"
+          className="inner-label block font-[600] text-[14px]
+            text-[#606060] mb-[11px]"
           htmlFor={id}
         >
           {label}
@@ -40,7 +41,9 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
           {isPasswordType && (
             <button
               type="button"
-              className="absolute right-[16px] top-1/2 -translate-y-1/2 text-[18px] text-[#808080] hover:text-[#333] transition-colors bg-transparent border-0 cursor-pointer p-0"
+              className="absolute right-[16px] top-1/2 -translate-y-1/2
+                text-[18px] text-[#808080] hover:text-[#333] transition-colors
+                bg-transparent border-0 cursor-pointer p-0"
               onClick={() => setShowPassword(!showPassword)}
               tabIndex={-1}
             >

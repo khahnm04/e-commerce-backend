@@ -1,20 +1,14 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-// @ts-nocheck
 "use client";
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
-import { useForm, Controller } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import "filepond/dist/filepond.min.css";
-import "filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css";
-import { useFilePond } from "@/hooks/useFilePond";
 import { FormInput } from "@/components/form/FormInput";
-import { FormImageUpload } from "@/components/form/FormImageUpload";
-import { CustomSelect } from "@/components/common/CustomSelect";
 import { FormButton } from "@/components/form/FormButton";
 import { FormBackLink } from "@/components/form/FormBackLink";
+import { FormControlledSelect } from "@/components/form/FormControlledSelect";
+import { FormImageField } from "@/components/form/FormImageField";
 import {
   CreateCustomerSchema,
   UpdateCustomerSchema,
@@ -24,19 +18,11 @@ import {
 import { customerService } from "@/services/user/customer.service";
 import { CustomerResponse } from "@/types/user/customer.types";
 import { uploadToCloudinary } from "@/services/upload/upload.service";
+import { getFormOptions, GENDER_FORM_OPTIONS } from "@/constants/common.constants";
+import { CUSTOMER_STATUS_OPTIONS } from "@/constants/user/customer.constants";
+import { Gender, UserStatus } from "@/constants/enums";
 
-const STATUS_OPTIONS = [
-  { id: "ACTIVE", name: "Hoạt động" },
-  { id: "INACTIVE", name: "Tạm dừng" },
-  { id: "BANNED", name: "Bị cấm" },
-  { id: "LOCKED", name: "Bị khóa" },
-];
-
-const GENDER_OPTIONS = [
-  { id: "MALE", name: "Nam" },
-  { id: "FEMALE", name: "Nữ" },
-  { id: "OTHER", name: "Khác" },
-];
+const STATUS_OPTIONS = getFormOptions(CUSTOMER_STATUS_OPTIONS);
 
 interface CustomerFormProps {
   initialData?: CustomerResponse;
@@ -46,24 +32,12 @@ interface CustomerFormProps {
 export default function CustomerForm({ initialData, isReadOnly = false }: CustomerFormProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string>(initialData?.avatarUrl || "");
+  const selectedFileRef = useRef<File | null>(null);
   const isEditMode = !!initialData;
 
-  const handleAddFile = useCallback((file: File) => {
-    setSelectedFile(file);
-    setPreviewUrl(URL.createObjectURL(file));
+  const handleFileSelect = useCallback((file: File | null) => {
+    selectedFileRef.current = file;
   }, []);
-
-  const handleRemoveFile = useCallback(() => {
-    setSelectedFile(null);
-    setPreviewUrl(isEditMode ? (initialData?.avatarUrl || "") : "");
-  }, [isEditMode, initialData?.avatarUrl]);
-
-  useFilePond({
-    onAddFile: handleAddFile,
-    onRemoveFile: handleRemoveFile,
-  });
 
   const schema = isEditMode ? UpdateCustomerSchema : CreateCustomerSchema;
 
@@ -72,8 +46,8 @@ export default function CustomerForm({ initialData, isReadOnly = false }: Custom
     control,
     handleSubmit,
     formState: { errors },
-  } = useForm<CreateCustomerValues | UpdateCustomerValues>({
-    resolver: zodResolver(schema),
+  } = useForm<CreateCustomerValues>({
+    resolver: zodResolver(schema as any),
     defaultValues: {
       fullName: initialData?.fullName || "",
       email: initialData?.email || "",
@@ -82,17 +56,18 @@ export default function CustomerForm({ initialData, isReadOnly = false }: Custom
       avatarUrl: initialData?.avatarUrl || "",
       gender: initialData?.gender || "MALE",
       status: initialData?.status || "ACTIVE",
+      password: "",
+      confirmPassword: "",
     },
   });
 
-  const onSubmit = async (data: CreateCustomerValues | UpdateCustomerValues) => {
+  const onSubmit = async (data: CreateCustomerValues) => {
     try {
       setIsLoading(true);
 
-      // Upload avatar to Cloudinary if a new file is selected
       let avatarUrl = initialData?.avatarUrl || "";
-      if (selectedFile) {
-        avatarUrl = await uploadToCloudinary(selectedFile);
+      if (selectedFileRef.current) {
+        avatarUrl = await uploadToCloudinary(selectedFileRef.current);
       }
 
       if (isEditMode) {
@@ -102,22 +77,21 @@ export default function CustomerForm({ initialData, isReadOnly = false }: Custom
           phoneNumber: data.phoneNumber,
           dateOfBirth: data.dateOfBirth,
           avatarUrl: avatarUrl,
-          gender: data.gender,
-          status: data.status,
+          gender: data.gender as Gender,
+          status: data.status as UserStatus,
         });
         toast.success("Cập nhật khách hàng thành công!");
       } else {
-        const createData = data as CreateCustomerValues;
         await customerService.create({
-          fullName: createData.fullName,
-          email: createData.email,
-          phoneNumber: createData.phoneNumber,
-          password: createData.password,
-          confirmPassword: createData.confirmPassword,
-          dateOfBirth: createData.dateOfBirth,
+          fullName: data.fullName,
+          email: data.email,
+          phoneNumber: data.phoneNumber,
+          password: data.password,
+          confirmPassword: data.confirmPassword,
+          dateOfBirth: data.dateOfBirth,
           avatarUrl: avatarUrl,
-          gender: createData.gender,
-          status: createData.status,
+          gender: data.gender as Gender,
+          status: data.status as UserStatus,
         });
         toast.success("Tạo khách hàng mới thành công!");
       }
@@ -136,7 +110,7 @@ export default function CustomerForm({ initialData, isReadOnly = false }: Custom
     <div className="bg-white border border-[#B9B9B9] rounded-[14px] md:p-[50px] p-[20px]">
       <form
         className="grid md:grid-cols-2 grid-cols-1 gap-[30px]"
-        onSubmit={(e) => handleSubmit(onSubmit)(e).catch(() => { })}
+        onSubmit={(e) => handleSubmit(onSubmit as any)(e).catch(() => { })}
       >
         {/* Row 1: Họ tên + Email */}
         <FormInput
@@ -175,98 +149,34 @@ export default function CustomerForm({ initialData, isReadOnly = false }: Custom
         />
 
         {/* Row 3: Giới tính + Trạng thái */}
-        <Controller
+        <FormControlledSelect
           control={control}
           name="gender"
-          render={({ field }) => (
-            <div className="inner-group relative">
-              <label
-                className="inner-label block font-[600] text-[14px] text-[#606060] mb-[11px]"
-                htmlFor="gender"
-              >
-                Giới tính
-              </label>
-              <CustomSelect
-                options={GENDER_OPTIONS}
-                value={field.value ?? ""}
-                onChange={(val) => field.onChange(val)}
-                placeholder="Chọn giới tính"
-                disabled={isReadOnly}
-                classNameCustom={`
-                  bg-[#F5F6FA] border border-[#D5D5D5] rounded-[4px]
-                  px-[22px] font-[500] text-[14px] text-[var(--color-text)]
-                  w-full h-[52px] !block
-                  ${isReadOnly ? 'opacity-60 cursor-not-allowed' : ''}
-                `}
-              />
-            </div>
-          )}
+          label="Giới tính"
+          options={GENDER_FORM_OPTIONS}
+          placeholder="Chọn giới tính"
+          disabled={isReadOnly}
         />
 
-        <Controller
+        <FormControlledSelect
           control={control}
           name="status"
-          render={({ field }) => (
-            <div className="inner-group relative">
-              <label
-                className="inner-label block font-[600] text-[14px] text-[#606060] mb-[11px]"
-                htmlFor="status"
-              >
-                Trạng thái
-              </label>
-              <CustomSelect
-                options={STATUS_OPTIONS}
-                value={field.value ?? ""}
-                onChange={(val) => field.onChange(val)}
-                placeholder="Chọn trạng thái"
-                disabled={isReadOnly}
-                classNameCustom={`
-                  bg-[#F5F6FA] border border-[#D5D5D5] rounded-[4px]
-                  px-[22px] font-[500] text-[14px] text-[var(--color-text)]
-                  w-full h-[52px] !block
-                  ${isReadOnly ? 'opacity-60 cursor-not-allowed' : ''}
-                `}
-              />
-            </div>
-          )}
+          label="Trạng thái"
+          options={STATUS_OPTIONS}
+          placeholder="Chọn trạng thái"
+          disabled={isReadOnly}
         />
 
         {/* Row 4: Avatar upload - full width */}
-        {isReadOnly ? (
-          <div className="md:col-span-2">
-            <label className="block font-[600] text-[14px] text-[#606060] mb-[11px]">
-              Ảnh đại diện
-            </label>
-            {initialData?.avatarUrl ? (
-              <img
-                src={initialData.avatarUrl}
-                alt="Avatar"
-                className="w-[150px] h-auto object-cover rounded border"
-              />
-            ) : (
-              <p className="text-gray-400 text-sm italic">Không có ảnh đại diện</p>
-            )}
-          </div>
-        ) : (
-          <div className="md:col-span-2 flex items-center gap-[50px]">
-            <FormImageUpload
-              label="Ảnh đại diện"
-              id="avatar"
-              name="avatar"
-            />
-            {/* Preview block next to upload */}
-            {previewUrl && (
-              <div className="flex flex-col items-start gap-[11px] font-[600] text-[14px] text-[#606060] h-full">
-                <span>{selectedFile ? "Ảnh mới:" : "Ảnh hiện tại:"}</span>
-                <img
-                  src={previewUrl}
-                  alt="Avatar preview"
-                  className="w-[150px] h-[150px] object-cover rounded-[8px] border border-[#D5D5D5]"
-                />
-              </div>
-            )}
-          </div>
-        )}
+        <FormImageField
+          label="Ảnh đại diện"
+          id="avatar"
+          initialUrl={initialData?.avatarUrl}
+          isReadOnly={isReadOnly}
+          isEditMode={isEditMode}
+          noImageText="Không có ảnh đại diện"
+          onFileSelect={handleFileSelect}
+        />
 
         {/* Row 5 (create only): Password + Confirm Password - LAST ROW */}
         {!isEditMode && !isReadOnly && (
@@ -275,16 +185,16 @@ export default function CustomerForm({ initialData, isReadOnly = false }: Custom
               label="Mật khẩu"
               id="password"
               type="password"
-              {...register("password" as any)}
-              error={(errors as any).password?.message}
+              {...register("password")}
+              error={errors.password?.message}
             />
 
             <FormInput
               label="Xác nhận mật khẩu"
               id="confirmPassword"
               type="password"
-              {...register("confirmPassword" as any)}
-              error={(errors as any).confirmPassword?.message}
+              {...register("confirmPassword")}
+              error={errors.confirmPassword?.message}
             />
           </>
         )}

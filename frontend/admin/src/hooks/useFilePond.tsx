@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import * as FilePond from "filepond";
 
 import "filepond/dist/filepond.min.css";
@@ -14,6 +14,18 @@ interface UseFilePondOptions {
 }
 
 export const useFilePond = (options?: UseFilePondOptions) => {
+  // Use refs for callbacks to avoid stale closures.
+  // The useEffect below runs only once (mount), so without refs,
+  // the callbacks would be captured from the initial render and never update.
+  const onAddFileRef = useRef(options?.onAddFile);
+  const onRemoveFileRef = useRef(options?.onRemoveFile);
+
+  // Keep refs in sync with latest props
+  useEffect(() => {
+    onAddFileRef.current = options?.onAddFile;
+    onRemoveFileRef.current = options?.onRemoveFile;
+  });
+
   useEffect(() => {
     if (!isRegistered) {
       FilePond.registerPlugin(
@@ -34,12 +46,12 @@ export const useFilePond = (options?: UseFilePondOptions) => {
         labelIdle:
           '<span>+</span>',
         onaddfile: (_error, fileItem) => {
-          if (!_error && fileItem?.file && options?.onAddFile) {
-            options.onAddFile(fileItem.file as File);
+          if (!_error && fileItem?.file && onAddFileRef.current) {
+            onAddFileRef.current(fileItem.file as File);
           }
         },
         onremovefile: () => {
-          options?.onRemoveFile?.();
+          onRemoveFileRef.current?.();
         },
       })
     );
@@ -47,6 +59,5 @@ export const useFilePond = (options?: UseFilePondOptions) => {
     return () => {
       instances.forEach(instance => instance.destroy());
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 };

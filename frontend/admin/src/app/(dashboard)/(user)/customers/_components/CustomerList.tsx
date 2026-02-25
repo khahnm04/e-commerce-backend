@@ -1,12 +1,10 @@
 "use client";
-import React, { useState, useCallback, useEffect, useRef } from "react";
-import { toast } from "react-hot-toast";
+import React, { useCallback, useMemo } from "react";
 import { FilterConfig } from "@/components/common/DynamicTableFilter";
 import { DataTable } from "@/components/common/DataTable";
 import { ConfirmModal } from "@/components/common/ConfirmModal";
 import { Pagination } from "@/components/common/Pagination";
-import { useTableManager } from "@/hooks/useTableManager";
-import { useApiData } from "@/hooks/useApiData";
+import { useListPage } from "@/hooks/useListPage";
 import {
   CUSTOMER_TABLE_HEADERS,
   CUSTOMER_STATUS_OPTIONS,
@@ -20,169 +18,54 @@ import { CustomerResponse } from "@/types/user/customer.types";
 import { CustomerTableRow } from "./CustomerTableRow";
 
 export default function CustomerList({ isTrash = false }: { isTrash?: boolean }) {
-  const {
-    searchTerm, setSearchTerm,
-    actionFilter, setActionFilter,
-    statusFilter, setStatusFilter,
-    creatorFilter: genderFilter, setCreatorFilter: setGenderFilter,
-    isModalOpen, selectedItem,
-    handleOpenDeleteModal, handleCloseModal,
-  } = useTableManager<CustomerResponse>();
-
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
-  const [debouncedSearch, setDebouncedSearch] = useState(searchTerm);
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-  const isFirstLoad = useRef(true);
-
-  // Debounce search term
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(searchTerm);
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [searchTerm]);
-
-  const fetchFn = useCallback(
-    () => isTrash
-      ? customerService.getAllDeleted({
-        keyword: debouncedSearch || undefined,
-        status: (statusFilter as string) || undefined,
-        gender: (genderFilter as string) || undefined,
-        startDate: startDate || undefined,
-        endDate: endDate || undefined,
-        page,
-        size: pageSize,
-      } as Parameters<typeof customerService.getAllDeleted>[0])
-      : customerService.getAll({
-        keyword: debouncedSearch || undefined,
-        status: (statusFilter as string) || undefined,
-        gender: (genderFilter as string) || undefined,
-        startDate: startDate || undefined,
-        endDate: endDate || undefined,
-        page,
-        size: pageSize,
-      } as Parameters<typeof customerService.getAll>[0]),
-    [isTrash, debouncedSearch, statusFilter, genderFilter, startDate, endDate, page, pageSize]
+  const buildFilterParams = useCallback(
+    ({ keyword, page, size, filters, dateRange }: Parameters<NonNullable<Parameters<typeof useListPage>[0]["buildFilterParams"]>>[0]) => ({
+      keyword,
+      page,
+      size,
+      status: (filters.status as string) || undefined,
+      gender: (filters.gender as string) || undefined,
+      startDate: dateRange.startDate || undefined,
+      endDate: dateRange.endDate || undefined,
+    }),
+    []
   );
 
-  const { data: customerData, meta, loading, reload } = useApiData<CustomerResponse>({ fetchFn });
+  const {
+    searchTerm, handleSearchChange,
+    setPage, handlePageSizeChange,
+    filters, setFilter, dateRange, setStartDate, setEndDate,
+    handleClearFilter,
+    actionFilter, setActionFilter,
+    data, meta, loading, isFirstLoad,
+    isSelected, isSelectAll,
+    handleSelectAll, handleSelectItem,
+    isModalOpen, selectedItem,
+    handleOpenDeleteModal, handleCloseModal,
+    handleConfirmDelete, handleRestore,
+    handleStatusChange, handleApplyAction,
+  } = useListPage<CustomerResponse, Parameters<typeof customerService.getAll>[0]>({
+    service: customerService,
+    isTrash,
+    entityName: "khách hàng",
+    bulkActionKey: "customers",
+    buildFilterParams,
+  });
 
-  useEffect(() => {
-    if (!loading) isFirstLoad.current = false;
-  }, [loading]);
-
-  const [selectedIds, setSelectedIds] = useState<(string | number)[]>([]);
-
-  const handleSelectAll = () => {
-    setSelectedIds(
-      selectedIds.length === customerData.length && customerData.length > 0
-        ? []
-        : customerData.map(i => i.id)
-    );
-  };
-
-  const handleSelectItem = (id: string | number) => {
-    setSelectedIds(prev =>
-      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
-    );
-  };
-
-  const handleConfirmDelete = async () => {
-    if (selectedItem) {
-      await customerService.softDelete(selectedItem.id);
-      reload();
-    }
-    handleCloseModal();
-  };
-
-  const handleRestore = async (id: number) => {
-    try {
-      await customerService.restore(id);
-      toast.success("Khôi phục khách hàng thành công!");
-      reload();
-    } catch (error: unknown) {
-      const err = error as Error;
-      toast.error(err?.message || "Có lỗi xảy ra khi khôi phục!");
-    }
-  };
-
-  const handleStatusChange = async (id: string | number, newStatus: string) => {
-    try {
-      await customerService.updateStatus(id, {
-        status: newStatus as CustomerResponse["status"],
-      });
-      toast.success("Cập nhật trạng thái thành công!");
-      reload();
-    } catch (error: unknown) {
-      const err = error as Error;
-      toast.error(err?.message || "Có lỗi xảy ra!");
-    }
-  };
-
-  const handleApplyAction = async () => {
-    if (!actionFilter || selectedIds.length === 0) {
-      toast.error("Vui lòng chọn ít nhất 1 khách hàng và hành động!");
-      return;
-    }
-    try {
-      await customerService.bulkAction({
-        customers: selectedIds.map(id => Number(id)),
-        action: String(actionFilter),
-      });
-      toast.success("Thực hiện hành động thành công!");
-      setSelectedIds([]);
-      setActionFilter("");
-      reload();
-    } catch (error: unknown) {
-      const err = error as Error;
-      toast.error(err?.message || "Có lỗi xảy ra!");
-    }
-  };
-
-  const handleSearchChange = (val: string) => {
-    setSearchTerm(val);
-    setPage(1);
-  };
-
-  const handlePageSizeChange = (size: number) => {
-    setPageSize(size);
-    setPage(1);
-  };
-
-  const handleStatusFilterChange = (value: string | number) => {
-    setStatusFilter(value);
-    setPage(1);
-  };
-
-  const handleGenderFilterChange = (value: string | number) => {
-    setGenderFilter(value);
-    setPage(1);
-  };
-
-  const handleClearFilter = () => {
-    setStatusFilter("");
-    setGenderFilter("");
-    setStartDate("");
-    setEndDate("");
-    setPage(1);
-  };
-
-  const filterList: FilterConfig[] = [
+  const filterList: FilterConfig[] = useMemo(() => [
     {
       type: "select",
       id: "status",
-      value: statusFilter,
-      onChange: handleStatusFilterChange,
+      value: filters.status ?? "",
+      onChange: (val: string | number) => setFilter("status", val),
       options: CUSTOMER_STATUS_OPTIONS,
       placeholder: "Trạng thái"
     },
     {
       type: "select",
       id: "gender",
-      value: genderFilter,
-      onChange: handleGenderFilterChange,
+      value: filters.gender ?? "",
+      onChange: (val: string | number) => setFilter("gender", val),
       options: GENDER_OPTIONS,
       placeholder: "Giới tính"
     },
@@ -190,14 +73,14 @@ export default function CustomerList({ isTrash = false }: { isTrash?: boolean })
       type: "date",
       id: "date-range",
       className: "!w-auto",
-      startValue: startDate,
-      endValue: endDate,
-      onStartChange: (val: string) => { setStartDate(val); setPage(1); },
-      onEndChange: (val: string) => { setEndDate(val); setPage(1); },
+      startValue: dateRange.startDate,
+      endValue: dateRange.endDate,
+      onStartChange: setStartDate,
+      onEndChange: setEndDate,
     },
-  ];
+  ], [filters, dateRange, setFilter, setStartDate, setEndDate]);
 
-  if (loading && isFirstLoad.current) return <div className="text-center py-10 text-[var(--color-text)]">Đang tải dữ liệu...</div>;
+  if (loading && isFirstLoad) return <div className="text-center py-10 text-[var(--color-text)]">Đang tải dữ liệu...</div>;
 
   return (
     <>
@@ -217,10 +100,10 @@ export default function CustomerList({ isTrash = false }: { isTrash?: boolean })
 
       <DataTable
         headers={CUSTOMER_TABLE_HEADERS}
-        isSelectAll={customerData.length > 0 && selectedIds.length === customerData.length}
+        isSelectAll={isSelectAll}
         onSelectAll={handleSelectAll}
       >
-        {customerData.map((item) => (
+        {data.map((item) => (
           <CustomerTableRow
             key={item.id}
             item={item}
@@ -228,7 +111,7 @@ export default function CustomerList({ isTrash = false }: { isTrash?: boolean })
             onDeleteClick={() => handleOpenDeleteModal(item)}
             onRestoreClick={() => handleRestore(item.id)}
             onStatusChange={handleStatusChange}
-            isSelected={selectedIds.includes(item.id)}
+            isSelected={isSelected(item.id)}
             onSelect={() => handleSelectItem(item.id)}
           />
         ))}

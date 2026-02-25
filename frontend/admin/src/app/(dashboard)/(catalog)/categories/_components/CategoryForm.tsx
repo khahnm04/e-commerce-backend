@@ -1,20 +1,15 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-// @ts-nocheck
 "use client";
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import "filepond/dist/filepond.min.css";
-import "filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css";
-import { useFilePond } from "@/hooks/useFilePond";
 import { FormInput } from "@/components/form/FormInput";
-import { FormImageUpload } from "@/components/form/FormImageUpload";
-import { CustomSelect } from "@/components/common/CustomSelect";
 import { FormButton } from "@/components/form/FormButton";
 import { FormBackLink } from "@/components/form/FormBackLink";
+import { FormControlledSelect } from "@/components/form/FormControlledSelect";
+import { FormImageField } from "@/components/form/FormImageField";
+import { CustomSelect } from "@/components/common/CustomSelect";
 import {
   CreateCategorySchema,
   UpdateCategorySchema,
@@ -23,12 +18,12 @@ import {
 } from "@/app/(dashboard)/(catalog)/categories/category.schema";
 import { categoryService } from "@/services/catalog/category.service";
 import { CategoryResponse } from "@/types/catalog/category.types";
+import { CATEGORY_STATUS_OPTIONS } from "@/constants/catalog/category.constants";
+import { CategoryStatus } from "@/constants/enums";
 import { uploadToCloudinary } from "@/services/upload/upload.service";
+import { getFormOptions } from "@/constants/common.constants";
 
-const STATUS_OPTIONS = [
-  { id: "ACTIVE", name: "Hoạt động" },
-  { id: "INACTIVE", name: "Tạm dừng" },
-];
+const STATUS_OPTIONS = getFormOptions(CATEGORY_STATUS_OPTIONS);
 
 interface CategoryFormProps {
   initialData?: CategoryResponse;
@@ -38,8 +33,7 @@ interface CategoryFormProps {
 export default function CategoryForm({ initialData, isReadOnly = false }: CategoryFormProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string>(initialData?.iconUrl || "");
+  const selectedFileRef = useRef<File | null>(null);
   const [parentOptions, setParentOptions] = useState<{ id: string | number; name: string }[]>([
     { id: "", name: "Không có (Danh mục gốc)" },
   ]);
@@ -62,20 +56,9 @@ export default function CategoryForm({ initialData, isReadOnly = false }: Catego
     fetchCategories();
   }, [initialData, isReadOnly]);
 
-  const handleAddFile = useCallback((file: File) => {
-    setSelectedFile(file);
-    setPreviewUrl(URL.createObjectURL(file));
+  const handleFileSelect = useCallback((file: File | null) => {
+    selectedFileRef.current = file;
   }, []);
-
-  const handleRemoveFile = useCallback(() => {
-    setSelectedFile(null);
-    setPreviewUrl(isEditMode ? (initialData?.iconUrl || "") : "");
-  }, [isEditMode, initialData?.iconUrl]);
-
-  useFilePond({
-    onAddFile: handleAddFile,
-    onRemoveFile: handleRemoveFile,
-  });
 
   const schema = isEditMode ? UpdateCategorySchema : CreateCategorySchema;
 
@@ -84,10 +67,9 @@ export default function CategoryForm({ initialData, isReadOnly = false }: Catego
     control,
     handleSubmit,
     formState: { errors },
-  } = useForm<CreateCategoryValues | UpdateCategoryValues>({
-    resolver: zodResolver(schema),
+  } = useForm<CreateCategoryValues>({
+    resolver: zodResolver(schema as any),
     defaultValues: {
-      ...(isEditMode ? { id: initialData.id } : {}),
       name: initialData?.name || "",
       slug: initialData?.slug || "",
       description: initialData?.description || "",
@@ -102,14 +84,13 @@ export default function CategoryForm({ initialData, isReadOnly = false }: Catego
     },
   });
 
-  const onSubmit = async (data: CreateCategoryValues | UpdateCategoryValues) => {
+  const onSubmit = async (data: CreateCategoryValues) => {
     try {
       setIsLoading(true);
 
-      // Upload icon to Cloudinary if a new file is selected
       let iconUrl = initialData?.iconUrl || "";
-      if (selectedFile) {
-        iconUrl = await uploadToCloudinary(selectedFile);
+      if (selectedFileRef.current) {
+        iconUrl = await uploadToCloudinary(selectedFileRef.current);
       }
 
       const payload = {
@@ -122,7 +103,7 @@ export default function CategoryForm({ initialData, isReadOnly = false }: Catego
         metaTitle: data.metaTitle,
         metaDescription: data.metaDescription,
         metaKeywords: data.metaKeywords,
-        status: data.status,
+        status: data.status as CategoryStatus,
         parentId: data.parentId ? Number(data.parentId) : null,
       };
 
@@ -148,7 +129,7 @@ export default function CategoryForm({ initialData, isReadOnly = false }: Catego
     <div className="bg-white border border-[#B9B9B9] rounded-[14px] md:p-[50px] p-[20px]">
       <form
         className="grid md:grid-cols-2 grid-cols-1 gap-[30px]"
-        onSubmit={(e) => handleSubmit(onSubmit)(e).catch(() => { })}
+        onSubmit={(e) => handleSubmit(onSubmit as any)(e).catch(() => { })}
       >
         <FormInput
           label="Tên danh mục"
@@ -208,32 +189,13 @@ export default function CategoryForm({ initialData, isReadOnly = false }: Catego
           disabled={isReadOnly}
         />
 
-        <Controller
+        <FormControlledSelect
           control={control}
           name="status"
-          render={({ field }) => (
-            <div className="inner-group relative">
-              <label
-                className="inner-label block font-[600] text-[14px] text-[#606060] mb-[11px]"
-                htmlFor="status"
-              >
-                Trạng thái
-              </label>
-              <CustomSelect
-                options={STATUS_OPTIONS}
-                value={field.value ?? ""}
-                onChange={(val) => field.onChange(val)}
-                placeholder="Chọn trạng thái"
-                disabled={isReadOnly}
-                classNameCustom={`
-                  bg-[#F5F6FA] border border-[#D5D5D5] rounded-[4px]
-                  px-[22px] font-[500] text-[14px] text-[var(--color-text)]
-                  w-full h-[52px] !block
-                  ${isReadOnly ? 'opacity-60 cursor-not-allowed' : ''}
-                `}
-              />
-            </div>
-          )}
+          label="Trạng thái"
+          options={STATUS_OPTIONS}
+          placeholder="Chọn trạng thái"
+          disabled={isReadOnly}
         />
 
         <FormInput
@@ -269,41 +231,16 @@ export default function CategoryForm({ initialData, isReadOnly = false }: Catego
           disabled={isReadOnly}
         />
 
-        {/* Icon upload - moved to bottom */}
-        {isReadOnly ? (
-          <div className="md:col-span-2">
-            <label className="block font-[600] text-[14px] text-[#606060] mb-[11px]">
-              Ảnh biểu tượng
-            </label>
-            {initialData?.iconUrl ? (
-              <img
-                src={initialData.iconUrl}
-                alt="Icon"
-                className="w-[150px] h-auto object-cover rounded border"
-              />
-            ) : (
-              <p className="text-gray-400 text-sm italic">Không có ảnh</p>
-            )}
-          </div>
-        ) : (
-          <div className="md:col-span-2 flex items-center gap-[50px]">
-            <FormImageUpload
-              label="Ảnh biểu tượng"
-              id="icon"
-              name="icon"
-            />
-            {previewUrl && (
-              <div className="flex flex-col items-start gap-[11px] font-[600] text-[14px] text-[#606060] h-full">
-                <span>{selectedFile ? "Ảnh mới:" : "Ảnh hiện tại:"}</span>
-                <img
-                  src={previewUrl}
-                  alt="Icon preview"
-                  className="w-[150px] h-[150px] object-cover rounded-[8px] border border-[#D5D5D5]"
-                />
-              </div>
-            )}
-          </div>
-        )}
+        {/* Icon upload */}
+        <FormImageField
+          label="Ảnh biểu tượng"
+          id="icon"
+          initialUrl={initialData?.iconUrl}
+          isReadOnly={isReadOnly}
+          isEditMode={isEditMode}
+          noImageText="Không có ảnh"
+          onFileSelect={handleFileSelect}
+        />
 
         {/* Submit button */}
         {!isReadOnly && (

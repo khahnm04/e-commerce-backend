@@ -28,9 +28,7 @@ export const EMPLOYEE_ACTION_OPTIONS = [
     { id: "delete", name: "Xóa" },
 ];
 
-export const EMPLOYEE_TRASH_ACTION_OPTIONS = [
-    { id: "restore", name: "Khôi phục" },
-];
+export { TRASH_ACTION_OPTIONS as EMPLOYEE_TRASH_ACTION_OPTIONS } from "@/constants/common.constants";
 
 export const EMPLOYEE_GENDER_OPTIONS = [
     { id: "", name: "Tất cả" },

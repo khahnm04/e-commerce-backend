@@ -4,10 +4,9 @@ import { ApiResponse, PageMetadata } from "@/types/common/api.types";
 
 interface UseApiDataOptions<T> {
   fetchFn: () => Promise<ApiResponse<T[]>>;
-  deps?: unknown[];
 }
 
-export function useApiData<T>({ fetchFn, deps = [] }: UseApiDataOptions<T>) {
+export function useApiData<T>({ fetchFn }: UseApiDataOptions<T>) {
   const [data, setData] = useState<T[]>([]);
   const [meta, setMeta] = useState<PageMetadata | undefined>();
   const [loading, setLoading] = useState(true);
@@ -26,10 +25,10 @@ export function useApiData<T>({ fetchFn, deps = [] }: UseApiDataOptions<T>) {
     } finally {
       setLoading(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fetchFn, ...deps]);
+  }, [fetchFn]);
 
   useEffect(() => { reload(); }, [reload]);
 
   return { data, meta, loading, error, reload };
 }
+

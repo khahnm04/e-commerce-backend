@@ -32,12 +32,20 @@ export const sendRequest = async <T>(
   };
 
   let res = await fetch(`${baseUrl}${endpoint}`, {
+    credentials: "include",
     ...options,
     headers,
   });
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let data: any;
+  interface ApiJsonResponse {
+    success?: boolean;
+    code?: number;
+    message?: string;
+    errors?: { field?: string; message: string }[];
+    [key: string]: unknown;
+  }
+
+  let data: ApiJsonResponse;
   try {
     data = await res.clone().json();
   } catch {
@@ -56,15 +64,16 @@ export const sendRequest = async <T>(
       isRefreshing = true;
       refreshPromise = refreshToken().finally(() => {
         isRefreshing = false;
+        refreshPromise = null;
       });
     }
 
     const refreshSuccess = await refreshPromise;
-    refreshPromise = null;
 
     if (refreshSuccess) {
       // Retry request ban đầu với access_token mới (cookie HTTP-only tự động gửi kèm)
       res = await fetch(`${baseUrl}${endpoint}`, {
+        credentials: "include",
         ...options,
         headers,
       });
@@ -92,8 +101,9 @@ export const sendRequest = async <T>(
 
   if (!res.ok) {
     if (data?.errors && Array.isArray(data.errors) && data.errors.length > 0) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const errorMsg = data.errors.map((e: any) => `${e.field || 'Lỗi'}: ${e.message}`).join("\n");
+      const errorMsg = data.errors
+        .map((e: { field?: string; message: string }) => `${e.field || 'Lỗi'}: ${e.message}`)
+        .join("\n");
       throw new Error(errorMsg);
     }
     throw new Error(data?.message || "Có lỗi xảy ra khi gọi API");

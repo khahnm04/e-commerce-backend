@@ -1,20 +1,14 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-// @ts-nocheck
 "use client";
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
-import { useForm, Controller } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import "filepond/dist/filepond.min.css";
-import "filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css";
-import { useFilePond } from "@/hooks/useFilePond";
 import { FormInput } from "@/components/form/FormInput";
-import { FormImageUpload } from "@/components/form/FormImageUpload";
-import { CustomSelect } from "@/components/common/CustomSelect";
 import { FormButton } from "@/components/form/FormButton";
 import { FormBackLink } from "@/components/form/FormBackLink";
+import { FormControlledSelect } from "@/components/form/FormControlledSelect";
+import { FormImageField } from "@/components/form/FormImageField";
 import {
   CreateBrandSchema,
   UpdateBrandSchema,
@@ -24,11 +18,11 @@ import {
 import { brandService } from "@/services/catalog/brand.service";
 import { BrandResponse } from "@/types/catalog/brand.types";
 import { uploadToCloudinary } from "@/services/upload/upload.service";
+import { BRAND_STATUS_OPTIONS } from "@/constants/catalog/brand.constants";
+import { BrandStatus } from "@/constants/enums/catalog.enums";
+import { getFormOptions } from "@/constants/common.constants";
 
-const STATUS_OPTIONS = [
-  { id: "ACTIVE", name: "Hoạt động" },
-  { id: "INACTIVE", name: "Tạm dừng" },
-];
+const STATUS_OPTIONS = getFormOptions(BRAND_STATUS_OPTIONS);
 
 interface BrandFormProps {
   initialData?: BrandResponse;
@@ -38,24 +32,12 @@ interface BrandFormProps {
 export default function BrandForm({ initialData, isReadOnly = false }: BrandFormProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string>(initialData?.logoUrl || "");
+  const selectedFileRef = useRef<File | null>(null);
   const isEditMode = !!initialData;
 
-  const handleAddFile = useCallback((file: File) => {
-    setSelectedFile(file);
-    setPreviewUrl(URL.createObjectURL(file));
+  const handleFileSelect = useCallback((file: File | null) => {
+    selectedFileRef.current = file;
   }, []);
-
-  const handleRemoveFile = useCallback(() => {
-    setSelectedFile(null);
-    setPreviewUrl(isEditMode ? (initialData?.logoUrl || "") : "");
-  }, [isEditMode, initialData?.logoUrl]);
-
-  useFilePond({
-    onAddFile: handleAddFile,
-    onRemoveFile: handleRemoveFile,
-  });
 
   const schema = isEditMode ? UpdateBrandSchema : CreateBrandSchema;
 
@@ -64,10 +46,9 @@ export default function BrandForm({ initialData, isReadOnly = false }: BrandForm
     control,
     handleSubmit,
     formState: { errors },
-  } = useForm<CreateBrandValues | UpdateBrandValues>({
-    resolver: zodResolver(schema),
+  } = useForm<CreateBrandValues>({
+    resolver: zodResolver(schema as any),
     defaultValues: {
-      ...(isEditMode ? { id: initialData.id } : {}),
       name: initialData?.name || "",
       slug: initialData?.slug || "",
       description: initialData?.description || "",
@@ -81,14 +62,13 @@ export default function BrandForm({ initialData, isReadOnly = false }: BrandForm
     },
   });
 
-  const onSubmit = async (data: CreateBrandValues | UpdateBrandValues) => {
+  const onSubmit = async (data: CreateBrandValues) => {
     try {
       setIsLoading(true);
 
-      // Upload logo to Cloudinary if a new file is selected
       let logoUrl = initialData?.logoUrl || "";
-      if (selectedFile) {
-        logoUrl = await uploadToCloudinary(selectedFile);
+      if (selectedFileRef.current) {
+        logoUrl = await uploadToCloudinary(selectedFileRef.current);
       }
 
       const payload = {
@@ -101,7 +81,7 @@ export default function BrandForm({ initialData, isReadOnly = false }: BrandForm
         metaTitle: data.metaTitle,
         metaDescription: data.metaDescription,
         metaKeywords: data.metaKeywords,
-        status: data.status,
+        status: data.status as BrandStatus,
       };
 
       if (isEditMode) {
@@ -126,7 +106,7 @@ export default function BrandForm({ initialData, isReadOnly = false }: BrandForm
     <div className="bg-white border border-[#B9B9B9] rounded-[14px] md:p-[50px] p-[20px]">
       <form
         className="grid md:grid-cols-2 grid-cols-1 gap-[30px]"
-        onSubmit={(e) => handleSubmit(onSubmit)(e).catch(() => { })}
+        onSubmit={(e) => handleSubmit(onSubmit as any)(e).catch(() => { })}
       >
         <FormInput
           label="Tên nhãn hàng"
@@ -163,32 +143,13 @@ export default function BrandForm({ initialData, isReadOnly = false }: BrandForm
           disabled={isReadOnly}
         />
 
-        <Controller
+        <FormControlledSelect
           control={control}
           name="status"
-          render={({ field }) => (
-            <div className="inner-group relative">
-              <label
-                className="inner-label block font-[600] text-[14px] text-[#606060] mb-[11px]"
-                htmlFor="status"
-              >
-                Trạng thái
-              </label>
-              <CustomSelect
-                options={STATUS_OPTIONS}
-                value={field.value ?? ""}
-                onChange={(val) => field.onChange(val)}
-                placeholder="Chọn trạng thái"
-                disabled={isReadOnly}
-                classNameCustom={`
-                  bg-[#F5F6FA] border border-[#D5D5D5] rounded-[4px]
-                  px-[22px] font-[500] text-[14px] text-[var(--color-text)]
-                  w-full h-[52px] !block
-                  ${isReadOnly ? 'opacity-60 cursor-not-allowed' : ''}
-                `}
-              />
-            </div>
-          )}
+          label="Trạng thái"
+          options={STATUS_OPTIONS}
+          placeholder="Chọn trạng thái"
+          disabled={isReadOnly}
         />
 
         <FormInput
@@ -224,41 +185,16 @@ export default function BrandForm({ initialData, isReadOnly = false }: BrandForm
           disabled={isReadOnly}
         />
 
-        {/* Logo upload - moved to bottom */}
-        {isReadOnly ? (
-          <div className="md:col-span-2">
-            <label className="block font-[600] text-[14px] text-[#606060] mb-[11px]">
-              Logo
-            </label>
-            {initialData?.logoUrl ? (
-              <img
-                src={initialData.logoUrl}
-                alt="Logo"
-                className="w-[150px] h-auto object-cover rounded border"
-              />
-            ) : (
-              <p className="text-gray-400 text-sm italic">Không có logo</p>
-            )}
-          </div>
-        ) : (
-          <div className="md:col-span-2 flex items-center gap-[50px]">
-            <FormImageUpload
-              label="Logo"
-              id="logo"
-              name="logo"
-            />
-            {previewUrl && (
-              <div className="flex flex-col items-start gap-[11px] font-[600] text-[14px] text-[#606060] h-full">
-                <span>{selectedFile ? "Ảnh mới:" : "Ảnh hiện tại:"}</span>
-                <img
-                  src={previewUrl}
-                  alt="Logo preview"
-                  className="w-[150px] h-[150px] object-cover rounded-[8px] border border-[#D5D5D5]"
-                />
-              </div>
-            )}
-          </div>
-        )}
+        {/* Logo upload */}
+        <FormImageField
+          label="Logo"
+          id="logo"
+          initialUrl={initialData?.logoUrl}
+          isReadOnly={isReadOnly}
+          isEditMode={isEditMode}
+          noImageText="Không có logo"
+          onFileSelect={handleFileSelect}
+        />
 
         {/* Submit button */}
         {!isReadOnly && (

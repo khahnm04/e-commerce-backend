@@ -1,21 +1,16 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-// @ts-nocheck
 "use client";
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import "filepond/dist/filepond.min.css";
-import "filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css";
-import { useFilePond } from "@/hooks/useFilePond";
 import { FormInput } from "@/components/form/FormInput";
-import { FormImageUpload } from "@/components/form/FormImageUpload";
-import { CustomSelect } from "@/components/common/CustomSelect";
 import { FormButton } from "@/components/form/FormButton";
 import { FormBackLink } from "@/components/form/FormBackLink";
+import { FormControlledSelect } from "@/components/form/FormControlledSelect";
+import { FormImageField } from "@/components/form/FormImageField";
 import { FormEditorWrapper } from "@/components/form/FormEditorWrapper";
+import { CustomSelect } from "@/components/common/CustomSelect";
 import {
   CreateProductSchema,
   UpdateProductSchema,
@@ -26,21 +21,20 @@ import { productService } from "@/services/catalog/product.service";
 import { ProductResponse } from "@/types/catalog/product.types";
 import { brandService } from "@/services/catalog/brand.service";
 import { categoryService } from "@/services/catalog/category.service";
+import { attributeService } from "@/services/catalog/attribute.service";
 import { BrandResponse } from "@/types/catalog/brand.types";
 import { CategoryResponse } from "@/types/catalog/category.types";
-import { attributeService } from "@/services/catalog/attribute.service";
 import { AttributeResponse } from "@/types/catalog/attribute.types";
 import { uploadToCloudinary } from "@/services/upload/upload.service";
-import { FaPlus, FaTrashCan } from "react-icons/fa6";
+import { getFormOptions } from "@/constants/common.constants";
+import { PRODUCT_STATUS_OPTIONS } from "@/constants/catalog/product.constants";
+import { ProductStatus } from "@/constants/enums/catalog.enums";
 import { useTinyMCE } from "@/hooks/useTinyMCE";
+import { ProductAttributesSection } from "./ProductAttributesSection";
+import { ProductImagesSection } from "./ProductImagesSection";
+import { ProductCategoriesSection } from "./ProductCategoriesSection";
 
-const STATUS_OPTIONS = [
-  { id: "ACTIVE", name: "Hoạt động" },
-  { id: "INACTIVE", name: "Tạm dừng" },
-  { id: "OUT_OF_STOCK", name: "Hết hàng" },
-  { id: "PENDING", name: "Chờ duyệt" },
-  { id: "DISCONTINUED", name: "Ngừng bán" },
-];
+const STATUS_OPTIONS = getFormOptions(PRODUCT_STATUS_OPTIONS);
 
 interface AttributeRow {
   id?: number;
@@ -65,8 +59,7 @@ interface ProductFormProps {
 export default function ProductForm({ initialData, isReadOnly = false }: ProductFormProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string>(initialData?.thumbnail || "");
+  const selectedFileRef = useRef<File | null>(null);
   const [allBrands, setAllBrands] = useState<BrandResponse[]>([]);
   const [allCategories, setAllCategories] = useState<CategoryResponse[]>([]);
   const [allAttributes, setAllAttributes] = useState<AttributeResponse[]>([]);
@@ -78,46 +71,20 @@ export default function ProductForm({ initialData, isReadOnly = false }: Product
   );
   const isEditMode = !!initialData;
 
-  // Fetch brands (skip in read-only mode)
+  // Fetch all options in a single effect (skip in read-only mode)
   useEffect(() => {
     if (isReadOnly) return;
-    const fetchBrands = async () => {
-      try {
-        const res = await brandService.getAll({ size: 99 });
-        setAllBrands(res.data ?? []);
-      } catch {
-        // ignore
-      }
+    const fetchOptions = async () => {
+      const [brandsRes, categoriesRes, attributesRes] = await Promise.allSettled([
+        brandService.getAll({ size: 99 }),
+        categoryService.getAll({ size: 99 }),
+        attributeService.getAll({ size: 99 }),
+      ]);
+      if (brandsRes.status === "fulfilled") setAllBrands(brandsRes.value.data ?? []);
+      if (categoriesRes.status === "fulfilled") setAllCategories(categoriesRes.value.data ?? []);
+      if (attributesRes.status === "fulfilled") setAllAttributes(attributesRes.value.data ?? []);
     };
-    fetchBrands();
-  }, [isReadOnly]);
-
-  // Fetch categories (skip in read-only mode)
-  useEffect(() => {
-    if (isReadOnly) return;
-    const fetchCategories = async () => {
-      try {
-        const res = await categoryService.getAll({ size: 99 });
-        setAllCategories(res.data ?? []);
-      } catch {
-        // ignore
-      }
-    };
-    fetchCategories();
-  }, [isReadOnly]);
-
-  // Fetch attributes (skip in read-only mode)
-  useEffect(() => {
-    if (isReadOnly) return;
-    const fetchAttributes = async () => {
-      try {
-        const res = await attributeService.getAll({ size: 99 });
-        setAllAttributes(res.data ?? []);
-      } catch {
-        // ignore
-      }
-    };
-    fetchAttributes();
+    fetchOptions();
   }, [isReadOnly]);
 
   // TinyMCE editor for description
@@ -126,20 +93,9 @@ export default function ProductForm({ initialData, isReadOnly = false }: Product
     height: 350,
   });
 
-  const handleAddFile = useCallback((file: File) => {
-    setSelectedFile(file);
-    setPreviewUrl(URL.createObjectURL(file));
+  const handleImageFileSelect = useCallback((file: File | null) => {
+    selectedFileRef.current = file;
   }, []);
-
-  const handleRemoveFile = useCallback(() => {
-    setSelectedFile(null);
-    setPreviewUrl(isEditMode ? (initialData?.thumbnail || "") : "");
-  }, [isEditMode, initialData?.thumbnail]);
-
-  useFilePond({
-    onAddFile: handleAddFile,
-    onRemoveFile: handleRemoveFile,
-  });
 
   const schema = isEditMode ? UpdateProductSchema : CreateProductSchema;
 
@@ -160,10 +116,9 @@ export default function ProductForm({ initialData, isReadOnly = false }: Product
     handleSubmit,
     setValue,
     formState: { errors },
-  } = useForm<CreateProductValues | UpdateProductValues>({
-    resolver: zodResolver(schema),
+  } = useForm<CreateProductValues>({
+    resolver: zodResolver(schema as any),
     defaultValues: {
-      ...(isEditMode ? { id: initialData.id } : {}),
       name: initialData?.name || "",
       slug: initialData?.slug || "",
       productCode: initialData?.productCode || "",
@@ -191,14 +146,14 @@ export default function ProductForm({ initialData, isReadOnly = false }: Product
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [allCategories]);
 
-  const onSubmit = async (data: CreateProductValues | UpdateProductValues) => {
+  const onSubmit = async (data: CreateProductValues) => {
     try {
       setIsLoading(true);
 
       // Upload thumbnail to Cloudinary if a new file is selected
       let thumbnailUrl = initialData?.thumbnail || "";
-      if (selectedFile) {
-        thumbnailUrl = await uploadToCloudinary(selectedFile);
+      if (selectedFileRef.current) {
+        thumbnailUrl = await uploadToCloudinary(selectedFileRef.current);
       }
 
       // Upload all new images to Cloudinary
@@ -226,7 +181,7 @@ export default function ProductForm({ initialData, isReadOnly = false }: Product
         shortDescription: data.shortDescription,
         metaTitle: data.metaTitle,
         metaDescription: data.metaDescription,
-        status: data.status,
+        status: data.status as ProductStatus,
         categoryIds: data.categoryIds || [],
         attributes: attributeRows.filter(a => a.attributeId && a.value).map(a => ({
           ...(a.id ? { id: a.id } : {}),
@@ -258,7 +213,7 @@ export default function ProductForm({ initialData, isReadOnly = false }: Product
     <div className="bg-white border border-[#B9B9B9] rounded-[14px] md:p-[50px] p-[20px]">
       <form
         className="grid md:grid-cols-2 grid-cols-1 gap-[30px]"
-        onSubmit={(e) => handleSubmit(onSubmit)(e).catch(() => { })}
+        onSubmit={(e) => handleSubmit(onSubmit as any)(e).catch(() => { })}
       >
         {/* Row 1: Tên + Slug */}
         <FormInput
@@ -315,8 +270,8 @@ export default function ProductForm({ initialData, isReadOnly = false }: Product
                   `}
                 />
               )}
-              {(errors as any).brandId?.message && (
-                <p className="text-red-500 text-[13px] mt-[6px]">{(errors as any).brandId.message}</p>
+              {errors.brandId?.message && (
+                <p className="text-red-500 text-[13px] mt-[6px]">{errors.brandId.message}</p>
               )}
             </div>
           )}
@@ -337,7 +292,7 @@ export default function ProductForm({ initialData, isReadOnly = false }: Product
           id="oldPrice"
           type="number"
           {...register("oldPrice")}
-          error={(errors as any).oldPrice?.message}
+          error={errors.oldPrice?.message}
           disabled={isReadOnly}
         />
 
@@ -347,36 +302,17 @@ export default function ProductForm({ initialData, isReadOnly = false }: Product
           id="warrantyMonths"
           type="number"
           {...register("warrantyMonths")}
-          error={(errors as any).warrantyMonths?.message}
+          error={errors.warrantyMonths?.message}
           disabled={isReadOnly}
         />
 
-        <Controller
+        <FormControlledSelect
           control={control}
           name="status"
-          render={({ field }) => (
-            <div className="inner-group relative">
-              <label
-                className="inner-label block font-[600] text-[14px] text-[#606060] mb-[11px]"
-                htmlFor="status"
-              >
-                Trạng thái
-              </label>
-              <CustomSelect
-                options={STATUS_OPTIONS}
-                value={field.value ?? ""}
-                onChange={(val) => field.onChange(val)}
-                placeholder="Chọn trạng thái"
-                disabled={isReadOnly}
-                classNameCustom={`
-                  bg-[#F5F6FA] border border-[#D5D5D5] rounded-[4px]
-                  px-[22px] font-[500] text-[14px] text-[var(--color-text)]
-                  w-full h-[52px] !block
-                  ${isReadOnly ? 'opacity-60 cursor-not-allowed' : ''}
-                `}
-              />
-            </div>
-          )}
+          label="Trạng thái"
+          options={STATUS_OPTIONS}
+          placeholder="Chọn trạng thái"
+          disabled={isReadOnly}
         />
 
         {/* Row 5: Mô tả ngắn */}
@@ -384,7 +320,7 @@ export default function ProductForm({ initialData, isReadOnly = false }: Product
           label="Mô tả ngắn"
           id="shortDescription"
           {...register("shortDescription")}
-          error={(errors as any).shortDescription?.message}
+          error={errors.shortDescription?.message}
           disabled={isReadOnly}
         />
 
@@ -393,7 +329,7 @@ export default function ProductForm({ initialData, isReadOnly = false }: Product
           label="Tiêu đề SEO (Meta Title)"
           id="metaTitle"
           {...register("metaTitle")}
-          error={(errors as any).metaTitle?.message}
+          error={errors.metaTitle?.message}
           disabled={isReadOnly}
         />
 
@@ -401,291 +337,46 @@ export default function ProductForm({ initialData, isReadOnly = false }: Product
           label="Mô tả SEO (Meta Description)"
           id="metaDescription"
           {...register("metaDescription")}
-          error={(errors as any).metaDescription?.message}
+          error={errors.metaDescription?.message}
           disabled={isReadOnly}
         />
 
-        {/* Row 6: Category selection - full width */}
-        <Controller
+        {/* Category selection - full width */}
+        <ProductCategoriesSection
           control={control}
-          name="categoryIds"
-          render={({ field }) => (
-            <div className="md:col-span-2">
-              <label className="block font-[600] text-[14px] text-[#606060] mb-[11px]">
-                Danh mục
-              </label>
-              {isReadOnly ? (
-                <div className="flex flex-wrap gap-[8px]">
-                  {initialData?.categories && initialData.categories.length > 0 ? (
-                    initialData.categories.map((cat) => (
-                      <span
-                        key={cat.id}
-                        className="bg-blue-50 text-blue-700 border border-blue-200 rounded-[6px] px-[12px] py-[6px] text-[13px] font-[600]"
-                      >
-                        {cat.categoryName}
-                      </span>
-                    ))
-                  ) : (
-                    <p className="text-gray-400 text-sm italic">Chưa gán danh mục</p>
-                  )}
-                </div>
-              ) : (
-                <div className="bg-[#F5F6FA] border border-[#D5D5D5] rounded-[4px] p-[16px] flex flex-wrap gap-[12px]">
-                  {allCategories.length === 0 ? (
-                    <p className="text-gray-400 text-sm italic">Đang tải danh sách danh mục...</p>
-                  ) : (
-                    allCategories.map((cat) => {
-                      const isChecked = (field.value || []).includes(cat.id);
-                      return (
-                        <label
-                          key={cat.id}
-                          className={`
-                            inline-flex items-center gap-[8px] cursor-pointer
-                            border rounded-[6px] px-[14px] py-[8px]
-                            text-[13px] font-[600] transition-all
-                            ${isChecked
-                              ? "bg-blue-50 border-blue-400 text-blue-700"
-                              : "bg-white border-[#D5D5D5] text-[#606060] hover:border-blue-300 hover:bg-blue-50/50"
-                            }
-                          `}
-                        >
-                          <input
-                            type="checkbox"
-                            checked={isChecked}
-                            className="w-[16px] h-[16px] accent-blue-600 cursor-pointer"
-                            onChange={(e) => {
-                              const current = field.value || [];
-                              if (e.target.checked) {
-                                field.onChange([...current, cat.id]);
-                              } else {
-                                field.onChange(current.filter((id: number) => id !== cat.id));
-                              }
-                            }}
-                          />
-                          {cat.name}
-                        </label>
-                      );
-                    })
-                  )}
-                </div>
-              )}
-              {(errors as any).categoryIds?.message && (
-                <p className="text-red-500 text-[13px] mt-[6px]">{(errors as any).categoryIds.message}</p>
-              )}
-            </div>
-          )}
+          allCategories={allCategories}
+          isReadOnly={isReadOnly}
+          initialCategories={initialData?.categories}
+          errors={errors}
         />
 
         {/* Attributes section - full width */}
-        <div className="md:col-span-2">
-          <label className="block font-[600] text-[14px] text-[#606060] mb-[11px]">
-            Thuộc tính sản phẩm
-          </label>
-          {isReadOnly ? (
-            <div className="bg-[#F5F6FA] border border-[#D5D5D5] rounded-[4px] p-[16px]">
-              {initialData?.attributes && initialData.attributes.length > 0 ? (
-                <div className="flex flex-wrap gap-[12px]">
-                  {initialData.attributes.map((attr, idx) => (
-                    <div key={idx} className="bg-white border border-[#D5D5D5] rounded-[6px] px-[14px] py-[8px] text-[13px]">
-                      <span className="font-[600] text-[#606060]">{attr.attributeName}:</span>{" "}
-                      <span className="text-[var(--color-text)]">{attr.value}</span>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-gray-400 text-sm italic">Chưa có thuộc tính</p>
-              )}
-            </div>
-          ) : (
-            <div className="bg-[#F5F6FA] border border-[#D5D5D5] rounded-[4px] p-[16px] space-y-[12px]">
-              {attributeRows.map((row, idx) => (
-                <div key={idx} className="flex items-center gap-[12px]">
-                  <div className="flex-1">
-                    <CustomSelect
-                      options={[
-                        { id: "", name: "Chọn thuộc tính" },
-                        ...allAttributes.map(a => ({ id: String(a.id), name: a.name })),
-                      ]}
-                      value={row.attributeId ? String(row.attributeId) : ""}
-                      onChange={(val) => {
-                        const updated = [...attributeRows];
-                        updated[idx] = { ...updated[idx], attributeId: Number(val) };
-                        setAttributeRows(updated);
-                      }}
-                      placeholder="Chọn thuộc tính"
-                      classNameCustom="bg-white border border-[#D5D5D5] rounded-[4px] px-[12px] font-[500] text-[14px] text-[var(--color-text)] w-full h-[44px] !block"
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <input
-                      type="text"
-                      value={row.value}
-                      onChange={(e) => {
-                        const updated = [...attributeRows];
-                        updated[idx] = { ...updated[idx], value: e.target.value };
-                        setAttributeRows(updated);
-                      }}
-                      placeholder="Giá trị"
-                      className="bg-white border border-[#D5D5D5] rounded-[4px] px-[12px] font-[500] text-[14px] text-[var(--color-text)] w-full h-[44px] outline-none focus:border-blue-400 transition-colors"
-                    />
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setAttributeRows(prev => prev.filter((_, i) => i !== idx))}
-                    className="text-[#EF3826] hover:bg-red-50 p-[10px] rounded-[6px] cursor-pointer transition-colors"
-                    title="Xóa thuộc tính"
-                  >
-                    <FaTrashCan className="text-[14px]" />
-                  </button>
-                </div>
-              ))}
-              <button
-                type="button"
-                onClick={() => setAttributeRows(prev => [...prev, { attributeId: 0, value: "" }])}
-                className="inline-flex items-center gap-[6px] text-[13px] font-[600] text-[var(--color-primary)] hover:bg-blue-50 px-[14px] py-[8px] rounded-[6px] cursor-pointer transition-colors border border-dashed border-blue-300"
-              >
-                <FaPlus className="text-[11px]" /> Thêm thuộc tính
-              </button>
-            </div>
-          )}
-        </div>
+        <ProductAttributesSection
+          attributeRows={attributeRows}
+          onAttributeRowsChange={setAttributeRows}
+          allAttributes={allAttributes}
+          isReadOnly={isReadOnly}
+          initialAttributes={initialData?.attributes}
+        />
 
         {/* Images section - full width */}
-        <div className="md:col-span-2">
-          <label className="block font-[600] text-[14px] text-[#606060] mb-[11px]">
-            Ảnh sản phẩm
-          </label>
-          {isReadOnly ? (
-            <div className="bg-[#F5F6FA] border border-[#D5D5D5] rounded-[4px] p-[16px]">
-              {initialData?.images && initialData.images.length > 0 ? (
-                <div className="flex flex-wrap gap-[12px]">
-                  {initialData.images
-                    .sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0))
-                    .map((img, idx) => (
-                      <div key={idx} className="relative">
-                        <img
-                          src={img.imageUrl}
-                          alt={`Ảnh ${idx + 1}`}
-                          className="w-[120px] h-[120px] object-cover rounded-[8px] border border-[#D5D5D5]"
-                        />
-                        <span className="absolute bottom-[4px] right-[4px] bg-black/60 text-white text-[11px] px-[6px] py-[2px] rounded-[4px]">
-                          #{img.displayOrder ?? idx}
-                        </span>
-                      </div>
-                    ))}
-                </div>
-              ) : (
-                <p className="text-gray-400 text-sm italic">Không có ảnh sản phẩm</p>
-              )}
-            </div>
-          ) : (
-            <div className="bg-[#F5F6FA] border border-[#D5D5D5] rounded-[4px] p-[16px] space-y-[12px]">
-              {imageRows.map((row, idx) => (
-                <div key={idx} className="flex items-center gap-[12px]">
-                  {/* Preview */}
-                  {row.previewUrl ? (
-                    <img
-                      src={row.previewUrl}
-                      alt={`Ảnh ${idx + 1}`}
-                      className="w-[60px] h-[60px] object-cover rounded-[6px] border border-[#D5D5D5] flex-shrink-0"
-                    />
-                  ) : (
-                    <div className="w-[60px] h-[60px] bg-[#E5E7EB] rounded-[6px] flex items-center justify-center text-gray-400 text-[11px] flex-shrink-0">
-                      No img
-                    </div>
-                  )}
-                  {/* File input */}
-                  <div className="flex-1">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          const updated = [...imageRows];
-                          updated[idx] = {
-                            ...updated[idx],
-                            file,
-                            previewUrl: URL.createObjectURL(file),
-                          };
-                          setImageRows(updated);
-                        }
-                      }}
-                      className="bg-white border border-[#D5D5D5] rounded-[4px] px-[12px] py-[8px] font-[500] text-[13px] text-[var(--color-text)] w-full cursor-pointer file:mr-[10px] file:py-[4px] file:px-[12px] file:rounded-[4px] file:border-0 file:bg-blue-50 file:text-blue-700 file:font-[600] file:text-[12px] file:cursor-pointer"
-                    />
-                  </div>
-                  {/* Display order */}
-                  <div className="w-[80px]">
-                    <input
-                      type="number"
-                      value={row.displayOrder}
-                      onChange={(e) => {
-                        const updated = [...imageRows];
-                        updated[idx] = { ...updated[idx], displayOrder: Number(e.target.value) };
-                        setImageRows(updated);
-                      }}
-                      placeholder="Thứ tự"
-                      className="bg-white border border-[#D5D5D5] rounded-[4px] px-[10px] font-[500] text-[13px] text-[var(--color-text)] w-full h-[44px] outline-none focus:border-blue-400 transition-colors text-center"
-                    />
-                  </div>
-                  {/* Remove */}
-                  <button
-                    type="button"
-                    onClick={() => setImageRows(prev => prev.filter((_, i) => i !== idx))}
-                    className="text-[#EF3826] hover:bg-red-50 p-[10px] rounded-[6px] cursor-pointer transition-colors"
-                    title="Xóa ảnh"
-                  >
-                    <FaTrashCan className="text-[14px]" />
-                  </button>
-                </div>
-              ))}
-              <button
-                type="button"
-                onClick={() => setImageRows(prev => [...prev, { imageUrl: "", displayOrder: prev.length, previewUrl: "" }])}
-                className="inline-flex items-center gap-[6px] text-[13px] font-[600] text-[var(--color-primary)] hover:bg-blue-50 px-[14px] py-[8px] rounded-[6px] cursor-pointer transition-colors border border-dashed border-blue-300"
-              >
-                <FaPlus className="text-[11px]" /> Thêm ảnh
-              </button>
-            </div>
-          )}
-        </div>
-
+        <ProductImagesSection
+          imageRows={imageRows}
+          onImageRowsChange={setImageRows}
+          isReadOnly={isReadOnly}
+          initialImages={initialData?.images}
+        />
 
         {/* Thumbnail upload */}
-        {isReadOnly ? (
-          <div className="md:col-span-2">
-            <label className="block font-[600] text-[14px] text-[#606060] mb-[11px]">
-              Ảnh thumbnail
-            </label>
-            {initialData?.thumbnail ? (
-              <img
-                src={initialData.thumbnail}
-                alt="Thumbnail"
-                className="w-[150px] h-auto object-cover rounded border"
-              />
-            ) : (
-              <p className="text-gray-400 text-sm italic">Không có ảnh</p>
-            )}
-          </div>
-        ) : (
-          <div className="md:col-span-2 flex items-center gap-[50px]">
-            <FormImageUpload
-              label="Ảnh thumbnail"
-              id="thumbnail"
-              name="thumbnail"
-            />
-            {previewUrl && (
-              <div className="flex flex-col items-start gap-[11px] font-[600] text-[14px] text-[#606060] h-full">
-                <span>{selectedFile ? "Ảnh mới:" : "Ảnh hiện tại:"}</span>
-                <img
-                  src={previewUrl}
-                  alt="Thumbnail preview"
-                  className="w-[150px] h-[150px] object-cover rounded-[8px] border border-[#D5D5D5]"
-                />
-              </div>
-            )}
-          </div>
-        )}
+        <FormImageField
+          label="Ảnh thumbnail"
+          id="thumbnail"
+          initialUrl={initialData?.thumbnail}
+          isReadOnly={isReadOnly}
+          isEditMode={isEditMode}
+          noImageText="Không có ảnh"
+          onFileSelect={handleImageFileSelect}
+        />
 
         {/* Mô tả chi tiết - TinyMCE - full width */}
         <div className="md:col-span-2">
@@ -703,7 +394,7 @@ export default function ProductForm({ initialData, isReadOnly = false }: Product
               name="description"
               render={({ field }) => (
                 <FormEditorWrapper label="">
-                  {React.cloneElement(TinyMCEEditorComponent as React.ReactElement, {
+                  {React.cloneElement(TinyMCEEditorComponent as React.ReactElement<any>, {
                     onEditorChange: (content: string) => {
                       field.onChange(content);
                     },

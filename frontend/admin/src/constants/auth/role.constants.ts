@@ -11,6 +11,4 @@ export const ROLE_ACTION_OPTIONS = [
     { id: "delete", name: "Xóa" },
 ];
 
-export const ROLE_TRASH_ACTION_OPTIONS = [
-    { id: "restore", name: "Khôi phục" },
-];
+export { TRASH_ACTION_OPTIONS as ROLE_TRASH_ACTION_OPTIONS } from "@/constants/common.constants";
