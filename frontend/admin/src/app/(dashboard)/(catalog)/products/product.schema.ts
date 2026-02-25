@@ -2,12 +2,20 @@ import { z } from "zod";
 
 const ProductBase = z.object({
   name: z.string().min(1, "Tên sản phẩm không được để trống"),
+  slug: z.string().optional().default(""),
+  productCode: z.string().optional().default(""),
+  brandId: z.coerce.number().min(1, "Vui lòng chọn nhãn hàng"),
+  hasSerialNumber: z.boolean().optional().default(false),
+  warrantyMonths: z.coerce.number().optional().default(0),
   price: z.coerce.number().min(0, "Giá bán phải lớn hơn hoặc bằng 0"),
-  old_price: z.coerce.number().min(0, "Giá cũ phải lớn hơn hoặc bằng 0").optional().nullable(),
-  status: z.enum(['ACTIVE', 'INACTIVE', 'OUT_OF_STOCK', 'PENDING', 'DISCONTINUED']).default('ACTIVE'),
-  brand_id: z.string().optional().nullable(),
-  description: z.string().min(1, "Mô tả không được để trống"),
-  thumbnail: z.any().optional(), // FilePond avatar
+  oldPrice: z.coerce.number().min(0, "Giá cũ phải lớn hơn hoặc bằng 0").optional().nullable(),
+  thumbnail: z.string().optional().default(""),
+  description: z.string().optional().default(""),
+  shortDescription: z.string().optional().default(""),
+  metaTitle: z.string().optional().default(""),
+  metaDescription: z.string().optional().default(""),
+  status: z.enum(["ACTIVE", "INACTIVE", "OUT_OF_STOCK", "PENDING", "DISCONTINUED"]).default("ACTIVE"),
+  categoryIds: z.array(z.number()).optional().default([]),
 });
 
 export const CreateProductSchema = ProductBase;

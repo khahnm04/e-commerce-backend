@@ -22,6 +22,8 @@ public interface ProductService {
 
     ProductResponse getProductDetailBySlug(String slug);
 
+    ProductResponse getDeletedProductDetailById(Long id);
+
     ProductResponse updateProduct(Long id, ProductRequest request);
 
     void updateProductStatus(Long id, ProductUpdateStatusRequest status);

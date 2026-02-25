@@ -117,6 +117,13 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    public ProductResponse getDeletedProductDetailById(Long id) {
+        Product product = productRepository.findDeletedProductById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+        return buildProductDetailResponse(product);
+    }
+
+    @Override
     @Transactional
     public ProductResponse updateProduct(Long id, ProductRequest request) {
         Product product = getProductById(id);

@@ -3,16 +3,16 @@ import { useEffect, useState } from "react";
 import { Breadcrumb } from "@/components/common/Breadcrumb";
 import CategoryForm from "../_components/CategoryForm";
 import { categoryService } from "@/services/catalog/category.service";
-import { Category } from "@/types/catalog/category.types";
+import { CategoryResponse } from "@/types/catalog/category.types";
 import { use } from "react";
 
-export default function CategoryPage({
+export default function CategoryEditPage({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = use(params);
-  const [data, setData] = useState<Category | null>(null);
+  const [data, setData] = useState<CategoryResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -51,9 +51,9 @@ export default function CategoryPage({
   }
 
   return (
-    <>
-      <h1 className="mt-0 mb-[5px] font-bold text-[32px] text-[var(--color-text)]">
-        Danh mục {data.name?.toLowerCase() || "Chi tiết danh mục"}
+    <main>
+      <h1 className="mt-0 mb-[5px] font-[700] text-[32px] text-[var(--color-text)]">
+        Chỉnh sửa danh mục
       </h1>
 
       <Breadcrumb
@@ -61,11 +61,11 @@ export default function CategoryPage({
         items={[
           { label: "Tổng quan", href: "/" },
           { label: "Danh mục", href: "/categories" },
-          { label: data.name || "Chi tiết" },
+          { label: data.name || "Chỉnh sửa" },
         ]}
       />
 
       <CategoryForm initialData={data} />
-    </>
+    </main>
   );
 }

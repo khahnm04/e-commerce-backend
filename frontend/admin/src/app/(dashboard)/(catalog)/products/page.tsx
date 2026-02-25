@@ -1,6 +1,5 @@
 import { Metadata } from "next";
 import ProductList from "./_components/ProductList";
-import { Pagination } from "@/components/common/Pagination";
 import { Breadcrumb } from "@/components/common/Breadcrumb";
 
 export const metadata: Metadata = {
@@ -24,8 +23,6 @@ export default function ProductPage() {
       />
 
       <ProductList />
-
-      <Pagination />
     </main>
   );
 }

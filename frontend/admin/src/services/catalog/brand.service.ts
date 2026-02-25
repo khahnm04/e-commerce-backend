@@ -21,8 +21,11 @@ export const brandService = {
   getAllDeleted: (filter?: BrandFilterRequest) =>
     sendRequest<ApiResponse<BrandResponse[]>>(`${BASE_ENDPOINT}/deleted${buildQuery(filter as Record<string, unknown>)}`, { method: "GET", credentials: "include" }),
 
-  getById: (id: number | string) =>
-    sendRequest<ApiResponse<BrandResponse>>(`${BASE_ENDPOINT}/${id}`, { method: "GET", credentials: "include" }),
+  getById: (slug: string) =>
+    sendRequest<ApiResponse<BrandResponse>>(`${BASE_ENDPOINT}/slug/${slug}`, { method: "GET", credentials: "include" }),
+
+  getDeletedById: (id: number | string) =>
+    sendRequest<ApiResponse<BrandResponse>>(`${BASE_ENDPOINT}/deleted/${id}`, { method: "GET", credentials: "include" }),
 
   create: (payload: BrandRequest) =>
     sendRequest<ApiResponse<BrandResponse>>(`${BASE_ENDPOINT}`, { method: "POST", body: JSON.stringify(payload), credentials: "include" }),

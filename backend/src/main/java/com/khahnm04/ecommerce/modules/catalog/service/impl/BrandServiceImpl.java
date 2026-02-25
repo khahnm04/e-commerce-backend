@@ -96,6 +96,13 @@ public class BrandServiceImpl implements BrandService {
     }
 
     @Override
+    public BrandResponse getDeletedBrandDetailById(Long id) {
+        Brand brand = brandRepository.findDeletedBrandById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.BRAND_NOT_FOUND));
+        return brandMapper.toBrandResponse(brand);
+    }
+
+    @Override
     @Transactional
     public BrandResponse updateBrand(Long id, BrandRequest request) {
         Brand brand = getBrandById(id);

@@ -2,14 +2,14 @@ import { z } from "zod";
 
 const BrandBase = z.object({
   name: z.string().min(1, "Tên nhãn hàng không được để trống"),
-  slug: z.string().optional(),
-  description: z.string().optional(),
-  logoUrl: z.string().optional(),
-  country: z.string().optional(),
-  websiteUrl: z.string().optional(),
-  metaTitle: z.string().optional(),
-  metaDescription: z.string().optional(),
-  metaKeywords: z.string().optional(),
+  slug: z.string().optional().default(""),
+  description: z.string().optional().default(""),
+  logoUrl: z.string().optional().default(""),
+  country: z.string().optional().default(""),
+  websiteUrl: z.string().optional().default(""),
+  metaTitle: z.string().optional().default(""),
+  metaDescription: z.string().optional().default(""),
+  metaKeywords: z.string().optional().default(""),
   status: z.enum(["ACTIVE", "INACTIVE"]).default("ACTIVE"),
 });
 

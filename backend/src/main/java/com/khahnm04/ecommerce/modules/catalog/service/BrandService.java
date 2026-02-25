@@ -22,6 +22,8 @@ public interface BrandService {
 
     BrandResponse getBrandDetailBySlug(String slug);
 
+    BrandResponse getDeletedBrandDetailById(Long id);
+
     BrandResponse updateBrand(Long id, BrandRequest request);
 
     void updateBrandStatus(Long id, BrandUpdateStatusRequest status);

@@ -1,6 +1,6 @@
 import { sendRequest } from "@/lib/api-client";
 import { ApiResponse } from "@/types/common/api.types";
-import { Category, CategoryPayload } from "@/types/catalog/category.types";
+import { CategoryResponse, CategoryRequest, CategoryFilterRequest, CategoryBulkActionRequest } from "@/types/catalog/category.types";
 
 const BASE_ENDPOINT = "/admin/categories";
 
@@ -15,34 +15,23 @@ const buildQuery = (filter?: Record<string, unknown>): string => {
 };
 
 export const categoryService = {
-  getAll: (filter?: Record<string, unknown>) =>
-    sendRequest<ApiResponse<Category[]>>(`${BASE_ENDPOINT}${buildQuery(filter)}`, { method: "GET", credentials: "include" }),
+  getAll: (filter?: CategoryFilterRequest) =>
+    sendRequest<ApiResponse<CategoryResponse[]>>(`${BASE_ENDPOINT}${buildQuery(filter as Record<string, unknown>)}`, { method: "GET", credentials: "include" }),
 
-  getAllDeleted: (filter?: Record<string, unknown>) =>
-    sendRequest<ApiResponse<Category[]>>(`${BASE_ENDPOINT}/deleted${buildQuery(filter)}`, { method: "GET", credentials: "include" }),
+  getAllDeleted: (filter?: CategoryFilterRequest) =>
+    sendRequest<ApiResponse<CategoryResponse[]>>(`${BASE_ENDPOINT}/deleted${buildQuery(filter as Record<string, unknown>)}`, { method: "GET", credentials: "include" }),
 
-  getById: (id: number | string) =>
-    sendRequest<ApiResponse<Category>>(`${BASE_ENDPOINT}/${id}`, { method: "GET", credentials: "include" }),
+  getById: (slug: string) =>
+    sendRequest<ApiResponse<CategoryResponse>>(`${BASE_ENDPOINT}/slug/${slug}`, { method: "GET", credentials: "include" }),
 
-  create: (payload: CategoryPayload, imageFile: File) => {
-    const formData = new FormData();
-    const jsonBlob = new Blob([JSON.stringify(payload)], { type: "application/json" });
-    formData.append("data", jsonBlob);
-    formData.append("image", imageFile);
-    return sendRequest<ApiResponse<Category>>(`${BASE_ENDPOINT}`, {
-      method: "POST", body: formData, headers: { "Content-Type": undefined as unknown as string }, credentials: "include",
-    });
-  },
+  getDeletedById: (id: number | string) =>
+    sendRequest<ApiResponse<CategoryResponse>>(`${BASE_ENDPOINT}/deleted/${id}`, { method: "GET", credentials: "include" }),
 
-  update: (id: number | string, payload: CategoryPayload, imageFile?: File | null) => {
-    const formData = new FormData();
-    const jsonBlob = new Blob([JSON.stringify(payload)], { type: "application/json" });
-    formData.append("data", jsonBlob);
-    if (imageFile) formData.append("image", imageFile);
-    return sendRequest<ApiResponse<Category>>(`${BASE_ENDPOINT}/${id}`, {
-      method: "PUT", body: formData, headers: { "Content-Type": undefined as unknown as string }, credentials: "include",
-    });
-  },
+  create: (payload: CategoryRequest) =>
+    sendRequest<ApiResponse<CategoryResponse>>(`${BASE_ENDPOINT}`, { method: "POST", body: JSON.stringify(payload), credentials: "include" }),
+
+  update: (id: number | string, payload: CategoryRequest) =>
+    sendRequest<ApiResponse<CategoryResponse>>(`${BASE_ENDPOINT}/${id}`, { method: "PUT", body: JSON.stringify(payload), credentials: "include" }),
 
   updateStatus: (id: number | string, payload: { status: string }) =>
     sendRequest<ApiResponse<void>>(`${BASE_ENDPOINT}/${id}/status`, { method: "PATCH", body: JSON.stringify(payload), credentials: "include" }),
@@ -53,6 +42,6 @@ export const categoryService = {
   restore: (id: number | string) =>
     sendRequest<ApiResponse<void>>(`${BASE_ENDPOINT}/${id}/restore`, { method: "PATCH", credentials: "include" }),
 
-  bulkAction: (payload: { categories: number[]; action: string }) =>
+  bulkAction: (payload: CategoryBulkActionRequest) =>
     sendRequest<ApiResponse<void>>(`${BASE_ENDPOINT}/bulk`, { method: "PATCH", body: JSON.stringify(payload), credentials: "include" }),
 };

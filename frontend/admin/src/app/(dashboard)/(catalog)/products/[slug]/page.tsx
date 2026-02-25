@@ -6,7 +6,7 @@ import { productService } from "@/services/catalog/product.service";
 import { ProductResponse } from "@/types/catalog/product.types";
 import { use } from "react";
 
-export default function ProductDetailPage({
+export default function ProductEditPage({
   params,
 }: {
   params: Promise<{ slug: string }>;
@@ -52,8 +52,8 @@ export default function ProductDetailPage({
 
   return (
     <main>
-      <h1 className="mt-0 mb-[5px] font-bold text-[32px] text-[var(--color-text)] capitalize">
-        {data.name}
+      <h1 className="mt-0 mb-[5px] font-[700] text-[32px] text-[var(--color-text)]">
+        Chỉnh sửa sản phẩm
       </h1>
 
       <Breadcrumb
@@ -61,7 +61,7 @@ export default function ProductDetailPage({
         items={[
           { label: "Tổng quan", href: "/" },
           { label: "Sản phẩm", href: "/products" },
-          { label: data.name },
+          { label: data.name || "Chỉnh sửa" },
         ]}
       />
 

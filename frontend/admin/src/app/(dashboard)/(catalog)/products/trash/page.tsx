@@ -1,18 +1,17 @@
 import { Metadata } from "next";
-import { Pagination } from "@/components/common/Pagination";
 import { Breadcrumb } from "@/components/common/Breadcrumb";
 import ProductList from "../_components/ProductList";
 
 export const metadata: Metadata = {
-  title: "Thùng rác sản phẩm",
-  description: "Danh sách sản phẩm đã bị xóa tạm thời.",
+  title: "Thùng rác - Sản phẩm",
+  description: "Danh sách sản phẩm đã xóa.",
 };
 
 export default function ProductTrashPage() {
   return (
     <main>
       <h1 className="mt-0 mb-[5px] font-[700] text-[32px] text-[var(--color-text)]">
-        Thùng rác sản phẩm
+        Thùng rác - Sản phẩm
       </h1>
 
       <Breadcrumb
@@ -25,8 +24,6 @@ export default function ProductTrashPage() {
       />
 
       <ProductList isTrash={true} />
-
-      <Pagination />
     </main>
   );
 }

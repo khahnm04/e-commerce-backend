@@ -22,6 +22,8 @@ public interface CategoryService {
 
     CategoryResponse getCategoryDetailBySlug(String slug);
 
+    CategoryResponse getDeletedCategoryDetailById(Long id);
+
     CategoryResponse updateCategory(Long id, CategoryRequest request);
 
     void updateCategoryStatus(Long id, CategoryUpdateStatusRequest status);

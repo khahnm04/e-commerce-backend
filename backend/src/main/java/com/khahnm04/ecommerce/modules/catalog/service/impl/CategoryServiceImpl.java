@@ -108,6 +108,13 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
+    public CategoryResponse getDeletedCategoryDetailById(Long id) {
+        Category category = categoryRepository.findDeletedCategoryById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND));
+        return categoryMapper.toCategoryResponse(category);
+    }
+
+    @Override
     @Transactional
     public CategoryResponse updateCategory(Long id, CategoryRequest request) {
         Category category = getCategoryById(id);
