@@ -11,6 +11,7 @@ import { TableControl } from "@/components/common/TableControl";
 import { attributeService } from "@/services/catalog/attribute.service";
 import { AttributeResponse } from "@/types/catalog/attribute.types";
 import { AttributeTableRow } from "./AttributeTableRow";
+import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 
 export default function AttributeList({ isTrash = false }: { isTrash?: boolean }) {
   const {
@@ -37,8 +38,7 @@ export default function AttributeList({ isTrash = false }: { isTrash?: boolean }
     bulkActionKey: "attributes",
   });
 
-  if (loading && isFirstLoad)
-    return <div className="text-center py-10 text-[var(--color-text)]">Đang tải dữ liệu...</div>;
+  if (loading && isFirstLoad) return <LoadingSpinner />;
 
   return (
     <>
@@ -53,6 +53,7 @@ export default function AttributeList({ isTrash = false }: { isTrash?: boolean }
         onActionFilterChange={setActionFilter}
         actionOptions={ATTRIBUTE_ACTION_OPTIONS}
       />
+
       <DataTable
         headers={ATTRIBUTE_TABLE_HEADERS}
         isSelectAll={isSelectAll}
@@ -70,6 +71,7 @@ export default function AttributeList({ isTrash = false }: { isTrash?: boolean }
           />
         ))}
       </DataTable>
+
       <ConfirmModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}

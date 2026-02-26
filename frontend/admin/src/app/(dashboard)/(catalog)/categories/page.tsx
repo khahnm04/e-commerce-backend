@@ -16,7 +16,10 @@ export default function CategoryPage() {
 
       <Breadcrumb
         className="mb-[30px] ml-[5px]"
-        items={[{ label: "Tổng quan", href: "/" }, { label: "Danh mục" }]}
+        items={[
+          { label: "Tổng quan", href: "/" },
+          { label: "Danh mục" }
+        ]}
       />
 
       <CategoryList />

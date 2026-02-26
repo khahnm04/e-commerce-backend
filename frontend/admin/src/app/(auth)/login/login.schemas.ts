@@ -18,11 +18,13 @@ export const phoneLoginSchema = z.object({
     .min(1, "Vui lòng nhập số điện thoại")
     .regex(phoneRegex, "Số điện thoại không đúng định dạng"),
   password: passwordSchema,
+  rememberPassword: z.boolean().optional(),
 });
 
 export const emailLoginSchema = z.object({
   accountName: z.string().min(1, "Vui lòng nhập email").email("Email không đúng định dạng"),
   password: passwordSchema,
+  rememberPassword: z.boolean().optional(),
 });
 
 export const getLoginSchema = (mode: LoginMode) =>

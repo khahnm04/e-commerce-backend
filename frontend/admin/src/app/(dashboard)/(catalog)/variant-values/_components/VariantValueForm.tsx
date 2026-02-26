@@ -1,7 +1,6 @@
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { toast } from "react-hot-toast";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormInput } from "@/components/form/FormInput";
@@ -16,14 +15,14 @@ import { variantValueService } from "@/services/catalog/variantValue.service";
 import { variantService } from "@/services/catalog/variant.service";
 import { VariantValueResponse } from "@/types/catalog/variant-value.types";
 import { VariantResponse } from "@/types/catalog/variant.types";
+import { useFormSubmit } from "@/hooks/useFormSubmit";
 
 interface VariantValueFormProps {
   initialData?: VariantValueResponse;
 }
 
 export default function VariantValueForm({ initialData }: VariantValueFormProps) {
-  const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
+  const { isLoading, submitHandler } = useFormSubmit({ redirectTo: "/variant-values" });
   const [variants, setVariants] = useState<VariantResponse[]>([]);
   const isEditMode = !!initialData;
 
@@ -56,32 +55,23 @@ export default function VariantValueForm({ initialData }: VariantValueFormProps)
   });
 
   const onSubmit = async (data: CreateVariantValueValues) => {
-    try {
-      setIsLoading(true);
+    await submitHandler(
+      async () => {
+        const payload = {
+          variantId: Number(data.variantId),
+          value: data.value,
+          code: data.code,
+          displayOrder: data.displayOrder,
+        };
 
-      const payload = {
-        variantId: Number(data.variantId),
-        value: data.value,
-        code: data.code,
-        displayOrder: data.displayOrder,
-      };
-
-      if (isEditMode) {
-        await variantValueService.update(initialData.id, payload);
-        toast.success("Cập nhật giá trị biến thể thành công!");
-      } else {
-        await variantValueService.create(payload);
-        toast.success("Tạo giá trị biến thể mới thành công!");
-      }
-
-      router.push("/variant-values");
-      router.refresh();
-    } catch (error: unknown) {
-      console.error(error);
-      toast.error(error instanceof Error ? error.message : "Có lỗi xảy ra, vui lòng thử lại!");
-    } finally {
-      setIsLoading(false);
-    }
+        if (isEditMode) {
+          await variantValueService.update(initialData.id, payload);
+        } else {
+          await variantValueService.create(payload);
+        }
+      },
+      isEditMode ? "Cập nhật giá trị biến thể thành công!" : "Tạo giá trị biến thể mới thành công!",
+    );
   };
 
   const variantOptions = variants.map((v) => ({
@@ -149,7 +139,10 @@ export default function VariantValueForm({ initialData }: VariantValueFormProps)
           error={errors.displayOrder?.message}
         />
 
-        <FormButton type="submit" disabled={isLoading}>
+        <FormButton
+          type="submit"
+          disabled={isLoading}
+        >
           {isLoading ? "Đang xử lý..." : isEditMode ? "Cập nhật" : "Tạo mới"}
         </FormButton>
       </form>

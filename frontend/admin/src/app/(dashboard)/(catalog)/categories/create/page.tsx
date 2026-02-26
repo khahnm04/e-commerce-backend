@@ -10,7 +10,9 @@ export const metadata: Metadata = {
 export default function CategoryPage() {
   return (
     <>
-      <h1 className="mt-0 mb-[5px] font-bold text-[32px] text-[var(--color-text)]">Tạo danh mục</h1>
+      <h1 className="mt-0 mb-[5px] font-bold text-[32px] text-[var(--color-text)]">
+        Tạo danh mục
+      </h1>
 
       <Breadcrumb
         className="mb-[30px] ml-[5px]"

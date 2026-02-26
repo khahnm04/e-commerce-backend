@@ -29,6 +29,7 @@ export default function ProductTrashDetailPage({ params }: { params: Promise<{ s
       <h1 className="mt-0 mb-[5px] font-[700] text-[32px] text-[var(--color-text)]">
         Chi tiết sản phẩm (Thùng rác)
       </h1>
+
       <Breadcrumb
         className="mb-[30px] ml-[5px]"
         items={[
@@ -38,7 +39,11 @@ export default function ProductTrashDetailPage({ params }: { params: Promise<{ s
           { label: data.name || "Chi tiết" },
         ]}
       />
-      <ProductForm initialData={data} isReadOnly={true} />
+
+      <ProductForm
+        initialData={data}
+        isReadOnly={true}
+      />
     </main>
   );
 }

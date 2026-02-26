@@ -1,4 +1,5 @@
 "use client";
+import React from "react";
 import { ActionGroup } from "@/components/common/ActionGroup";
 import { TableCell } from "@/components/common/TableCell";
 import { TableCheckbox } from "@/components/common/TableCheckbox";
@@ -15,7 +16,7 @@ interface RoleTableRowProps {
   onSelect?: () => void;
 }
 
-export const RoleTableRow = ({
+const RoleTableRowInner = ({
   item,
   isTrash = false,
   onDeleteClick,
@@ -26,28 +27,39 @@ export const RoleTableRow = ({
   return (
     <tr>
       <TableCell>
-        <TableCheckbox checked={isSelected} onChange={onSelect} />
-      </TableCell>
-
-      <TableCell>{item.code}</TableCell>
-
-      <TableCell>{item.name}</TableCell>
-
-      <TableCell className="max-w-[300px] truncate text-center">{item.description}</TableCell>
-
-      <TableCell>
-        <UserTimestamp user={item.createdBy} date={formatDateTime(item.createdAt)} />
+        <TableCheckbox
+          checked={isSelected}
+          onChange={onSelect}
+        />
       </TableCell>
 
       <TableCell>
-        <UserTimestamp user={item.updatedBy} date={formatDateTime(item.updatedAt)} />
+        {item.code}
       </TableCell>
 
-      <td
-        className="py-[8px] px-[15px] text-center border-b
-          border-[rgba(151,151,151,0.6)] text-[14px] font-[600]
-          text-[var(--color-text)]"
-      >
+      <TableCell>
+        {item.name}
+      </TableCell>
+
+      <TableCell className="max-w-[300px] truncate text-center">
+        {item.description}
+      </TableCell>
+
+      <TableCell>
+        <UserTimestamp
+          user={item.createdBy}
+          date={formatDateTime(item.createdAt)}
+        />
+      </TableCell>
+
+      <TableCell>
+        <UserTimestamp
+          user={item.updatedBy}
+          date={formatDateTime(item.updatedAt)}
+        />
+      </TableCell>
+
+      <TableCell>
         {isTrash ? (
           <ActionGroup
             isTrash={true}
@@ -56,9 +68,15 @@ export const RoleTableRow = ({
             onRestore={onRestoreClick}
           />
         ) : (
-          <ActionGroup editLink={`/roles/${item.id}`} onDelete={onDeleteClick || (() => {})} />
+          <ActionGroup
+            editLink={`/roles/${item.id}`}
+            onDelete={onDeleteClick || (() => { })}
+          />
         )}
-      </td>
+      </TableCell>
     </tr>
   );
 };
+
+export const RoleTableRow = React.memo(RoleTableRowInner);
+RoleTableRowInner.displayName = "RoleTableRow";

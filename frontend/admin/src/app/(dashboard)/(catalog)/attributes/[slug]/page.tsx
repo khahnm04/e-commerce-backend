@@ -8,7 +8,11 @@ import { attributeService } from "@/services/catalog/attribute.service";
 import { AttributeResponse } from "@/types/catalog/attribute.types";
 import AttributeForm from "../_components/AttributeForm";
 
-export default function AttributeEditPage({ params }: { params: Promise<{ slug: string }> }) {
+export default function AttributeEditPage({
+  params
+}: {
+  params: Promise<{ slug: string }>
+}) {
   const { slug } = use(params);
   const { data, loading } = useDetailPage<AttributeResponse>({
     fetchFn: attributeService.getById,
@@ -23,6 +27,7 @@ export default function AttributeEditPage({ params }: { params: Promise<{ slug: 
       <h1 className="mt-0 mb-[5px] font-[700] text-[32px] text-[var(--color-text)]">
         Chỉnh sửa thuộc tính
       </h1>
+
       <Breadcrumb
         className="mb-[30px] ml-[5px]"
         items={[
@@ -31,6 +36,7 @@ export default function AttributeEditPage({ params }: { params: Promise<{ slug: 
           { label: data.name || "Chỉnh sửa" },
         ]}
       />
+
       <AttributeForm initialData={data} />
     </main>
   );

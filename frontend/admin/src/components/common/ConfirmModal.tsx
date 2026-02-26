@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 
 interface ConfirmModalProps {
@@ -11,6 +11,40 @@ interface ConfirmModalProps {
 }
 
 export const ConfirmModal = ({ isOpen, onClose, onConfirm, title, message }: ConfirmModalProps) => {
+  const cancelRef = useRef<HTMLButtonElement>(null);
+  const confirmRef = useRef<HTMLButtonElement>(null);
+
+  // Focus cancel button on open + handle Escape key
+  useEffect(() => {
+    if (!isOpen) return;
+
+    // Focus the cancel button when modal opens
+    cancelRef.current?.focus();
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+        return;
+      }
+      // Trap focus between cancel and confirm buttons
+      if (e.key === "Tab") {
+        const focusable = [cancelRef.current, confirmRef.current].filter(Boolean);
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last?.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first?.focus();
+        }
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   return createPortal(
@@ -18,6 +52,10 @@ export const ConfirmModal = ({ isOpen, onClose, onConfirm, title, message }: Con
       className="fixed inset-0 z-[9999] flex items-center justify-center
         bg-gray-900/50 backdrop-blur-sm p-[16px]"
       onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="confirm-modal-title"
+      aria-describedby="confirm-modal-message"
     >
       <div
         className="relative w-[480px] h-[206px] bg-white rounded-[12px]
@@ -25,11 +63,22 @@ export const ConfirmModal = ({ isOpen, onClose, onConfirm, title, message }: Con
         onClick={(e) => e.stopPropagation()}
       >
         <div className="pt-[32px] px-[32px] text-left">
-          <h2 className="text-[20px] font-bold text-[#111827] mb-[8px] leading-[24px]">{title}</h2>
-          <p className="text-[16px] text-[#6B7280] leading-[20px] pr-[20px]">{message}</p>
+          <h2
+            id="confirm-modal-title"
+            className="text-[20px] font-bold text-[#111827] mb-[8px] leading-[24px]"
+          >
+            {title}
+          </h2>
+          <p
+            id="confirm-modal-message"
+            className="text-[16px] text-[#6B7280] leading-[20px] pr-[20px]"
+          >
+            {message}
+          </p>
         </div>
         <div className="mt-auto pb-[24px] px-[32px] flex justify-end gap-[12px]">
           <button
+            ref={cancelRef}
             type="button"
             className="w-[84px] h-[48px] flex items-center justify-center
               rounded-[8px] border border-[#D1D5DB] text-[#374151] text-[16px]
@@ -40,6 +89,7 @@ export const ConfirmModal = ({ isOpen, onClose, onConfirm, title, message }: Con
             Hủy
           </button>
           <button
+            ref={confirmRef}
             type="button"
             className="w-[135px] h-[48px] flex items-center justify-center
               rounded-[8px] bg-[#EF3826] text-white text-[16px] font-semibold

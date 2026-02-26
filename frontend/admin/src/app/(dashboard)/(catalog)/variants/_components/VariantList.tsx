@@ -11,6 +11,7 @@ import { TableControl } from "@/components/common/TableControl";
 import { variantService } from "@/services/catalog/variant.service";
 import { VariantResponse } from "@/types/catalog/variant.types";
 import { VariantTableRow } from "./VariantTableRow";
+import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 
 export default function VariantList({ isTrash = false }: { isTrash?: boolean }) {
   const {
@@ -37,8 +38,7 @@ export default function VariantList({ isTrash = false }: { isTrash?: boolean }) 
     bulkActionKey: "variants",
   });
 
-  if (loading && isFirstLoad)
-    return <div className="text-center py-10 text-[var(--color-text)]">Đang tải dữ liệu...</div>;
+  if (loading && isFirstLoad) return <LoadingSpinner />;
 
   return (
     <>

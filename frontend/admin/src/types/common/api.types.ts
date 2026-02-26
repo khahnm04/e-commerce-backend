@@ -30,8 +30,3 @@ export interface ErrorResponse {
   method: string;
   errors?: FieldError[];
 }
-
-export interface PaginatedData<T> {
-  content: T[];
-  meta: PageMetadata;
-}

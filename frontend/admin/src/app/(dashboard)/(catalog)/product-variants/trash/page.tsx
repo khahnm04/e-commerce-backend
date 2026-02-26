@@ -13,6 +13,7 @@ export default function ProductVariantTrashPage() {
       <h1 className="mt-0 mb-[5px] font-[700] text-[32px] text-[var(--color-text)]">
         Thùng rác - Biến thể sản phẩm
       </h1>
+
       <Breadcrumb
         className="mb-[30px] ml-[5px]"
         items={[
@@ -21,6 +22,7 @@ export default function ProductVariantTrashPage() {
           { label: "Thùng rác" },
         ]}
       />
+
       <ProductVariantList isTrash={true} />
     </main>
   );

@@ -1,4 +1,5 @@
 "use client";
+import React from "react";
 import { ActionGroup } from "@/components/common/ActionGroup";
 import { TableCell } from "@/components/common/TableCell";
 import { TableCheckbox } from "@/components/common/TableCheckbox";
@@ -18,7 +19,7 @@ interface Props {
   onSelect?: () => void;
 }
 
-export const ProductVariantTableRow = ({
+const ProductVariantTableRowInner = ({
   item,
   isTrash = false,
   onDeleteClick,
@@ -32,13 +33,27 @@ export const ProductVariantTableRow = ({
   return (
     <tr>
       <TableCell>
-        <TableCheckbox checked={isSelected} onChange={onSelect} />
+        <TableCheckbox
+          checked={isSelected}
+          onChange={onSelect}
+        />
       </TableCell>
 
-      <TableCell>{item.name}</TableCell>
-      <TableCell>{item.sku}</TableCell>
-      <TableCell>{item.productName}</TableCell>
-      <TableCell>{formattedPrice}</TableCell>
+      <TableCell>
+        {item.name}
+      </TableCell>
+
+      <TableCell>
+        {item.sku}
+      </TableCell>
+
+      <TableCell>
+        {item.productName}
+      </TableCell>
+
+      <TableCell>
+        {formattedPrice}
+      </TableCell>
 
       <TableCell>
         <div className="flex justify-center items-center ml-[20px]">
@@ -53,25 +68,30 @@ export const ProductVariantTableRow = ({
       </TableCell>
 
       <TableCell>
-        <UserTimestamp user={String(item.createdBy)} date={item.createdAt} />
+        <UserTimestamp
+          user={String(item.createdBy)}
+          date={item.createdAt}
+        />
       </TableCell>
 
       <TableCell>
-        <UserTimestamp user={String(item.updatedBy)} date={item.updatedAt} />
+        <UserTimestamp
+          user={String(item.updatedBy)}
+          date={item.updatedAt}
+        />
       </TableCell>
 
-      <td
-        className="py-[8px] px-[15px] text-center border-b
-          border-[rgba(151,151,151,0.6)] text-[14px] font-[600]
-          text-[var(--color-text)]"
-      >
+      <TableCell>
         <ActionGroup
           isTrash={isTrash}
           editLink={`/product-variants/${item.id}`}
-          onDelete={onDeleteClick || (() => {})}
-          onRestore={() => {}}
+          onDelete={onDeleteClick || (() => { })}
+          onRestore={() => { }}
         />
-      </td>
+      </TableCell>
     </tr>
   );
 };
+
+export const ProductVariantTableRow = React.memo(ProductVariantTableRowInner);
+ProductVariantTableRowInner.displayName = "ProductVariantTableRow";

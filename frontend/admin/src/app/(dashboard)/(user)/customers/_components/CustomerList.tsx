@@ -16,6 +16,7 @@ import { TableControl } from "@/components/common/TableControl";
 import { customerService } from "@/services/user/customer.service";
 import { CustomerResponse } from "@/types/user/customer.types";
 import { CustomerTableRow } from "./CustomerTableRow";
+import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 
 export default function CustomerList({ isTrash = false }: { isTrash?: boolean }) {
   const buildFilterParams = useCallback(
@@ -105,8 +106,7 @@ export default function CustomerList({ isTrash = false }: { isTrash?: boolean })
     [filters, dateRange, setFilter, setStartDate, setEndDate],
   );
 
-  if (loading && isFirstLoad)
-    return <div className="text-center py-10 text-[var(--color-text)]">Đang tải dữ liệu...</div>;
+  if (loading && isFirstLoad) return <LoadingSpinner />;
 
   return (
     <>

@@ -9,9 +9,7 @@ const VariantValueBase = z.object({
 
 export const CreateVariantValueSchema = VariantValueBase;
 
-export const UpdateVariantValueSchema = VariantValueBase.partial().extend({
-  id: z.number().or(z.string()),
-});
+export const UpdateVariantValueSchema = VariantValueBase.partial();
 
 export type CreateVariantValueValues = z.infer<typeof CreateVariantValueSchema>;
 export type UpdateVariantValueValues = z.infer<typeof UpdateVariantValueSchema>;

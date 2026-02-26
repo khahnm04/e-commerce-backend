@@ -23,6 +23,7 @@ export default function CategoryEditPage({ params }: { params: Promise<{ slug: s
       <h1 className="mt-0 mb-[5px] font-[700] text-[32px] text-[var(--color-text)]">
         Chỉnh sửa danh mục
       </h1>
+
       <Breadcrumb
         className="mb-[30px] ml-[5px]"
         items={[
@@ -31,6 +32,7 @@ export default function CategoryEditPage({ params }: { params: Promise<{ slug: s
           { label: data.name || "Chỉnh sửa" },
         ]}
       />
+
       <CategoryForm initialData={data} />
     </main>
   );

@@ -29,6 +29,7 @@ export default function BrandTrashDetailPage({ params }: { params: Promise<{ slu
       <h1 className="mt-0 mb-[5px] font-[700] text-[32px] text-[var(--color-text)]">
         Chi tiết nhãn hàng (Thùng rác)
       </h1>
+
       <Breadcrumb
         className="mb-[30px] ml-[5px]"
         items={[
@@ -38,7 +39,11 @@ export default function BrandTrashDetailPage({ params }: { params: Promise<{ slu
           { label: data.name || "Chi tiết" },
         ]}
       />
-      <BrandForm initialData={data} isReadOnly={true} />
+
+      <BrandForm
+        initialData={data}
+        isReadOnly={true}
+      />
     </main>
   );
 }

@@ -1,4 +1,5 @@
 "use client";
+import React from "react";
 import { ActionGroup } from "@/components/common/ActionGroup";
 import { TableCell } from "@/components/common/TableCell";
 import { TableCheckbox } from "@/components/common/TableCheckbox";
@@ -14,7 +15,7 @@ interface Props {
   onSelect?: () => void;
 }
 
-export const AttributeTableRow = ({
+const AttributeTableRowInner = ({
   item,
   isTrash = false,
   onDeleteClick,
@@ -23,32 +24,46 @@ export const AttributeTableRow = ({
 }: Props) => (
   <tr>
     <TableCell>
-      <TableCheckbox checked={isSelected} onChange={onSelect} />
-    </TableCell>
-
-    <TableCell>{item.name}</TableCell>
-    <TableCell>{item.code}</TableCell>
-    <TableCell>{item.description || "—"}</TableCell>
-
-    <TableCell>
-      <UserTimestamp user={String(item.createdBy)} date={item.createdAt} />
+      <TableCheckbox
+        checked={isSelected}
+        onChange={onSelect}
+      />
     </TableCell>
 
     <TableCell>
-      <UserTimestamp user={String(item.updatedBy)} date={item.updatedAt} />
+      {item.name}
+    </TableCell>
+    <TableCell>
+      {item.code}
+    </TableCell>
+    <TableCell>
+      {item.description || "—"}
     </TableCell>
 
-    <td
-      className="py-[8px] px-[15px] text-center border-b
-        border-[rgba(151,151,151,0.6)] text-[14px] font-[600]
-        text-[var(--color-text)]"
-    >
+    <TableCell>
+      <UserTimestamp
+        user={String(item.createdBy)}
+        date={item.createdAt}
+      />
+    </TableCell>
+
+    <TableCell>
+      <UserTimestamp
+        user={String(item.updatedBy)}
+        date={item.updatedAt}
+      />
+    </TableCell>
+
+    <TableCell>
       <ActionGroup
         isTrash={isTrash}
         editLink={`/attributes/${item.id}`}
-        onDelete={onDeleteClick || (() => {})}
-        onRestore={() => {}}
+        onDelete={onDeleteClick || (() => { })}
+        onRestore={() => { }}
       />
-    </td>
+    </TableCell>
   </tr>
 );
+
+export const AttributeTableRow = React.memo(AttributeTableRowInner);
+AttributeTableRowInner.displayName = "AttributeTableRow";

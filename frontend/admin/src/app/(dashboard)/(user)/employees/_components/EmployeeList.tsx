@@ -17,6 +17,7 @@ import { employeeService } from "@/services/user/employee.service";
 import { branchService } from "@/services/branch/branch.service";
 import { EmployeeResponse } from "@/types/user/employee.types";
 import { EmployeeTableRow } from "./EmployeeTableRow";
+import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 
 interface BranchSimple {
   id: number;
@@ -123,8 +124,7 @@ export default function EmployeeList({ isTrash = false }: { isTrash?: boolean })
     [filters, branchOptions, dateRange, setFilter, setStartDate, setEndDate],
   );
 
-  if (loading && isFirstLoad)
-    return <div className="text-center py-10 text-[var(--color-text)]">Đang tải dữ liệu...</div>;
+  if (loading && isFirstLoad) return <LoadingSpinner />;
 
   return (
     <>

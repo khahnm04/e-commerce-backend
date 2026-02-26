@@ -4,15 +4,16 @@ import { DataTable } from "@/components/common/DataTable";
 import { ConfirmModal } from "@/components/common/ConfirmModal";
 import { Pagination } from "@/components/common/Pagination";
 import { useListPage } from "@/hooks/useListPage";
+import { TableControl } from "@/components/common/TableControl";
+import { roleService } from "@/services/auth/role.service";
+import { RoleResponse } from "@/types/auth/role.types";
+import { RoleTableRow } from "./RoleTableRow";
+import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 import {
   ROLE_TABLE_HEADERS,
   ROLE_ACTION_OPTIONS,
   ROLE_TRASH_ACTION_OPTIONS,
 } from "@/constants/auth/role.constants";
-import { TableControl } from "@/components/common/TableControl";
-import { roleService } from "@/services/auth/role.service";
-import { RoleResponse } from "@/types/auth/role.types";
-import { RoleTableRow } from "./RoleTableRow";
 
 export default function RoleList({ isTrash = false }: { isTrash?: boolean }) {
   const {
@@ -44,8 +45,7 @@ export default function RoleList({ isTrash = false }: { isTrash?: boolean }) {
     bulkActionKey: "ids",
   });
 
-  if (loading && isFirstLoad)
-    return <div className="text-center py-10 text-[var(--color-text)]">Đang tải dữ liệu...</div>;
+  if (loading && isFirstLoad) return <LoadingSpinner />;
 
   return (
     <>
@@ -61,6 +61,7 @@ export default function RoleList({ isTrash = false }: { isTrash?: boolean }) {
         filterList={[]}
         onApplyAction={handleApplyAction}
       />
+
       <DataTable
         headers={ROLE_TABLE_HEADERS}
         isSelectAll={isSelectAll}
@@ -79,7 +80,11 @@ export default function RoleList({ isTrash = false }: { isTrash?: boolean }) {
         ))}
       </DataTable>
 
-      <Pagination meta={meta} onPageChange={setPage} onPageSizeChange={handlePageSizeChange} />
+      <Pagination
+        meta={meta}
+        onPageChange={setPage}
+        onPageSizeChange={handlePageSizeChange}
+      />
 
       <ConfirmModal
         isOpen={isModalOpen}

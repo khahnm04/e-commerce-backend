@@ -11,8 +11,7 @@ const TABLE_HEADERS = [
 ];
 
 const getHeaderClass = (index: number, total: number) => {
-  const baseClass =
-    "bg-[#F1F4F9] px-[24px] py-[14px] font-bold text-[14px] text-[var(--color-text)]";
+  const baseClass = "bg-[#F1F4F9] px-[24px] py-[14px] font-bold text-[14px] text-[var(--color-text)]";
   const firstClass = index === 0 ? "rounded-l-[12px] text-left" : "text-left";
   const lastClass = index === total - 1 ? "rounded-r-[12px] text-right" : "";
   return `${baseClass} ${firstClass} ${lastClass}`;
@@ -29,7 +28,10 @@ export const RecentOrdersTable = () => {
           <thead>
             <tr>
               {TABLE_HEADERS.map((item, index) => (
-                <th key={index} className={getHeaderClass(index, TABLE_HEADERS.length)}>
+                <th
+                  key={index}
+                  className={getHeaderClass(index, TABLE_HEADERS.length)}
+                >
                   {item}
                 </th>
               ))}
@@ -49,7 +51,10 @@ export const RecentOrdersTable = () => {
                 <div className="flex flex-col gap-[10px]">
                   <div className="flex items-start gap-[10px]">
                     <div className="w-[76px] h-[76px] rounded-[6px] overflow-hidden">
-                      <img src="assets/images/tour-1.jpg" className="w-full h-full object-cover" />
+                      <img
+                        src="assets/images/tour-1.jpg"
+                        className="w-full h-full object-cover"
+                      />
                     </div>
                     <div className="">
                       <div className="font-[600] text-[14px] text-[var(--color-text)] mb-[3px]">
@@ -64,7 +69,10 @@ export const RecentOrdersTable = () => {
                   </div>
                   <div className="flex items-start gap-[10px]">
                     <div className="w-[76px] h-[76px] rounded-[6px] overflow-hidden">
-                      <img src="assets/images/tour-1.jpg" className="w-full h-full object-cover" />
+                      <img
+                        src="assets/images/tour-1.jpg"
+                        className="w-full h-full object-cover"
+                      />
                     </div>
                     <div className="">
                       <div className="font-[600] text-[14px] text-[var(--color-text)] mb-[3px]">
@@ -88,7 +96,9 @@ export const RecentOrdersTable = () => {
                 <div>TTTT: Đã thanh toán</div>
               </td>
               <td className="px-[24px] py-[10px] text-left border-b border-[#97979751] font-[600] text-[14px] text-[var(--color-text)]">
-                <div className="badge badge-orange">Khởi tạo</div>
+                <div className="badge badge-orange">
+                  Khởi tạo
+                </div>
               </td>
               <td className="px-[24px] py-[10px] border-b border-[#97979751] font-[600] text-[14px] text-[var(--color-text)] text-right">
                 <div>16:20</div>

@@ -13,6 +13,7 @@ export default function AttributeTrashPage() {
       <h1 className="mt-0 mb-[5px] font-[700] text-[32px] text-[var(--color-text)]">
         Thùng rác - Thuộc tính
       </h1>
+
       <Breadcrumb
         className="mb-[30px] ml-[5px]"
         items={[
@@ -21,6 +22,7 @@ export default function AttributeTrashPage() {
           { label: "Thùng rác" },
         ]}
       />
+
       <AttributeList isTrash={true} />
     </main>
   );

@@ -70,7 +70,7 @@ export const ActionGroup = ({
             <Link
               className="inline-block px-[16.5px] py-[8.5px]
                 border-r border-[#D5D5D5] text-[15px]
-                text-[rgba(0, 0, 0, 0.6)] hover:bg-gray-50
+                text-[rgba(0,_0,_0,_0.6)] hover:bg-gray-50
                 cursor-pointer transition-colors"
               href={editLink}
               title="Chỉnh sửa"

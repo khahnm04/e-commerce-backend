@@ -1,7 +1,6 @@
 "use client";
 import React, { useState, useCallback } from "react";
-import { useRouter, usePathname } from "next/navigation";
-import { toast } from "react-hot-toast";
+import { usePathname } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormInput } from "@/components/form/FormInput";
@@ -13,7 +12,6 @@ import {
   CreateBrandSchema,
   UpdateBrandSchema,
   CreateBrandValues,
-  UpdateBrandValues,
 } from "@/app/(dashboard)/(catalog)/brands/brand.schema";
 import { brandService } from "@/services/catalog/brand.service";
 import { BrandResponse } from "@/types/catalog/brand.types";
@@ -22,6 +20,7 @@ import { BRAND_STATUS_OPTIONS } from "@/constants/catalog/brand.constants";
 import { BrandStatus } from "@/constants/enums/catalog.enums";
 import { getFormOptions } from "@/constants/common.constants";
 import { generateSlug } from "@/lib/format-utils";
+import { useFormSubmit } from "@/hooks/useFormSubmit";
 
 const STATUS_OPTIONS = getFormOptions(BRAND_STATUS_OPTIONS);
 
@@ -31,11 +30,10 @@ interface BrandFormProps {
 }
 
 export default function BrandForm({ initialData, isReadOnly = false }: BrandFormProps) {
-  const router = useRouter();
   const pathname = usePathname();
-  const [isLoading, setIsLoading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const isEditMode = !!initialData;
+  const { isLoading, submitHandler } = useFormSubmit({ redirectTo: "/brands" });
 
   const handleFileSelect = useCallback((file: File | null) => {
     setSelectedFile(file);
@@ -65,50 +63,41 @@ export default function BrandForm({ initialData, isReadOnly = false }: BrandForm
   });
 
   const onSubmit = async (data: CreateBrandValues) => {
-    try {
-      setIsLoading(true);
+    await submitHandler(
+      async () => {
+        let logoUrl = initialData?.logoUrl || "";
+        if (selectedFile) {
+          logoUrl = await uploadToCloudinary(selectedFile);
+        }
 
-      let logoUrl = initialData?.logoUrl || "";
-      if (selectedFile) {
-        logoUrl = await uploadToCloudinary(selectedFile);
-      }
+        const payload = {
+          name: data.name,
+          slug: data.slug || generateSlug(data.name),
+          description: data.description,
+          logoUrl: logoUrl || data.logoUrl,
+          country: data.country,
+          websiteUrl: data.websiteUrl,
+          metaTitle: data.metaTitle,
+          metaDescription: data.metaDescription,
+          metaKeywords: data.metaKeywords,
+          status: data.status as BrandStatus,
+        };
 
-      const payload = {
-        name: data.name,
-        slug: data.slug || generateSlug(data.name),
-        description: data.description,
-        logoUrl: logoUrl || data.logoUrl,
-        country: data.country,
-        websiteUrl: data.websiteUrl,
-        metaTitle: data.metaTitle,
-        metaDescription: data.metaDescription,
-        metaKeywords: data.metaKeywords,
-        status: data.status as BrandStatus,
-      };
-
-      if (isEditMode) {
-        await brandService.update(initialData.id, payload);
-        toast.success("Cập nhật nhãn hàng thành công!");
-      } else {
-        await brandService.create(payload);
-        toast.success("Tạo nhãn hàng mới thành công!");
-      }
-
-      router.push("/brands");
-      router.refresh();
-    } catch (error: unknown) {
-      console.error(error);
-      toast.error(error instanceof Error ? error.message : "Có lỗi xảy ra, vui lòng thử lại!");
-    } finally {
-      setIsLoading(false);
-    }
+        if (isEditMode) {
+          await brandService.update(initialData.id, payload);
+        } else {
+          await brandService.create(payload);
+        }
+      },
+      isEditMode ? "Cập nhật nhãn hàng thành công!" : "Tạo nhãn hàng mới thành công!",
+    );
   };
 
   return (
     <div className="bg-white border border-[#B9B9B9] rounded-[14px] md:p-[50px] p-[20px]">
       <form
         className="grid md:grid-cols-2 grid-cols-1 gap-[30px]"
-        onSubmit={(e) => handleSubmit(onSubmit as any)(e).catch(() => {})}
+        onSubmit={(e) => handleSubmit(onSubmit as any)(e).catch(() => { })}
       >
         <FormInput
           label="Tên nhãn hàng"

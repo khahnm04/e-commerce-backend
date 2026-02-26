@@ -34,7 +34,10 @@ export const DashboardStats = () => {
           className="inner-item bg-white rounded-[14px] p-[28px] flex items-center justify-center gap-[20px]"
         >
           <div className="inner-icon w-[60px]">
-            <img src={item.image} className="w-full h-auto" />
+            <img
+              src={item.image}
+              className="w-full h-auto"
+            />
           </div>
           <div className="inner-content">
             <div className="inner-title font-[600] text-[16px] text-[var(--color-text)] mb-[4px]">

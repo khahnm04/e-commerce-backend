@@ -1,7 +1,5 @@
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
-import { toast } from "react-hot-toast";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormInput } from "@/components/form/FormInput";
@@ -16,14 +14,16 @@ import { productVariantService } from "@/services/catalog/productVariant.service
 import { productService } from "@/services/catalog/product.service";
 import { ProductVariantResponse } from "@/types/catalog/product-variant.types";
 import { ProductResponse } from "@/types/catalog/product.types";
+import { useFormSubmit } from "@/hooks/useFormSubmit";
 
 interface ProductVariantFormProps {
   initialData?: ProductVariantResponse;
 }
 
-export default function ProductVariantForm({ initialData }: ProductVariantFormProps) {
-  const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
+export default function ProductVariantForm({
+  initialData
+}: ProductVariantFormProps) {
+  const { isLoading, submitHandler } = useFormSubmit({ redirectTo: "/product-variants" });
   const [products, setProducts] = useState<ProductResponse[]>([]);
   const isEditMode = !!initialData;
 
@@ -58,34 +58,27 @@ export default function ProductVariantForm({ initialData }: ProductVariantFormPr
   });
 
   const onSubmit = async (data: CreateProductVariantValues) => {
-    try {
-      setIsLoading(true);
+    await submitHandler(
+      async () => {
+        const payload = {
+          productId: Number(data.productId),
+          name: data.name,
+          sku: data.sku || undefined,
+          price: data.price,
+          oldPrice: data.oldPrice,
+          image: data.image,
+        };
 
-      const payload = {
-        productId: Number(data.productId),
-        name: data.name,
-        sku: data.sku || undefined,
-        price: data.price,
-        oldPrice: data.oldPrice,
-        image: data.image,
-      };
-
-      if (isEditMode) {
-        await productVariantService.update(initialData.id, payload);
-        toast.success("Cập nhật biến thể sản phẩm thành công!");
-      } else {
-        await productVariantService.create(payload);
-        toast.success("Tạo biến thể sản phẩm mới thành công!");
-      }
-
-      router.push("/product-variants");
-      router.refresh();
-    } catch (error: unknown) {
-      console.error(error);
-      toast.error(error instanceof Error ? error.message : "Có lỗi xảy ra, vui lòng thử lại!");
-    } finally {
-      setIsLoading(false);
-    }
+        if (isEditMode) {
+          await productVariantService.update(initialData.id, payload);
+        } else {
+          await productVariantService.create(payload);
+        }
+      },
+      isEditMode
+        ? "Cập nhật biến thể sản phẩm thành công!"
+        : "Tạo biến thể sản phẩm mới thành công!",
+    );
   };
 
   const productOptions = products.map((p) => ({
@@ -169,7 +162,10 @@ export default function ProductVariantForm({ initialData }: ProductVariantFormPr
           error={errors.image?.message}
         />
 
-        <FormButton type="submit" disabled={isLoading}>
+        <FormButton
+          type="submit"
+          disabled={isLoading}
+        >
           {isLoading ? "Đang xử lý..." : isEditMode ? "Cập nhật" : "Tạo mới"}
         </FormButton>
       </form>

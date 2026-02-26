@@ -13,6 +13,7 @@ import { TableControl } from "@/components/common/TableControl";
 import { productVariantService } from "@/services/catalog/productVariant.service";
 import { ProductVariantResponse } from "@/types/catalog/product-variant.types";
 import { ProductVariantTableRow } from "./ProductVariantTableRow";
+import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 
 export default function ProductVariantList({ isTrash = false }: { isTrash?: boolean }) {
   const {
@@ -57,8 +58,7 @@ export default function ProductVariantList({ isTrash = false }: { isTrash?: bool
     [filters, setFilter],
   );
 
-  if (loading && isFirstLoad)
-    return <div className="text-center py-10 text-[var(--color-text)]">Đang tải dữ liệu...</div>;
+  if (loading && isFirstLoad) return <LoadingSpinner />;
 
   return (
     <>
@@ -73,6 +73,7 @@ export default function ProductVariantList({ isTrash = false }: { isTrash?: bool
         onActionFilterChange={setActionFilter}
         actionOptions={PRODUCT_VARIANT_ACTION_OPTIONS}
       />
+
       <DataTable
         headers={PRODUCT_VARIANT_TABLE_HEADERS}
         isSelectAll={isSelectAll}
@@ -91,6 +92,7 @@ export default function ProductVariantList({ isTrash = false }: { isTrash?: bool
           />
         ))}
       </DataTable>
+
       <ConfirmModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}

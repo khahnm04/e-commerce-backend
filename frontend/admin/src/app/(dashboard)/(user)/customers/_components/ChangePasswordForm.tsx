@@ -3,10 +3,10 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { toast } from "react-hot-toast";
 import { FormInput } from "@/components/form/FormInput";
 import { FormButton } from "@/components/form/FormButton";
 import { customerService } from "@/services/user/customer.service";
+import { useFormSubmit } from "@/hooks/useFormSubmit";
 
 const ChangePasswordSchema = z
   .object({
@@ -26,7 +26,7 @@ interface ChangePasswordFormProps {
 }
 
 export default function ChangePasswordForm({ customerId }: ChangePasswordFormProps) {
-  const [isLoading, setIsLoading] = useState(false);
+  const { isLoading, submitHandler } = useFormSubmit({ redirectTo: "" });
 
   const {
     register,
@@ -43,20 +43,14 @@ export default function ChangePasswordForm({ customerId }: ChangePasswordFormPro
   });
 
   const onSubmit = async (data: ChangePasswordValues) => {
-    try {
-      setIsLoading(true);
+    await submitHandler(async () => {
       await customerService.changePassword(customerId, {
         currentPassword: data.currentPassword,
         newPassword: data.newPassword,
         confirmNewPassword: data.confirmNewPassword,
       });
-      toast.success("Đổi mật khẩu thành công!");
       reset();
-    } catch (error: unknown) {
-      toast.error(error instanceof Error ? error.message : "Có lỗi xảy ra!");
-    } finally {
-      setIsLoading(false);
-    }
+    }, "Đổi mật khẩu thành công!");
   };
 
   return (
@@ -64,7 +58,7 @@ export default function ChangePasswordForm({ customerId }: ChangePasswordFormPro
       <h2 className="text-[20px] font-[700] text-[var(--color-text)] mb-[30px]">Đổi mật khẩu</h2>
       <form
         className="grid md:grid-cols-2 grid-cols-1 gap-[30px]"
-        onSubmit={(e) => handleSubmit(onSubmit)(e).catch(() => {})}
+        onSubmit={(e) => handleSubmit(onSubmit)(e).catch(() => { })}
       >
         <div className="md:col-span-2">
           <FormInput

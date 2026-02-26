@@ -1,20 +1,29 @@
 "use client";
-import { ReactNode } from "react";
+import { ReactNode, Children } from "react";
 
 interface DataTableProps {
   headers: string[];
   children: ReactNode;
   isSelectAll?: boolean;
   onSelectAll?: () => void;
+  emptyMessage?: string;
 }
 
-export const DataTable = ({ headers, children, isSelectAll, onSelectAll }: DataTableProps) => {
+export const DataTable = ({
+  headers,
+  children,
+  isSelectAll,
+  onSelectAll,
+  emptyMessage = "Không có dữ liệu",
+}: DataTableProps) => {
+  const childCount = Children.count(children);
+
   return (
     <div
       className="overflow-x-auto border border-[#B9B9B9] rounded-[14px]
         overflow-hidden mb-[15px]"
     >
-      <table className="bg-[#fff] w-full min-w-[1141px]">
+      <table className="bg-[#fff] w-full min-w-[1141px]" role="table">
         <thead>
           <tr>
             <th
@@ -26,6 +35,7 @@ export const DataTable = ({ headers, children, isSelectAll, onSelectAll }: DataT
                 type="checkbox"
                 checked={isSelectAll}
                 onChange={onSelectAll}
+                aria-label="Chọn tất cả"
               />
             </th>
             {headers.map((item, index) => (
@@ -40,7 +50,20 @@ export const DataTable = ({ headers, children, isSelectAll, onSelectAll }: DataT
           </tr>
         </thead>
 
-        <tbody>{children}</tbody>
+        <tbody>
+          {childCount === 0 ? (
+            <tr>
+              <td
+                colSpan={headers.length + 1}
+                className="text-center py-[40px] text-gray-400 text-[14px] italic"
+              >
+                {emptyMessage}
+              </td>
+            </tr>
+          ) : (
+            children
+          )}
+        </tbody>
       </table>
     </div>
   );

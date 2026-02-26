@@ -16,6 +16,7 @@ import { TableControl } from "@/components/common/TableControl";
 import { categoryService } from "@/services/catalog/category.service";
 import { CategoryResponse } from "@/types/catalog/category.types";
 import { CategoryTableRow } from "./CategoryTableRow";
+import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 
 const mapToOption = (item: { id: number; name: string }) => ({
   id: String(item.id),
@@ -115,8 +116,7 @@ export default function CategoryList({ isTrash = false }: { isTrash?: boolean })
     [filters, parentOptions, dateRange, setFilter, setStartDate, setEndDate],
   );
 
-  if (loading && isFirstLoad)
-    return <div className="text-center py-10 text-[var(--color-text)]">Đang tải dữ liệu...</div>;
+  if (loading && isFirstLoad) return <LoadingSpinner />;
 
   return (
     <>
@@ -153,7 +153,11 @@ export default function CategoryList({ isTrash = false }: { isTrash?: boolean })
         ))}
       </DataTable>
 
-      <Pagination meta={meta} onPageChange={setPage} onPageSizeChange={handlePageSizeChange} />
+      <Pagination
+        meta={meta}
+        onPageChange={setPage}
+        onPageSizeChange={handlePageSizeChange}
+      />
 
       <ConfirmModal
         isOpen={isModalOpen}

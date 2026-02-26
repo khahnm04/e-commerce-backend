@@ -15,6 +15,7 @@ import { TableControl } from "@/components/common/TableControl";
 import { brandService } from "@/services/catalog/brand.service";
 import { BrandResponse } from "@/types/catalog/brand.types";
 import { BrandTableRow } from "./BrandTableRow";
+import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 
 export default function BrandList({ isTrash = false }: { isTrash?: boolean }) {
   const {
@@ -76,8 +77,7 @@ export default function BrandList({ isTrash = false }: { isTrash?: boolean }) {
     [filters, dateRange, setFilter, setStartDate, setEndDate],
   );
 
-  if (loading && isFirstLoad)
-    return <div className="text-center py-10 text-[var(--color-text)]">Đang tải dữ liệu...</div>;
+  if (loading && isFirstLoad) return <LoadingSpinner />;
 
   return (
     <>
@@ -114,7 +114,11 @@ export default function BrandList({ isTrash = false }: { isTrash?: boolean }) {
         ))}
       </DataTable>
 
-      <Pagination meta={meta} onPageChange={setPage} onPageSizeChange={handlePageSizeChange} />
+      <Pagination
+        meta={meta}
+        onPageChange={setPage}
+        onPageSizeChange={handlePageSizeChange}
+      />
 
       <ConfirmModal
         isOpen={isModalOpen}

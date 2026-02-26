@@ -1,4 +1,5 @@
 "use client";
+import React from "react";
 import { ActionGroup } from "@/components/common/ActionGroup";
 import { TableCell } from "@/components/common/TableCell";
 import { TableCheckbox } from "@/components/common/TableCheckbox";
@@ -19,7 +20,7 @@ interface BrandTableRowProps {
   onSelect?: () => void;
 }
 
-export const BrandTableRow = ({
+const BrandTableRowInner = ({
   item,
   isTrash = false,
   onDeleteClick,
@@ -33,18 +34,30 @@ export const BrandTableRow = ({
   return (
     <tr>
       <TableCell>
-        <TableCheckbox checked={isSelected} onChange={onSelect} />
+        <TableCheckbox
+          checked={isSelected}
+          onChange={onSelect}
+        />
       </TableCell>
-
-      <TableCell>{item.name}</TableCell>
 
       <TableCell>
-        <TableImage src={item.logoUrl} alt={item.name} />
+        {item.name}
       </TableCell>
 
-      <TableCell>{item.slug}</TableCell>
+      <TableCell>
+        <TableImage
+          src={item.logoUrl}
+          alt={item.name}
+        />
+      </TableCell>
 
-      <TableCell>{item.country}</TableCell>
+      <TableCell>
+        {item.slug}
+      </TableCell>
+
+      <TableCell>
+        {item.country}
+      </TableCell>
 
       <TableCell>
         <div className="flex justify-center items-center ml-[20px]">
@@ -63,27 +76,32 @@ export const BrandTableRow = ({
       </TableCell>
 
       <TableCell>
-        <UserTimestamp user={String(item.createdBy)} date={item.createdAt} />
+        <UserTimestamp
+          user={String(item.createdBy)}
+          date={item.createdAt}
+        />
       </TableCell>
 
       <TableCell>
-        <UserTimestamp user={String(item.updatedBy)} date={item.updatedAt} />
+        <UserTimestamp
+          user={String(item.updatedBy)}
+          date={item.updatedAt}
+        />
       </TableCell>
 
-      <td
-        className="py-[8px] px-[15px] text-center border-b
-          border-[rgba(151,151,151,0.6)] text-[14px] font-[600]
-          text-[var(--color-text)]"
-      >
+      <TableCell>
         <ActionGroup
           isTrash={isTrash}
           editLink={isTrash ? undefined : `/brands/${item.slug || item.id}`}
           viewLink={isTrash ? `/brands/trash/${item.id}` : undefined}
-          onDelete={onDeleteClick || (() => {})}
-          onRestore={onRestoreClick || (() => {})}
+          onDelete={onDeleteClick || (() => { })}
+          onRestore={onRestoreClick || (() => { })}
           hideDelete={isTrash}
         />
-      </td>
+      </TableCell>
     </tr>
   );
 };
+
+export const BrandTableRow = React.memo(BrandTableRowInner);
+BrandTableRowInner.displayName = "BrandTableRow";

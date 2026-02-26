@@ -1,4 +1,5 @@
 "use client";
+import React from "react";
 import { ActionGroup } from "@/components/common/ActionGroup";
 import { TableCell } from "@/components/common/TableCell";
 import { TableCheckbox } from "@/components/common/TableCheckbox";
@@ -14,7 +15,7 @@ interface Props {
   onSelect?: () => void;
 }
 
-export const VariantTableRow = ({
+const VariantTableRowInner = ({
   item,
   isTrash = false,
   onDeleteClick,
@@ -37,17 +38,16 @@ export const VariantTableRow = ({
       <UserTimestamp user={String(item.updatedBy)} date={item.updatedAt} />
     </TableCell>
 
-    <td
-      className="py-[8px] px-[15px] text-center border-b
-        border-[rgba(151,151,151,0.6)] text-[14px] font-[600]
-        text-[var(--color-text)]"
-    >
+    <TableCell>
       <ActionGroup
         isTrash={isTrash}
         editLink={`/variants/${item.id}`}
         onDelete={onDeleteClick || (() => {})}
         onRestore={() => {}}
       />
-    </td>
+    </TableCell>
   </tr>
 );
+
+export const VariantTableRow = React.memo(VariantTableRowInner);
+VariantTableRowInner.displayName = "VariantTableRow";

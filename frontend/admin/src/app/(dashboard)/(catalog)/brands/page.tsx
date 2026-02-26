@@ -13,10 +13,15 @@ export default function BrandPage() {
       <h1 className="mt-0 mb-[5px] font-[700] text-[32px] text-[var(--color-text)]">
         Quản lý nhãn hàng
       </h1>
+
       <Breadcrumb
         className="mb-[30px] ml-[5px]"
-        items={[{ label: "Tổng quan", href: "/" }, { label: "Nhãn hàng" }]}
+        items={[
+          { label: "Tổng quan", href: "/" },
+          { label: "Nhãn hàng" }
+        ]}
       />
+
       <BrandList />
     </main>
   );

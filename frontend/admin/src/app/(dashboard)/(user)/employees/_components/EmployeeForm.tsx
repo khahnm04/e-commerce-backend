@@ -1,7 +1,6 @@
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
-import { useRouter, usePathname } from "next/navigation";
-import { toast } from "react-hot-toast";
+import { usePathname } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormInput } from "@/components/form/FormInput";
@@ -24,6 +23,7 @@ import { RoleResponse } from "@/types/auth/role.types";
 import { getFormOptions, GENDER_FORM_OPTIONS } from "@/constants/common.constants";
 import { EMPLOYEE_STATUS_OPTIONS } from "@/constants/user/employee.constants";
 import { Gender, UserStatus } from "@/constants/enums";
+import { useFormSubmit } from "@/hooks/useFormSubmit";
 
 const STATUS_OPTIONS = getFormOptions(EMPLOYEE_STATUS_OPTIONS);
 
@@ -33,12 +33,11 @@ interface EmployeeFormProps {
 }
 
 export default function EmployeeForm({ initialData, isReadOnly = false }: EmployeeFormProps) {
-  const router = useRouter();
   const pathname = usePathname();
-  const [isLoading, setIsLoading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [allRoles, setAllRoles] = useState<RoleResponse[]>([]);
   const isEditMode = !!initialData;
+  const { isLoading, submitHandler } = useFormSubmit({ redirectTo: "/employees" });
 
   // Fetch all roles
   useEffect(() => {
@@ -101,63 +100,54 @@ export default function EmployeeForm({ initialData, isReadOnly = false }: Employ
   }, [allRoles]);
 
   const onSubmit = async (data: CreateEmployeeValues) => {
-    try {
-      setIsLoading(true);
+    await submitHandler(
+      async () => {
+        let avatarUrl = initialData?.avatarUrl || "";
+        if (selectedFile) {
+          avatarUrl = await uploadToCloudinary(selectedFile);
+        }
 
-      let avatarUrl = initialData?.avatarUrl || "";
-      if (selectedFile) {
-        avatarUrl = await uploadToCloudinary(selectedFile);
-      }
-
-      if (isEditMode) {
-        await employeeService.update(initialData.id, {
-          fullName: data.fullName,
-          email: data.email,
-          phoneNumber: data.phoneNumber,
-          code: data.code,
-          branchId: data.branchId,
-          jobTitle: data.jobTitle,
-          dateOfBirth: data.dateOfBirth,
-          avatarUrl: avatarUrl,
-          gender: data.gender as Gender,
-          status: data.status as UserStatus,
-          roles: data.roles || [],
-        });
-        toast.success("Cập nhật nhân viên thành công!");
-      } else {
-        await employeeService.create({
-          fullName: data.fullName,
-          email: data.email,
-          phoneNumber: data.phoneNumber,
-          password: data.password,
-          confirmPassword: data.confirmPassword,
-          code: data.code,
-          branchId: data.branchId,
-          jobTitle: data.jobTitle,
-          dateOfBirth: data.dateOfBirth,
-          avatarUrl: avatarUrl,
-          gender: data.gender as Gender,
-          status: data.status as UserStatus,
-          roles: data.roles || [],
-        });
-        toast.success("Tạo nhân viên mới thành công!");
-      }
-
-      router.push("/employees");
-      router.refresh();
-    } catch (error: unknown) {
-      console.error(error);
-      toast.error(error instanceof Error ? error.message : "Có lỗi xảy ra, vui lòng thử lại!");
-    } finally {
-      setIsLoading(false);
-    }
+        if (isEditMode) {
+          await employeeService.update(initialData.id, {
+            fullName: data.fullName,
+            email: data.email,
+            phoneNumber: data.phoneNumber,
+            code: data.code,
+            branchId: data.branchId,
+            jobTitle: data.jobTitle,
+            dateOfBirth: data.dateOfBirth,
+            avatarUrl: avatarUrl,
+            gender: data.gender as Gender,
+            status: data.status as UserStatus,
+            roles: data.roles || [],
+          });
+        } else {
+          await employeeService.create({
+            fullName: data.fullName,
+            email: data.email,
+            phoneNumber: data.phoneNumber,
+            password: data.password,
+            confirmPassword: data.confirmPassword,
+            code: data.code,
+            branchId: data.branchId,
+            jobTitle: data.jobTitle,
+            dateOfBirth: data.dateOfBirth,
+            avatarUrl: avatarUrl,
+            gender: data.gender as Gender,
+            status: data.status as UserStatus,
+            roles: data.roles || [],
+          });
+        }
+      },
+      isEditMode ? "Cập nhật nhân viên thành công!" : "Tạo nhân viên mới thành công!",
+    );
   };
 
   return (
     <div className="bg-white border border-[#B9B9B9] rounded-[14px] md:p-[50px] p-[20px]">
       <form
         className="grid md:grid-cols-2 grid-cols-1 gap-[30px]"
-        onSubmit={(e) => handleSubmit(onSubmit as any)(e).catch(() => {})}
+        onSubmit={(e) => handleSubmit(onSubmit as any)(e).catch(() => { })}
       >
         {/* Row 1: Họ tên + Mã NV */}
         <FormInput

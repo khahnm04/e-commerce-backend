@@ -31,6 +31,7 @@ export default function ViewTrashRolePage() {
       <h1 className="mt-0 mb-[5px] font-[700] text-[32px] text-[var(--color-text)]">
         Xem chi tiết nhóm quyền đã xóa
       </h1>
+
       <Breadcrumb
         className="mb-[30px] ml-[5px]"
         items={[
@@ -40,7 +41,11 @@ export default function ViewTrashRolePage() {
           { label: data.name || "Chi tiết" },
         ]}
       />
-      <RoleForm initialData={data} isReadOnly={true} />
+
+      <RoleForm
+        initialData={data}
+        isReadOnly={true}
+      />
     </>
   );
 }

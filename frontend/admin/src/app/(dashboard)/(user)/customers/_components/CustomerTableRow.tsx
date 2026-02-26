@@ -1,4 +1,5 @@
 "use client";
+import React from "react";
 import { ActionGroup } from "@/components/common/ActionGroup";
 import { TableCell } from "@/components/common/TableCell";
 import { TableCheckbox } from "@/components/common/TableCheckbox";
@@ -8,7 +9,6 @@ import { CustomSelect } from "@/components/common/CustomSelect";
 import { CUSTOMER_STATUS_OPTIONS } from "@/constants/user/customer.constants";
 import { CustomerResponse } from "@/types/user/customer.types";
 import { getStatusColorClass, getGenderLabel } from "@/lib/format-utils";
-import { formatDateTime } from "@/lib/format-date";
 
 interface CustomerTableRowProps {
   item: CustomerResponse;
@@ -20,7 +20,7 @@ interface CustomerTableRowProps {
   onSelect?: () => void;
 }
 
-export const CustomerTableRow = ({
+const CustomerTableRowInner = ({
   item,
   isTrash = false,
   onDeleteClick,
@@ -72,18 +72,14 @@ export const CustomerTableRow = ({
       </TableCell>
 
       <TableCell>
-        <UserTimestamp user={String(item.createdBy)} date={formatDateTime(item.createdAt)} />
+        <UserTimestamp user={String(item.createdBy)} date={item.createdAt} />
       </TableCell>
 
       <TableCell>
-        <UserTimestamp user={String(item.updatedBy)} date={formatDateTime(item.updatedAt)} />
+        <UserTimestamp user={String(item.updatedBy)} date={item.updatedAt} />
       </TableCell>
 
-      <td
-        className="py-[8px] px-[15px] text-center border-b
-          border-[rgba(151,151,151,0.6)] text-[14px] font-[600]
-          text-[var(--color-text)]"
-      >
+      <TableCell>
         {isTrash ? (
           <ActionGroup
             isTrash={true}
@@ -94,7 +90,10 @@ export const CustomerTableRow = ({
         ) : (
           <ActionGroup editLink={`/customers/${item.id}`} onDelete={onDeleteClick || (() => {})} />
         )}
-      </td>
+      </TableCell>
     </tr>
   );
 };
+
+export const CustomerTableRow = React.memo(CustomerTableRowInner);
+CustomerTableRowInner.displayName = "CustomerTableRow";

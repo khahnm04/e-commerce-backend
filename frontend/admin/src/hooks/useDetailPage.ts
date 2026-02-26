@@ -7,16 +7,10 @@ interface UseDetailPageConfig<T> {
   id: string | number;
 }
 
-/**
- * Reusable hook for detail/edit pages.
- * Handles data fetching, loading state, and error state.
- * Replaces ~20 lines of boilerplate per detail page.
- */
 export function useDetailPage<T>({ fetchFn, id }: UseDetailPageConfig<T>) {
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Use ref for fetchFn to avoid dependency instability
   const fetchFnRef = useRef(fetchFn);
   fetchFnRef.current = fetchFn;
 

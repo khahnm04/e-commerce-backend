@@ -25,6 +25,7 @@ export default function EditRolePage() {
       <h1 className="mt-0 mb-[5px] font-[700] text-[32px] text-[var(--color-text)]">
         Cập nhật nhóm quyền
       </h1>
+
       <Breadcrumb
         className="mb-[30px] ml-[5px]"
         items={[
@@ -33,6 +34,7 @@ export default function EditRolePage() {
           { label: data.name || "Cập nhật" },
         ]}
       />
+
       <RoleForm initialData={data} />
     </>
   );

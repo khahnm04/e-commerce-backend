@@ -1,7 +1,6 @@
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
-import { useRouter, usePathname } from "next/navigation";
-import { toast } from "react-hot-toast";
+import { usePathname } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormInput } from "@/components/form/FormInput";
@@ -14,7 +13,6 @@ import {
   CreateCategorySchema,
   UpdateCategorySchema,
   CreateCategoryValues,
-  UpdateCategoryValues,
 } from "@/app/(dashboard)/(catalog)/categories/category.schema";
 import { categoryService } from "@/services/catalog/category.service";
 import { CategoryResponse } from "@/types/catalog/category.types";
@@ -23,6 +21,7 @@ import { CategoryStatus } from "@/constants/enums";
 import { uploadToCloudinary } from "@/services/upload/upload.service";
 import { getFormOptions } from "@/constants/common.constants";
 import { generateSlug } from "@/lib/format-utils";
+import { useFormSubmit } from "@/hooks/useFormSubmit";
 
 const STATUS_OPTIONS = getFormOptions(CATEGORY_STATUS_OPTIONS);
 
@@ -32,9 +31,8 @@ interface CategoryFormProps {
 }
 
 export default function CategoryForm({ initialData, isReadOnly = false }: CategoryFormProps) {
-  const router = useRouter();
   const pathname = usePathname();
-  const [isLoading, setIsLoading] = useState(false);
+  const { isLoading, submitHandler } = useFormSubmit({ redirectTo: "/categories" });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [parentOptions, setParentOptions] = useState<{ id: string | number; name: string }[]>([
     { id: "", name: "Không có (Danh mục gốc)" },
@@ -87,51 +85,42 @@ export default function CategoryForm({ initialData, isReadOnly = false }: Catego
   });
 
   const onSubmit = async (data: CreateCategoryValues) => {
-    try {
-      setIsLoading(true);
+    await submitHandler(
+      async () => {
+        let iconUrl = initialData?.iconUrl || "";
+        if (selectedFile) {
+          iconUrl = await uploadToCloudinary(selectedFile);
+        }
 
-      let iconUrl = initialData?.iconUrl || "";
-      if (selectedFile) {
-        iconUrl = await uploadToCloudinary(selectedFile);
-      }
+        const payload = {
+          name: data.name!,
+          slug: data.slug || generateSlug(data.name!),
+          description: data.description,
+          iconUrl: iconUrl || data.iconUrl,
+          bannerUrl: data.bannerUrl,
+          position: data.position ? Number(data.position) : 0,
+          metaTitle: data.metaTitle,
+          metaDescription: data.metaDescription,
+          metaKeywords: data.metaKeywords,
+          status: data.status as CategoryStatus,
+          parentId: data.parentId ? Number(data.parentId) : null,
+        };
 
-      const payload = {
-        name: data.name!,
-        slug: data.slug || generateSlug(data.name!),
-        description: data.description,
-        iconUrl: iconUrl || data.iconUrl,
-        bannerUrl: data.bannerUrl,
-        position: data.position ? Number(data.position) : 0,
-        metaTitle: data.metaTitle,
-        metaDescription: data.metaDescription,
-        metaKeywords: data.metaKeywords,
-        status: data.status as CategoryStatus,
-        parentId: data.parentId ? Number(data.parentId) : null,
-      };
-
-      if (isEditMode) {
-        await categoryService.update(initialData.id, payload);
-        toast.success("Cập nhật danh mục thành công!");
-      } else {
-        await categoryService.create(payload);
-        toast.success("Tạo danh mục mới thành công!");
-      }
-
-      router.push("/categories");
-      router.refresh();
-    } catch (error: unknown) {
-      console.error(error);
-      toast.error(error instanceof Error ? error.message : "Có lỗi xảy ra, vui lòng thử lại!");
-    } finally {
-      setIsLoading(false);
-    }
+        if (isEditMode) {
+          await categoryService.update(initialData.id, payload);
+        } else {
+          await categoryService.create(payload);
+        }
+      },
+      isEditMode ? "Cập nhật danh mục thành công!" : "Tạo danh mục mới thành công!",
+    );
   };
 
   return (
     <div className="bg-white border border-[#B9B9B9] rounded-[14px] md:p-[50px] p-[20px]">
       <form
         className="grid md:grid-cols-2 grid-cols-1 gap-[30px]"
-        onSubmit={(e) => handleSubmit(onSubmit as any)(e).catch(() => {})}
+        onSubmit={(e) => handleSubmit(onSubmit as any)(e).catch(() => { })}
       >
         <FormInput
           label="Tên danh mục"

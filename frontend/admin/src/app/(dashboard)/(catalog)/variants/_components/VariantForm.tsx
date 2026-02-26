@@ -1,7 +1,6 @@
 "use client";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { toast } from "react-hot-toast";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormInput } from "@/components/form/FormInput";
@@ -13,14 +12,14 @@ import {
 } from "@/app/(dashboard)/(catalog)/variants/variant.schema";
 import { variantService } from "@/services/catalog/variant.service";
 import { VariantResponse } from "@/types/catalog/variant.types";
+import { useFormSubmit } from "@/hooks/useFormSubmit";
 
 interface VariantFormProps {
   initialData?: VariantResponse;
 }
 
 export default function VariantForm({ initialData }: VariantFormProps) {
-  const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
+  const { isLoading, submitHandler } = useFormSubmit({ redirectTo: "/variants" });
   const isEditMode = !!initialData;
 
   const {
@@ -36,31 +35,22 @@ export default function VariantForm({ initialData }: VariantFormProps) {
   });
 
   const onSubmit = async (data: CreateVariantValues) => {
-    try {
-      setIsLoading(true);
-
-      if (isEditMode) {
-        await variantService.update(initialData.id, {
-          name: data.name,
-          code: data.code,
-        });
-        toast.success("Cập nhật biến thể thành công!");
-      } else {
-        await variantService.create({
-          name: data.name,
-          code: data.code,
-        });
-        toast.success("Tạo biến thể mới thành công!");
-      }
-
-      router.push("/variants");
-      router.refresh();
-    } catch (error: unknown) {
-      console.error(error);
-      toast.error(error instanceof Error ? error.message : "Có lỗi xảy ra, vui lòng thử lại!");
-    } finally {
-      setIsLoading(false);
-    }
+    await submitHandler(
+      async () => {
+        if (isEditMode) {
+          await variantService.update(initialData.id, {
+            name: data.name,
+            code: data.code,
+          });
+        } else {
+          await variantService.create({
+            name: data.name,
+            code: data.code,
+          });
+        }
+      },
+      isEditMode ? "Cập nhật biến thể thành công!" : "Tạo biến thể mới thành công!",
+    );
   };
 
   return (

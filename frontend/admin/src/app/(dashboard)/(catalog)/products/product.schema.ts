@@ -42,9 +42,7 @@ const ProductBase = z.object({
 
 export const CreateProductSchema = ProductBase;
 
-export const UpdateProductSchema = ProductBase.partial().extend({
-  id: z.number().or(z.string()),
-});
+export const UpdateProductSchema = ProductBase.partial();
 
 export type CreateProductValues = z.infer<typeof CreateProductSchema>;
 export type UpdateProductValues = z.infer<typeof UpdateProductSchema>;

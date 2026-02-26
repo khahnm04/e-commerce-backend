@@ -8,9 +8,7 @@ const AttributeBase = z.object({
 
 export const CreateAttributeSchema = AttributeBase;
 
-export const UpdateAttributeSchema = AttributeBase.partial().extend({
-  id: z.number().or(z.string()),
-});
+export const UpdateAttributeSchema = AttributeBase.partial();
 
 export type CreateAttributeValues = z.infer<typeof CreateAttributeSchema>;
 export type UpdateAttributeValues = z.infer<typeof UpdateAttributeSchema>;

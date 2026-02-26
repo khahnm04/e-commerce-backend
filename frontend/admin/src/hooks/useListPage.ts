@@ -239,9 +239,11 @@ export function useListPage<T extends { id: number | string }, F>({
 
     const deleteFn = serviceRef.current.softDelete ?? serviceRef.current.delete;
     if (deleteFn) {
-      await deleteFn(selectedItem.id);
-      toast.success(`Xóa ${entityName} thành công!`);
-      reload();
+      const success = await withApiHandler(() => deleteFn(selectedItem.id), {
+        successMessage: `Xóa ${entityName} thành công!`,
+        errorMessage: `Có lỗi xảy ra khi xóa ${entityName}!`,
+      });
+      if (success) reload();
     }
     handleCloseModal();
   }, [selectedItem, entityName, reload, handleCloseModal]);

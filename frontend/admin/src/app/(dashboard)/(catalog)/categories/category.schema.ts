@@ -16,9 +16,7 @@ const CategoryBase = z.object({
 
 export const CreateCategorySchema = CategoryBase;
 
-export const UpdateCategorySchema = CategoryBase.partial().extend({
-  id: z.number().or(z.string()),
-});
+export const UpdateCategorySchema = CategoryBase.partial();
 
 export type CreateCategoryValues = z.infer<typeof CreateCategorySchema>;
 export type UpdateCategoryValues = z.infer<typeof UpdateCategorySchema>;

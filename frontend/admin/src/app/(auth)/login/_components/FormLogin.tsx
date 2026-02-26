@@ -1,11 +1,14 @@
 "use client";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "react-hot-toast";
 import { AuthInput } from "@/components/auth/AuthInput";
 import { getLoginSchema, LoginFormValues, LoginMode } from "../login.schemas";
 import { authApi } from "@/services/auth/auth.service";
+
+const REDIRECT_ON_LOGIN = "/";
 
 const LOGIN_CONFIG = {
   phone: {
@@ -22,45 +25,52 @@ const LOGIN_CONFIG = {
   },
 };
 
+const buildLoginPayload = (data: LoginFormValues, mode: LoginMode) => {
+  const basePayload = { password: data.password };
+  return mode === "phone"
+    ? { ...basePayload, phoneNumber: data.accountName }
+    : { ...basePayload, email: data.accountName };
+};
+
 export default function FormLogin() {
   const router = useRouter();
   const [loginMode, setLoginMode] = useState<LoginMode>("phone");
 
   const config = LOGIN_CONFIG[loginMode];
+  const schema = useMemo(() => getLoginSchema(loginMode), [loginMode]);
 
   const {
     register,
     handleSubmit,
-    reset,
+    resetField,
     formState: { errors, isSubmitting },
   } = useForm<LoginFormValues>({
-    resolver: zodResolver(getLoginSchema(loginMode)),
+    resolver: zodResolver(schema),
     mode: "onSubmit",
   });
 
   const toggleLoginMode = () => {
+    if (isSubmitting) return;
     const nextMode = loginMode === "phone" ? "email" : "phone";
     setLoginMode(nextMode);
-    reset();
+    resetField("accountName");
   };
 
   const onSubmit = async (data: LoginFormValues) => {
     try {
-      const body =
-        loginMode === "phone"
-          ? { phoneNumber: data.accountName, password: data.password }
-          : { email: data.accountName, password: data.password };
+      const body = buildLoginPayload(data, loginMode);
 
       const result = await authApi.login(body);
-      console.log(result);
       if (!result.success) {
-        console.error(result.message);
+        toast.error(result.message || "Đăng nhập thất bại!");
         return;
       }
+
       router.refresh();
-      router.push("/");
+      router.push(REDIRECT_ON_LOGIN);
     } catch (error: unknown) {
-      console.error("Lỗi:", error instanceof Error ? error.message : error);
+      const message = error instanceof Error ? error.message : "Có lỗi xảy ra, vui lòng thử lại!";
+      toast.error(message);
     }
   };
 
@@ -71,6 +81,7 @@ export default function FormLogin() {
         id="accountName"
         type={config.type}
         placeholder={config.placeholder}
+        autoComplete="username"
         {...register("accountName")}
         error={errors.accountName?.message}
       />
@@ -80,6 +91,7 @@ export default function FormLogin() {
         id="password"
         type="password"
         placeholder="Nhập mật khẩu"
+        autoComplete="current-password"
         {...register("password")}
         error={errors.password?.message}
       />
@@ -88,12 +100,12 @@ export default function FormLogin() {
         <input
           type="checkbox"
           id="remember-password"
-          name="rememberPassword"
+          {...register("rememberPassword")}
           className="w-[19.2px] h-[19.2px]"
         />
         <label
           htmlFor="remember-password"
-          className="font-[600] text-[14.4px] text-[var(--color-text)] opacity-60"
+          className="font-[600] text-[14.4px] text-[var(--color-text)] opacity-60 cursor-pointer"
         >
           Nhớ mật khẩu
         </label>
@@ -102,16 +114,24 @@ export default function FormLogin() {
       <button
         type="submit"
         disabled={isSubmitting}
-        className="w-full h-[44.8px] rounded-[8px] bg-[var(--color-primary)] font-[700] text-[16px] text-white disabled:opacity-60"
+        className="w-full h-[44.8px] rounded-[8px] bg-[var(--color-primary)] font-[700] text-[16px] text-white disabled:opacity-60 flex items-center justify-center disabled:cursor-not-allowed"
       >
-        {isSubmitting ? "Đang đăng nhập..." : "Đăng nhập"}
+        {isSubmitting ? (
+          <>
+            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+            Đang đăng nhập...
+          </>
+        ) : (
+          "Đăng nhập"
+        )}
       </button>
 
       <div className="mt-[16px] text-center">
         <button
           type="button"
           onClick={toggleLoginMode}
-          className="font-[600] text-[14px] text-[var(--color-primary)] hover:underline cursor-pointer"
+          disabled={isSubmitting}
+          className="font-[600] text-[14px] text-[var(--color-primary)] hover:underline cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:no-underline"
         >
           {config.toggleText}
         </button>

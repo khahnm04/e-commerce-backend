@@ -15,9 +15,7 @@ const BrandBase = z.object({
 
 export const CreateBrandSchema = BrandBase;
 
-export const UpdateBrandSchema = BrandBase.partial().extend({
-  id: z.number().or(z.string()),
-});
+export const UpdateBrandSchema = BrandBase.partial();
 
 export type CreateBrandValues = z.infer<typeof CreateBrandSchema>;
 export type UpdateBrandValues = z.infer<typeof UpdateBrandSchema>;

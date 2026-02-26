@@ -11,16 +11,13 @@ let isRegistered = false;
 interface UseFilePondOptions {
   onAddFile?: (file: File) => void;
   onRemoveFile?: () => void;
+  inputRef?: React.RefObject<HTMLInputElement | null>;
 }
 
 export const useFilePond = (options?: UseFilePondOptions) => {
-  // Use refs for callbacks to avoid stale closures.
-  // The useEffect below runs only once (mount), so without refs,
-  // the callbacks would be captured from the initial render and never update.
   const onAddFileRef = useRef(options?.onAddFile);
   const onRemoveFileRef = useRef(options?.onRemoveFile);
 
-  // Keep refs in sync with latest props
   useEffect(() => {
     onAddFileRef.current = options?.onAddFile;
     onRemoveFileRef.current = options?.onRemoveFile;
@@ -32,9 +29,11 @@ export const useFilePond = (options?: UseFilePondOptions) => {
       isRegistered = true;
     }
 
-    const inputs = document.querySelectorAll<HTMLInputElement>("input.filepond");
+    const inputs = options?.inputRef?.current
+      ? [options.inputRef.current]
+      : Array.from(document.querySelectorAll<HTMLInputElement>("input.filepond"));
 
-    const instances = Array.from(inputs).map((input) =>
+    const instances = inputs.map((input) =>
       FilePond.create(input, {
         allowMultiple: false,
         acceptedFileTypes: ["image/*"],
@@ -53,5 +52,6 @@ export const useFilePond = (options?: UseFilePondOptions) => {
     return () => {
       instances.forEach((instance) => instance.destroy());
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 };

@@ -1,6 +1,6 @@
 "use client";
-import React, { useEffect, useState, useMemo } from "react";
-import { useRouter, usePathname } from "next/navigation";
+import React, { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { toast } from "react-hot-toast";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -11,7 +11,8 @@ import { CreateRoleSchema, CreateRoleValues } from "../role.schema";
 import { roleService } from "@/services/auth/role.service";
 import { permissionService } from "@/services/auth/permission.service";
 import { PermissionResponse, RoleResponse, RoleRequest } from "@/types/auth/role.types";
-import { PermissionSelection } from "./PermissionSelection";
+import { PermissionSelection } from "./permission-selection";
+import { useFormSubmit } from "@/hooks/useFormSubmit";
 
 interface RoleFormProps {
   initialData?: RoleResponse;
@@ -19,13 +20,11 @@ interface RoleFormProps {
 }
 
 export default function RoleForm({ initialData, isReadOnly = false }: RoleFormProps) {
-  const router = useRouter();
   const pathname = usePathname();
-  const [isLoading, setIsLoading] = useState(false);
   const [permissions, setPermissions] = useState<PermissionResponse[]>([]);
   const [loadingPermissions, setLoadingPermissions] = useState(true);
-
   const isEditMode = !!initialData;
+  const { isLoading, submitHandler } = useFormSubmit({ redirectTo: "/roles" });
 
   const {
     register,
@@ -51,7 +50,6 @@ export default function RoleForm({ initialData, isReadOnly = false }: RoleFormPr
         setPermissions(allPerms);
 
         if (isEditMode && initialData) {
-          // Map permission codes from RoleResponse to IDs
           const selectedIds = allPerms
             .filter((p) => (initialData.permissions as unknown as string[]).includes(p.code))
             .map((p) => p.id);
@@ -68,33 +66,23 @@ export default function RoleForm({ initialData, isReadOnly = false }: RoleFormPr
   }, [initialData, isEditMode, setValue]);
 
   const onSubmit = async (data: CreateRoleValues) => {
-    try {
-      setIsLoading(true);
+    await submitHandler(
+      async () => {
+        const payload: RoleRequest = {
+          code: data.code,
+          name: data.name,
+          description: data.description,
+          permissions: data.permissions,
+        };
 
-      const payload: RoleRequest = {
-        code: data.code,
-        name: data.name,
-        description: data.description,
-        permissions: data.permissions,
-      };
-
-      if (isEditMode && initialData) {
-        await roleService.update(initialData.id, payload);
-        toast.success("Cập nhật nhóm quyền thành công!");
-      } else {
-        await roleService.create(payload);
-        toast.success("Tạo nhóm quyền mới thành công!");
-      }
-
-      router.push("/roles");
-      router.refresh();
-    } catch (error: unknown) {
-      console.error(error);
-      const err = error as Error;
-      toast.error(err?.message || "Có lỗi xảy ra, vui lòng thử lại!");
-    } finally {
-      setIsLoading(false);
-    }
+        if (isEditMode && initialData) {
+          await roleService.update(initialData.id, payload);
+        } else {
+          await roleService.create(payload);
+        }
+      },
+      isEditMode ? "Cập nhật nhóm quyền thành công!" : "Tạo nhóm quyền mới thành công!",
+    );
   };
 
   const selectedPermissions = watch("permissions");
@@ -139,14 +127,17 @@ export default function RoleForm({ initialData, isReadOnly = false }: RoleFormPr
 
           <div className="md:col-span-2">
             <label className="block font-[600] text-[14px] text-[#606060] mb-[11px]">
-              Phân quyền <span className="text-red-500">*</span>
+              Phân quyền
+              <span className="text-red-500">*</span>
             </label>
             {loadingPermissions ? (
               <p>Đang tải danh sách quyền...</p>
             ) : (
               <>
                 {errors.permissions && (
-                  <p className="text-red-500 text-sm mb-3">{errors.permissions.message}</p>
+                  <p className="text-red-500 text-sm mb-3">
+                    {errors.permissions.message}
+                  </p>
                 )}
                 <PermissionSelection
                   permissions={permissions}
@@ -159,7 +150,10 @@ export default function RoleForm({ initialData, isReadOnly = false }: RoleFormPr
           </div>
 
           {!isReadOnly && (
-            <FormButton type="submit" disabled={isLoading}>
+            <FormButton
+              type="submit"
+              disabled={isLoading}
+            >
               {isLoading ? "Đang xử lý..." : isEditMode ? "Cập nhật" : "Tạo mới"}
             </FormButton>
           )}

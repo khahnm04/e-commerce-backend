@@ -6,12 +6,6 @@ import { ConfirmModal } from "@/components/common/ConfirmModal";
 import { Pagination } from "@/components/common/Pagination";
 import { useListPage } from "@/hooks/useListPage";
 import { useSelectOptions } from "@/hooks/useSelectOptions";
-import {
-  PRODUCT_TABLE_HEADERS,
-  PRODUCT_STATUS_OPTIONS,
-  PRODUCT_ACTION_OPTIONS,
-  PRODUCT_TRASH_ACTION_OPTIONS,
-} from "@/constants/catalog/product.constants";
 import { TableControl } from "@/components/common/TableControl";
 import { productService } from "@/services/catalog/product.service";
 import { brandService } from "@/services/catalog/brand.service";
@@ -20,6 +14,13 @@ import { ProductResponse } from "@/types/catalog/product.types";
 import { ProductTableRow } from "./ProductTableRow";
 import { BrandResponse } from "@/types/catalog/brand.types";
 import { CategoryResponse } from "@/types/catalog/category.types";
+import { LoadingSpinner } from "@/components/common/LoadingSpinner";
+import {
+  PRODUCT_TABLE_HEADERS,
+  PRODUCT_STATUS_OPTIONS,
+  PRODUCT_ACTION_OPTIONS,
+  PRODUCT_TRASH_ACTION_OPTIONS,
+} from "@/constants/catalog/product.constants";
 
 const mapToOption = (item: { id: number; name: string }) => ({
   id: String(item.id),
@@ -133,8 +134,7 @@ export default function ProductList({ isTrash = false }: { isTrash?: boolean }) 
     [filters, brandOptions, categoryOptions, dateRange, setFilter, setStartDate, setEndDate],
   );
 
-  if (loading && isFirstLoad)
-    return <div className="text-center py-10 text-[var(--color-text)]">Đang tải dữ liệu...</div>;
+  if (loading && isFirstLoad) return <LoadingSpinner />;
 
   return (
     <>
@@ -171,7 +171,11 @@ export default function ProductList({ isTrash = false }: { isTrash?: boolean }) 
         ))}
       </DataTable>
 
-      <Pagination meta={meta} onPageChange={setPage} onPageSizeChange={handlePageSizeChange} />
+      <Pagination
+        meta={meta}
+        onPageChange={setPage}
+        onPageSizeChange={handlePageSizeChange}
+      />
 
       <ConfirmModal
         isOpen={isModalOpen}

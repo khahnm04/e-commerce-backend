@@ -1,4 +1,3 @@
-let isRefreshing = false;
 let refreshPromise: Promise<boolean> | null = null;
 
 const refreshToken = async (): Promise<boolean> => {
@@ -56,12 +55,13 @@ export const sendRequest = async <T>(endpoint: string, options?: RequestInit): P
     !endpoint.includes("/auth/refresh") &&
     !endpoint.includes("/auth/login")
   ) {
-    // Chỉ cho 1 request gọi refresh, các request khác chờ
-    if (!isRefreshing) {
-      isRefreshing = true;
+    // Chỉ cho 1 request gọi refresh, các request khác chờ cùng 1 promise
+    if (!refreshPromise) {
       refreshPromise = refreshToken().finally(() => {
-        isRefreshing = false;
-        refreshPromise = null;
+        // Delay clearing to ensure all concurrent waiters get the result
+        setTimeout(() => {
+          refreshPromise = null;
+        }, 100);
       });
     }
 

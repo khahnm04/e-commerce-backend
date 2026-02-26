@@ -12,9 +12,7 @@ const ProductVariantBase = z.object({
 
 export const CreateProductVariantSchema = ProductVariantBase;
 
-export const UpdateProductVariantSchema = ProductVariantBase.partial().extend({
-  id: z.number().or(z.string()),
-});
+export const UpdateProductVariantSchema = ProductVariantBase.partial();
 
 export type CreateProductVariantValues = z.infer<typeof CreateProductVariantSchema>;
 export type UpdateProductVariantValues = z.infer<typeof UpdateProductVariantSchema>;

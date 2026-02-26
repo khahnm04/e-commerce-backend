@@ -1,4 +1,5 @@
 "use client";
+import React from "react";
 import { ActionGroup } from "@/components/common/ActionGroup";
 import { TableCell } from "@/components/common/TableCell";
 import { TableCheckbox } from "@/components/common/TableCheckbox";
@@ -19,7 +20,7 @@ interface ProductTableRowProps {
   onSelect?: () => void;
 }
 
-export const ProductTableRow = ({
+const ProductTableRowInner = ({
   item,
   isTrash = false,
   onDeleteClick,
@@ -34,20 +35,34 @@ export const ProductTableRow = ({
   return (
     <tr>
       <TableCell>
-        <TableCheckbox checked={isSelected} onChange={onSelect} />
+        <TableCheckbox
+          checked={isSelected}
+          onChange={onSelect}
+        />
       </TableCell>
-
-      <TableCell>{item.name}</TableCell>
 
       <TableCell>
-        <TableImage src={item.thumbnail} alt={item.name} />
+        {item.name}
       </TableCell>
 
-      <TableCell>{item.productCode || "—"}</TableCell>
+      <TableCell>
+        <TableImage
+          src={item.thumbnail}
+          alt={item.name}
+        />
+      </TableCell>
 
-      <TableCell>{formattedPrice}</TableCell>
+      <TableCell>
+        {item.productCode || "—"}
+      </TableCell>
 
-      <TableCell>{item.brandName || "—"}</TableCell>
+      <TableCell>
+        {formattedPrice}
+      </TableCell>
+
+      <TableCell>
+        {item.brandName || "—"}
+      </TableCell>
 
       <TableCell>
         <div className="flex justify-center items-center ml-[20px]">
@@ -66,27 +81,32 @@ export const ProductTableRow = ({
       </TableCell>
 
       <TableCell>
-        <UserTimestamp user={String(item.createdBy)} date={item.createdAt} />
+        <UserTimestamp
+          user={String(item.createdBy)}
+          date={item.createdAt}
+        />
       </TableCell>
 
       <TableCell>
-        <UserTimestamp user={String(item.updatedBy)} date={item.updatedAt} />
+        <UserTimestamp
+          user={String(item.updatedBy)}
+          date={item.updatedAt}
+        />
       </TableCell>
 
-      <td
-        className="py-[8px] px-[15px] text-center border-b
-          border-[rgba(151,151,151,0.6)] text-[14px] font-[600]
-          text-[var(--color-text)]"
-      >
+      <TableCell>
         <ActionGroup
           isTrash={isTrash}
           editLink={isTrash ? undefined : `/products/${item.slug || item.id}`}
           viewLink={isTrash ? `/products/trash/${item.id}` : undefined}
-          onDelete={onDeleteClick || (() => {})}
-          onRestore={onRestoreClick || (() => {})}
+          onDelete={onDeleteClick || (() => { })}
+          onRestore={onRestoreClick || (() => { })}
           hideDelete={isTrash}
         />
-      </td>
+      </TableCell>
     </tr>
   );
 };
+
+export const ProductTableRow = React.memo(ProductTableRowInner);
+ProductTableRowInner.displayName = "ProductTableRow";

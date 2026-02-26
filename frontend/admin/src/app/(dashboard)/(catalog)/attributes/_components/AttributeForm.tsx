@@ -1,7 +1,5 @@
 "use client";
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
-import { toast } from "react-hot-toast";
+import React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormInput } from "@/components/form/FormInput";
@@ -13,14 +11,14 @@ import {
 } from "@/app/(dashboard)/(catalog)/attributes/attribute.schema";
 import { attributeService } from "@/services/catalog/attribute.service";
 import { AttributeResponse } from "@/types/catalog/attribute.types";
+import { useFormSubmit } from "@/hooks/useFormSubmit";
 
 interface AttributeFormProps {
   initialData?: AttributeResponse;
 }
 
 export default function AttributeForm({ initialData }: AttributeFormProps) {
-  const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
+  const { isLoading, submitHandler } = useFormSubmit({ redirectTo: "/attributes" });
   const isEditMode = !!initialData;
 
   const {
@@ -37,33 +35,24 @@ export default function AttributeForm({ initialData }: AttributeFormProps) {
   });
 
   const onSubmit = async (data: CreateAttributeValues) => {
-    try {
-      setIsLoading(true);
-
-      if (isEditMode) {
-        await attributeService.update(initialData.id, {
-          name: data.name,
-          code: data.code,
-          description: data.description,
-        });
-        toast.success("Cập nhật thuộc tính thành công!");
-      } else {
-        await attributeService.create({
-          name: data.name,
-          code: data.code,
-          description: data.description,
-        });
-        toast.success("Tạo thuộc tính mới thành công!");
-      }
-
-      router.push("/attributes");
-      router.refresh();
-    } catch (error: unknown) {
-      console.error(error);
-      toast.error(error instanceof Error ? error.message : "Có lỗi xảy ra, vui lòng thử lại!");
-    } finally {
-      setIsLoading(false);
-    }
+    await submitHandler(
+      async () => {
+        if (isEditMode) {
+          await attributeService.update(initialData.id, {
+            name: data.name,
+            code: data.code,
+            description: data.description,
+          });
+        } else {
+          await attributeService.create({
+            name: data.name,
+            code: data.code,
+            description: data.description,
+          });
+        }
+      },
+      isEditMode ? "Cập nhật thuộc tính thành công!" : "Tạo thuộc tính mới thành công!",
+    );
   };
 
   return (
@@ -93,7 +82,10 @@ export default function AttributeForm({ initialData }: AttributeFormProps) {
           error={errors.description?.message}
         />
 
-        <FormButton type="submit" disabled={isLoading}>
+        <FormButton
+          type="submit"
+          disabled={isLoading}
+        >
           {isLoading ? "Đang xử lý..." : isEditMode ? "Cập nhật" : "Tạo mới"}
         </FormButton>
       </form>

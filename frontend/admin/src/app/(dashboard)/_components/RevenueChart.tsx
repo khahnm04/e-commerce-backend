@@ -9,7 +9,6 @@ export const RevenueChart = () => {
   useEffect(() => {
     if (!canvasRef.current) return;
 
-    // Destroy previous chart instance to avoid canvas reuse errors
     if (chartRef.current) {
       chartRef.current.destroy();
     }
@@ -70,7 +69,9 @@ export const RevenueChart = () => {
   return (
     <div className="mt-[30px] bg-white shadow-[6px_6px_54px_0px_#0000000D] rounded-[14px] p-[32px]">
       <div className="flex items-center justify-between flex-wrap gap-[10px] mb-[32px]">
-        <h2 className="m-0 font-[700] text-[24px] text-[var(--color-text)]">Biểu đồ doanh thu</h2>
+        <h2 className="m-0 font-[700] text-[24px] text-[var(--color-text)]">
+          Biểu đồ doanh thu
+        </h2>
         <div className="">
           <input
             type="month"

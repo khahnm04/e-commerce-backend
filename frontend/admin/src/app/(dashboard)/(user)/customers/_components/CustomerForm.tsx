@@ -1,7 +1,6 @@
 "use client";
 import React, { useState, useCallback } from "react";
-import { useRouter, usePathname } from "next/navigation";
-import { toast } from "react-hot-toast";
+import { usePathname } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormInput } from "@/components/form/FormInput";
@@ -21,6 +20,7 @@ import { uploadToCloudinary } from "@/services/upload/upload.service";
 import { getFormOptions, GENDER_FORM_OPTIONS } from "@/constants/common.constants";
 import { CUSTOMER_STATUS_OPTIONS } from "@/constants/user/customer.constants";
 import { Gender, UserStatus } from "@/constants/enums";
+import { useFormSubmit } from "@/hooks/useFormSubmit";
 
 const STATUS_OPTIONS = getFormOptions(CUSTOMER_STATUS_OPTIONS);
 
@@ -30,9 +30,8 @@ interface CustomerFormProps {
 }
 
 export default function CustomerForm({ initialData, isReadOnly = false }: CustomerFormProps) {
-  const router = useRouter();
   const pathname = usePathname();
-  const [isLoading, setIsLoading] = useState(false);
+  const { isLoading, submitHandler } = useFormSubmit({ redirectTo: "/customers" });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const isEditMode = !!initialData;
 
@@ -64,55 +63,46 @@ export default function CustomerForm({ initialData, isReadOnly = false }: Custom
   });
 
   const onSubmit = async (data: CreateCustomerValues) => {
-    try {
-      setIsLoading(true);
+    await submitHandler(
+      async () => {
+        let avatarUrl = initialData?.avatarUrl || "";
+        if (selectedFile) {
+          avatarUrl = await uploadToCloudinary(selectedFile);
+        }
 
-      let avatarUrl = initialData?.avatarUrl || "";
-      if (selectedFile) {
-        avatarUrl = await uploadToCloudinary(selectedFile);
-      }
-
-      if (isEditMode) {
-        await customerService.update(initialData.id, {
-          fullName: data.fullName,
-          email: data.email,
-          phoneNumber: data.phoneNumber,
-          dateOfBirth: data.dateOfBirth,
-          avatarUrl: avatarUrl,
-          gender: data.gender as Gender,
-          status: data.status as UserStatus,
-        });
-        toast.success("Cập nhật khách hàng thành công!");
-      } else {
-        await customerService.create({
-          fullName: data.fullName,
-          email: data.email,
-          phoneNumber: data.phoneNumber,
-          password: data.password,
-          confirmPassword: data.confirmPassword,
-          dateOfBirth: data.dateOfBirth,
-          avatarUrl: avatarUrl,
-          gender: data.gender as Gender,
-          status: data.status as UserStatus,
-        });
-        toast.success("Tạo khách hàng mới thành công!");
-      }
-
-      router.push("/customers");
-      router.refresh();
-    } catch (error: unknown) {
-      console.error(error);
-      toast.error(error instanceof Error ? error.message : "Có lỗi xảy ra, vui lòng thử lại!");
-    } finally {
-      setIsLoading(false);
-    }
+        if (isEditMode) {
+          await customerService.update(initialData.id, {
+            fullName: data.fullName,
+            email: data.email,
+            phoneNumber: data.phoneNumber,
+            dateOfBirth: data.dateOfBirth,
+            avatarUrl: avatarUrl,
+            gender: data.gender as Gender,
+            status: data.status as UserStatus,
+          });
+        } else {
+          await customerService.create({
+            fullName: data.fullName,
+            email: data.email,
+            phoneNumber: data.phoneNumber,
+            password: data.password,
+            confirmPassword: data.confirmPassword,
+            dateOfBirth: data.dateOfBirth,
+            avatarUrl: avatarUrl,
+            gender: data.gender as Gender,
+            status: data.status as UserStatus,
+          });
+        }
+      },
+      isEditMode ? "Cập nhật khách hàng thành công!" : "Tạo khách hàng mới thành công!",
+    );
   };
 
   return (
     <div className="bg-white border border-[#B9B9B9] rounded-[14px] md:p-[50px] p-[20px]">
       <form
         className="grid md:grid-cols-2 grid-cols-1 gap-[30px]"
-        onSubmit={(e) => handleSubmit(onSubmit as any)(e).catch(() => {})}
+        onSubmit={(e) => handleSubmit(onSubmit as any)(e).catch(() => { })}
       >
         {/* Row 1: Họ tên + Email */}
         <FormInput
