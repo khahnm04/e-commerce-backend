@@ -1,6 +1,6 @@
 "use client";
-import React, { useState, useCallback, useRef } from "react";
-import { useRouter } from "next/navigation";
+import React, { useState, useCallback } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import { toast } from "react-hot-toast";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -31,12 +31,13 @@ interface CustomerFormProps {
 
 export default function CustomerForm({ initialData, isReadOnly = false }: CustomerFormProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const [isLoading, setIsLoading] = useState(false);
-  const selectedFileRef = useRef<File | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const isEditMode = !!initialData;
 
   const handleFileSelect = useCallback((file: File | null) => {
-    selectedFileRef.current = file;
+    setSelectedFile(file);
   }, []);
 
   const schema = isEditMode ? UpdateCustomerSchema : CreateCustomerSchema;
@@ -48,6 +49,7 @@ export default function CustomerForm({ initialData, isReadOnly = false }: Custom
     formState: { errors },
   } = useForm<CreateCustomerValues>({
     resolver: zodResolver(schema as any),
+    shouldUnregister: true, // Auto unregister hidden fields
     defaultValues: {
       fullName: initialData?.fullName || "",
       email: initialData?.email || "",
@@ -66,8 +68,8 @@ export default function CustomerForm({ initialData, isReadOnly = false }: Custom
       setIsLoading(true);
 
       let avatarUrl = initialData?.avatarUrl || "";
-      if (selectedFileRef.current) {
-        avatarUrl = await uploadToCloudinary(selectedFileRef.current);
+      if (selectedFile) {
+        avatarUrl = await uploadToCloudinary(selectedFile);
       }
 
       if (isEditMode) {
@@ -207,7 +209,7 @@ export default function CustomerForm({ initialData, isReadOnly = false }: Custom
         )}
       </form>
 
-      <FormBackLink href={isReadOnly ? "/customers/trash" : "/customers"} />
+      <FormBackLink href={pathname.includes("/trash") ? "/customers/trash" : "/customers"} />
     </div>
   );
 }

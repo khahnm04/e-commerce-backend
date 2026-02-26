@@ -1,16 +1,15 @@
 "use client";
-import React, { useState, useEffect, useCallback, useRef } from "react";
-import { useRouter } from "next/navigation";
+import React, { useState, useEffect, useCallback } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import { toast } from "react-hot-toast";
-import { useForm, Controller } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormInput } from "@/components/form/FormInput";
 import { FormButton } from "@/components/form/FormButton";
 import { FormBackLink } from "@/components/form/FormBackLink";
 import { FormControlledSelect } from "@/components/form/FormControlledSelect";
 import { FormImageField } from "@/components/form/FormImageField";
-import { FormEditorWrapper } from "@/components/form/FormEditorWrapper";
-import { CustomSelect } from "@/components/common/CustomSelect";
+import { FormReadOnlySelect } from "@/components/form/FormReadOnlySelect";
 import {
   CreateProductSchema,
   UpdateProductSchema,
@@ -29,10 +28,11 @@ import { uploadToCloudinary } from "@/services/upload/upload.service";
 import { getFormOptions } from "@/constants/common.constants";
 import { PRODUCT_STATUS_OPTIONS } from "@/constants/catalog/product.constants";
 import { ProductStatus } from "@/constants/enums/catalog.enums";
-import { useTinyMCE } from "@/hooks/useTinyMCE";
 import { ProductAttributesSection } from "./ProductAttributesSection";
 import { ProductImagesSection } from "./ProductImagesSection";
 import { ProductCategoriesSection } from "./ProductCategoriesSection";
+import { ProductDescriptionSection } from "./ProductDescriptionSection";
+import { generateSlug } from "@/lib/format-utils";
 
 const STATUS_OPTIONS = getFormOptions(PRODUCT_STATUS_OPTIONS);
 
@@ -58,8 +58,9 @@ interface ProductFormProps {
 
 export default function ProductForm({ initialData, isReadOnly = false }: ProductFormProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const [isLoading, setIsLoading] = useState(false);
-  const selectedFileRef = useRef<File | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [allBrands, setAllBrands] = useState<BrandResponse[]>([]);
   const [allCategories, setAllCategories] = useState<CategoryResponse[]>([]);
   const [allAttributes, setAllAttributes] = useState<AttributeResponse[]>([]);
@@ -87,14 +88,8 @@ export default function ProductForm({ initialData, isReadOnly = false }: Product
     fetchOptions();
   }, [isReadOnly]);
 
-  // TinyMCE editor for description
-  const { TinyMCEEditorComponent } = useTinyMCE({
-    initialValue: initialData?.description || "",
-    height: 350,
-  });
-
   const handleImageFileSelect = useCallback((file: File | null) => {
-    selectedFileRef.current = file;
+    setSelectedFile(file);
   }, []);
 
   const schema = isEditMode ? UpdateProductSchema : CreateProductSchema;
@@ -103,6 +98,7 @@ export default function ProductForm({ initialData, isReadOnly = false }: Product
     { id: "", name: "Chọn nhãn hàng" },
     ...allBrands.map(b => ({ id: String(b.id), name: b.name })),
   ];
+
 
   // Get default category IDs for edit mode
   const getDefaultCategoryIds = (): number[] => {
@@ -152,25 +148,24 @@ export default function ProductForm({ initialData, isReadOnly = false }: Product
 
       // Upload thumbnail to Cloudinary if a new file is selected
       let thumbnailUrl = initialData?.thumbnail || "";
-      if (selectedFileRef.current) {
-        thumbnailUrl = await uploadToCloudinary(selectedFileRef.current);
+      if (selectedFile) {
+        thumbnailUrl = await uploadToCloudinary(selectedFile);
       }
 
-      // Upload all new images to Cloudinary
-      const uploadedImages: { id?: number; imageUrl: string; displayOrder: number }[] = [];
-      for (const img of imageRows) {
+      // Upload all new images to Cloudinary concurrently
+      const uploadPromises = imageRows.map(async (img) => {
         if (img.file) {
           const url = await uploadToCloudinary(img.file);
-          uploadedImages.push({ id: img.id, imageUrl: url, displayOrder: img.displayOrder });
-        } else if (img.imageUrl) {
-          uploadedImages.push({ id: img.id, imageUrl: img.imageUrl, displayOrder: img.displayOrder });
+          return { id: img.id, imageUrl: url, displayOrder: img.displayOrder };
         }
-      }
+        return { id: img.id, imageUrl: img.imageUrl, displayOrder: img.displayOrder };
+      });
+      const uploadedImages = await Promise.all(uploadPromises);
 
       const payload = {
         name: data.name!,
-        slug: data.slug || data.name!.toLowerCase().replace(/\s+/g, "-"),
-        productCode: data.productCode,
+        slug: data.slug || generateSlug(data.name!),
+        productCode: data.productCode || undefined,
         brandId: Number(data.brandId),
         hasSerialNumber: data.hasSerialNumber,
         warrantyMonths: data.warrantyMonths ? Number(data.warrantyMonths) : 0,
@@ -242,39 +237,16 @@ export default function ProductForm({ initialData, isReadOnly = false }: Product
           disabled={isReadOnly}
         />
 
-        <Controller
+        <FormReadOnlySelect
           control={control}
           name="brandId"
-          render={({ field }) => (
-            <div className="inner-group relative">
-              <label
-                className="inner-label block font-[600] text-[14px] text-[#606060] mb-[11px]"
-                htmlFor="brandId"
-              >
-                Nhãn hàng
-              </label>
-              {isReadOnly ? (
-                <div className="bg-[#F5F6FA] border border-[#D5D5D5] rounded-[4px] px-[22px] font-[500] text-[14px] text-[var(--color-text)] w-full h-[52px] flex items-center opacity-60 cursor-not-allowed">
-                  {initialData?.brandName || "Không có"}
-                </div>
-              ) : (
-                <CustomSelect
-                  options={brandOptions}
-                  value={field.value ? String(field.value) : ""}
-                  onChange={(val) => field.onChange(val ? Number(val) : 0)}
-                  placeholder="Chọn nhãn hàng"
-                  classNameCustom={`
-                    bg-[#F5F6FA] border border-[#D5D5D5] rounded-[4px]
-                    px-[22px] font-[500] text-[14px] text-[var(--color-text)]
-                    w-full h-[52px] !block
-                  `}
-                />
-              )}
-              {errors.brandId?.message && (
-                <p className="text-red-500 text-[13px] mt-[6px]">{errors.brandId.message}</p>
-              )}
-            </div>
-          )}
+          label="Nhãn hàng"
+          options={brandOptions}
+          placeholder="Chọn nhãn hàng"
+          readOnlyText={initialData?.brandName || "Không có"}
+          isReadOnly={isReadOnly}
+          error={errors.brandId?.message}
+          emptyValue={0}
         />
 
         {/* Row 3: Giá bán + Giá cũ */}
@@ -379,31 +351,11 @@ export default function ProductForm({ initialData, isReadOnly = false }: Product
         />
 
         {/* Mô tả chi tiết - TinyMCE - full width */}
-        <div className="md:col-span-2">
-          <label className="block font-[600] text-[14px] text-[#606060] mb-[11px]">
-            Mô tả chi tiết
-          </label>
-          {isReadOnly ? (
-            <div
-              className="bg-[#F5F6FA] border border-[#D5D5D5] rounded-[4px] p-[16px] prose prose-sm max-w-none text-[14px] text-[var(--color-text)]"
-              dangerouslySetInnerHTML={{ __html: initialData?.description || '<p class="text-gray-400 italic">Chưa có mô tả</p>' }}
-            />
-          ) : (
-            <Controller
-              control={control}
-              name="description"
-              render={({ field }) => (
-                <FormEditorWrapper label="">
-                  {React.cloneElement(TinyMCEEditorComponent as React.ReactElement<any>, {
-                    onEditorChange: (content: string) => {
-                      field.onChange(content);
-                    },
-                  })}
-                </FormEditorWrapper>
-              )}
-            />
-          )}
-        </div>
+        <ProductDescriptionSection
+          control={control}
+          isReadOnly={isReadOnly}
+          initialDescription={initialData?.description}
+        />
 
         {/* Submit button */}
         {!isReadOnly && (
@@ -413,7 +365,7 @@ export default function ProductForm({ initialData, isReadOnly = false }: Product
         )}
       </form>
 
-      <FormBackLink href={isReadOnly ? "/products/trash" : "/products"} />
+      <FormBackLink href={pathname.includes("/trash") ? "/products/trash" : "/products"} />
     </div>
   );
 }

@@ -1,14 +1,15 @@
 "use client";
-import React, { useState, useEffect, useCallback, useRef } from "react";
-import { useRouter } from "next/navigation";
+import React, { useState, useEffect, useCallback } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import { toast } from "react-hot-toast";
-import { useForm, Controller } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormInput } from "@/components/form/FormInput";
 import { FormButton } from "@/components/form/FormButton";
 import { FormBackLink } from "@/components/form/FormBackLink";
 import { FormControlledSelect } from "@/components/form/FormControlledSelect";
 import { FormImageField } from "@/components/form/FormImageField";
+import { RoleSelectionField } from "@/components/form/RoleSelectionField";
 import {
   CreateEmployeeSchema,
   UpdateEmployeeSchema,
@@ -33,8 +34,9 @@ interface EmployeeFormProps {
 
 export default function EmployeeForm({ initialData, isReadOnly = false }: EmployeeFormProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const [isLoading, setIsLoading] = useState(false);
-  const selectedFileRef = useRef<File | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [allRoles, setAllRoles] = useState<RoleResponse[]>([]);
   const isEditMode = !!initialData;
 
@@ -52,7 +54,7 @@ export default function EmployeeForm({ initialData, isReadOnly = false }: Employ
   }, []);
 
   const handleFileSelect = useCallback((file: File | null) => {
-    selectedFileRef.current = file;
+    setSelectedFile(file);
   }, []);
 
   const schema = isEditMode ? UpdateEmployeeSchema : CreateEmployeeSchema;
@@ -73,6 +75,7 @@ export default function EmployeeForm({ initialData, isReadOnly = false }: Employ
     formState: { errors },
   } = useForm<CreateEmployeeValues>({
     resolver: zodResolver(schema as any),
+    shouldUnregister: true, // Auto unregister hidden fields
     defaultValues: {
       fullName: initialData?.fullName || "",
       email: initialData?.email || "",
@@ -104,8 +107,8 @@ export default function EmployeeForm({ initialData, isReadOnly = false }: Employ
       setIsLoading(true);
 
       let avatarUrl = initialData?.avatarUrl || "";
-      if (selectedFileRef.current) {
-        avatarUrl = await uploadToCloudinary(selectedFileRef.current);
+      if (selectedFile) {
+        avatarUrl = await uploadToCloudinary(selectedFile);
       }
 
       if (isEditMode) {
@@ -231,74 +234,13 @@ export default function EmployeeForm({ initialData, isReadOnly = false }: Employ
         />
 
         {/* Row 5: Role selection - full width */}
-        <Controller
+        <RoleSelectionField
           control={control}
           name="roles"
-          render={({ field }) => (
-            <div className="md:col-span-2">
-              <label className="block font-[600] text-[14px] text-[#606060] mb-[11px]">
-                Nhóm quyền
-              </label>
-              {isReadOnly ? (
-                <div className="flex flex-wrap gap-[8px]">
-                  {initialData?.roles && initialData.roles.length > 0 ? (
-                    initialData.roles.map((roleName) => (
-                      <span
-                        key={roleName}
-                        className="bg-blue-50 text-blue-700 border border-blue-200 rounded-[6px] px-[12px] py-[6px] text-[13px] font-[600]"
-                      >
-                        {roleName}
-                      </span>
-                    ))
-                  ) : (
-                    <p className="text-gray-400 text-sm italic">Chưa gán quyền</p>
-                  )}
-                </div>
-              ) : (
-                <div className="bg-[#F5F6FA] border border-[#D5D5D5] rounded-[4px] p-[16px] flex flex-wrap gap-[12px]">
-                  {allRoles.length === 0 ? (
-                    <p className="text-gray-400 text-sm italic">Đang tải danh sách quyền...</p>
-                  ) : (
-                    allRoles.map((role) => {
-                      const isChecked = (field.value || []).includes(role.id);
-                      return (
-                        <label
-                          key={role.id}
-                          className={`
-                            inline-flex items-center gap-[8px] cursor-pointer
-                            border rounded-[6px] px-[14px] py-[8px]
-                            text-[13px] font-[600] transition-all
-                            ${isChecked
-                              ? "bg-blue-50 border-blue-400 text-blue-700"
-                              : "bg-white border-[#D5D5D5] text-[#606060] hover:border-blue-300 hover:bg-blue-50/50"
-                            }
-                          `}
-                        >
-                          <input
-                            type="checkbox"
-                            checked={isChecked}
-                            className="w-[16px] h-[16px] accent-blue-600 cursor-pointer"
-                            onChange={(e) => {
-                              const current = field.value || [];
-                              if (e.target.checked) {
-                                field.onChange([...current, role.id]);
-                              } else {
-                                field.onChange(current.filter((id: number) => id !== role.id));
-                              }
-                            }}
-                          />
-                          {role.name}
-                        </label>
-                      );
-                    })
-                  )}
-                </div>
-              )}
-              {errors.roles?.message && (
-                <p className="text-red-500 text-[13px] mt-[6px]">{errors.roles.message as string}</p>
-              )}
-            </div>
-          )}
+          allRoles={allRoles}
+          isReadOnly={isReadOnly}
+          initialRoleNames={initialData?.roles}
+          errors={errors}
         />
 
         {/* Row 6: Avatar upload - full width */}
@@ -341,7 +283,7 @@ export default function EmployeeForm({ initialData, isReadOnly = false }: Employ
         )}
       </form>
 
-      <FormBackLink href={isReadOnly ? "/employees/trash" : "/employees"} />
+      <FormBackLink href={pathname.includes("/trash") ? "/employees/trash" : "/employees"} />
     </div>
   );
 }

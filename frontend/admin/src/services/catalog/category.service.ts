@@ -4,14 +4,25 @@ import {
   CategoryFilterRequest,
   CategoryBulkActionRequest,
 } from "@/types/catalog/category.types";
+import { sendRequest } from "@/lib/api-client";
+import { ApiResponse } from "@/types/common/api.types";
 import { createCrudService } from "../common/crud.service";
 
-export const categoryService = createCrudService<
-  CategoryResponse,
-  CategoryRequest,
-  CategoryFilterRequest,
-  CategoryBulkActionRequest
->({
-  endpoint: "/admin/categories",
-  hasSlug: true,
-});
+const BASE_ENDPOINT = "/admin/categories";
+
+export const categoryService = {
+  ...createCrudService<
+    CategoryResponse,
+    CategoryRequest,
+    CategoryFilterRequest,
+    CategoryBulkActionRequest
+  >({
+    endpoint: BASE_ENDPOINT,
+    hasSlug: true,
+  }),
+  updateStatus: (id: number | string, payload: { status: string | number }) =>
+    sendRequest<ApiResponse<void>>(`${BASE_ENDPOINT}/${id}/status`, {
+      method: "PATCH",
+      body: JSON.stringify(payload),
+    }),
+};

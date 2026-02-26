@@ -1,6 +1,6 @@
 "use client";
-import React, { useState, useCallback, useRef } from "react";
-import { useRouter } from "next/navigation";
+import React, { useState, useCallback } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import { toast } from "react-hot-toast";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -21,6 +21,7 @@ import { uploadToCloudinary } from "@/services/upload/upload.service";
 import { BRAND_STATUS_OPTIONS } from "@/constants/catalog/brand.constants";
 import { BrandStatus } from "@/constants/enums/catalog.enums";
 import { getFormOptions } from "@/constants/common.constants";
+import { generateSlug } from "@/lib/format-utils";
 
 const STATUS_OPTIONS = getFormOptions(BRAND_STATUS_OPTIONS);
 
@@ -31,12 +32,13 @@ interface BrandFormProps {
 
 export default function BrandForm({ initialData, isReadOnly = false }: BrandFormProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const [isLoading, setIsLoading] = useState(false);
-  const selectedFileRef = useRef<File | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const isEditMode = !!initialData;
 
   const handleFileSelect = useCallback((file: File | null) => {
-    selectedFileRef.current = file;
+    setSelectedFile(file);
   }, []);
 
   const schema = isEditMode ? UpdateBrandSchema : CreateBrandSchema;
@@ -67,13 +69,13 @@ export default function BrandForm({ initialData, isReadOnly = false }: BrandForm
       setIsLoading(true);
 
       let logoUrl = initialData?.logoUrl || "";
-      if (selectedFileRef.current) {
-        logoUrl = await uploadToCloudinary(selectedFileRef.current);
+      if (selectedFile) {
+        logoUrl = await uploadToCloudinary(selectedFile);
       }
 
       const payload = {
         name: data.name,
-        slug: data.slug || data.name.toLowerCase().replace(/\s+/g, "-"),
+        slug: data.slug || generateSlug(data.name),
         description: data.description,
         logoUrl: logoUrl || data.logoUrl,
         country: data.country,
@@ -204,7 +206,7 @@ export default function BrandForm({ initialData, isReadOnly = false }: BrandForm
         )}
       </form>
 
-      <FormBackLink href={isReadOnly ? "/brands/trash" : "/brands"} />
+      <FormBackLink href={pathname.includes("/trash") ? "/brands/trash" : "/brands"} />
     </div>
   );
 }

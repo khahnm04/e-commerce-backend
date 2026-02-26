@@ -18,8 +18,7 @@ const baseService = createCrudService<
   CustomerFilterRequest,
   CustomerBulkActionRequest,
   CustomerCreationRequest,
-  CustomerUpdateRequest,
-  CustomerUpdateStatusRequest
+  CustomerUpdateRequest
 >({
   endpoint: BASE_ENDPOINT,
   hasSlug: false,
@@ -35,4 +34,9 @@ export const customerService = {
       `${BASE_ENDPOINT}/${id}/change-password`,
       { method: "PATCH", body: JSON.stringify(payload) }
     ),
+  updateStatus: (id: number | string, payload: CustomerUpdateStatusRequest) =>
+    sendRequest<ApiResponse<void>>(`${BASE_ENDPOINT}/${id}/status`, {
+      method: "PATCH",
+      body: JSON.stringify(payload),
+    }),
 };

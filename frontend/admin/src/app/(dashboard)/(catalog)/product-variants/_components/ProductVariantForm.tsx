@@ -64,7 +64,7 @@ export default function ProductVariantForm({ initialData }: ProductVariantFormPr
       const payload = {
         productId: Number(data.productId),
         name: data.name,
-        sku: data.sku,
+        sku: data.sku || undefined,
         price: data.price,
         oldPrice: data.oldPrice,
         image: data.image,

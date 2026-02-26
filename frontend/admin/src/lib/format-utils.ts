@@ -47,3 +47,22 @@ const GENDER_LABEL_MAP: Record<string, string> = {
 export function getGenderLabel(gender: string): string {
     return GENDER_LABEL_MAP[gender] ?? gender;
 }
+
+/**
+ * Generate a URL-friendly slug from a string (including Vietnamese).
+ */
+export function generateSlug(text: string): string {
+    if (!text) return "";
+    return text
+        .toString()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "") // remove diacritics
+        .toLowerCase()
+        .replace(/đ/g, "d")
+        .trim()
+        .replace(/\s+/g, "-") // replace spaces with -
+        .replace(/[^\w-]+/g, "") // remove all non-word chars
+        .replace(/--+/g, "-") // replace multiple - with single -
+        .replace(/^-+/, "") // trim - from start of text
+        .replace(/-+$/, ""); // trim - from end of text
+}

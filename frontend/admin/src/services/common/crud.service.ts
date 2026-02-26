@@ -13,8 +13,7 @@ export function createCrudService<
   TFilter = Record<string, unknown>,
   TBulkAction = { ids: number[]; action: string },
   TCreateRequest = TRequest,
-  TUpdateRequest = TRequest,
-  TUpdateStatusRequest = { status: any }
+  TUpdateRequest = TRequest
 >(config: CrudConfig) {
   const { endpoint, hasSlug = false } = config;
 
@@ -53,12 +52,6 @@ export function createCrudService<
       sendRequest<ApiResponse<TResponse>>(
         `${endpoint}/${id}`,
         { method: "PUT", body: JSON.stringify(payload) }
-      ),
-
-    updateStatus: (id: number | string, payload: TUpdateStatusRequest) =>
-      sendRequest<ApiResponse<void>>(
-        `${endpoint}/${id}/status`,
-        { method: "PATCH", body: JSON.stringify(payload) }
       ),
 
     softDelete: (id: number | string) =>

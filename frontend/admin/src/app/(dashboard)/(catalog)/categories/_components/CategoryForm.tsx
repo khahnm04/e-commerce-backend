@@ -1,15 +1,15 @@
 "use client";
-import React, { useState, useEffect, useCallback, useRef } from "react";
-import { useRouter } from "next/navigation";
+import React, { useState, useEffect, useCallback } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import { toast } from "react-hot-toast";
-import { useForm, Controller } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormInput } from "@/components/form/FormInput";
 import { FormButton } from "@/components/form/FormButton";
 import { FormBackLink } from "@/components/form/FormBackLink";
 import { FormControlledSelect } from "@/components/form/FormControlledSelect";
 import { FormImageField } from "@/components/form/FormImageField";
-import { CustomSelect } from "@/components/common/CustomSelect";
+import { FormReadOnlySelect } from "@/components/form/FormReadOnlySelect";
 import {
   CreateCategorySchema,
   UpdateCategorySchema,
@@ -22,6 +22,7 @@ import { CATEGORY_STATUS_OPTIONS } from "@/constants/catalog/category.constants"
 import { CategoryStatus } from "@/constants/enums";
 import { uploadToCloudinary } from "@/services/upload/upload.service";
 import { getFormOptions } from "@/constants/common.constants";
+import { generateSlug } from "@/lib/format-utils";
 
 const STATUS_OPTIONS = getFormOptions(CATEGORY_STATUS_OPTIONS);
 
@@ -32,8 +33,9 @@ interface CategoryFormProps {
 
 export default function CategoryForm({ initialData, isReadOnly = false }: CategoryFormProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const [isLoading, setIsLoading] = useState(false);
-  const selectedFileRef = useRef<File | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [parentOptions, setParentOptions] = useState<{ id: string | number; name: string }[]>([
     { id: "", name: "Không có (Danh mục gốc)" },
   ]);
@@ -57,7 +59,7 @@ export default function CategoryForm({ initialData, isReadOnly = false }: Catego
   }, [initialData, isReadOnly]);
 
   const handleFileSelect = useCallback((file: File | null) => {
-    selectedFileRef.current = file;
+    setSelectedFile(file);
   }, []);
 
   const schema = isEditMode ? UpdateCategorySchema : CreateCategorySchema;
@@ -89,13 +91,13 @@ export default function CategoryForm({ initialData, isReadOnly = false }: Catego
       setIsLoading(true);
 
       let iconUrl = initialData?.iconUrl || "";
-      if (selectedFileRef.current) {
-        iconUrl = await uploadToCloudinary(selectedFileRef.current);
+      if (selectedFile) {
+        iconUrl = await uploadToCloudinary(selectedFile);
       }
 
       const payload = {
         name: data.name!,
-        slug: data.slug || data.name!.toLowerCase().replace(/\s+/g, "-"),
+        slug: data.slug || generateSlug(data.name!),
         description: data.description,
         iconUrl: iconUrl || data.iconUrl,
         bannerUrl: data.bannerUrl,
@@ -148,36 +150,15 @@ export default function CategoryForm({ initialData, isReadOnly = false }: Catego
           disabled={isReadOnly}
         />
 
-        <Controller
+        <FormReadOnlySelect
           control={control}
           name="parentId"
-          render={({ field }) => (
-            <div className="inner-group relative">
-              <label
-                className="inner-label block font-[600] text-[14px] text-[#606060] mb-[11px]"
-                htmlFor="parentId"
-              >
-                Danh mục cha
-              </label>
-              {isReadOnly ? (
-                <div className="bg-[#F5F6FA] border border-[#D5D5D5] rounded-[4px] px-[22px] font-[500] text-[14px] text-[var(--color-text)] w-full h-[52px] flex items-center opacity-60 cursor-not-allowed">
-                  {initialData?.parentName || "Không có (Danh mục gốc)"}
-                </div>
-              ) : (
-                <CustomSelect
-                  options={parentOptions}
-                  value={field.value ? String(field.value) : ""}
-                  onChange={(val) => field.onChange(val ? Number(val) : null)}
-                  placeholder="Chọn danh mục cha"
-                  classNameCustom={`
-                    bg-[#F5F6FA] border border-[#D5D5D5] rounded-[4px]
-                    px-[22px] font-[500] text-[14px] text-[var(--color-text)]
-                    w-full h-[52px] !block
-                  `}
-                />
-              )}
-            </div>
-          )}
+          label="Danh mục cha"
+          options={parentOptions}
+          placeholder="Chọn danh mục cha"
+          readOnlyText={initialData?.parentName || "Không có (Danh mục gốc)"}
+          isReadOnly={isReadOnly}
+          emptyValue={null}
         />
 
         <FormInput
@@ -250,7 +231,7 @@ export default function CategoryForm({ initialData, isReadOnly = false }: Catego
         )}
       </form>
 
-      <FormBackLink href={isReadOnly ? "/categories/trash" : "/categories"} />
+      <FormBackLink href={pathname.includes("/trash") ? "/categories/trash" : "/categories"} />
     </div>
   );
 }
