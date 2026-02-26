@@ -18,10 +18,6 @@ interface FormControlledSelectProps {
   disabled?: boolean;
 }
 
-/**
- * Reusable form select field that wraps Controller + CustomSelect.
- * Eliminates ~20 lines of boilerplate per usage.
- */
 export const FormControlledSelect = ({
   control,
   name,
