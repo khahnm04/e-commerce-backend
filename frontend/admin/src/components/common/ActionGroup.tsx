@@ -43,7 +43,7 @@ export const ActionGroup = ({
             {onRestore && (
               <button
                 className={`inline-block px-[16.5px] py-[8.5px]
-                  ${!hideDelete ? 'border-r border-[#D5D5D5]' : ''}
+                  ${!hideDelete ? "border-r border-[#D5D5D5]" : ""}
                   text-[15px] text-[#10B981] hover:bg-green-50
                   cursor-pointer transition-colors`}
                 title="Khôi phục"

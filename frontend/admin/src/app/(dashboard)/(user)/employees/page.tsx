@@ -17,10 +17,7 @@ export default function EmployeePage() {
 
       <Breadcrumb
         className="mb-[30px] ml-[5px]"
-        items={[
-          { label: "Tổng quan", href: "/" },
-          { label: "Nhân viên" }
-        ]}
+        items={[{ label: "Tổng quan", href: "/" }, { label: "Nhân viên" }]}
       />
 
       <EmployeeList />

@@ -21,12 +21,12 @@ export const PermissionSelection: React.FC<PermissionSelectionProps> = ({
   // Group permissions by module, then by sub-prefix
   const groupedPermissions = useMemo(() => {
     const groups: Record<string, Record<string, PermissionResponse[]>> = {};
-    permissions.forEach(p => {
+    permissions.forEach((p) => {
       const moduleName = p.module || "Khác";
       if (!groups[moduleName]) groups[moduleName] = {};
 
-      const parts = p.code.split('_');
-      const subName = parts.length > 1 ? parts.slice(0, parts.length - 1).join('_') : "Chung";
+      const parts = p.code.split("_");
+      const subName = parts.length > 1 ? parts.slice(0, parts.length - 1).join("_") : "Chung";
 
       if (!groups[moduleName][subName]) groups[moduleName][subName] = [];
       groups[moduleName][subName].push(p);
@@ -44,14 +44,14 @@ export const PermissionSelection: React.FC<PermissionSelectionProps> = ({
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      onChange(permissions.map(p => p.id));
+      onChange(permissions.map((p) => p.id));
     } else {
       onChange([]);
     }
   };
 
   const toggleModule = (module: string) => {
-    setExpandedModules(prev => {
+    setExpandedModules((prev) => {
       const next = new Set(prev);
       if (next.has(module)) {
         next.delete(module);
@@ -63,7 +63,7 @@ export const PermissionSelection: React.FC<PermissionSelectionProps> = ({
   };
 
   const toggleSubGroup = (subGroupKey: string) => {
-    setExpandedSubGroups(prev => {
+    setExpandedSubGroups((prev) => {
       const next = new Set(prev);
       if (next.has(subGroupKey)) {
         next.delete(subGroupKey);
@@ -75,21 +75,21 @@ export const PermissionSelection: React.FC<PermissionSelectionProps> = ({
   };
 
   const isModuleAllSelected = (modulePerms: PermissionResponse[]) => {
-    return modulePerms.every(p => selectedPermissions.includes(p.id));
+    return modulePerms.every((p) => selectedPermissions.includes(p.id));
   };
 
   const isModulePartialSelected = (modulePerms: PermissionResponse[]) => {
-    const selected = modulePerms.filter(p => selectedPermissions.includes(p.id));
+    const selected = modulePerms.filter((p) => selectedPermissions.includes(p.id));
     return selected.length > 0 && selected.length < modulePerms.length;
   };
 
   const handleModuleSelectAll = (modulePerms: PermissionResponse[], checked: boolean) => {
-    const moduleIds = modulePerms.map(p => p.id);
+    const moduleIds = modulePerms.map((p) => p.id);
     if (checked) {
       const newIds = [...new Set([...selectedPermissions, ...moduleIds])];
       onChange(newIds);
     } else {
-      onChange(selectedPermissions.filter(id => !moduleIds.includes(id)));
+      onChange(selectedPermissions.filter((id) => !moduleIds.includes(id)));
     }
   };
 
@@ -116,7 +116,10 @@ export const PermissionSelection: React.FC<PermissionSelectionProps> = ({
           const partialSelected = isModulePartialSelected(modulePerms);
 
           return (
-            <div key={module} className="border border-[#E0E0E0] rounded-[8px] bg-white overflow-hidden">
+            <div
+              key={module}
+              className="border border-[#E0E0E0] rounded-[8px] bg-white overflow-hidden"
+            >
               {/* Module header */}
               <div
                 className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-gray-50 transition-colors"
@@ -126,11 +129,10 @@ export const PermissionSelection: React.FC<PermissionSelectionProps> = ({
                   <FaChevronDown
                     className={`text-[12px] text-gray-500 transition-transform duration-200 ${isExpanded ? "" : "-rotate-90"}`}
                   />
-                  <span className="font-[600] text-[14px] text-[var(--color-text)]">
-                    {module}
-                  </span>
+                  <span className="font-[600] text-[14px] text-[var(--color-text)]">{module}</span>
                   <span className="text-[12px] text-gray-400">
-                    ({modulePerms.filter(p => selectedPermissions.includes(p.id)).length}/{modulePerms.length})
+                    ({modulePerms.filter((p) => selectedPermissions.includes(p.id)).length}/
+                    {modulePerms.length})
                   </span>
                 </div>
                 <input
@@ -138,7 +140,7 @@ export const PermissionSelection: React.FC<PermissionSelectionProps> = ({
                   className="w-[18px] h-[18px] cursor-pointer accent-blue-600"
                   checked={allSelected}
                   disabled={isReadOnly}
-                  ref={el => {
+                  ref={(el) => {
                     if (el) el.indeterminate = partialSelected;
                   }}
                   onChange={(e) => {
@@ -159,7 +161,10 @@ export const PermissionSelection: React.FC<PermissionSelectionProps> = ({
                     const partialSubSelected = isModulePartialSelected(perms);
 
                     return (
-                      <div key={subName} className="border border-[#E5E7EB] rounded-[6px] bg-white overflow-hidden shadow-sm">
+                      <div
+                        key={subName}
+                        className="border border-[#E5E7EB] rounded-[6px] bg-white overflow-hidden shadow-sm"
+                      >
                         <div
                           className="flex items-center justify-between px-3 py-2 border-b border-[#E5E7EB] bg-[#F3F4F6] cursor-pointer hover:bg-[#EAEBEE] transition-colors"
                           onClick={() => toggleSubGroup(subGroupKey)}
@@ -168,9 +173,12 @@ export const PermissionSelection: React.FC<PermissionSelectionProps> = ({
                             <FaChevronDown
                               className={`text-[10px] text-gray-500 transition-transform duration-200 ${isSubExpanded ? "" : "-rotate-90"}`}
                             />
-                            <span className="font-semibold text-[13px] text-gray-700">{subName}</span>
+                            <span className="font-semibold text-[13px] text-gray-700">
+                              {subName}
+                            </span>
                             <span className="text-[11px] text-gray-400 font-normal">
-                              ({perms.filter(p => selectedPermissions.includes(p.id)).length}/{perms.length})
+                              ({perms.filter((p) => selectedPermissions.includes(p.id)).length}/
+                              {perms.length})
                             </span>
                           </div>
                           <input
@@ -178,7 +186,7 @@ export const PermissionSelection: React.FC<PermissionSelectionProps> = ({
                             className="w-[16px] h-[16px] cursor-pointer accent-blue-600"
                             checked={allSubSelected}
                             disabled={isReadOnly}
-                            ref={el => {
+                            ref={(el) => {
                               if (el) el.indeterminate = partialSubSelected;
                             }}
                             onChange={(e) => {
@@ -202,7 +210,10 @@ export const PermissionSelection: React.FC<PermissionSelectionProps> = ({
                                   className="w-4 h-4 cursor-pointer accent-blue-600"
                                   disabled={isReadOnly}
                                 />
-                                <label htmlFor={`perm-${p.id}`} className="text-sm font-medium text-gray-700 cursor-pointer">
+                                <label
+                                  htmlFor={`perm-${p.id}`}
+                                  className="text-sm font-medium text-gray-700 cursor-pointer"
+                                >
                                   {p.name}
                                 </label>
                               </div>

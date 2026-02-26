@@ -67,9 +67,10 @@ export const RoleSelectionField = ({
                         inline-flex items-center gap-[8px] cursor-pointer
                         border rounded-[6px] px-[14px] py-[8px]
                         text-[13px] font-[600] transition-all
-                        ${isChecked
-                          ? "bg-blue-50 border-blue-400 text-blue-700"
-                          : "bg-white border-[#D5D5D5] text-[#606060] hover:border-blue-300 hover:bg-blue-50/50"
+                        ${
+                          isChecked
+                            ? "bg-blue-50 border-blue-400 text-blue-700"
+                            : "bg-white border-[#D5D5D5] text-[#606060] hover:border-blue-300 hover:bg-blue-50/50"
                         }
                       `}
                     >

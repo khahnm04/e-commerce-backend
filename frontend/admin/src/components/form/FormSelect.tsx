@@ -11,13 +11,7 @@ interface FormSelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> 
   options: Option[];
 }
 
-export const FormSelect = ({
-  label,
-  id,
-  options,
-  className = "",
-  ...props
-}: FormSelectProps) => {
+export const FormSelect = ({ label, id, options, className = "", ...props }: FormSelectProps) => {
   return (
     <>
       <div className={`inner-group relative ${className}`}>

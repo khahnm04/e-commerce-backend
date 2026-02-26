@@ -10,16 +10,14 @@ export const metadata: Metadata = {
 export default function CreateProductPage() {
   return (
     <main>
-      <h1 className="mt-0 mb-[5px] font-bold text-[32px] text-[var(--color-text)]">
-        Tạo sản phẩm
-      </h1>
+      <h1 className="mt-0 mb-[5px] font-bold text-[32px] text-[var(--color-text)]">Tạo sản phẩm</h1>
 
       <Breadcrumb
         className="mb-[30px] ml-[5px]"
         items={[
           { label: "Tổng quan", href: "/" },
           { label: "Sản phẩm", href: "/products" },
-          { label: "Tạo mới" }
+          { label: "Tạo mới" },
         ]}
       />
 

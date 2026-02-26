@@ -38,15 +38,12 @@ export const TableControl = ({
   actionFilter,
   onActionFilterChange,
   actionOptions,
-  onApplyAction = () => { }
+  onApplyAction = () => {},
 }: TableControlProps) => {
   return (
     <>
       {!isTrash && filterList.length > 0 && (
-        <DynamicTableFilter
-          filters={filterList}
-          onClearFilter={onClearFilter}
-        />
+        <DynamicTableFilter filters={filterList} onClearFilter={onClearFilter} />
       )}
 
       <TableAction

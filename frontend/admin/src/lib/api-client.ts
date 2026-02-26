@@ -21,10 +21,7 @@ const refreshToken = async (): Promise<boolean> => {
   }
 };
 
-export const sendRequest = async <T>(
-  endpoint: string,
-  options?: RequestInit
-): Promise<T> => {
+export const sendRequest = async <T>(endpoint: string, options?: RequestInit): Promise<T> => {
   const baseUrl = process.env.NEXT_PUBLIC_API_URL;
   const headers = {
     "Content-Type": "application/json",
@@ -88,11 +85,7 @@ export const sendRequest = async <T>(
   }
 
   // Refresh token hết hạn (code 1002) → bắt login lại
-  if (
-    res.status === 401 &&
-    data?.code === 1002 &&
-    !endpoint.includes("/auth/login")
-  ) {
+  if (res.status === 401 && data?.code === 1002 && !endpoint.includes("/auth/login")) {
     if (typeof window !== "undefined" && window.location.pathname !== "/login") {
       window.location.href = "/login";
     }
@@ -102,7 +95,7 @@ export const sendRequest = async <T>(
   if (!res.ok) {
     if (data?.errors && Array.isArray(data.errors) && data.errors.length > 0) {
       const errorMsg = data.errors
-        .map((e: { field?: string; message: string }) => `${e.field || 'Lỗi'}: ${e.message}`)
+        .map((e: { field?: string; message: string }) => `${e.field || "Lỗi"}: ${e.message}`)
         .join("\n");
       throw new Error(errorMsg);
     }

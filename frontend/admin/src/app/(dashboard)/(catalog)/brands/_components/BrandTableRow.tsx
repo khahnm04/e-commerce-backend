@@ -26,9 +26,9 @@ export const BrandTableRow = ({
   onRestoreClick,
   onStatusChange,
   isSelected,
-  onSelect
+  onSelect,
 }: BrandTableRowProps) => {
-  const updateStatusOptions = BRAND_STATUS_OPTIONS.filter(opt => opt.id !== "");
+  const updateStatusOptions = BRAND_STATUS_OPTIONS.filter((opt) => opt.id !== "");
 
   return (
     <tr>
@@ -36,21 +36,15 @@ export const BrandTableRow = ({
         <TableCheckbox checked={isSelected} onChange={onSelect} />
       </TableCell>
 
-      <TableCell>
-        {item.name}
-      </TableCell>
+      <TableCell>{item.name}</TableCell>
 
       <TableCell>
         <TableImage src={item.logoUrl} alt={item.name} />
       </TableCell>
 
-      <TableCell>
-        {item.slug}
-      </TableCell>
+      <TableCell>{item.slug}</TableCell>
 
-      <TableCell>
-        {item.country}
-      </TableCell>
+      <TableCell>{item.country}</TableCell>
 
       <TableCell>
         <div className="flex justify-center items-center ml-[20px]">
@@ -69,17 +63,11 @@ export const BrandTableRow = ({
       </TableCell>
 
       <TableCell>
-        <UserTimestamp
-          user={String(item.createdBy)}
-          date={item.createdAt}
-        />
+        <UserTimestamp user={String(item.createdBy)} date={item.createdAt} />
       </TableCell>
 
       <TableCell>
-        <UserTimestamp
-          user={String(item.updatedBy)}
-          date={item.updatedAt}
-        />
+        <UserTimestamp user={String(item.updatedBy)} date={item.updatedAt} />
       </TableCell>
 
       <td
@@ -91,8 +79,8 @@ export const BrandTableRow = ({
           isTrash={isTrash}
           editLink={isTrash ? undefined : `/brands/${item.slug || item.id}`}
           viewLink={isTrash ? `/brands/trash/${item.id}` : undefined}
-          onDelete={onDeleteClick || (() => { })}
-          onRestore={onRestoreClick || (() => { })}
+          onDelete={onDeleteClick || (() => {})}
+          onRestore={onRestoreClick || (() => {})}
           hideDelete={isTrash}
         />
       </td>

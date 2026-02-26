@@ -5,6 +5,6 @@ import { PermissionResponse } from "@/types/auth/role.types";
 const BASE_ENDPOINT = "/admin/permissions";
 
 export const permissionService = {
-    getAll: () =>
-        sendRequest<ApiResponse<PermissionResponse[]>>(`${BASE_ENDPOINT}`, { method: "GET" }),
+  getAll: () =>
+    sendRequest<ApiResponse<PermissionResponse[]>>(`${BASE_ENDPOINT}`, { method: "GET" }),
 };

@@ -27,8 +27,9 @@ export function useApiData<T>({ fetchFn }: UseApiDataOptions<T>) {
     }
   }, [fetchFn]);
 
-  useEffect(() => { reload(); }, [reload]);
+  useEffect(() => {
+    reload();
+  }, [reload]);
 
   return { data, meta, loading, error, reload };
 }
-

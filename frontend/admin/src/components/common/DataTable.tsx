@@ -8,12 +8,7 @@ interface DataTableProps {
   onSelectAll?: () => void;
 }
 
-export const DataTable = ({
-  headers,
-  children,
-  isSelectAll,
-  onSelectAll,
-}: DataTableProps) => {
+export const DataTable = ({ headers, children, isSelectAll, onSelectAll }: DataTableProps) => {
   return (
     <div
       className="overflow-x-auto border border-[#B9B9B9] rounded-[14px]
@@ -45,9 +40,7 @@ export const DataTable = ({
           </tr>
         </thead>
 
-        <tbody>
-          {children}
-        </tbody>
+        <tbody>{children}</tbody>
       </table>
     </div>
   );

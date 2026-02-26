@@ -19,7 +19,7 @@ export default function CustomerTrashPage() {
         items={[
           { label: "Tổng quan", href: "/" },
           { label: "Khách hàng", href: "/customers" },
-          { label: "Thùng rác" }
+          { label: "Thùng rác" },
         ]}
       />
 

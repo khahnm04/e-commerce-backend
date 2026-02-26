@@ -65,10 +65,7 @@ export default function FormLogin() {
   };
 
   return (
-    <form
-      onSubmit={handleSubmit(onSubmit)}
-      className="mb-[24px]"
-    >
+    <form onSubmit={handleSubmit(onSubmit)} className="mb-[24px]">
       <AuthInput
         label={config.label}
         id="accountName"

@@ -27,9 +27,7 @@ export const ProductImagesSection = ({
 }: ProductImagesSectionProps) => {
   return (
     <div className="md:col-span-2">
-      <label className="block font-[600] text-[14px] text-[#606060] mb-[11px]">
-        Ảnh sản phẩm
-      </label>
+      <label className="block font-[600] text-[14px] text-[#606060] mb-[11px]">Ảnh sản phẩm</label>
       {isReadOnly ? (
         <div className="bg-[#F5F6FA] border border-[#D5D5D5] rounded-[4px] p-[16px]">
           {initialImages && initialImages.length > 0 ? (
@@ -111,7 +109,13 @@ export const ProductImagesSection = ({
               {/* Remove */}
               <button
                 type="button"
-                onClick={() => onImageRowsChange(imageRows.filter((_, i) => i !== idx))}
+                onClick={() => {
+                  const removed = imageRows[idx];
+                  if (removed.previewUrl?.startsWith("blob:")) {
+                    URL.revokeObjectURL(removed.previewUrl);
+                  }
+                  onImageRowsChange(imageRows.filter((_, i) => i !== idx));
+                }}
                 className="text-[#EF3826] hover:bg-red-50 p-[10px] rounded-[6px] cursor-pointer transition-colors"
                 title="Xóa ảnh"
               >
@@ -121,7 +125,12 @@ export const ProductImagesSection = ({
           ))}
           <button
             type="button"
-            onClick={() => onImageRowsChange([...imageRows, { imageUrl: "", displayOrder: imageRows.length, previewUrl: "" }])}
+            onClick={() =>
+              onImageRowsChange([
+                ...imageRows,
+                { imageUrl: "", displayOrder: imageRows.length, previewUrl: "" },
+              ])
+            }
             className="inline-flex items-center gap-[6px] text-[13px] font-[600] text-[var(--color-primary)] hover:bg-blue-50 px-[14px] py-[8px] rounded-[6px] cursor-pointer transition-colors border border-dashed border-blue-300"
           >
             <FaPlus className="text-[11px]" /> Thêm ảnh

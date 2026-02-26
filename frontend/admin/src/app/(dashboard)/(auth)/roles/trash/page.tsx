@@ -19,7 +19,7 @@ export default function RoleTrashPage() {
         items={[
           { label: "Tổng quan", href: "/" },
           { label: "Nhóm quyền", href: "/roles" },
-          { label: "Thùng rác" }
+          { label: "Thùng rác" },
         ]}
       />
 

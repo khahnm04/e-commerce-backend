@@ -11,12 +11,7 @@ import { createCrudService } from "../common/crud.service";
 const BASE_ENDPOINT = "/admin/brands";
 
 export const brandService = {
-  ...createCrudService<
-    BrandResponse,
-    BrandRequest,
-    BrandFilterRequest,
-    BrandBulkActionRequest
-  >({
+  ...createCrudService<BrandResponse, BrandRequest, BrandFilterRequest, BrandBulkActionRequest>({
     endpoint: BASE_ENDPOINT,
     hasSlug: true,
   }),

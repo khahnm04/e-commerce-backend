@@ -21,42 +21,26 @@ export const RoleTableRow = ({
   onDeleteClick,
   onRestoreClick,
   isSelected,
-  onSelect
+  onSelect,
 }: RoleTableRowProps) => {
-
   return (
     <tr>
       <TableCell>
-        <TableCheckbox
-          checked={isSelected}
-          onChange={onSelect}
-        />
+        <TableCheckbox checked={isSelected} onChange={onSelect} />
+      </TableCell>
+
+      <TableCell>{item.code}</TableCell>
+
+      <TableCell>{item.name}</TableCell>
+
+      <TableCell className="max-w-[300px] truncate text-center">{item.description}</TableCell>
+
+      <TableCell>
+        <UserTimestamp user={item.createdBy} date={formatDateTime(item.createdAt)} />
       </TableCell>
 
       <TableCell>
-        {item.code}
-      </TableCell>
-
-      <TableCell>
-        {item.name}
-      </TableCell>
-
-      <TableCell className="max-w-[300px] truncate text-center">
-        {item.description}
-      </TableCell>
-
-      <TableCell>
-        <UserTimestamp
-          user={item.createdBy}
-          date={formatDateTime(item.createdAt)}
-        />
-      </TableCell>
-
-      <TableCell>
-        <UserTimestamp
-          user={item.updatedBy}
-          date={formatDateTime(item.updatedAt)}
-        />
+        <UserTimestamp user={item.updatedBy} date={formatDateTime(item.updatedAt)} />
       </TableCell>
 
       <td
@@ -72,10 +56,7 @@ export const RoleTableRow = ({
             onRestore={onRestoreClick}
           />
         ) : (
-          <ActionGroup
-            editLink={`/roles/${item.id}`}
-            onDelete={onDeleteClick || (() => { })}
-          />
+          <ActionGroup editLink={`/roles/${item.id}`} onDelete={onDeleteClick || (() => {})} />
         )}
       </td>
     </tr>

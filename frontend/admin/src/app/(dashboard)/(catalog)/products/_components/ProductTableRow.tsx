@@ -26,9 +26,9 @@ export const ProductTableRow = ({
   onRestoreClick,
   onStatusChange,
   isSelected,
-  onSelect
+  onSelect,
 }: ProductTableRowProps) => {
-  const updateStatusOptions = PRODUCT_STATUS_OPTIONS.filter(opt => opt.id !== "");
+  const updateStatusOptions = PRODUCT_STATUS_OPTIONS.filter((opt) => opt.id !== "");
   const formattedPrice = formatCurrency(item.price);
 
   return (
@@ -37,25 +37,17 @@ export const ProductTableRow = ({
         <TableCheckbox checked={isSelected} onChange={onSelect} />
       </TableCell>
 
-      <TableCell>
-        {item.name}
-      </TableCell>
+      <TableCell>{item.name}</TableCell>
 
       <TableCell>
         <TableImage src={item.thumbnail} alt={item.name} />
       </TableCell>
 
-      <TableCell>
-        {item.productCode || "—"}
-      </TableCell>
+      <TableCell>{item.productCode || "—"}</TableCell>
 
-      <TableCell>
-        {formattedPrice}
-      </TableCell>
+      <TableCell>{formattedPrice}</TableCell>
 
-      <TableCell>
-        {item.brandName || "—"}
-      </TableCell>
+      <TableCell>{item.brandName || "—"}</TableCell>
 
       <TableCell>
         <div className="flex justify-center items-center ml-[20px]">
@@ -74,17 +66,11 @@ export const ProductTableRow = ({
       </TableCell>
 
       <TableCell>
-        <UserTimestamp
-          user={String(item.createdBy)}
-          date={item.createdAt}
-        />
+        <UserTimestamp user={String(item.createdBy)} date={item.createdAt} />
       </TableCell>
 
       <TableCell>
-        <UserTimestamp
-          user={String(item.updatedBy)}
-          date={item.updatedAt}
-        />
+        <UserTimestamp user={String(item.updatedBy)} date={item.updatedAt} />
       </TableCell>
 
       <td
@@ -96,8 +82,8 @@ export const ProductTableRow = ({
           isTrash={isTrash}
           editLink={isTrash ? undefined : `/products/${item.slug || item.id}`}
           viewLink={isTrash ? `/products/trash/${item.id}` : undefined}
-          onDelete={onDeleteClick || (() => { })}
-          onRestore={onRestoreClick || (() => { })}
+          onDelete={onDeleteClick || (() => {})}
+          onRestore={onRestoreClick || (() => {})}
           hideDelete={isTrash}
         />
       </td>

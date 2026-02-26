@@ -1,10 +1,10 @@
-import { Metadata } from "next"
+import { Metadata } from "next";
 import FormLogin from "./_components/FormLogin";
 
 export const metadata: Metadata = {
   title: "Đăng nhập",
   description: "Đăng nhập hệ thống quản trị.",
-}
+};
 
 export default function LoginPage() {
   return (
@@ -21,5 +21,5 @@ export default function LoginPage() {
         </div>
       </div>
     </>
-  )
+  );
 }

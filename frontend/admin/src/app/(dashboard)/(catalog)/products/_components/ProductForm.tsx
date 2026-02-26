@@ -30,7 +30,7 @@ import { PRODUCT_STATUS_OPTIONS } from "@/constants/catalog/product.constants";
 import { ProductStatus } from "@/constants/enums/catalog.enums";
 import { ProductAttributesSection } from "./ProductAttributesSection";
 import { ProductImagesSection } from "./ProductImagesSection";
-import { ProductCategoriesSection } from "./ProductCategoriesSection";
+import { CheckboxGroupField } from "@/components/form/CheckboxGroupField";
 import { ProductDescriptionSection } from "./ProductDescriptionSection";
 import { generateSlug } from "@/lib/format-utils";
 
@@ -65,10 +65,19 @@ export default function ProductForm({ initialData, isReadOnly = false }: Product
   const [allCategories, setAllCategories] = useState<CategoryResponse[]>([]);
   const [allAttributes, setAllAttributes] = useState<AttributeResponse[]>([]);
   const [attributeRows, setAttributeRows] = useState<AttributeRow[]>(
-    initialData?.attributes?.map(a => ({ id: a.id, attributeId: a.attributeId, value: a.value })) || []
+    initialData?.attributes?.map((a) => ({
+      id: a.id,
+      attributeId: a.attributeId,
+      value: a.value,
+    })) || [],
   );
   const [imageRows, setImageRows] = useState<ImageRow[]>(
-    initialData?.images?.map(img => ({ id: img.id, imageUrl: img.imageUrl, displayOrder: img.displayOrder, previewUrl: img.imageUrl })) || []
+    initialData?.images?.map((img) => ({
+      id: img.id,
+      imageUrl: img.imageUrl,
+      displayOrder: img.displayOrder,
+      previewUrl: img.imageUrl,
+    })) || [],
   );
   const isEditMode = !!initialData;
 
@@ -96,14 +105,13 @@ export default function ProductForm({ initialData, isReadOnly = false }: Product
 
   const brandOptions = [
     { id: "", name: "Chọn nhãn hàng" },
-    ...allBrands.map(b => ({ id: String(b.id), name: b.name })),
+    ...allBrands.map((b) => ({ id: String(b.id), name: b.name })),
   ];
-
 
   // Get default category IDs for edit mode
   const getDefaultCategoryIds = (): number[] => {
     if (!initialData?.categories) return [];
-    return initialData.categories.map(c => c.categoryId);
+    return initialData.categories.map((c) => c.categoryId);
   };
 
   const {
@@ -178,11 +186,13 @@ export default function ProductForm({ initialData, isReadOnly = false }: Product
         metaDescription: data.metaDescription,
         status: data.status as ProductStatus,
         categoryIds: data.categoryIds || [],
-        attributes: attributeRows.filter(a => a.attributeId && a.value).map(a => ({
-          ...(a.id ? { id: a.id } : {}),
-          attributeId: Number(a.attributeId),
-          value: a.value,
-        })),
+        attributes: attributeRows
+          .filter((a) => a.attributeId && a.value)
+          .map((a) => ({
+            ...(a.id ? { id: a.id } : {}),
+            attributeId: Number(a.attributeId),
+            value: a.value,
+          })),
         images: uploadedImages,
       };
 
@@ -208,7 +218,7 @@ export default function ProductForm({ initialData, isReadOnly = false }: Product
     <div className="bg-white border border-[#B9B9B9] rounded-[14px] md:p-[50px] p-[20px]">
       <form
         className="grid md:grid-cols-2 grid-cols-1 gap-[30px]"
-        onSubmit={(e) => handleSubmit(onSubmit as any)(e).catch(() => { })}
+        onSubmit={(e) => handleSubmit(onSubmit as any)(e).catch(() => {})}
       >
         {/* Row 1: Tên + Slug */}
         <FormInput
@@ -314,11 +324,15 @@ export default function ProductForm({ initialData, isReadOnly = false }: Product
         />
 
         {/* Category selection - full width */}
-        <ProductCategoriesSection
+        <CheckboxGroupField
           control={control}
-          allCategories={allCategories}
+          name="categoryIds"
+          label="Danh mục"
+          items={allCategories}
           isReadOnly={isReadOnly}
-          initialCategories={initialData?.categories}
+          readOnlyLabels={initialData?.categories?.map((c) => c.categoryName)}
+          emptyReadOnlyText="Chưa gán danh mục"
+          loadingText="Đang tải danh sách danh mục..."
           errors={errors}
         />
 

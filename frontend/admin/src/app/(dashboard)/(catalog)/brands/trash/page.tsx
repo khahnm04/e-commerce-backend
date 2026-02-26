@@ -10,8 +10,17 @@ export const metadata: Metadata = {
 export default function BrandTrashPage() {
   return (
     <main>
-      <h1 className="mt-0 mb-[5px] font-[700] text-[32px] text-[var(--color-text)]">Thùng rác nhãn hàng</h1>
-      <Breadcrumb className="mb-[30px] ml-[5px]" items={[{ label: "Tổng quan", href: "/" }, { label: "Nhãn hàng", href: "/brands" }, { label: "Thùng rác" }]} />
+      <h1 className="mt-0 mb-[5px] font-[700] text-[32px] text-[var(--color-text)]">
+        Thùng rác nhãn hàng
+      </h1>
+      <Breadcrumb
+        className="mb-[30px] ml-[5px]"
+        items={[
+          { label: "Tổng quan", href: "/" },
+          { label: "Nhãn hàng", href: "/brands" },
+          { label: "Thùng rác" },
+        ]}
+      />
       <BrandList isTrash={true} />
     </main>
   );

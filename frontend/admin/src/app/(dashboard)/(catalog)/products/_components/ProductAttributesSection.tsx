@@ -40,7 +40,10 @@ export const ProductAttributesSection = ({
           {initialAttributes && initialAttributes.length > 0 ? (
             <div className="flex flex-wrap gap-[12px]">
               {initialAttributes.map((attr, idx) => (
-                <div key={idx} className="bg-white border border-[#D5D5D5] rounded-[6px] px-[14px] py-[8px] text-[13px]">
+                <div
+                  key={idx}
+                  className="bg-white border border-[#D5D5D5] rounded-[6px] px-[14px] py-[8px] text-[13px]"
+                >
                   <span className="font-[600] text-[#606060]">{attr.attributeName}:</span>{" "}
                   <span className="text-[var(--color-text)]">{attr.value}</span>
                 </div>
@@ -58,7 +61,7 @@ export const ProductAttributesSection = ({
                 <CustomSelect
                   options={[
                     { id: "", name: "Chọn thuộc tính" },
-                    ...allAttributes.map(a => ({ id: String(a.id), name: a.name })),
+                    ...allAttributes.map((a) => ({ id: String(a.id), name: a.name })),
                   ]}
                   value={row.attributeId ? String(row.attributeId) : ""}
                   onChange={(val) => {

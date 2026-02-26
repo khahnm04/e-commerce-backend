@@ -16,10 +16,7 @@ export default function CustomerPage() {
 
       <Breadcrumb
         className="mb-[30px] ml-[5px]"
-        items={[
-          { label: "Tổng quan", href: "/" },
-          { label: "Khách hàng" }
-        ]}
+        items={[{ label: "Tổng quan", href: "/" }, { label: "Khách hàng" }]}
       />
 
       <CustomerList />

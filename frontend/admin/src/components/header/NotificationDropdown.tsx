@@ -81,10 +81,7 @@ export const NotificationDropdown = () => {
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setShowDropdown(false);
       }
     };
@@ -95,26 +92,20 @@ export const NotificationDropdown = () => {
   }, [dropdownRef]);
 
   const handleNotificationClick = (id: number) => {
-    setNotifications(prevNotifications =>
-      prevNotifications.map(notif =>
-        notif.id === id ? { ...notif, read: true } : notif
-      )
+    setNotifications((prevNotifications) =>
+      prevNotifications.map((notif) => (notif.id === id ? { ...notif, read: true } : notif)),
     );
     // Optional: Navigate to related page
     // router.push(`/notifications/${id}`);
     setShowDropdown(false); // Close dropdown after clicking a notification
   };
 
-  const unreadCount = notifications.filter(notif => !notif.read).length;
+  const unreadCount = notifications.filter((notif) => !notif.read).length;
 
   return (
     <div className="relative cursor-pointer" ref={dropdownRef}>
       <div onClick={() => setShowDropdown(!showDropdown)} className="relative">
-        <img
-          src="/assets/images/icon-bell.svg"
-          alt=""
-          className="w-[24px] h-auto"
-        />
+        <img src="/assets/images/icon-bell.svg" alt="" className="w-[24px] h-auto" />
         <span
           className="h-[16px] min-w-[16px] bg-[#F93C65] font-[700]
             text-[12px] text-[#FFFFFF] py-0 px-[4px] rounded-[25px]
@@ -138,15 +129,17 @@ export const NotificationDropdown = () => {
                   key={notif.id}
                   className={`p-4 border-b border-[#E0E0E0]
                     hover:bg-gray-50 cursor-pointer
-                    ${!notif.read ? 'bg-blue-50' : ''}`}
+                    ${!notif.read ? "bg-blue-50" : ""}`}
                   onClick={() => handleNotificationClick(notif.id)}
                 >
                   <div
                     className={`font-semibold text-[14px]
-                      ${!notif.read ? 'text-blue-700' : 'text-gray-800'}`}
+                      ${!notif.read ? "text-blue-700" : "text-gray-800"}`}
                   >
                     {notif.title}
-                    {!notif.read && <span className="ml-2 w-2 h-2 bg-blue-500 rounded-full inline-block"></span>}
+                    {!notif.read && (
+                      <span className="ml-2 w-2 h-2 bg-blue-500 rounded-full inline-block"></span>
+                    )}
                   </div>
                   <div className="text-[12px] text-gray-600 mt-1">{notif.content}</div>
                   <div className="text-[10px] text-gray-400 mt-1">{notif.time}</div>
@@ -157,7 +150,13 @@ export const NotificationDropdown = () => {
             )}
           </div>
           <div className="p-2 text-center border-t border-[#E0E0E0]">
-            <Link href="/notifications" onClick={() => setShowDropdown(false)} className="text-[12px] text-blue-500 hover:underline">Xem tất cả</Link>
+            <Link
+              href="/notifications"
+              onClick={() => setShowDropdown(false)}
+              className="text-[12px] text-blue-500 hover:underline"
+            >
+              Xem tất cả
+            </Link>
           </div>
         </div>
       )}

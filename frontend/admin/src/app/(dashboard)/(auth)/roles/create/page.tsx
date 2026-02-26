@@ -19,11 +19,11 @@ export default function CreateRolePage() {
         items={[
           { label: "Tổng quan", href: "/" },
           { label: "Nhóm quyền", href: "/roles" },
-          { label: "Thêm mới" }
+          { label: "Thêm mới" },
         ]}
       />
 
       <RoleForm />
     </>
-  )
+  );
 }

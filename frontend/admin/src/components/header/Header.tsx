@@ -1,9 +1,9 @@
-"use client"
+"use client";
 import { UserDropdown } from "./UserDropdown";
 import { NotificationDropdown } from "./NotificationDropdown";
 /* eslint-disable @next/next/no-img-element */
-import Link from "next/link"
-import { FaBars } from "react-icons/fa6"
+import Link from "next/link";
+import { FaBars } from "react-icons/fa6";
 
 export const Header = (props: {
   activeSider: boolean;
@@ -19,10 +19,7 @@ export const Header = (props: {
       >
         {/* Logo */}
         <div className="sm:w-[240px] w-auto sm:ml-0 ml-[15px] flex items-center justify-center">
-          <Link
-            href="#"
-            className="font-[800] text-[24px]"
-          >
+          <Link href="#" className="font-[800] text-[24px]">
             <span className="text-[var(--color-primary)]">28</span>
             <span className="text-[var(--color-text)]">Admin</span>
           </Link>
@@ -50,5 +47,5 @@ export const Header = (props: {
         {/* End Right */}
       </header>
     </>
-  )
-}
+  );
+};

@@ -27,14 +27,10 @@ export const Breadcrumb = ({ items, className = "" }: BreadcrumbProps) => {
                 {item.label}
               </Link>
             ) : (
-              <span className="font-[600] text-[var(--color-text)]">
-                {item.label}
-              </span>
+              <span className="font-[600] text-[var(--color-text)]">{item.label}</span>
             )}
 
-            {!isLast && (
-              <span className="mx-2 text-[#999999]">/</span>
-            )}
+            {!isLast && <span className="mx-2 text-[#999999]">/</span>}
           </div>
         );
       })}

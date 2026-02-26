@@ -32,7 +32,9 @@ export const ProductDescriptionSection = ({
       {isReadOnly ? (
         <div
           className="bg-[#F5F6FA] border border-[#D5D5D5] rounded-[4px] p-[16px] prose prose-sm max-w-none text-[14px] text-[var(--color-text)]"
-          dangerouslySetInnerHTML={{ __html: initialDescription || '<p class="text-gray-400 italic">Chưa có mô tả</p>' }}
+          dangerouslySetInnerHTML={{
+            __html: initialDescription || '<p class="text-gray-400 italic">Chưa có mô tả</p>',
+          }}
         />
       ) : (
         <Controller

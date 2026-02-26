@@ -2,8 +2,18 @@ import { z } from "zod";
 
 const EmployeeBase = z.object({
   fullName: z.string().min(1, "Họ tên không được để trống"),
-  email: z.string().regex(/^(?=.{1,64}@)[A-Za-z0-9_-]+(\.[A-Za-z0-9_-]+)*@[^-][A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*(\.[A-Za-z]{2,})$/, "Email không hợp lệ"),
-  phoneNumber: z.string().regex(/^(?:\+84|0)(3[2-9]|5[6|8|9]|7[0|6-9]|8[0-6|8|9]|9[0-4|6-9])[0-9]{7}$/, "Số điện thoại không hợp lệ (phải là số VN)"),
+  email: z
+    .string()
+    .regex(
+      /^(?=.{1,64}@)[A-Za-z0-9_-]+(\.[A-Za-z0-9_-]+)*@[^-][A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*(\.[A-Za-z]{2,})$/,
+      "Email không hợp lệ",
+    ),
+  phoneNumber: z
+    .string()
+    .regex(
+      /^(?:\+84|0)(3[2-9]|5[6|8|9]|7[0|6-9]|8[0-6|8|9]|9[0-4|6-9])[0-9]{7}$/,
+      "Số điện thoại không hợp lệ (phải là số VN)",
+    ),
   code: z.string().min(1, "Mã nhân viên không được để trống"),
   branchId: z.number().min(1, "Vui lòng chọn chi nhánh"),
   jobTitle: z.string().optional(),

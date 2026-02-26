@@ -3,7 +3,10 @@ import React from "react";
 import { DataTable } from "@/components/common/DataTable";
 import { ConfirmModal } from "@/components/common/ConfirmModal";
 import { useListPage } from "@/hooks/useListPage";
-import { ATTRIBUTE_TABLE_HEADERS, ATTRIBUTE_ACTION_OPTIONS } from "@/constants/catalog/attribute.constants";
+import {
+  ATTRIBUTE_TABLE_HEADERS,
+  ATTRIBUTE_ACTION_OPTIONS,
+} from "@/constants/catalog/attribute.constants";
 import { TableControl } from "@/components/common/TableControl";
 import { attributeService } from "@/services/catalog/attribute.service";
 import { AttributeResponse } from "@/types/catalog/attribute.types";
@@ -11,13 +14,21 @@ import { AttributeTableRow } from "./AttributeTableRow";
 
 export default function AttributeList({ isTrash = false }: { isTrash?: boolean }) {
   const {
-    searchTerm, handleSearchChange,
-    actionFilter, setActionFilter,
-    data, loading, isFirstLoad,
-    isSelected, isSelectAll,
-    handleSelectAll, handleSelectItem,
-    isModalOpen, selectedItem,
-    handleOpenDeleteModal, handleCloseModal,
+    searchTerm,
+    handleSearchChange,
+    actionFilter,
+    setActionFilter,
+    data,
+    loading,
+    isFirstLoad,
+    isSelected,
+    isSelectAll,
+    handleSelectAll,
+    handleSelectItem,
+    isModalOpen,
+    selectedItem,
+    handleOpenDeleteModal,
+    handleCloseModal,
     handleConfirmDelete,
   } = useListPage<AttributeResponse, Parameters<typeof attributeService.getAll>[0]>({
     service: attributeService,
@@ -26,7 +37,8 @@ export default function AttributeList({ isTrash = false }: { isTrash?: boolean }
     bulkActionKey: "attributes",
   });
 
-  if (loading && isFirstLoad) return <div className="text-center py-10 text-[var(--color-text)]">Đang tải dữ liệu...</div>;
+  if (loading && isFirstLoad)
+    return <div className="text-center py-10 text-[var(--color-text)]">Đang tải dữ liệu...</div>;
 
   return (
     <>

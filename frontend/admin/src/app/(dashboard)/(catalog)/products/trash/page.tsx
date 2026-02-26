@@ -19,7 +19,7 @@ export default function ProductTrashPage() {
         items={[
           { label: "Tổng quan", href: "/" },
           { label: "Sản phẩm", href: "/products" },
-          { label: "Thùng rác" }
+          { label: "Thùng rác" },
         ]}
       />
 

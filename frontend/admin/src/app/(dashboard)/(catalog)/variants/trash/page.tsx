@@ -10,8 +10,17 @@ export const metadata: Metadata = {
 export default function VariantTrashPage() {
   return (
     <main>
-      <h1 className="mt-0 mb-[5px] font-[700] text-[32px] text-[var(--color-text)]">Thùng rác - Biến thể</h1>
-      <Breadcrumb className="mb-[30px] ml-[5px]" items={[{ label: "Tổng quan", href: "/" }, { label: "Biến thể", href: "/variants" }, { label: "Thùng rác" }]} />
+      <h1 className="mt-0 mb-[5px] font-[700] text-[32px] text-[var(--color-text)]">
+        Thùng rác - Biến thể
+      </h1>
+      <Breadcrumb
+        className="mb-[30px] ml-[5px]"
+        items={[
+          { label: "Tổng quan", href: "/" },
+          { label: "Biến thể", href: "/variants" },
+          { label: "Thùng rác" },
+        ]}
+      />
       <VariantList isTrash={true} />
     </main>
   );

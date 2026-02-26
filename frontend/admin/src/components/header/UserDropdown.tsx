@@ -50,13 +50,12 @@ export const UserDropdown = ({ userName, userRole, avatarSrc }: UserDropdownProp
   return (
     <>
       <div className="relative cursor-pointer" ref={dropdownRef}>
-        <div onClick={() => setShowDropdown(!showDropdown)} className="inline-flex items-center gap-[10px]">
+        <div
+          onClick={() => setShowDropdown(!showDropdown)}
+          className="inline-flex items-center gap-[10px]"
+        >
           <div className="w-[44px] h-[44px] rounded-[50%] overflow-hidden">
-            <img
-              src={avatarSrc}
-              alt="User Avatar"
-              className="w-full h-full object-cover"
-            />
+            <img src={avatarSrc} alt="User Avatar" className="w-full h-full object-cover" />
           </div>
           <div className="flex-1">
             <div className="font-[700] text-[14px] text-[#404040] mb-[3px]">{userName}</div>
@@ -66,15 +65,30 @@ export const UserDropdown = ({ userName, userRole, avatarSrc }: UserDropdownProp
 
         {showDropdown && (
           <div className="absolute right-0 mt-2 w-[200px] bg-white rounded-[8px] shadow-lg border border-[#E0E0E0] overflow-hidden z-10 transition-opacity duration-200 ease-in-out">
-            <Link href="/settings" onClick={() => setShowDropdown(false)} className="flex items-center gap-[10px] p-4 hover:bg-gray-50 border-b border-[#E0E0E0] cursor-pointer">
-              <FaGear className="text-[16px] text-gray-600" /> {/* Changed from FaUserGear to FaGear */}
+            <Link
+              href="/settings"
+              onClick={() => setShowDropdown(false)}
+              className="flex items-center gap-[10px] p-4 hover:bg-gray-50 border-b border-[#E0E0E0] cursor-pointer"
+            >
+              <FaGear className="text-[16px] text-gray-600" />{" "}
+              {/* Changed from FaUserGear to FaGear */}
               <span className="text-[14px] font-[600] text-[var(--color-text)]">Cài đặt chung</span>
             </Link>
-            <Link href="/profile" onClick={() => setShowDropdown(false)} className="flex items-center gap-[10px] p-4 hover:bg-gray-50 border-b border-[#E0E0E0] cursor-pointer">
-              <FaUserGear className="text-[16px] text-gray-600" /> {/* Changed from FaUser to FaUserGear */}
-              <span className="text-[14px] font-[600] text-[var(--color-text)]">Thông tin cá nhân</span>
+            <Link
+              href="/profile"
+              onClick={() => setShowDropdown(false)}
+              className="flex items-center gap-[10px] p-4 hover:bg-gray-50 border-b border-[#E0E0E0] cursor-pointer"
+            >
+              <FaUserGear className="text-[16px] text-gray-600" />{" "}
+              {/* Changed from FaUser to FaUserGear */}
+              <span className="text-[14px] font-[600] text-[var(--color-text)]">
+                Thông tin cá nhân
+              </span>
             </Link>
-            <button onClick={handleLogoutClick} className="flex items-center gap-[10px] p-4 w-full text-left text-[#EA0234] hover:bg-gray-50 cursor-pointer">
+            <button
+              onClick={handleLogoutClick}
+              className="flex items-center gap-[10px] p-4 w-full text-left text-[#EA0234] hover:bg-gray-50 cursor-pointer"
+            >
               <FaArrowRightFromBracket className="text-[16px]" />
               <span className="text-[14px] font-[600]">Đăng xuất</span>
             </button>

@@ -19,7 +19,7 @@ export default function CategoryTrashPage() {
         items={[
           { label: "Tổng quan", href: "/" },
           { label: "Danh mục", href: "/categories" },
-          { label: "Thùng rác" }
+          { label: "Thùng rác" },
         ]}
       />
 

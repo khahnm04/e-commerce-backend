@@ -12,30 +12,28 @@ import { createCrudService } from "../common/crud.service";
 
 const BASE_ENDPOINT = "/admin/customers";
 
-const baseService = createCrudService<
-  CustomerResponse,
-  CustomerCreationRequest,
-  CustomerFilterRequest,
-  CustomerBulkActionRequest,
-  CustomerCreationRequest,
-  CustomerUpdateRequest
->({
-  endpoint: BASE_ENDPOINT,
-  hasSlug: false,
-});
-
 export const customerService = {
-  ...baseService,
-  changePassword: (
-    id: number | string,
-    payload: { currentPassword: string; newPassword: string; confirmNewPassword: string }
-  ) =>
-    sendRequest<ApiResponse<void>>(
-      `${BASE_ENDPOINT}/${id}/change-password`,
-      { method: "PATCH", body: JSON.stringify(payload) }
-    ),
+  ...createCrudService<
+    CustomerResponse,
+    CustomerCreationRequest,
+    CustomerFilterRequest,
+    CustomerBulkActionRequest,
+    CustomerCreationRequest,
+    CustomerUpdateRequest
+  >({
+    endpoint: BASE_ENDPOINT,
+    hasSlug: false,
+  }),
   updateStatus: (id: number | string, payload: CustomerUpdateStatusRequest) =>
     sendRequest<ApiResponse<void>>(`${BASE_ENDPOINT}/${id}/status`, {
+      method: "PATCH",
+      body: JSON.stringify(payload),
+    }),
+  changePassword: (
+    id: number | string,
+    payload: { currentPassword: string; newPassword: string; confirmNewPassword: string },
+  ) =>
+    sendRequest<ApiResponse<void>>(`${BASE_ENDPOINT}/${id}/change-password`, {
       method: "PATCH",
       body: JSON.stringify(payload),
     }),

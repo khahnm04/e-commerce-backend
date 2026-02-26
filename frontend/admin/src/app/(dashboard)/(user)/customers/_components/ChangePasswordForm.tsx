@@ -61,12 +61,10 @@ export default function ChangePasswordForm({ customerId }: ChangePasswordFormPro
 
   return (
     <div className="bg-white border border-[#B9B9B9] rounded-[14px] md:p-[50px] p-[20px] mt-[30px]">
-      <h2 className="text-[20px] font-[700] text-[var(--color-text)] mb-[30px]">
-        Đổi mật khẩu
-      </h2>
+      <h2 className="text-[20px] font-[700] text-[var(--color-text)] mb-[30px]">Đổi mật khẩu</h2>
       <form
         className="grid md:grid-cols-2 grid-cols-1 gap-[30px]"
-        onSubmit={(e) => handleSubmit(onSubmit)(e).catch(() => { })}
+        onSubmit={(e) => handleSubmit(onSubmit)(e).catch(() => {})}
       >
         <div className="md:col-span-2">
           <FormInput

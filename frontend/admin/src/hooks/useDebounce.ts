@@ -7,15 +7,15 @@ import { useState, useEffect } from "react";
  * Cancels the previous timer on each new value change.
  */
 export function useDebounce<T>(value: T, delay: number = 500): T {
-    const [debouncedValue, setDebouncedValue] = useState<T>(value);
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
 
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setDebouncedValue(value);
-        }, delay);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
 
-        return () => clearTimeout(timer);
-    }, [value, delay]);
+    return () => clearTimeout(timer);
+  }, [value, delay]);
 
-    return debouncedValue;
+  return debouncedValue;
 }

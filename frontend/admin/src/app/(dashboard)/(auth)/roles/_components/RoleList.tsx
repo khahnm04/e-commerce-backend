@@ -4,7 +4,11 @@ import { DataTable } from "@/components/common/DataTable";
 import { ConfirmModal } from "@/components/common/ConfirmModal";
 import { Pagination } from "@/components/common/Pagination";
 import { useListPage } from "@/hooks/useListPage";
-import { ROLE_TABLE_HEADERS, ROLE_ACTION_OPTIONS, ROLE_TRASH_ACTION_OPTIONS } from "@/constants/auth/role.constants";
+import {
+  ROLE_TABLE_HEADERS,
+  ROLE_ACTION_OPTIONS,
+  ROLE_TRASH_ACTION_OPTIONS,
+} from "@/constants/auth/role.constants";
 import { TableControl } from "@/components/common/TableControl";
 import { roleService } from "@/services/auth/role.service";
 import { RoleResponse } from "@/types/auth/role.types";
@@ -12,15 +16,26 @@ import { RoleTableRow } from "./RoleTableRow";
 
 export default function RoleList({ isTrash = false }: { isTrash?: boolean }) {
   const {
-    searchTerm, handleSearchChange,
-    setPage, handlePageSizeChange,
-    actionFilter, setActionFilter,
-    data, meta, loading, isFirstLoad,
-    isSelected, isSelectAll,
-    handleSelectAll, handleSelectItem,
-    isModalOpen, selectedItem,
-    handleOpenDeleteModal, handleCloseModal,
-    handleConfirmDelete, handleRestore,
+    searchTerm,
+    handleSearchChange,
+    setPage,
+    handlePageSizeChange,
+    actionFilter,
+    setActionFilter,
+    data,
+    meta,
+    loading,
+    isFirstLoad,
+    isSelected,
+    isSelectAll,
+    handleSelectAll,
+    handleSelectItem,
+    isModalOpen,
+    selectedItem,
+    handleOpenDeleteModal,
+    handleCloseModal,
+    handleConfirmDelete,
+    handleRestore,
     handleApplyAction,
   } = useListPage<RoleResponse, Parameters<typeof roleService.getAll>[0]>({
     service: roleService,
@@ -29,7 +44,8 @@ export default function RoleList({ isTrash = false }: { isTrash?: boolean }) {
     bulkActionKey: "ids",
   });
 
-  if (loading && isFirstLoad) return <div className="text-center py-10 text-[var(--color-text)]">Đang tải dữ liệu...</div>;
+  if (loading && isFirstLoad)
+    return <div className="text-center py-10 text-[var(--color-text)]">Đang tải dữ liệu...</div>;
 
   return (
     <>
@@ -63,20 +79,17 @@ export default function RoleList({ isTrash = false }: { isTrash?: boolean }) {
         ))}
       </DataTable>
 
-      <Pagination
-        meta={meta}
-        onPageChange={setPage}
-        onPageSizeChange={handlePageSizeChange}
-      />
+      <Pagination meta={meta} onPageChange={setPage} onPageSizeChange={handlePageSizeChange} />
 
       <ConfirmModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
         onConfirm={handleConfirmDelete}
         title={isTrash ? "Xác nhận xóa vĩnh viễn?" : "Xác nhận đưa vào thùng rác?"}
-        message={isTrash
-          ? `Bạn có chắc chắn muốn xóa vĩnh viễn nhóm quyền "${selectedItem?.name}" không?`
-          : `Bạn có chắc chắn muốn đưa nhóm quyền "${selectedItem?.name}" vào thùng rác không?`
+        message={
+          isTrash
+            ? `Bạn có chắc chắn muốn xóa vĩnh viễn nhóm quyền "${selectedItem?.name}" không?`
+            : `Bạn có chắc chắn muốn đưa nhóm quyền "${selectedItem?.name}" vào thùng rác không?`
         }
       />
     </>

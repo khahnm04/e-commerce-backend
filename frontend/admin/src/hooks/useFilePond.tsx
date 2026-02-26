@@ -28,23 +28,17 @@ export const useFilePond = (options?: UseFilePondOptions) => {
 
   useEffect(() => {
     if (!isRegistered) {
-      FilePond.registerPlugin(
-        FilePondPluginImagePreview,
-        FilePondPluginFileValidateType
-      );
+      FilePond.registerPlugin(FilePondPluginImagePreview, FilePondPluginFileValidateType);
       isRegistered = true;
     }
 
-    const inputs = document.querySelectorAll<HTMLInputElement>(
-      "input.filepond"
-    );
+    const inputs = document.querySelectorAll<HTMLInputElement>("input.filepond");
 
-    const instances = Array.from(inputs).map(input =>
+    const instances = Array.from(inputs).map((input) =>
       FilePond.create(input, {
         allowMultiple: false,
         acceptedFileTypes: ["image/*"],
-        labelIdle:
-          '<span>+</span>',
+        labelIdle: "<span>+</span>",
         onaddfile: (_error, fileItem) => {
           if (!_error && fileItem?.file && onAddFileRef.current) {
             onAddFileRef.current(fileItem.file as File);
@@ -53,11 +47,11 @@ export const useFilePond = (options?: UseFilePondOptions) => {
         onremovefile: () => {
           onRemoveFileRef.current?.();
         },
-      })
+      }),
     );
 
     return () => {
-      instances.forEach(instance => instance.destroy());
+      instances.forEach((instance) => instance.destroy());
     };
   }, []);
 };

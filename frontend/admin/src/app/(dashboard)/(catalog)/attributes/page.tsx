@@ -16,13 +16,15 @@ export default function AttributePage() {
 
       <Breadcrumb
         className="mb-[30px] ml-[5px]"
-        items={[{
-          label: "Tổng quan",
-          href: "/"
-        },
-        {
-          label: "Thuộc tính"
-        }]}
+        items={[
+          {
+            label: "Tổng quan",
+            href: "/",
+          },
+          {
+            label: "Thuộc tính",
+          },
+        ]}
       />
 
       <AttributeList />

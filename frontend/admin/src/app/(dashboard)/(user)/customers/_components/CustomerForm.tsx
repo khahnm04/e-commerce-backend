@@ -112,7 +112,7 @@ export default function CustomerForm({ initialData, isReadOnly = false }: Custom
     <div className="bg-white border border-[#B9B9B9] rounded-[14px] md:p-[50px] p-[20px]">
       <form
         className="grid md:grid-cols-2 grid-cols-1 gap-[30px]"
-        onSubmit={(e) => handleSubmit(onSubmit as any)(e).catch(() => { })}
+        onSubmit={(e) => handleSubmit(onSubmit as any)(e).catch(() => {})}
       >
         {/* Row 1: Họ tên + Email */}
         <FormInput

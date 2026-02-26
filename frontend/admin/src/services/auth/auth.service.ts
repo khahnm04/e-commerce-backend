@@ -18,23 +18,17 @@ export interface LoginResponse {
 
 export const authApi = {
   login: async (body: LoginBody) => {
-    return sendRequest<LoginResponse>(
-      "/auth/login",
-      { method: "POST", body: JSON.stringify(body) }
-    );
+    return sendRequest<LoginResponse>("/auth/login", {
+      method: "POST",
+      body: JSON.stringify(body),
+    });
   },
 
   logout: async () => {
-    return sendRequest<{ success: boolean; message: string }>(
-      "/auth/logout",
-      { method: "POST" }
-    );
+    return sendRequest<{ success: boolean; message: string }>("/auth/logout", { method: "POST" });
   },
 
   refresh: async () => {
-    return sendRequest<{ success: boolean; message: string }>(
-      "/auth/refresh",
-      { method: "POST" }
-    );
+    return sendRequest<{ success: boolean; message: string }>("/auth/refresh", { method: "POST" });
   },
 };

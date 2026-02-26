@@ -24,7 +24,6 @@ export const TableAction = ({
 }: TableActionProps) => {
   return (
     <div className="flex flex-wrap gap-[20px] mb-[30px] items-stretch">
-
       {/* Hành động (Dropdown + Button Áp dụng) */}
       {children && (
         <div
@@ -60,10 +59,7 @@ export const TableAction = ({
             lg:px-[50px] px-[30px] lg:py-[12px] py-[10px] cursor-pointer
             min-h-[63px]"
         >
-          <Link
-            href={createLink}
-            className="font-[700] text-[14px] text-white whitespace-nowrap"
-          >
+          <Link href={createLink} className="font-[700] text-[14px] text-white whitespace-nowrap">
             + {createLabel}
           </Link>
         </div>

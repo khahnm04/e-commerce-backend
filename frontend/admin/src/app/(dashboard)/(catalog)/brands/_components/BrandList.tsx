@@ -18,18 +18,34 @@ import { BrandTableRow } from "./BrandTableRow";
 
 export default function BrandList({ isTrash = false }: { isTrash?: boolean }) {
   const {
-    searchTerm, handleSearchChange,
-    setPage, handlePageSizeChange,
-    filters, setFilter, dateRange, setStartDate, setEndDate,
+    searchTerm,
+    handleSearchChange,
+    setPage,
+    handlePageSizeChange,
+    filters,
+    setFilter,
+    dateRange,
+    setStartDate,
+    setEndDate,
     handleClearFilter,
-    actionFilter, setActionFilter,
-    data, meta, loading, isFirstLoad,
-    isSelected, isSelectAll,
-    handleSelectAll, handleSelectItem,
-    isModalOpen, selectedItem,
-    handleOpenDeleteModal, handleCloseModal,
-    handleConfirmDelete, handleRestore,
-    handleStatusChange, handleApplyAction,
+    actionFilter,
+    setActionFilter,
+    data,
+    meta,
+    loading,
+    isFirstLoad,
+    isSelected,
+    isSelectAll,
+    handleSelectAll,
+    handleSelectItem,
+    isModalOpen,
+    selectedItem,
+    handleOpenDeleteModal,
+    handleCloseModal,
+    handleConfirmDelete,
+    handleRestore,
+    handleStatusChange,
+    handleApplyAction,
   } = useListPage<BrandResponse, Parameters<typeof brandService.getAll>[0]>({
     service: brandService,
     isTrash,
@@ -37,27 +53,31 @@ export default function BrandList({ isTrash = false }: { isTrash?: boolean }) {
     bulkActionKey: "brands",
   });
 
-  const filterList: FilterConfig[] = useMemo(() => [
-    {
-      type: "select",
-      id: "status",
-      value: filters.status ?? "",
-      onChange: (val: string | number) => setFilter("status", val),
-      options: BRAND_STATUS_OPTIONS,
-      placeholder: "Trạng thái"
-    },
-    {
-      type: "date",
-      id: "date-range",
-      className: "!w-auto",
-      startValue: dateRange.startDate,
-      endValue: dateRange.endDate,
-      onStartChange: setStartDate,
-      onEndChange: setEndDate,
-    },
-  ], [filters, dateRange, setFilter, setStartDate, setEndDate]);
+  const filterList: FilterConfig[] = useMemo(
+    () => [
+      {
+        type: "select",
+        id: "status",
+        value: filters.status ?? "",
+        onChange: (val: string | number) => setFilter("status", val),
+        options: BRAND_STATUS_OPTIONS,
+        placeholder: "Trạng thái",
+      },
+      {
+        type: "date",
+        id: "date-range",
+        className: "!w-auto",
+        startValue: dateRange.startDate,
+        endValue: dateRange.endDate,
+        onStartChange: setStartDate,
+        onEndChange: setEndDate,
+      },
+    ],
+    [filters, dateRange, setFilter, setStartDate, setEndDate],
+  );
 
-  if (loading && isFirstLoad) return <div className="text-center py-10 text-[var(--color-text)]">Đang tải dữ liệu...</div>;
+  if (loading && isFirstLoad)
+    return <div className="text-center py-10 text-[var(--color-text)]">Đang tải dữ liệu...</div>;
 
   return (
     <>
@@ -94,20 +114,17 @@ export default function BrandList({ isTrash = false }: { isTrash?: boolean }) {
         ))}
       </DataTable>
 
-      <Pagination
-        meta={meta}
-        onPageChange={setPage}
-        onPageSizeChange={handlePageSizeChange}
-      />
+      <Pagination meta={meta} onPageChange={setPage} onPageSizeChange={handlePageSizeChange} />
 
       <ConfirmModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
         onConfirm={handleConfirmDelete}
         title={isTrash ? "Xác nhận xóa vĩnh viễn?" : "Xác nhận đưa vào thùng rác?"}
-        message={isTrash
-          ? `Bạn có chắc chắn muốn xóa vĩnh viễn nhãn hàng "${selectedItem?.name}" không?`
-          : `Bạn có chắc chắn muốn đưa nhãn hàng "${selectedItem?.name}" vào thùng rác không?`
+        message={
+          isTrash
+            ? `Bạn có chắc chắn muốn xóa vĩnh viễn nhãn hàng "${selectedItem?.name}" không?`
+            : `Bạn có chắc chắn muốn đưa nhãn hàng "${selectedItem?.name}" vào thùng rác không?`
         }
       />
     </>

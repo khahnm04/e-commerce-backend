@@ -4,13 +4,11 @@
  */
 
 /** Common bulk trash action: restore */
-export const TRASH_ACTION_OPTIONS = [
-    { id: "restore", name: "Khôi phục" },
-];
+export const TRASH_ACTION_OPTIONS = [{ id: "restore", name: "Khôi phục" }];
 
 interface Option {
-    id: string | number;
-    name: string;
+  id: string | number;
+  name: string;
 }
 
 /**
@@ -18,12 +16,12 @@ interface Option {
  * so they can be reused as form options (no "all" choice).
  */
 export function getFormOptions(options: Option[]): Option[] {
-    return options.filter(opt => opt.id !== "");
+  return options.filter((opt) => opt.id !== "");
 }
 
 /** Gender options for forms (without "Tất cả") */
 export const GENDER_FORM_OPTIONS = [
-    { id: "MALE", name: "Nam" },
-    { id: "FEMALE", name: "Nữ" },
-    { id: "OTHER", name: "Khác" },
+  { id: "MALE", name: "Nam" },
+  { id: "FEMALE", name: "Nữ" },
+  { id: "OTHER", name: "Khác" },
 ];

@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import React, { useEffect, useState, useMemo } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { toast } from "react-hot-toast";
@@ -53,8 +53,8 @@ export default function RoleForm({ initialData, isReadOnly = false }: RoleFormPr
         if (isEditMode && initialData) {
           // Map permission codes from RoleResponse to IDs
           const selectedIds = allPerms
-            .filter(p => (initialData.permissions as unknown as string[]).includes(p.code))
-            .map(p => p.id);
+            .filter((p) => (initialData.permissions as unknown as string[]).includes(p.code))
+            .map((p) => p.id);
           setValue("permissions", selectedIds);
         }
       } catch (error) {
@@ -66,8 +66,6 @@ export default function RoleForm({ initialData, isReadOnly = false }: RoleFormPr
     };
     fetchPermissions();
   }, [initialData, isEditMode, setValue]);
-
-
 
   const onSubmit = async (data: CreateRoleValues) => {
     try {
@@ -90,7 +88,6 @@ export default function RoleForm({ initialData, isReadOnly = false }: RoleFormPr
 
       router.push("/roles");
       router.refresh();
-
     } catch (error: unknown) {
       console.error(error);
       const err = error as Error;
@@ -163,7 +160,7 @@ export default function RoleForm({ initialData, isReadOnly = false }: RoleFormPr
 
           {!isReadOnly && (
             <FormButton type="submit" disabled={isLoading}>
-              {isLoading ? "Đang xử lý..." : (isEditMode ? "Cập nhật" : "Tạo mới")}
+              {isLoading ? "Đang xử lý..." : isEditMode ? "Cập nhật" : "Tạo mới"}
             </FormButton>
           )}
         </form>
@@ -171,5 +168,5 @@ export default function RoleForm({ initialData, isReadOnly = false }: RoleFormPr
         <FormBackLink href={pathname.includes("/trash") ? "/roles/trash" : "/roles"} />
       </div>
     </>
-  )
+  );
 }

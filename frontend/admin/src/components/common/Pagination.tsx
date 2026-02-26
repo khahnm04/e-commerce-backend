@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import { useMemo } from "react";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa6";
 import { CustomSelect } from "./CustomSelect";
@@ -19,10 +19,14 @@ const PAGE_SIZE_OPTIONS = [
 
 export const Pagination = ({ meta, onPageChange, onPageSizeChange }: PaginationProps) => {
   // Hooks must be called before any early returns (Rules of Hooks)
-  const pageOptions = useMemo(() => Array.from({ length: meta?.totalPages ?? 0 }, (_, i) => ({
-    id: i + 1,
-    name: `Trang ${i + 1}`,
-  })), [meta?.totalPages]);
+  const pageOptions = useMemo(
+    () =>
+      Array.from({ length: meta?.totalPages ?? 0 }, (_, i) => ({
+        id: i + 1,
+        name: `Trang ${i + 1}`,
+      })),
+    [meta?.totalPages],
+  );
 
   if (!meta || meta.totalElements === 0) return null;
 
@@ -58,7 +62,7 @@ export const Pagination = ({ meta, onPageChange, onPageSizeChange }: PaginationP
           disabled={isFirst}
           onClick={() => onPageChange?.(pageNo - 1)}
           className={`w-[36px] h-[36px] flex items-center justify-center rounded-[8px] border border-[#D5D5D5] text-[18px] font-[600] transition-colors
-            ${isFirst ? 'opacity-40 cursor-not-allowed bg-[#F5F5F5] hover:bg-[#EAEAEA]' : 'cursor-pointer bg-white hover:bg-[#F0F4FF]'}`}
+            ${isFirst ? "opacity-40 cursor-not-allowed bg-[#F5F5F5] hover:bg-[#EAEAEA]" : "cursor-pointer bg-white hover:bg-[#F0F4FF]"}`}
         >
           <FaChevronLeft />
         </button>
@@ -75,7 +79,7 @@ export const Pagination = ({ meta, onPageChange, onPageSizeChange }: PaginationP
           disabled={isLast}
           onClick={() => onPageChange?.(pageNo + 1)}
           className={`w-[36px] h-[36px] flex items-center justify-center rounded-[8px] border border-[#D5D5D5] text-[18px] font-[600] transition-colors
-            ${isLast ? 'opacity-40 cursor-not-allowed bg-[#F5F5F5] hover:bg-[#EAEAEA]' : 'cursor-pointer bg-white hover:bg-[#F0F4FF]'}`}
+            ${isLast ? "opacity-40 cursor-not-allowed bg-[#F5F5F5] hover:bg-[#EAEAEA]" : "cursor-pointer bg-white hover:bg-[#F0F4FF]"}`}
         >
           <FaChevronRight />
         </button>

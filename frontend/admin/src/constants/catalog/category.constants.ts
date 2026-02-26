@@ -1,12 +1,12 @@
 export const CATEGORY_TABLE_HEADERS = [
-  'Tên danh mục',
-  'Ảnh',
-  'Danh mục cha',
-  'Vị trí',
-  'Trạng thái',
-  'Tạo bởi',
-  'Cập nhật bởi',
-  'Hành động'
+  "Tên danh mục",
+  "Ảnh",
+  "Danh mục cha",
+  "Vị trí",
+  "Trạng thái",
+  "Tạo bởi",
+  "Cập nhật bởi",
+  "Hành động",
 ];
 
 export const CATEGORY_STATUS_OPTIONS = [

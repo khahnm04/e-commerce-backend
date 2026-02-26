@@ -19,7 +19,7 @@ import {
   FaUsers,
   FaWarehouse,
   FaBell,
-  FaShieldHalved
+  FaShieldHalved,
 } from "react-icons/fa6";
 import { TiMessages } from "react-icons/ti";
 import { SiderItem } from "./SiderMenu";
@@ -28,7 +28,7 @@ export const MAIN_MENU: SiderItem[] = [
   {
     name: "Tổng quan",
     link: "/",
-    icon: FaGaugeHigh
+    icon: FaGaugeHigh,
   },
   {
     name: "Sản phẩm",
@@ -37,39 +37,39 @@ export const MAIN_MENU: SiderItem[] = [
       {
         name: "Quản lý nhãn hàng",
         link: "/brands",
-        icon: FaIndustry
+        icon: FaIndustry,
       },
       {
         name: "Quản lý danh mục",
         link: "/categories",
-        icon: FaListUl
+        icon: FaListUl,
       },
       {
         name: "Quản lý sản phẩm",
         link: "/products",
-        icon: FaBoxOpen
+        icon: FaBoxOpen,
       },
       {
         name: "Biến thể sản phẩm",
         link: "/product-variants",
-        icon: FaBoxesStacked
+        icon: FaBoxesStacked,
       },
       {
         name: "Quản lý thuộc tính",
         link: "/attributes",
-        icon: FaTag
+        icon: FaTag,
       },
       {
         name: "Quản lý biến thể",
         link: "/variants",
-        icon: FaSliders
+        icon: FaSliders,
       },
       {
         name: "Giá trị biến thể",
         link: "/variant-values",
-        icon: FaPalette
+        icon: FaPalette,
       },
-    ]
+    ],
   },
   {
     name: "Kinh doanh",
@@ -78,14 +78,14 @@ export const MAIN_MENU: SiderItem[] = [
       {
         name: "Quản lý đơn hàng",
         link: "/orders",
-        icon: FaListCheck
+        icon: FaListCheck,
       },
       {
         name: "Mã giảm giá",
         link: "/coupons",
-        icon: FaGift
+        icon: FaGift,
       },
-    ]
+    ],
   },
   {
     name: "Kho vận",
@@ -94,9 +94,9 @@ export const MAIN_MENU: SiderItem[] = [
       {
         name: "Thông tin kho",
         link: "/inventories",
-        icon: FaWarehouse
+        icon: FaWarehouse,
       },
-    ]
+    ],
   },
   {
     name: "Nội dung",
@@ -105,44 +105,44 @@ export const MAIN_MENU: SiderItem[] = [
       {
         name: "Banner / Marketing",
         link: "/banners",
-        icon: FaBullhorn
+        icon: FaBullhorn,
       },
       {
         name: "Tin tức / Bài viết",
         link: "/news",
-        icon: FaNewspaper
+        icon: FaNewspaper,
       },
-    ]
+    ],
   },
   {
     name: "Chi nhánh",
     link: "/branches",
-    icon: FaStore
+    icon: FaStore,
   },
   {
     name: "Khách hàng",
     link: "/customers",
-    icon: FaUsers
+    icon: FaUsers,
   },
   {
     name: "Nhân viên",
     link: "/employees",
-    icon: FaUserGear
+    icon: FaUserGear,
   },
   {
     name: "Nhóm quyền",
     link: "/roles",
-    icon: FaShieldHalved
+    icon: FaShieldHalved,
   },
   {
     name: "Thông báo",
     link: "/notifications",
-    icon: FaBell
+    icon: FaBell,
   },
   {
     name: "Tin nhắn",
     link: "/messages",
-    icon: TiMessages
+    icon: TiMessages,
   },
 ];
 
@@ -150,17 +150,17 @@ export const BOTTOM_MENU: SiderItem[] = [
   {
     name: "Cài đặt chung",
     link: "/settings",
-    icon: FaGear
+    icon: FaGear,
   },
   {
     name: "Thông tin cá nhân",
     link: "/my-profile",
-    icon: FaUserGear
+    icon: FaUserGear,
   },
   {
     name: "Đăng xuất",
     link: "/logout",
     icon: FaPowerOff,
-    isLogout: true
-  }
+    isLogout: true,
+  },
 ];

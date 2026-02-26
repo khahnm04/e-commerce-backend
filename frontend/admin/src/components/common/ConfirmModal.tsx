@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import React from "react";
 import { createPortal } from "react-dom";
 
@@ -10,13 +10,7 @@ interface ConfirmModalProps {
   message: string;
 }
 
-export const ConfirmModal = ({
-  isOpen,
-  onClose,
-  onConfirm,
-  title,
-  message,
-}: ConfirmModalProps) => {
+export const ConfirmModal = ({ isOpen, onClose, onConfirm, title, message }: ConfirmModalProps) => {
   if (!isOpen) return null;
 
   return createPortal(
@@ -31,12 +25,8 @@ export const ConfirmModal = ({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="pt-[32px] px-[32px] text-left">
-          <h2 className="text-[20px] font-bold text-[#111827] mb-[8px] leading-[24px]">
-            {title}
-          </h2>
-          <p className="text-[16px] text-[#6B7280] leading-[20px] pr-[20px]">
-            {message}
-          </p>
+          <h2 className="text-[20px] font-bold text-[#111827] mb-[8px] leading-[24px]">{title}</h2>
+          <p className="text-[16px] text-[#6B7280] leading-[20px] pr-[20px]">{message}</p>
         </div>
         <div className="mt-auto pb-[24px] px-[32px] flex justify-end gap-[12px]">
           <button
@@ -62,6 +52,6 @@ export const ConfirmModal = ({
         </div>
       </div>
     </div>,
-    document.body
+    document.body,
   );
 };

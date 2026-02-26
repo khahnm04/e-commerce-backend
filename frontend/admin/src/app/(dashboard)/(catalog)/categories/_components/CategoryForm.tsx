@@ -48,8 +48,8 @@ export default function CategoryForm({ initialData, isReadOnly = false }: Catego
       try {
         const res = await categoryService.getAll({ size: 99 });
         const categories = (res.data ?? [])
-          .filter(c => !initialData || c.id !== initialData.id) // Exclude self
-          .map(c => ({ id: String(c.id), name: c.name }));
+          .filter((c) => !initialData || c.id !== initialData.id) // Exclude self
+          .map((c) => ({ id: String(c.id), name: c.name }));
         setParentOptions([{ id: "", name: "Không có (Danh mục gốc)" }, ...categories]);
       } catch {
         // ignore
@@ -131,7 +131,7 @@ export default function CategoryForm({ initialData, isReadOnly = false }: Catego
     <div className="bg-white border border-[#B9B9B9] rounded-[14px] md:p-[50px] p-[20px]">
       <form
         className="grid md:grid-cols-2 grid-cols-1 gap-[30px]"
-        onSubmit={(e) => handleSubmit(onSubmit as any)(e).catch(() => { })}
+        onSubmit={(e) => handleSubmit(onSubmit as any)(e).catch(() => {})}
       >
         <FormInput
           label="Tên danh mục"

@@ -10,7 +10,7 @@ import {
   CUSTOMER_STATUS_OPTIONS,
   CUSTOMER_ACTION_OPTIONS,
   CUSTOMER_TRASH_ACTION_OPTIONS,
-  GENDER_OPTIONS
+  GENDER_OPTIONS,
 } from "@/constants/user/customer.constants";
 import { TableControl } from "@/components/common/TableControl";
 import { customerService } from "@/services/user/customer.service";
@@ -19,7 +19,13 @@ import { CustomerTableRow } from "./CustomerTableRow";
 
 export default function CustomerList({ isTrash = false }: { isTrash?: boolean }) {
   const buildFilterParams = useCallback(
-    ({ keyword, page, size, filters, dateRange }: Parameters<NonNullable<Parameters<typeof useListPage>[0]["buildFilterParams"]>>[0]) => ({
+    ({
+      keyword,
+      page,
+      size,
+      filters,
+      dateRange,
+    }: Parameters<NonNullable<Parameters<typeof useListPage>[0]["buildFilterParams"]>>[0]) => ({
       keyword,
       page,
       size,
@@ -28,22 +34,38 @@ export default function CustomerList({ isTrash = false }: { isTrash?: boolean })
       startDate: dateRange.startDate || undefined,
       endDate: dateRange.endDate || undefined,
     }),
-    []
+    [],
   );
 
   const {
-    searchTerm, handleSearchChange,
-    setPage, handlePageSizeChange,
-    filters, setFilter, dateRange, setStartDate, setEndDate,
+    searchTerm,
+    handleSearchChange,
+    setPage,
+    handlePageSizeChange,
+    filters,
+    setFilter,
+    dateRange,
+    setStartDate,
+    setEndDate,
     handleClearFilter,
-    actionFilter, setActionFilter,
-    data, meta, loading, isFirstLoad,
-    isSelected, isSelectAll,
-    handleSelectAll, handleSelectItem,
-    isModalOpen, selectedItem,
-    handleOpenDeleteModal, handleCloseModal,
-    handleConfirmDelete, handleRestore,
-    handleStatusChange, handleApplyAction,
+    actionFilter,
+    setActionFilter,
+    data,
+    meta,
+    loading,
+    isFirstLoad,
+    isSelected,
+    isSelectAll,
+    handleSelectAll,
+    handleSelectItem,
+    isModalOpen,
+    selectedItem,
+    handleOpenDeleteModal,
+    handleCloseModal,
+    handleConfirmDelete,
+    handleRestore,
+    handleStatusChange,
+    handleApplyAction,
   } = useListPage<CustomerResponse, Parameters<typeof customerService.getAll>[0]>({
     service: customerService,
     isTrash,
@@ -52,35 +74,39 @@ export default function CustomerList({ isTrash = false }: { isTrash?: boolean })
     buildFilterParams,
   });
 
-  const filterList: FilterConfig[] = useMemo(() => [
-    {
-      type: "select",
-      id: "status",
-      value: filters.status ?? "",
-      onChange: (val: string | number) => setFilter("status", val),
-      options: CUSTOMER_STATUS_OPTIONS,
-      placeholder: "Trạng thái"
-    },
-    {
-      type: "select",
-      id: "gender",
-      value: filters.gender ?? "",
-      onChange: (val: string | number) => setFilter("gender", val),
-      options: GENDER_OPTIONS,
-      placeholder: "Giới tính"
-    },
-    {
-      type: "date",
-      id: "date-range",
-      className: "!w-auto",
-      startValue: dateRange.startDate,
-      endValue: dateRange.endDate,
-      onStartChange: setStartDate,
-      onEndChange: setEndDate,
-    },
-  ], [filters, dateRange, setFilter, setStartDate, setEndDate]);
+  const filterList: FilterConfig[] = useMemo(
+    () => [
+      {
+        type: "select",
+        id: "status",
+        value: filters.status ?? "",
+        onChange: (val: string | number) => setFilter("status", val),
+        options: CUSTOMER_STATUS_OPTIONS,
+        placeholder: "Trạng thái",
+      },
+      {
+        type: "select",
+        id: "gender",
+        value: filters.gender ?? "",
+        onChange: (val: string | number) => setFilter("gender", val),
+        options: GENDER_OPTIONS,
+        placeholder: "Giới tính",
+      },
+      {
+        type: "date",
+        id: "date-range",
+        className: "!w-auto",
+        startValue: dateRange.startDate,
+        endValue: dateRange.endDate,
+        onStartChange: setStartDate,
+        onEndChange: setEndDate,
+      },
+    ],
+    [filters, dateRange, setFilter, setStartDate, setEndDate],
+  );
 
-  if (loading && isFirstLoad) return <div className="text-center py-10 text-[var(--color-text)]">Đang tải dữ liệu...</div>;
+  if (loading && isFirstLoad)
+    return <div className="text-center py-10 text-[var(--color-text)]">Đang tải dữ liệu...</div>;
 
   return (
     <>
@@ -117,20 +143,17 @@ export default function CustomerList({ isTrash = false }: { isTrash?: boolean })
         ))}
       </DataTable>
 
-      <Pagination
-        meta={meta}
-        onPageChange={setPage}
-        onPageSizeChange={handlePageSizeChange}
-      />
+      <Pagination meta={meta} onPageChange={setPage} onPageSizeChange={handlePageSizeChange} />
 
       <ConfirmModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
         onConfirm={handleConfirmDelete}
         title={isTrash ? "Xác nhận xóa vĩnh viễn?" : "Xác nhận đưa vào thùng rác?"}
-        message={isTrash
-          ? `Bạn có chắc chắn muốn xóa vĩnh viễn khách hàng "${selectedItem?.fullName}" không?`
-          : `Bạn có chắc chắn muốn đưa khách hàng "${selectedItem?.fullName}" vào thùng rác không?`
+        message={
+          isTrash
+            ? `Bạn có chắc chắn muốn xóa vĩnh viễn khách hàng "${selectedItem?.fullName}" không?`
+            : `Bạn có chắc chắn muốn đưa khách hàng "${selectedItem?.fullName}" vào thùng rác không?`
         }
       />
     </>

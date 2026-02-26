@@ -9,7 +9,7 @@ import { FormButton } from "@/components/form/FormButton";
 import { FormBackLink } from "@/components/form/FormBackLink";
 import { FormControlledSelect } from "@/components/form/FormControlledSelect";
 import { FormImageField } from "@/components/form/FormImageField";
-import { RoleSelectionField } from "@/components/form/RoleSelectionField";
+import { CheckboxGroupField } from "@/components/form/CheckboxGroupField";
 import {
   CreateEmployeeSchema,
   UpdateEmployeeSchema,
@@ -62,9 +62,7 @@ export default function EmployeeForm({ initialData, isReadOnly = false }: Employ
   // Compute default selected role IDs based on initialData.roles (names) matched to allRoles
   const getDefaultRoleIds = (): number[] => {
     if (!initialData?.roles || allRoles.length === 0) return [];
-    return allRoles
-      .filter(r => initialData.roles.includes(r.name))
-      .map(r => r.id);
+    return allRoles.filter((r) => initialData.roles.includes(r.name)).map((r) => r.id);
   };
 
   const {
@@ -159,7 +157,7 @@ export default function EmployeeForm({ initialData, isReadOnly = false }: Employ
     <div className="bg-white border border-[#B9B9B9] rounded-[14px] md:p-[50px] p-[20px]">
       <form
         className="grid md:grid-cols-2 grid-cols-1 gap-[30px]"
-        onSubmit={(e) => handleSubmit(onSubmit as any)(e).catch(() => { })}
+        onSubmit={(e) => handleSubmit(onSubmit as any)(e).catch(() => {})}
       >
         {/* Row 1: Họ tên + Mã NV */}
         <FormInput
@@ -234,12 +232,15 @@ export default function EmployeeForm({ initialData, isReadOnly = false }: Employ
         />
 
         {/* Row 5: Role selection - full width */}
-        <RoleSelectionField
+        <CheckboxGroupField
           control={control}
           name="roles"
-          allRoles={allRoles}
+          label="Nhóm quyền"
+          items={allRoles}
           isReadOnly={isReadOnly}
-          initialRoleNames={initialData?.roles}
+          readOnlyLabels={initialData?.roles}
+          emptyReadOnlyText="Chưa gán quyền"
+          loadingText="Đang tải danh sách quyền..."
           errors={errors}
         />
 

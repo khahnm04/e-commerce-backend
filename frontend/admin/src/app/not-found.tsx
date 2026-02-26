@@ -1,8 +1,8 @@
-"use client"
-import Link from 'next/link'
-import { useState } from 'react'
-import { Header } from '@/components/header/Header'
-import { Sider } from '@/components/sider/Sider'
+"use client";
+import Link from "next/link";
+import { useState } from "react";
+import { Header } from "@/components/header/Header";
+import { Sider } from "@/components/sider/Sider";
 
 export default function NotFound() {
   const [activeSider, setActiveSider] = useState(false);
@@ -10,20 +10,15 @@ export default function NotFound() {
   return (
     <>
       {/* Header */}
-      <Header
-        activeSider={activeSider}
-        setActiveSider={setActiveSider}
-      />
+      <Header activeSider={activeSider} setActiveSider={setActiveSider} />
       {/* End Header */}
 
       {/* Sider */}
-      <Sider
-        activeSider={activeSider}
-        setActiveSider={setActiveSider}
-      />
+      <Sider activeSider={activeSider} setActiveSider={setActiveSider} />
       {/* End Sider */}
 
-      <main className="
+      <main
+        className="
         absolute 
         top-[70px] 
         left-0 
@@ -35,8 +30,10 @@ export default function NotFound() {
         max-[575.98px]:px-[15px]
         lg:left-[240px]
         lg:w-[calc(100%-240px)]
-      ">
-        <div className="
+      "
+      >
+        <div
+          className="
           border border-[#B9B9B9] 
           bg-white 
           rounded-[14px] 
@@ -45,7 +42,8 @@ export default function NotFound() {
           p-[40px_30px]
 
           md:p-[80px]
-        ">
+        "
+        >
           {/* Image Section */}
           <img
             src="/assets/images/error-404.svg"
@@ -63,7 +61,8 @@ export default function NotFound() {
           />
 
           {/* Title Section */}
-          <h1 className="
+          <h1
+            className="
             font-bold 
             text-[var(--color-text)] 
             mt-0
@@ -73,7 +72,8 @@ export default function NotFound() {
 
             md:text-[32px]
             md:mb-[30px]
-          ">
+          "
+          >
             Trang này không tồn tại...
           </h1>
 
@@ -103,5 +103,5 @@ export default function NotFound() {
         </div>
       </main>
     </>
-  )
+  );
 }

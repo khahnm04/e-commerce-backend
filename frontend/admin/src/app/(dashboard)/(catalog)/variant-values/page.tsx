@@ -10,8 +10,13 @@ export const metadata: Metadata = {
 export default function VariantValuePage() {
   return (
     <main>
-      <h1 className="mt-0 mb-[5px] font-[700] text-[32px] text-[var(--color-text)]">Quản lý giá trị biến thể</h1>
-      <Breadcrumb className="mb-[30px] ml-[5px]" items={[{ label: "Tổng quan", href: "/" }, { label: "Giá trị biến thể" }]} />
+      <h1 className="mt-0 mb-[5px] font-[700] text-[32px] text-[var(--color-text)]">
+        Quản lý giá trị biến thể
+      </h1>
+      <Breadcrumb
+        className="mb-[30px] ml-[5px]"
+        items={[{ label: "Tổng quan", href: "/" }, { label: "Giá trị biến thể" }]}
+      />
       <VariantValueList />
     </main>
   );

@@ -21,10 +21,7 @@ export const phoneLoginSchema = z.object({
 });
 
 export const emailLoginSchema = z.object({
-  accountName: z
-    .string()
-    .min(1, "Vui lòng nhập email")
-    .email("Email không đúng định dạng"),
+  accountName: z.string().min(1, "Vui lòng nhập email").email("Email không đúng định dạng"),
   password: passwordSchema,
 });
 

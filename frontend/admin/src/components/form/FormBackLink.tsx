@@ -7,11 +7,7 @@ interface FormBackLinkProps {
   className?: string;
 }
 
-export const FormBackLink = ({
-  href,
-  children,
-  className = "",
-}: FormBackLinkProps) => {
+export const FormBackLink = ({ href, children, className = "" }: FormBackLinkProps) => {
   return (
     <div className={`inner-back text-center mt-[30px] ${className}`}>
       <Link

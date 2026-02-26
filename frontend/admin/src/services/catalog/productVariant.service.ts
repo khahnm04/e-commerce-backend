@@ -1,11 +1,11 @@
-import { sendRequest } from "@/lib/api-client";
-import { ApiResponse } from "@/types/common/api.types";
 import {
   ProductVariantResponse,
   ProductVariantRequest,
   ProductVariantFilterRequest,
   ProductVariantBulkActionRequest,
 } from "@/types/catalog/product-variant.types";
+import { sendRequest } from "@/lib/api-client";
+import { ApiResponse } from "@/types/common/api.types";
 import { createCrudService } from "../common/crud.service";
 
 const BASE_ENDPOINT = "/admin/product-variants";

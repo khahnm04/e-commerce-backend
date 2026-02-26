@@ -30,9 +30,10 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
             className={`
               bg-[#F5F6FA] border rounded-[4px] px-[22px] font-[500] text-[14px] text-[var(--color-text)] w-full h-[52px] focus:outline-none 
               ${isPasswordType ? "pr-[50px]" : ""}
-              ${error
-                ? "border-red-500 focus:border-red-500"
-                : "border-[#D5D5D5] focus:border-[var(--color-primary)]"
+              ${
+                error
+                  ? "border-red-500 focus:border-red-500"
+                  : "border-[#D5D5D5] focus:border-[var(--color-primary)]"
               }
             `}
             {...props}
@@ -53,13 +54,11 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
         </div>
 
         {error && (
-          <span className="text-red-500 text-[13px] mt-[6px] block font-medium">
-            {error}
-          </span>
+          <span className="text-red-500 text-[13px] mt-[6px] block font-medium">{error}</span>
         )}
       </div>
     );
-  }
+  },
 );
 
 FormInput.displayName = "FormInput";

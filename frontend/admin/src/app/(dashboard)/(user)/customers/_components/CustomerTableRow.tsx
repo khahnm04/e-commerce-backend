@@ -27,47 +27,32 @@ export const CustomerTableRow = ({
   onRestoreClick,
   onStatusChange,
   isSelected,
-  onSelect
+  onSelect,
 }: CustomerTableRowProps) => {
-
-  const updateStatusOptions = CUSTOMER_STATUS_OPTIONS.filter(opt => opt.id !== "");
+  const updateStatusOptions = CUSTOMER_STATUS_OPTIONS.filter((opt) => opt.id !== "");
 
   return (
     <tr>
       <TableCell>
-        <TableCheckbox
-          checked={isSelected}
-          onChange={onSelect}
-        />
+        <TableCheckbox checked={isSelected} onChange={onSelect} />
       </TableCell>
 
-      <TableCell>
-        {item.fullName}
-      </TableCell>
+      <TableCell>{item.fullName}</TableCell>
 
       <TableCell>
-        <TableImage
-          src={item.avatarUrl}
-          alt={item.fullName}
-        />
+        <TableImage src={item.avatarUrl} alt={item.fullName} />
       </TableCell>
 
-      <TableCell>
-        {item.phoneNumber}
-      </TableCell>
+      <TableCell>{item.phoneNumber}</TableCell>
 
-      <TableCell>
-        {item.email}
-      </TableCell>
+      <TableCell>{item.email}</TableCell>
 
-      <TableCell>
-        {getGenderLabel(item.gender)}
-      </TableCell>
+      <TableCell>{getGenderLabel(item.gender)}</TableCell>
 
       <TableCell>
         {isTrash ? (
           <span className={`font-[600] ${getStatusColorClass(item.status)}`}>
-            {updateStatusOptions.find(opt => opt.id === item.status)?.name || item.status}
+            {updateStatusOptions.find((opt) => opt.id === item.status)?.name || item.status}
           </span>
         ) : (
           <div className="flex justify-center items-center ml-[20px]">
@@ -87,17 +72,11 @@ export const CustomerTableRow = ({
       </TableCell>
 
       <TableCell>
-        <UserTimestamp
-          user={String(item.createdBy)}
-          date={formatDateTime(item.createdAt)}
-        />
+        <UserTimestamp user={String(item.createdBy)} date={formatDateTime(item.createdAt)} />
       </TableCell>
 
       <TableCell>
-        <UserTimestamp
-          user={String(item.updatedBy)}
-          date={formatDateTime(item.updatedAt)}
-        />
+        <UserTimestamp user={String(item.updatedBy)} date={formatDateTime(item.updatedAt)} />
       </TableCell>
 
       <td
@@ -113,10 +92,7 @@ export const CustomerTableRow = ({
             onRestore={onRestoreClick}
           />
         ) : (
-          <ActionGroup
-            editLink={`/customers/${item.id}`}
-            onDelete={onDeleteClick || (() => { })}
-          />
+          <ActionGroup editLink={`/customers/${item.id}`} onDelete={onDeleteClick || (() => {})} />
         )}
       </td>
     </tr>

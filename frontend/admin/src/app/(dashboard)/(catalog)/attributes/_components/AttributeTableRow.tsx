@@ -31,17 +31,11 @@ export const AttributeTableRow = ({
     <TableCell>{item.description || "—"}</TableCell>
 
     <TableCell>
-      <UserTimestamp
-        user={String(item.createdBy)}
-        date={item.createdAt}
-      />
+      <UserTimestamp user={String(item.createdBy)} date={item.createdAt} />
     </TableCell>
 
     <TableCell>
-      <UserTimestamp
-        user={String(item.updatedBy)}
-        date={item.updatedAt}
-      />
+      <UserTimestamp user={String(item.updatedBy)} date={item.updatedAt} />
     </TableCell>
 
     <td
@@ -52,8 +46,8 @@ export const AttributeTableRow = ({
       <ActionGroup
         isTrash={isTrash}
         editLink={`/attributes/${item.id}`}
-        onDelete={onDeleteClick || (() => { })}
-        onRestore={() => { }}
+        onDelete={onDeleteClick || (() => {})}
+        onRestore={() => {}}
       />
     </td>
   </tr>

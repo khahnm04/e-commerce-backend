@@ -1,10 +1,18 @@
 /* eslint-disable jsx-a11y/alt-text */
 /* eslint-disable @next/next/no-img-element */
 
-const TABLE_HEADERS = ["Mã", "Thông tin khách", "Danh sách tour", "Thanh toán", "Trạng thái", "Ngày đặt"];
+const TABLE_HEADERS = [
+  "Mã",
+  "Thông tin khách",
+  "Danh sách tour",
+  "Thanh toán",
+  "Trạng thái",
+  "Ngày đặt",
+];
 
 const getHeaderClass = (index: number, total: number) => {
-  const baseClass = "bg-[#F1F4F9] px-[24px] py-[14px] font-bold text-[14px] text-[var(--color-text)]";
+  const baseClass =
+    "bg-[#F1F4F9] px-[24px] py-[14px] font-bold text-[14px] text-[var(--color-text)]";
   const firstClass = index === 0 ? "rounded-l-[12px] text-left" : "text-left";
   const lastClass = index === total - 1 ? "rounded-r-[12px] text-right" : "";
   return `${baseClass} ${firstClass} ${lastClass}`;
@@ -21,10 +29,7 @@ export const RecentOrdersTable = () => {
           <thead>
             <tr>
               {TABLE_HEADERS.map((item, index) => (
-                <th
-                  key={index}
-                  className={getHeaderClass(index, TABLE_HEADERS.length)}
-                >
+                <th key={index} className={getHeaderClass(index, TABLE_HEADERS.length)}>
                   {item}
                 </th>
               ))}
@@ -33,9 +38,7 @@ export const RecentOrdersTable = () => {
           <tbody>
             <tr>
               <td className="px-[24px] py-[10px] text-left border-b border-[#97979751] font-[600] text-[14px] text-[var(--color-text)]">
-                <div className="font-[700] text-[14px] text-[var(--color-primary)]">
-                  OD000001
-                </div>
+                <div className="font-[700] text-[14px] text-[var(--color-primary)]">OD000001</div>
               </td>
               <td className="px-[24px] py-[10px] text-left border-b border-[#97979751] font-[600] text-[14px] text-[var(--color-text)]">
                 <div>Họ tên: Lê Văn A</div>
@@ -49,7 +52,9 @@ export const RecentOrdersTable = () => {
                       <img src="assets/images/tour-1.jpg" className="w-full h-full object-cover" />
                     </div>
                     <div className="">
-                      <div className="font-[600] text-[14px] text-[var(--color-text)] mb-[3px]">Tour Hạ Long</div>
+                      <div className="font-[600] text-[14px] text-[var(--color-text)] mb-[3px]">
+                        Tour Hạ Long
+                      </div>
                       <div className="flex flex-col gap-[3px] font-[600] text-[12px] text-[var(--color-text)]">
                         <div>Người lớn: 3 x 1.500.000đ</div>
                         <div>Trẻ em: 2 x 1.300.000đ</div>
@@ -62,7 +67,9 @@ export const RecentOrdersTable = () => {
                       <img src="assets/images/tour-1.jpg" className="w-full h-full object-cover" />
                     </div>
                     <div className="">
-                      <div className="font-[600] text-[14px] text-[var(--color-text)] mb-[3px]">Tour Hạ Long</div>
+                      <div className="font-[600] text-[14px] text-[var(--color-text)] mb-[3px]">
+                        Tour Hạ Long
+                      </div>
                       <div className="flex flex-col gap-[3px] font-[600] text-[12px] text-[var(--color-text)]">
                         <div>Người lớn: 3 x 1.500.000đ</div>
                         <div>Trẻ em: 2 x 1.300.000đ</div>

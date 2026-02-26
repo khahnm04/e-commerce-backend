@@ -1,15 +1,12 @@
-import { ReactNode } from "react"
-import { FaFilter, FaRotateLeft } from "react-icons/fa6"
+import { ReactNode } from "react";
+import { FaFilter, FaRotateLeft } from "react-icons/fa6";
 
 interface TableFilterProps {
-  children?: ReactNode
-  onClearFilter?: () => void
+  children?: ReactNode;
+  onClearFilter?: () => void;
 }
 
-export const TableFilter = ({
-  children,
-  onClearFilter,
-}: TableFilterProps) => {
+export const TableFilter = ({ children, onClearFilter }: TableFilterProps) => {
   return (
     <>
       <div
@@ -37,8 +34,8 @@ export const TableFilter = ({
         </div>
       </div>
     </>
-  )
-}
+  );
+};
 
 export const FilterItem = ({
   children,

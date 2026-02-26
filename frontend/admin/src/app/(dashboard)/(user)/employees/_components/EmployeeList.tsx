@@ -30,12 +30,20 @@ const mapBranchToOption = (item: BranchSimple) => ({
 
 export default function EmployeeList({ isTrash = false }: { isTrash?: boolean }) {
   const branchOptions = useSelectOptions<BranchSimple>({
-    fetchFn: branchService.getAll as (params: Record<string, unknown>) => ReturnType<typeof branchService.getAll>,
+    fetchFn: branchService.getAll as (
+      params: Record<string, unknown>,
+    ) => ReturnType<typeof branchService.getAll>,
     mapFn: mapBranchToOption,
   });
 
   const buildFilterParams = useCallback(
-    ({ keyword, page, size, filters, dateRange }: Parameters<NonNullable<Parameters<typeof useListPage>[0]["buildFilterParams"]>>[0]) => ({
+    ({
+      keyword,
+      page,
+      size,
+      filters,
+      dateRange,
+    }: Parameters<NonNullable<Parameters<typeof useListPage>[0]["buildFilterParams"]>>[0]) => ({
       keyword,
       page,
       size,
@@ -44,22 +52,38 @@ export default function EmployeeList({ isTrash = false }: { isTrash?: boolean })
       startDate: dateRange.startDate || undefined,
       endDate: dateRange.endDate || undefined,
     }),
-    []
+    [],
   );
 
   const {
-    searchTerm, handleSearchChange,
-    setPage, handlePageSizeChange,
-    filters, setFilter, dateRange, setStartDate, setEndDate,
+    searchTerm,
+    handleSearchChange,
+    setPage,
+    handlePageSizeChange,
+    filters,
+    setFilter,
+    dateRange,
+    setStartDate,
+    setEndDate,
     handleClearFilter,
-    actionFilter, setActionFilter,
-    data, meta, loading, isFirstLoad,
-    isSelected, isSelectAll,
-    handleSelectAll, handleSelectItem,
-    isModalOpen, selectedItem,
-    handleOpenDeleteModal, handleCloseModal,
-    handleConfirmDelete, handleRestore,
-    handleStatusChange, handleApplyAction,
+    actionFilter,
+    setActionFilter,
+    data,
+    meta,
+    loading,
+    isFirstLoad,
+    isSelected,
+    isSelectAll,
+    handleSelectAll,
+    handleSelectItem,
+    isModalOpen,
+    selectedItem,
+    handleOpenDeleteModal,
+    handleCloseModal,
+    handleConfirmDelete,
+    handleRestore,
+    handleStatusChange,
+    handleApplyAction,
   } = useListPage<EmployeeResponse, Parameters<typeof employeeService.getAll>[0]>({
     service: employeeService,
     isTrash,
@@ -68,35 +92,39 @@ export default function EmployeeList({ isTrash = false }: { isTrash?: boolean })
     buildFilterParams,
   });
 
-  const filterList: FilterConfig[] = useMemo(() => [
-    {
-      type: "select",
-      id: "status",
-      value: filters.status ?? "",
-      onChange: (val: string | number) => setFilter("status", val),
-      options: EMPLOYEE_STATUS_OPTIONS,
-      placeholder: "Trạng thái"
-    },
-    {
-      type: "select",
-      id: "branch",
-      value: filters.branchId ?? "",
-      onChange: (val: string | number) => setFilter("branchId", val),
-      options: branchOptions,
-      placeholder: "Chi nhánh"
-    },
-    {
-      type: "date",
-      id: "date-range",
-      className: "!w-auto",
-      startValue: dateRange.startDate,
-      endValue: dateRange.endDate,
-      onStartChange: setStartDate,
-      onEndChange: setEndDate,
-    },
-  ], [filters, branchOptions, dateRange, setFilter, setStartDate, setEndDate]);
+  const filterList: FilterConfig[] = useMemo(
+    () => [
+      {
+        type: "select",
+        id: "status",
+        value: filters.status ?? "",
+        onChange: (val: string | number) => setFilter("status", val),
+        options: EMPLOYEE_STATUS_OPTIONS,
+        placeholder: "Trạng thái",
+      },
+      {
+        type: "select",
+        id: "branch",
+        value: filters.branchId ?? "",
+        onChange: (val: string | number) => setFilter("branchId", val),
+        options: branchOptions,
+        placeholder: "Chi nhánh",
+      },
+      {
+        type: "date",
+        id: "date-range",
+        className: "!w-auto",
+        startValue: dateRange.startDate,
+        endValue: dateRange.endDate,
+        onStartChange: setStartDate,
+        onEndChange: setEndDate,
+      },
+    ],
+    [filters, branchOptions, dateRange, setFilter, setStartDate, setEndDate],
+  );
 
-  if (loading && isFirstLoad) return <div className="text-center py-10 text-[var(--color-text)]">Đang tải dữ liệu...</div>;
+  if (loading && isFirstLoad)
+    return <div className="text-center py-10 text-[var(--color-text)]">Đang tải dữ liệu...</div>;
 
   return (
     <>
@@ -133,20 +161,17 @@ export default function EmployeeList({ isTrash = false }: { isTrash?: boolean })
         ))}
       </DataTable>
 
-      <Pagination
-        meta={meta}
-        onPageChange={setPage}
-        onPageSizeChange={handlePageSizeChange}
-      />
+      <Pagination meta={meta} onPageChange={setPage} onPageSizeChange={handlePageSizeChange} />
 
       <ConfirmModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
         onConfirm={handleConfirmDelete}
         title={isTrash ? "Xác nhận xóa vĩnh viễn?" : "Xác nhận đưa vào thùng rác?"}
-        message={isTrash
-          ? `Bạn có chắc chắn muốn xóa vĩnh viễn nhân viên "${selectedItem?.fullName}" không?`
-          : `Bạn có chắc chắn muốn đưa nhân viên "${selectedItem?.fullName}" vào thùng rác không?`
+        message={
+          isTrash
+            ? `Bạn có chắc chắn muốn xóa vĩnh viễn nhân viên "${selectedItem?.fullName}" không?`
+            : `Bạn có chắc chắn muốn đưa nhân viên "${selectedItem?.fullName}" vào thùng rác không?`
         }
       />
     </>

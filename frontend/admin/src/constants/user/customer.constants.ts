@@ -1,36 +1,36 @@
 export const CUSTOMER_TABLE_HEADERS = [
-    'Họ tên',
-    'Ảnh đại diện',
-    'Số điện thoại',
-    'Email',
-    'Giới tính',
-    'Trạng thái',
-    'Tạo bởi',
-    'Cập nhật bởi',
-    'Hành động'
+  "Họ tên",
+  "Ảnh đại diện",
+  "Số điện thoại",
+  "Email",
+  "Giới tính",
+  "Trạng thái",
+  "Tạo bởi",
+  "Cập nhật bởi",
+  "Hành động",
 ];
 
 export const CUSTOMER_STATUS_OPTIONS = [
-    { id: "", name: "Tất cả" },
-    { id: "ACTIVE", name: "Hoạt động" },
-    { id: "INACTIVE", name: "Tạm dừng" },
-    { id: "BANNED", name: "Bị cấm" },
-    { id: "LOCKED", name: "Bị khóa" },
+  { id: "", name: "Tất cả" },
+  { id: "ACTIVE", name: "Hoạt động" },
+  { id: "INACTIVE", name: "Tạm dừng" },
+  { id: "BANNED", name: "Bị cấm" },
+  { id: "LOCKED", name: "Bị khóa" },
 ];
 
 export const CUSTOMER_ACTION_OPTIONS = [
-    { id: "ACTIVE", name: "Hoạt động" },
-    { id: "INACTIVE", name: "Tạm dừng" },
-    { id: "BANNED", name: "Bị cấm" },
-    { id: "LOCKED", name: "Bị khóa" },
-    { id: "delete", name: "Xóa" },
+  { id: "ACTIVE", name: "Hoạt động" },
+  { id: "INACTIVE", name: "Tạm dừng" },
+  { id: "BANNED", name: "Bị cấm" },
+  { id: "LOCKED", name: "Bị khóa" },
+  { id: "delete", name: "Xóa" },
 ];
 
 export { TRASH_ACTION_OPTIONS as CUSTOMER_TRASH_ACTION_OPTIONS } from "@/constants/common.constants";
 
 export const GENDER_OPTIONS = [
-    { id: "", name: "Tất cả" },
-    { id: "MALE", name: "Nam" },
-    { id: "FEMALE", name: "Nữ" },
-    { id: "OTHER", name: "Khác" },
+  { id: "", name: "Tất cả" },
+  { id: "MALE", name: "Nam" },
+  { id: "FEMALE", name: "Nữ" },
+  { id: "OTHER", name: "Khác" },
 ];

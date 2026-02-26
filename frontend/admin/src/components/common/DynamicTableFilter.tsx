@@ -29,22 +29,16 @@ interface DynamicTableFilterProps {
   onClearFilter?: () => void;
 }
 
-export const DynamicTableFilter = ({
-  filters,
-  onClearFilter
-}: DynamicTableFilterProps) => {
+export const DynamicTableFilter = ({ filters, onClearFilter }: DynamicTableFilterProps) => {
   return (
     <>
       <TableFilter onClearFilter={onClearFilter}>
         {filters.map((item: FilterConfig) => (
-          <FilterItem
-            key={item.id}
-            className={item.className}
-          >
+          <FilterItem key={item.id} className={item.className}>
             {item.type === "select" && (
               <CustomSelect
                 value={item.value ?? ""}
-                onChange={item.onChange ?? (() => { })}
+                onChange={item.onChange ?? (() => {})}
                 options={item.options ?? []}
                 placeholder={item.placeholder}
               />

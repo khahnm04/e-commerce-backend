@@ -23,7 +23,7 @@ export const CustomSelect = ({
   onChange,
   placeholder = "Chọn...",
   classNameCustom = "",
-  disabled = false
+  disabled = false,
 }: CustomSelectProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [openUp, setOpenUp] = useState(false);
@@ -32,17 +32,12 @@ export const CustomSelect = ({
   const triggerRef = useRef<HTMLDivElement>(null);
 
   const selectedLabel =
-    value !== ""
-      ? options.find((opt) => String(opt.id) === String(value))?.name
-      : undefined;
+    value !== "" ? options.find((opt) => String(opt.id) === String(value))?.name : undefined;
 
   // Click outside -> đóng dropdown
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(event.target as Node)
-      ) {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
         setIsOpen(false);
       }
     };
@@ -61,19 +56,14 @@ export const CustomSelect = ({
       const spaceBelow = window.innerHeight - rect.bottom;
       const spaceAbove = rect.top;
 
-      setOpenUp(
-        spaceBelow < DROPDOWN_MAX_HEIGHT && spaceAbove > spaceBelow
-      );
+      setOpenUp(spaceBelow < DROPDOWN_MAX_HEIGHT && spaceAbove > spaceBelow);
     }
 
     setIsOpen((prev) => !prev);
   };
 
   return (
-    <div
-      ref={containerRef}
-      className={`relative w-fit max-w-full ${classNameCustom}`}
-    >
+    <div ref={containerRef} className={`relative w-fit max-w-full ${classNameCustom}`}>
       {/* Trigger */}
       <div
         ref={triggerRef}
@@ -124,9 +114,10 @@ export const CustomSelect = ({
                 px-4 py-2.5 cursor-pointer text-[14px] font-medium
                 transition-colors border-b border-gray-50
                 last:border-none whitespace-nowrap
-                ${String(value) === String(opt.id)
-                  ? "text-blue-600 bg-blue-50"
-                  : "text-gray-600 hover:bg-gray-50 hover:text-black"
+                ${
+                  String(value) === String(opt.id)
+                    ? "text-blue-600 bg-blue-50"
+                    : "text-gray-600 hover:bg-gray-50 hover:text-black"
                 }
               `}
             >

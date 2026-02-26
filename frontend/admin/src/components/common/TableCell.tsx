@@ -5,10 +5,7 @@ interface TableCellProps {
   className?: string;
 }
 
-export const TableCell = ({
-  children,
-  className = "",
-}: TableCellProps) => {
+export const TableCell = ({ children, className = "" }: TableCellProps) => {
   return (
     <>
       <td

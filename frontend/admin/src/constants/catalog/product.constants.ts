@@ -1,13 +1,13 @@
 export const PRODUCT_TABLE_HEADERS = [
-  'Tên sản phẩm',
-  'Ảnh',
-  'Mã SP',
-  'Giá bán',
-  'Nhãn hàng',
-  'Trạng thái',
-  'Tạo bởi',
-  'Cập nhật bởi',
-  'Hành động'
+  "Tên sản phẩm",
+  "Ảnh",
+  "Mã SP",
+  "Giá bán",
+  "Nhãn hàng",
+  "Trạng thái",
+  "Tạo bởi",
+  "Cập nhật bởi",
+  "Hành động",
 ];
 
 export const PRODUCT_STATUS_OPTIONS = [

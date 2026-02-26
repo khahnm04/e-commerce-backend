@@ -68,9 +68,7 @@ export const FormReadOnlySelect = ({
               `}
             />
           )}
-          {error && (
-            <p className="text-red-500 text-[13px] mt-[6px]">{error}</p>
-          )}
+          {error && <p className="text-red-500 text-[13px] mt-[6px]">{error}</p>}
         </div>
       )}
     />
