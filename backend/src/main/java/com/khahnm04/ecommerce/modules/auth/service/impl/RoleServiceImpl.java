@@ -59,7 +59,7 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
-    public RoleResponse getDeletedRoleDetailById(Long id) {;
+    public RoleResponse getDeletedRoleDetailById(Long id) {
         return roleMapper.toRoleResponse(getDeletedRoleById(id));
     }
 
@@ -93,15 +93,23 @@ public class RoleServiceImpl implements RoleService {
     @Transactional
     public void softDeleteRole(Long id) {
         Role role = getRoleById(id);
+        if (role.getDeletedAt() != null) {
+            log.warn("Role with id {} is already soft-deleted", id);
+            return;
+        }
         role.setDeletedAt(LocalDateTime.now());
         roleRepository.save(role);
-        log.info("Role soft deleted with id: {}", id);
+        log.info("Soft-deleted role with id: {}", id);
     }
 
     @Override
     @Transactional
     public void restoreRole(Long id) {
         Role role = getDeletedRoleById(id);
+        if (role.getDeletedAt() == null) {
+            log.warn("Role with id {} is not in a deleted state", id);
+            return;
+        }
         role.setDeletedAt(null);
         roleRepository.save(role);
         log.info("Role restored with id: {}", id);
@@ -120,7 +128,7 @@ public class RoleServiceImpl implements RoleService {
                     throw new AppException(ErrorCode.ROLE_NOT_FOUND);
                 }
                 roleRepository.softDeleteByIds(LocalDateTime.now(), roleIds);
-                log.info("Bulk soft deleted roles ids: {}", roleIds);
+                log.info("Bulk soft-deleted roles with IDs: {}", roleIds);
             }
             case "RESTORE" -> {
                 List<Role> deletedRoles = roleRepository.findAllDeletedByIds(roleIds);
@@ -128,7 +136,7 @@ public class RoleServiceImpl implements RoleService {
                     throw new AppException(ErrorCode.ROLE_NOT_FOUND);
                 }
                 roleRepository.restoreByIds(roleIds);
-                log.info("Bulk restored roles ids: {}", roleIds);
+                log.info("Bulk restored roles with IDs: {}", roleIds);
             }
             default -> throw new AppException(ErrorCode.ROLE_NOT_FOUND);
         }
@@ -170,7 +178,7 @@ public class RoleServiceImpl implements RoleService {
 
     private Role getDeletedRoleById(Long id) {
         return roleRepository.findByIdAndDeletedAtIsNotNull(id)
-            .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
+                .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
     }
 
     private void assignPermissionsToRole(Role role, Set<Long> permissionIds) {

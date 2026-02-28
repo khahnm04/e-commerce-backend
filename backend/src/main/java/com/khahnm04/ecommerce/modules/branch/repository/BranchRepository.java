@@ -15,20 +15,19 @@ import java.util.Set;
 @Repository
 public interface BranchRepository extends JpaRepository<Branch, Long> {
 
-    Optional<Branch> findByCode(String code);
-
     boolean existsByCode(String code);
-
-    @Query(value = "SELECT * FROM branches WHERE id = :id", nativeQuery = true)
-    Optional<Branch> findDeletedBranchById(@Param("id") Long id);
 
     boolean existsByName(String name);
 
-    @Query("SELECT COUNT(b) > 0 FROM Branch b WHERE b.code = :code AND b.id != :id")
-    boolean existsByCodeAndIdNot(@Param("code") String code, @Param("id") Long id);
+    Optional<Branch> findByIdAndDeletedAtIsNull(Long id);
 
-    @Query("SELECT COUNT(b) > 0 FROM Branch b WHERE b.name = :name AND b.id != :id")
-    boolean existsByNameAndIdNot(@Param("name") String name, @Param("id") Long id);
+    Optional<Branch> findByIdAndDeletedAtIsNotNull(Long id);
+
+    Optional<Branch> findByCodeAndDeletedAtIsNull(String code);
+
+    boolean existsByCodeAndIdNot(String code, Long id);
+
+    boolean existsByNameAndIdNot(String name, Long id);
 
     @Modifying
     @Transactional

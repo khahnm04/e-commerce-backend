@@ -1,5 +1,5 @@
 import { BoxBreadcrumb } from "@/components/common/BoxBreadcrumb";
-import { Section7 } from "@/components/section/Section7";
+import { ProductListingContent } from "@/app/(page)/products/_components/ProductListingContent";
 
 export default function TourListPage() {
   return (
@@ -12,7 +12,7 @@ export default function TourListPage() {
         ]}
       />
 
-      <Section7 />
+      <ProductListingContent />
     </>
   )
 }

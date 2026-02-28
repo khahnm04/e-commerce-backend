@@ -4,8 +4,6 @@ import com.khahnm04.ecommerce.common.entity.BaseEntity;
 import com.khahnm04.ecommerce.modules.branch.enums.BranchStatus;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.SQLRestriction;
 import java.math.BigDecimal;
 
 @Entity
@@ -15,8 +13,6 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "branches")
-@SQLDelete(sql = "UPDATE branches SET deleted_at = NOW() WHERE id = ?")
-@SQLRestriction("deleted_at IS NULL")
 public class Branch extends BaseEntity<Long> {
 
     @Column(name = "code", nullable = false, unique = true)

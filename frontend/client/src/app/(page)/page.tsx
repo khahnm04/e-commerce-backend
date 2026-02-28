@@ -1,25 +1,24 @@
-import { Section1 } from "@/components/section/Section1";
-import { Section2 } from "@/components/section/Section2";
-import { Section3 } from "@/components/section/Section3";
-import { Section4 } from "@/components/section/Section4";
-import { Section5 } from "@/components/section/Section5";
-import { Section6 } from "@/components/section/Section6";
+import { HeroSearch } from "@/components/home/HeroSearch";
+import { FlashSaleCountdown } from "@/components/home/FlashSaleCountdown";
+import { PromotionBanner } from "@/components/home/PromotionBanner";
+import { FeaturedProducts } from "@/components/home/FeaturedProducts";
+import { FullWidthBanner } from "@/components/home/FullWidthBanner";
+import { LatestNews } from "@/components/home/LatestNews";
 
 export default function HomePage() {
   return (
     <>
-      <Section1 />
+      <HeroSearch />
 
-      <Section2 />
+      <FlashSaleCountdown />
 
-      <Section3 />
+      <PromotionBanner />
 
-      <Section4 />
+      <FeaturedProducts />
 
-      <Section5 />
+      <FullWidthBanner />
 
-      <Section6 />
-
+      <LatestNews />
     </>
   )
 }

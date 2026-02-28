@@ -48,48 +48,45 @@ public class BranchServiceImpl implements BranchService {
             throw new AppException(ErrorCode.BRANCH_EXISTED);
         }
 
-        Branch branch = branchMapper.toEntity(request);
+        Branch branch = branchMapper.toBranch(request);
         branch.setStatus(request.getStatus() == null ? BranchStatus.ACTIVE : request.getStatus());
 
         Branch savedBranch = branchRepository.save(branch);
-        log.info("Created branch id: {}", savedBranch.getId());
-        return branchMapper.toResponse(savedBranch);
-    }
-
-    @Override
-    public PageResponse<BranchResponse> getAllBranches(BranchFilterRequest request) {
-        Pageable pageable = PageRequest.of(request.getPage() - 1, request.getSize(),
-                SortUtils.parseSort(request.getSort()));
-
-        Page<BranchResponse> page = this.getAllWithFilterAndSearch(request, pageable, false);
-        return PageResponse.fromPage(page);
-    }
-
-    @Override
-    public PageResponse<BranchResponse> getAllDeletedBranches(BranchFilterRequest request) {
-        Pageable pageable = PageRequest.of(request.getPage() - 1, request.getSize(),
-                SortUtils.parseSort(request.getSort()));
-
-        Page<BranchResponse> page = this.getAllWithFilterAndSearch(request, pageable, true);
-        return PageResponse.fromPage(page);
+        log.info("Created branch with id: {}", savedBranch.getId());
+        return branchMapper.toBranchResponse(savedBranch);
     }
 
     @Override
     public Branch getBranchById(Long id) {
-        return branchRepository.findById(id)
+        return branchRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new AppException(ErrorCode.BRANCH_NOT_FOUND));
     }
 
     @Override
     public BranchResponse getBranchDetailById(Long id) {
-        return branchMapper.toResponse(getBranchById(id));
+        return branchMapper.toBranchResponse(getBranchById(id));
+    }
+
+    @Override
+    public BranchResponse getDeletedBranchDetailById(Long id) {
+        return branchMapper.toBranchResponse(getDeletedBranchById(id));
     }
 
     @Override
     public BranchResponse getBranchDetailByCode(String code) {
-        Branch branch = branchRepository.findByCode(code)
+        Branch branch = branchRepository.findByCodeAndDeletedAtIsNull(code)
                 .orElseThrow(() -> new AppException(ErrorCode.BRANCH_NOT_FOUND));
-        return branchMapper.toResponse(branch);
+        return branchMapper.toBranchResponse(branch);
+    }
+
+    @Override
+    public PageResponse<BranchResponse> getAllBranches(BranchFilterRequest request) {
+        return getAllWithFilterAndSearch(request, false);
+    }
+
+    @Override
+    public PageResponse<BranchResponse> getAllDeletedBranches(BranchFilterRequest request) {
+        return getAllWithFilterAndSearch(request, true);
     }
 
     @Override
@@ -109,46 +106,47 @@ public class BranchServiceImpl implements BranchService {
         branchMapper.updateBranch(branch, request);
 
         Branch savedBranch = branchRepository.save(branch);
-        log.info("Updated branch id: {}", savedBranch.getId());
-        return branchMapper.toResponse(savedBranch);
+        log.info("Updated branch with id: {}", savedBranch.getId());
+        return branchMapper.toBranchResponse(savedBranch);
     }
 
     @Override
     @Transactional
     public void updateBranchStatus(Long id, BranchUpdateStatusRequest request) {
         Branch branch = getBranchById(id);
-
         if (branch.getStatus() == request.getStatus()) {
+            log.info("Branch with id {} already has status {}", id, request.getStatus());
             return;
         }
-
         branch.setStatus(request.getStatus());
         branchRepository.save(branch);
-        log.info("Changed status for branch id {} to {}", id, request.getStatus());
+        log.info("Updated branch status to {} for id: {}", request.getStatus(), id);
     }
 
     @Override
     @Transactional
     public void softDeleteBranch(Long id) {
-        branchRepository.delete(getBranchById(id));
-        log.info("Soft deleted branch id {}", id);
+        Branch branch = getBranchById(id);
+        if (branch.getDeletedAt() != null) {
+            log.warn("Branch with id {} is already soft deleted", id);
+            return;
+        }
+        branch.setDeletedAt(LocalDateTime.now());
+        branchRepository.save(branch);
+        log.info("Soft-deleted branch with id: {}", id);
     }
 
     @Override
     @Transactional
     public void restoreBranch(Long id) {
-        branchRepository.findDeletedBranchById(id)
-                .ifPresentOrElse(branch -> {
-                    if (branch.getDeletedAt() == null) {
-                        log.warn("Branch with id {} is not deleted, no restoration needed", id);
-                        return;
-                    }
-                    branch.setDeletedAt(null);
-                    branchRepository.save(branch);
-                    log.info("Restored branch id {}", id);
-                }, () -> {
-                    throw new AppException(ErrorCode.BRANCH_NOT_FOUND);
-                });
+        Branch branch = getBranchById(id);
+        if (branch.getDeletedAt() == null) {
+            log.warn("Branch with id {} is not in a deleted state", id);
+            return;
+        }
+        branch.setDeletedAt(LocalDateTime.now());
+        branchRepository.save(branch);
+        log.info("Branch restored with id {}", id);
     }
 
     @Override
@@ -173,7 +171,7 @@ public class BranchServiceImpl implements BranchService {
         if (branchIds.size() != existingBranchIds.size()) {
             Set<Long> missingIds = new HashSet<>(branchIds);
             missingIds.removeAll(existingBranchIds);
-            log.error("Bulk action failed. Missing Ids: {}", missingIds);
+            log.error("Bulk action failed. Missing IDs: {}", missingIds);
             throw new AppException(ErrorCode.BRANCH_NOT_FOUND);
         }
 
@@ -181,15 +179,15 @@ public class BranchServiceImpl implements BranchService {
             case "ACTIVE", "INACTIVE" -> {
                 BranchStatus status = BranchStatus.valueOf(action);
                 branchRepository.updateStatusByIds(status, existingBranchIds);
-                log.info("Bulk update status {} branches ids: {}", action, existingBranchIds);
+                log.info("Bulk updated status to {} for branch IDs: {}", action, existingBranchIds);
             }
             case "DELETE" -> {
                 branchRepository.softDeleteByIds(LocalDateTime.now(), existingBranchIds);
-                log.info("Bulk delete branches ids: {}", existingBranchIds);
+                log.info("Bulk soft-deleted branches with IDs: {}", existingBranchIds);
             }
             case "RESTORE" -> {
                 branchRepository.restoreDeletedByIds(existingBranchIds);
-                log.info("Bulk restore branches ids: {}", existingBranchIds);
+                log.info("Bulk restored branches with IDs: {}", existingBranchIds);
             }
             default -> throw new AppException(ErrorCode.BRANCH_INVALID_BULK_ACTION);
         }
@@ -198,14 +196,10 @@ public class BranchServiceImpl implements BranchService {
 
     // ======================== Private methods ========================
 
-    /**
-     * @param request   Filter and search parameters
-     * @param pageable  Pagination information
-     * @param isDeleted true for deleted branches, false for active
-     * @return Page of BranchResponse
-     */
-    private Page<BranchResponse> getAllWithFilterAndSearch(BranchFilterRequest request, Pageable pageable,
-            boolean isDeleted) {
+    private PageResponse<BranchResponse> getAllWithFilterAndSearch(BranchFilterRequest request, boolean isDeleted) {
+        Pageable pageable = PageRequest.of(request.getPage() - 1, request.getSize(),
+                SortUtils.parseSort(request.getSort()));
+
         String keyword = StringUtils.hasText(request.getKeyword())
                 ? request.getKeyword().trim()
                 : null;
@@ -233,7 +227,13 @@ public class BranchServiceImpl implements BranchService {
                 request.getEndDate(),
                 isDeleted);
 
-        return new PageImpl<>(content, pageable, total);
+        Page<BranchResponse> page = new PageImpl<>(content, pageable, total);
+        return PageResponse.fromPage(page);
+    }
+
+    private Branch getDeletedBranchById(Long id) {
+        return branchRepository.findByIdAndDeletedAtIsNotNull(id)
+                .orElseThrow(() -> new AppException(ErrorCode.BRANCH_NOT_FOUND));
     }
 
 }

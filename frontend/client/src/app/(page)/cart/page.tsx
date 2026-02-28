@@ -1,11 +1,11 @@
-import { Section9 } from "@/components/section/Section9";
-import { Section10 } from "@/components/section/Section10";
+import { CartItems } from "@/app/(page)/cart/_components/CartItems";
+import { CheckoutForm } from "@/app/(page)/cart/_components/CheckoutForm";
 
 export default function CartPage() {
   return (
     <>
-      <Section9 />
-      <Section10 />
+      <CartItems />
+      <CheckoutForm />
     </>
   );
 }

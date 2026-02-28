@@ -34,7 +34,7 @@ public class RoleController {
     }
 
     @GetMapping("/{id}")
-    ApiResponse<RoleResponse> getRoleById(
+    ApiResponse<RoleResponse> getRoleDetailById(
         @PathVariable Long id
     ) {
         return ApiResponse.<RoleResponse>builder()
@@ -44,7 +44,7 @@ public class RoleController {
     }
 
     @GetMapping("/deleted/{id}")
-    ApiResponse<RoleResponse> getDeletedRoleById(
+    ApiResponse<RoleResponse> getDeletedRoleDetailById(
         @PathVariable Long id
     ) {
         return ApiResponse.<RoleResponse>builder()

@@ -8,14 +8,13 @@ import org.mapstruct.*;
 @Mapper(componentModel = "spring")
 public interface BranchMapper {
 
-    Branch toEntity(BranchRequest request);
+    Branch toBranch(BranchRequest request);
 
     @Mapping(target = "createdBy", source = "createdBy.fullName")
     @Mapping(target = "updatedBy", source = "updatedBy.fullName")
-    BranchResponse toResponse(Branch branch);
+    BranchResponse toBranchResponse(Branch branch);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateBranch(@MappingTarget Branch branch, BranchRequest request);
-
 
 }

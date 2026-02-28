@@ -12,15 +12,17 @@ public interface BranchService {
 
     BranchResponse createBranch(BranchRequest request);
 
-    PageResponse<BranchResponse> getAllBranches(BranchFilterRequest filter);
-
-    PageResponse<BranchResponse> getAllDeletedBranches(BranchFilterRequest filter);
-
     Branch getBranchById(Long id);
 
     BranchResponse getBranchDetailById(Long id);
 
+    BranchResponse getDeletedBranchDetailById(Long id);
+
     BranchResponse getBranchDetailByCode(String code);
+
+    PageResponse<BranchResponse> getAllBranches(BranchFilterRequest filter);
+
+    PageResponse<BranchResponse> getAllDeletedBranches(BranchFilterRequest filter);
 
     BranchResponse updateBranch(Long id, BranchRequest request);
 

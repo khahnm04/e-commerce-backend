@@ -8,9 +8,11 @@ export const menuData = [
     label: "Danh mục",
     href: "#",
     children: [
-      "Điện thoại, Tablet",
+      "Điện thoại",
+      "Tablet",
       "Laptop",
-      "Đồng hồ, Camera",
+      "Đồng hồ",
+      "Camera",
       "Phụ kiện"
     ]
   },

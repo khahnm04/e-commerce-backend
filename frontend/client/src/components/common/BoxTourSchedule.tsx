@@ -1,5 +1,4 @@
 export const BoxTourSchedule = () => {
-  // Defines sample data to allow reuse and cleaner rendering
   const scheduleItems = [
     {
       title: "NGÀY 1 | TP.HCM – THỦ ĐÔ HÀ NỘI",
