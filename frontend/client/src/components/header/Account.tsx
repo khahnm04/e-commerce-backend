@@ -1,17 +1,14 @@
 import Link from "next/link";
+import { FaRegCircleUser } from "react-icons/fa6";
 
 export const Account = () => {
     return (
         <div className="inner-account">
             <Link
-                href="#"
+                href="/account"
                 className="inline-flex items-center"
             >
-                <img
-                    src="/assets/images/icon-user.svg"
-                    alt="Account"
-                    className="h-[26px] w-auto"
-                />
+                <FaRegCircleUser className="text-[26px] text-black" />
             </Link>
         </div>
     );

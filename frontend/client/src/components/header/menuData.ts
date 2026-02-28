@@ -1,7 +1,7 @@
 export const menuData = [
   {
     label: "Trang Chủ",
-    href: "#",
+    href: "/",
     active: true
   },
   {
@@ -17,15 +17,15 @@ export const menuData = [
     ]
   },
   {
-    label: "sản phẩm",
-    href: "#"
+    label: "Sản phẩm",
+    href: "/products"
   },
   {
     label: "Tin tức",
-    href: "#"
+    href: "/news"
   },
   {
     label: "Liên hệ",
-    href: "#"
+    href: "/contact"
   }
 ];
