@@ -54,27 +54,23 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
-    public RoleResponse getRoleById(Long id) {
-        Role role = roleRepository.findById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
-        return roleMapper.toRoleResponse(role);
+    public RoleResponse getRoleDetailById(Long id) {
+        return roleMapper.toRoleResponse(getRoleById(id));
     }
 
     @Override
-    public RoleResponse getDeletedRoleById(Long id) {
-        Role role = roleRepository.findDeletedById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
-        return roleMapper.toRoleResponse(role);
+    public RoleResponse getDeletedRoleDetailById(Long id) {;
+        return roleMapper.toRoleResponse(getDeletedRoleById(id));
     }
 
     @Override
     public PageResponse<RoleResponse> getAllRoles(RoleFilterRequest filter) {
-        return getAllWithFilterAndSearch(filter, false);
+        return getAllRolesWithFilterAndSearch(filter, false);
     }
 
     @Override
     public PageResponse<RoleResponse> getAllDeletedRoles(RoleFilterRequest filter) {
-        return getAllWithFilterAndSearch(filter, true);
+        return getAllRolesWithFilterAndSearch(filter, true);
     }
 
     @Override
@@ -85,7 +81,7 @@ public class RoleServiceImpl implements RoleService {
         if (roleRepository.existsByNameAndIdNot(request.getName(), id)) {
             throw new AppException(ErrorCode.ROLE_EXISTED);
         }
-        Role role = findRoleById(id);
+        Role role = getRoleById(id);
         roleMapper.updateRole(role, request);
         assignPermissionsToRole(role, request.getPermissions());
         role = roleRepository.save(role);
@@ -94,25 +90,27 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
+    @Transactional
     public void softDeleteRole(Long id) {
-        Role role = findRoleById(id);
-        roleRepository.delete(role);
+        Role role = getRoleById(id);
+        role.setDeletedAt(LocalDateTime.now());
+        roleRepository.save(role);
         log.info("Role soft deleted with id: {}", id);
     }
 
     @Override
     @Transactional
     public void restoreRole(Long id) {
-        roleRepository.findDeletedById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
-        roleRepository.restoreById(id);
+        Role role = getDeletedRoleById(id);
+        role.setDeletedAt(null);
+        roleRepository.save(role);
         log.info("Role restored with id: {}", id);
     }
 
     @Override
     @Transactional
     public void handleBulkAction(RoleBulkActionRequest request) {
-        Set<Long> roleIds = request.getIds();
+        Set<Long> roleIds = request.getRoles();
         String action = request.getAction().toUpperCase();
 
         switch (action) {
@@ -138,7 +136,7 @@ public class RoleServiceImpl implements RoleService {
 
     // ======================== Private methods ========================
 
-    private PageResponse<RoleResponse> getAllWithFilterAndSearch(RoleFilterRequest filter, boolean isDeleted) {
+    private PageResponse<RoleResponse> getAllRolesWithFilterAndSearch(RoleFilterRequest filter, boolean isDeleted) {
         Pageable pageable = PageRequest.of(filter.getPage() - 1, filter.getSize(),
                 SortUtils.parseSort(filter.getSort()));
 
@@ -165,9 +163,14 @@ public class RoleServiceImpl implements RoleService {
         return PageResponse.fromPage(page);
     }
 
-    private Role findRoleById(Long id) {
-        return roleRepository.findById(id)
+    private Role getRoleById(Long id) {
+        return roleRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
+    }
+
+    private Role getDeletedRoleById(Long id) {
+        return roleRepository.findByIdAndDeletedAtIsNotNull(id)
+            .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
     }
 
     private void assignPermissionsToRole(Role role, Set<Long> permissionIds) {

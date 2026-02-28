@@ -16,7 +16,7 @@ public class ChangePasswordRequest implements Serializable {
     private String currentPassword;
 
     @NotBlank(message = "PASSWORD_REQUIRED")
-    @Size(min = 6, message = "Password must be at least 6 characters")
+    @Size(min = 8, message = "PASSWORD_MIN_LENGTH")
     private String newPassword;
 
     @NotBlank(message = "PASSWORD_REQUIRED")

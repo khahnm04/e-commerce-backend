@@ -7,6 +7,7 @@ import com.khahnm04.ecommerce.common.security.CookieProperties;
 import com.khahnm04.ecommerce.modules.auth.dto.request.ChangePasswordRequest;
 import com.khahnm04.ecommerce.modules.auth.dto.request.LoginRequest;
 import com.khahnm04.ecommerce.modules.auth.dto.response.LoginResponse;
+import com.khahnm04.ecommerce.modules.auth.dto.response.IntrospectResponse;
 import com.khahnm04.ecommerce.modules.auth.dto.response.TokenPayload;
 import com.khahnm04.ecommerce.modules.auth.entity.RedisToken;
 import com.khahnm04.ecommerce.common.exception.AppException;
@@ -138,6 +139,22 @@ public class AuthServiceImpl implements AuthService {
         userRepository.save(user);
         log.info("Changed password for user with id: {}", userId);
     }
+
+    @Override
+    public IntrospectResponse introspect(String token) {
+        try {
+            jwtService.verifyAccessToken(token);
+            return IntrospectResponse.builder()
+                    .valid(true)
+                    .build();
+        } catch (AppException e) {
+            return IntrospectResponse.builder()
+                    .valid(false)
+                    .build();
+        }
+    }
+
+    // ======================== Private methods ========================
 
     private void addAccessTokenCookies(HttpServletResponse response, String accessToken) {
         ResponseCookie accessCookie = ResponseCookie.from(TokenConstants.ACCESS_TOKEN, accessToken)

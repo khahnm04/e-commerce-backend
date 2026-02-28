@@ -14,7 +14,7 @@ import java.util.Set;
 public class RoleBulkActionRequest implements Serializable {
 
     @NotEmpty(message = "ROLE_SELECTION_REQUIRED")
-    private Set<Long> ids;
+    private Set<Long> roles;
 
     @NotBlank(message = "ROLE_ACTION_REQUIRED")
     private String action;

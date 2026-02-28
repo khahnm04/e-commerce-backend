@@ -34,6 +34,8 @@ public enum ErrorCode {
     ROLE_DESCRIPTION_REQUIRED(1102, "Role description cannot be blank", HttpStatus.BAD_REQUEST),
     ROLE_PERMISSIONS_REQUIRED(1103, "Role permissions cannot be empty", HttpStatus.BAD_REQUEST),
     ROLE_NAME_INVALID(1104, "Name must be at least {min} characters", HttpStatus.BAD_REQUEST),
+    ROLE_SELECTION_REQUIRED(1105, "At least one role must be selected", HttpStatus.BAD_REQUEST),
+    ROLE_ACTION_REQUIRED(1106, "Bulk action type cannot be blank", HttpStatus.BAD_REQUEST),
     ROLE_NOT_FOUND(1150, "Role not found", HttpStatus.NOT_FOUND),
     ROLE_EXISTED(1151, "Role already exists", HttpStatus.BAD_REQUEST),
     PERMISSION_NOT_FOUND(1152, "Permission not found", HttpStatus.BAD_REQUEST),
@@ -48,6 +50,7 @@ public enum ErrorCode {
     PASSWORD_NOT_MATCH(1231, "Password does not match", HttpStatus.BAD_REQUEST),
     PASSWORD_CONFIRMATION_MISMATCH(1232, "Password and confirm password do not match", HttpStatus.BAD_REQUEST),
     NEW_PASSWORD_SAME_AS_OLD(1233, "New password cannot be the same as the old password", HttpStatus.BAD_REQUEST),
+    PASSWORD_MIN_LENGTH(1234, "Password must be at least {min} characters", HttpStatus.BAD_REQUEST),
 
     // =================================================================
     // MODULE: USER (Range: 2000 - 2999)

@@ -2,6 +2,7 @@ package com.khahnm04.ecommerce.modules.auth.service;
 
 import com.khahnm04.ecommerce.modules.auth.dto.request.ChangePasswordRequest;
 import com.khahnm04.ecommerce.modules.auth.dto.request.LoginRequest;
+import com.khahnm04.ecommerce.modules.auth.dto.response.IntrospectResponse;
 import com.khahnm04.ecommerce.modules.auth.dto.response.LoginResponse;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -14,5 +15,7 @@ public interface AuthService {
     void refreshToken(String token, HttpServletResponse response);
 
     void changePassword(Long userId, ChangePasswordRequest request);
+
+    IntrospectResponse introspect(String token);
 
 }

@@ -10,6 +10,7 @@ import com.khahnm04.ecommerce.modules.auth.service.RoleService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
@@ -22,6 +23,7 @@ public class RoleController {
     private final RoleService roleService;
 
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     ApiResponse<RoleResponse> createRole(
             @Valid @RequestBody RoleRequest request
     ) {
@@ -29,6 +31,26 @@ public class RoleController {
                 .data(roleService.createRole(request))
                 .message("role created successfully")
                 .build();
+    }
+
+    @GetMapping("/{id}")
+    ApiResponse<RoleResponse> getRoleById(
+        @PathVariable Long id
+    ) {
+        return ApiResponse.<RoleResponse>builder()
+            .data(roleService.getRoleDetailById(id))
+            .message("get role detail successfully")
+            .build();
+    }
+
+    @GetMapping("/deleted/{id}")
+    ApiResponse<RoleResponse> getDeletedRoleById(
+        @PathVariable Long id
+    ) {
+        return ApiResponse.<RoleResponse>builder()
+            .data(roleService.getDeletedRoleDetailById(id))
+            .message("get deleted role detail successfully")
+            .build();
     }
 
     @GetMapping
@@ -52,26 +74,6 @@ public class RoleController {
                 .data(pageResponse.getData())
                 .meta(pageResponse.getMeta())
                 .message("get deleted roles successfully")
-                .build();
-    }
-
-    @GetMapping("/{id}")
-    ApiResponse<RoleResponse> getRoleById(
-            @PathVariable Long id
-    ) {
-        return ApiResponse.<RoleResponse>builder()
-                .data(roleService.getRoleById(id))
-                .message("get role detail successfully")
-                .build();
-    }
-
-    @GetMapping("/deleted/{id}")
-    ApiResponse<RoleResponse> getDeletedRoleById(
-            @PathVariable Long id
-    ) {
-        return ApiResponse.<RoleResponse>builder()
-                .data(roleService.getDeletedRoleById(id))
-                .message("get deleted role detail successfully")
                 .build();
     }
 

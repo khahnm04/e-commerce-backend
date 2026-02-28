@@ -14,30 +14,27 @@ import java.util.Set;
 @Repository
 public interface RoleRepository extends JpaRepository<Role, Long> {
 
-    boolean existsByName(String name);
-
     boolean existsByCode(String code);
+
+    boolean existsByName(String name);
 
     boolean existsByNameAndIdNot(String name, Long id);
 
     boolean existsByCodeAndIdNot(String code, Long id);
 
-    @Query(value = "SELECT * FROM roles WHERE id = :id", nativeQuery = true)
-    Optional<Role> findDeletedById(@Param("id") Long id);
+    Optional<Role> findByIdAndDeletedAtIsNull(Long id);
 
-    @Query(value = "SELECT * FROM roles WHERE id IN :ids", nativeQuery = true)
+    Optional<Role> findByIdAndDeletedAtIsNotNull(Long id);
+
+    @Query("SELECT r FROM Role r WHERE r.id IN :ids AND r.deletedAt IS NOT NULL")
     List<Role> findAllDeletedByIds(@Param("ids") Set<Long> ids);
-
-    @Modifying
-    @Query(value = "UPDATE roles SET deleted_at = NULL WHERE id = :id", nativeQuery = true)
-    void restoreById(@Param("id") Long id);
 
     @Modifying
     @Query("UPDATE Role r SET r.deletedAt = :now WHERE r.id IN :ids")
     void softDeleteByIds(@Param("now") LocalDateTime now, @Param("ids") Set<Long> ids);
 
     @Modifying
-    @Query(value = "UPDATE roles SET deleted_at = NULL WHERE id IN :ids", nativeQuery = true)
+    @Query("UPDATE Role r SET r.deletedAt = NULL WHERE r.id IN :ids")
     void restoreByIds(@Param("ids") Set<Long> ids);
 
 }

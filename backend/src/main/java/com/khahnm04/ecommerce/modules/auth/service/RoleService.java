@@ -10,9 +10,9 @@ public interface RoleService {
 
     RoleResponse createRole(RoleRequest request);
 
-    RoleResponse getRoleById(Long id);
+    RoleResponse getRoleDetailById(Long id);
 
-    RoleResponse getDeletedRoleById(Long id);
+    RoleResponse getDeletedRoleDetailById(Long id);
 
     PageResponse<RoleResponse> getAllRoles(RoleFilterRequest filter);
 
