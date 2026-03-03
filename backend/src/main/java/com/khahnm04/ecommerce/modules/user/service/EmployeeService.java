@@ -9,15 +9,13 @@ public interface EmployeeService {
 
     EmployeeResponse createEmployee(EmployeeCreationRequest request);
 
+    Employee getEmployeeById(Long id);
+
+    EmployeeResponse getEmployeeDetail(String identifier, boolean deleted);
+
     PageResponse<EmployeeResponse> getAllEmployees(EmployeeFilterRequest filter);
 
     PageResponse<EmployeeResponse> getAllDeletedEmployees(EmployeeFilterRequest filter);
-
-    Employee getEmployeeById(Long id);
-
-    EmployeeResponse getEmployeeDetailById(Long id);
-
-    EmployeeResponse getDeletedEmployeeDetailById(Long id);
 
     EmployeeResponse updateEmployee(Long id, EmployeeUpdateRequest request);
 

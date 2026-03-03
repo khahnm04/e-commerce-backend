@@ -9,15 +9,13 @@ public interface CustomerService {
 
     CustomerResponse createCustomer(CustomerCreationRequest request);
 
+    Customer getCustomerById(Long id);
+
+    CustomerResponse getCustomerDetail(Long id, boolean deleted);
+
     PageResponse<CustomerResponse> getAllCustomers(CustomerFilterRequest filter);
 
     PageResponse<CustomerResponse> getAllDeletedCustomers(CustomerFilterRequest filter);
-
-    Customer getCustomerById(Long id);
-
-    CustomerResponse getCustomerDetailById(Long id);
-
-    CustomerResponse getDeletedCustomerDetailById(Long id);
 
     CustomerResponse updateCustomer(Long id, CustomerUpdateRequest request);
 

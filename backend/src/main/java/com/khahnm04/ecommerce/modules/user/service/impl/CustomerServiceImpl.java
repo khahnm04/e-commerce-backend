@@ -79,19 +79,15 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public Customer getCustomerById(Long id) {
-        return customerRepository.findById(id)
+        return customerRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new AppException(ErrorCode.CUSTOMER_NOT_FOUND));
     }
 
     @Override
-    public CustomerResponse getCustomerDetailById(Long id) {
-        return customerMapper.toResponse(this.getCustomerById(id));
-    }
-
-    @Override
-    public CustomerResponse getDeletedCustomerDetailById(Long id) {
-        Customer customer = customerRepository.findDeletedCustomerById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.CUSTOMER_NOT_FOUND));
+    public CustomerResponse getCustomerDetail(Long id, boolean deleted) {
+        Customer customer = deleted
+                ? getDeletedCustomerById(id)
+                : getCustomerById(id);
         return customerMapper.toResponse(customer);
     }
 
@@ -120,31 +116,31 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     @Transactional
     public void softDeleteCustomer(Long id) {
-        Customer customer = this.getCustomerById(id);
+        Customer customer = getCustomerById(id);
+        if (customer.getDeletedAt() != null) {
+            log.warn("Customer with id {} is already soft deleted", id);
+            return;
+        }
         customer.setDeletedAt(LocalDateTime.now());
         customerRepository.save(customer);
 
         userService.softDeleteUser(customer.getUser().getId());
-        log.info("Soft deleted customer with id: {}", id);
+        log.info("Soft-deleted customer with id: {}", id);
     }
 
     @Override
     @Transactional
     public void restoreCustomer(Long id) {
-        customerRepository.findDeletedCustomerById(id)
-                .ifPresentOrElse(customer -> {
-                    if (customer.getDeletedAt() == null) {
-                        log.warn("Customer with id {} is not deleted, no restoration needed", id);
-                        return;
-                    }
-                    customer.setDeletedAt(null);
-                    customerRepository.save(customer);
+        Customer customer = getDeletedCustomerById(id);
+        if (customer.getDeletedAt() == null) {
+            log.warn("Customer with id {} is not in a deleted state", id);
+            return;
+        }
+        customer.setDeletedAt(null);
+        customerRepository.save(customer);
 
-                    userService.restoreUser(customer.getUser().getId());
-                    log.info("Restored customer id {}", id);
-                }, () -> {
-                    throw new AppException(ErrorCode.CUSTOMER_NOT_FOUND);
-                });
+        userService.restoreUser(customer.getUser().getId());
+        log.info("Customer restored with id {}", id);
     }
 
     @Override
@@ -196,6 +192,11 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     // ======================== Private methods ========================
+
+    private Customer getDeletedCustomerById(Long id) {
+        return customerRepository.findByIdAndDeletedAtIsNotNull(id)
+                .orElseThrow(() -> new AppException(ErrorCode.CUSTOMER_NOT_FOUND));
+    }
 
     private Page<CustomerResponse> getAllWithFilterAndSearch(CustomerFilterRequest request, Pageable pageable,
             boolean isDeleted) {

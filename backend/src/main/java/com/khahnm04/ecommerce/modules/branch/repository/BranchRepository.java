@@ -5,7 +5,6 @@ import com.khahnm04.ecommerce.modules.branch.enums.BranchStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
@@ -25,6 +24,8 @@ public interface BranchRepository extends JpaRepository<Branch, Long> {
 
     Optional<Branch> findByCodeAndDeletedAtIsNull(String code);
 
+    Optional<Branch> findByCodeAndDeletedAtIsNotNull(String code);
+
     boolean existsByCodeAndIdNot(String code, Long id);
 
     boolean existsByNameAndIdNot(String name, Long id);
@@ -32,19 +33,19 @@ public interface BranchRepository extends JpaRepository<Branch, Long> {
     @Modifying
     @Transactional
     @Query("UPDATE Branch b SET b.status = :status WHERE b.id IN :ids")
-    void updateStatusByIds(@Param("status") BranchStatus status, @Param("ids") Set<Long> ids);
+    void updateStatusByIds(BranchStatus status, Set<Long> ids);
+
+    @Query("SELECT b FROM Branch b WHERE b.id IN :ids AND b.deletedAt IS NOT NULL")
+    Set<Branch> findAllDeletedByIds(Set<Long> ids);
 
     @Modifying
     @Transactional
-    @Query("UPDATE Branch b SET b.deletedAt = :now WHERE b.id IN :ids")
-    void softDeleteByIds(@Param("now") LocalDateTime now, @Param("ids") Set<Long> ids);
-
-    @Query(value = "SELECT * FROM branches WHERE id IN :ids", nativeQuery = true)
-    Set<Branch> findAllDeletedByIds(@Param("ids") Set<Long> ids);
+    @Query("UPDATE Branch b SET b.deletedAt = :now WHERE b.id IN :ids AND b.deletedAt IS NULL")
+    void softDeleteByIds(LocalDateTime now, Set<Long> ids);
 
     @Modifying
     @Transactional
-    @Query(value = "UPDATE branches SET deleted_at = NULL WHERE id IN :ids", nativeQuery = true)
-    void restoreDeletedByIds(@Param("ids") Set<Long> ids);
+    @Query("UPDATE Branch b SET b.deletedAt = NULL WHERE b.id IN :ids AND b.deletedAt IS NOT NULL")
+    void restoreDeletedByIds(Set<Long> ids);
 
 }

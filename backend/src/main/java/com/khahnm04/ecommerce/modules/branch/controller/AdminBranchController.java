@@ -34,6 +34,17 @@ public class AdminBranchController {
                 .build();
     }
 
+    @GetMapping("/{identifier}")
+    public ApiResponse<BranchResponse> getBranchDetail(
+        @PathVariable String identifier,
+        @RequestParam(defaultValue = "false") boolean deleted
+    ) {
+        return ApiResponse.<BranchResponse>builder()
+            .data(branchService.getBranchDetail(identifier, deleted))
+            .message("Get branch detail successfully")
+            .build();
+    }
+
     @GetMapping
     public ApiResponse<List<BranchResponse>> getAllBranches(
             @Valid @ModelAttribute BranchFilterRequest filter
@@ -55,26 +66,6 @@ public class AdminBranchController {
                 .data(pageResponse.getData())
                 .meta(pageResponse.getMeta())
                 .message("Get deleted branches successfully")
-                .build();
-    }
-
-    @GetMapping("/{id}")
-    public ApiResponse<BranchResponse> getBranchById(
-            @PathVariable Long id
-    ) {
-        return ApiResponse.<BranchResponse>builder()
-                .data(branchService.getBranchDetailById(id))
-                .message("Get branch detail successfully")
-                .build();
-    }
-
-    @GetMapping("/code/{code}")
-    public ApiResponse<BranchResponse> getBranchByCode(
-            @PathVariable String code
-    ) {
-        return ApiResponse.<BranchResponse>builder()
-                .data(branchService.getBranchDetailByCode(code))
-                .message("Get branch detail by code successfully")
                 .build();
     }
 

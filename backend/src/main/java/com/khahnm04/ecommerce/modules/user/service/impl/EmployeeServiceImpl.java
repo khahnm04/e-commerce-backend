@@ -64,6 +64,32 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
+    public Employee getEmployeeById(Long id) {
+        return employeeRepository.findByIdAndDeletedAtIsNull(id)
+                .orElseThrow(() -> new AppException(ErrorCode.EMPLOYEE_NOT_FOUND));
+    }
+
+    @Override
+    public EmployeeResponse getEmployeeDetail(String identifier, boolean deleted) {
+        Employee employee;
+
+        if (identifier.matches("\\d+")) {
+            Long id = Long.parseLong(identifier);
+            employee = deleted
+                    ? getDeletedEmployeeById(id)
+                    : getEmployeeById(id);
+        } else {
+            employee = deleted
+                    ? employeeRepository.findByCodeAndDeletedAtIsNotNull(identifier)
+                            .orElseThrow(() -> new AppException(ErrorCode.EMPLOYEE_NOT_FOUND))
+                    : employeeRepository.findByCodeAndDeletedAtIsNull(identifier)
+                            .orElseThrow(() -> new AppException(ErrorCode.EMPLOYEE_NOT_FOUND));
+        }
+
+        return this.buildUserResponse(employee);
+    }
+
+    @Override
     public PageResponse<EmployeeResponse> getAllEmployees(EmployeeFilterRequest request) {
         Pageable pageable = PageRequest.of(request.getPage() - 1, request.getSize(),
                 SortUtils.parseSort(request.getSort()));
@@ -79,24 +105,6 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         Page<EmployeeResponse> page = this.getAllWithFilterAndSearch(request, pageable, true);
         return PageResponse.fromPage(page);
-    }
-
-    @Override
-    public Employee getEmployeeById(Long id) {
-        return employeeRepository.findById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.EMPLOYEE_NOT_FOUND));
-    }
-
-    @Override
-    public EmployeeResponse getEmployeeDetailById(Long id) {
-        return this.buildUserResponse(this.getEmployeeById(id));
-    }
-
-    @Override
-    public EmployeeResponse getDeletedEmployeeDetailById(Long id) {
-        Employee employee = employeeRepository.findDeletedEmployeeById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.EMPLOYEE_NOT_FOUND));
-        return this.buildUserResponse(employee);
     }
 
     @Override
@@ -133,30 +141,30 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Transactional
     public void softDeleteEmployee(Long id) {
         Employee employee = this.getEmployeeById(id);
+        if (employee.getDeletedAt() != null) {
+            log.warn("Employee with id {} is already soft deleted", id);
+            return;
+        }
         employee.setDeletedAt(LocalDateTime.now());
         employeeRepository.save(employee);
 
         userService.softDeleteUser(employee.getUser().getId());
-        log.info("Soft deleted employee with id: {}", id);
+        log.info("Soft-deleted employee with id: {}", id);
     }
 
     @Override
     @Transactional
     public void restoreEmployee(Long id) {
-        employeeRepository.findDeletedEmployeeById(id)
-                .ifPresentOrElse(employee -> {
-                    if (employee.getDeletedAt() == null) {
-                        log.warn("Employee with id {} is not deleted, no restoration needed", id);
-                        return;
-                    }
-                    employee.setDeletedAt(null);
-                    employeeRepository.save(employee);
+        Employee employee = getDeletedEmployeeById(id);
+        if (employee.getDeletedAt() == null) {
+            log.warn("Employee with id {} is not in a deleted state", id);
+            return;
+        }
+        employee.setDeletedAt(null);
+        employeeRepository.save(employee);
 
-                    userService.restoreUser(employee.getUser().getId());
-                    log.info("Restored employee id {}", id);
-                }, () -> {
-                    throw new AppException(ErrorCode.EMPLOYEE_NOT_FOUND);
-                });
+        userService.restoreUser(employee.getUser().getId());
+        log.info("Employee restored with id {}", id);
     }
 
     @Override
@@ -208,6 +216,11 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     // ======================== Private methods ========================
+
+    private Employee getDeletedEmployeeById(Long id) {
+        return employeeRepository.findByIdAndDeletedAtIsNotNull(id)
+                .orElseThrow(() -> new AppException(ErrorCode.EMPLOYEE_NOT_FOUND));
+    }
 
     private EmployeeResponse buildUserResponse(Employee employee) {
         EmployeeResponse employeeResponse = employeeMapper.toResponse(employee);

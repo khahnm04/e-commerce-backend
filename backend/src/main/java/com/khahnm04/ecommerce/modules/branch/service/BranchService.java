@@ -14,11 +14,7 @@ public interface BranchService {
 
     Branch getBranchById(Long id);
 
-    BranchResponse getBranchDetailById(Long id);
-
-    BranchResponse getDeletedBranchDetailById(Long id);
-
-    BranchResponse getBranchDetailByCode(String code);
+    BranchResponse getBranchDetail(String identifier, boolean deleted);
 
     PageResponse<BranchResponse> getAllBranches(BranchFilterRequest filter);
 

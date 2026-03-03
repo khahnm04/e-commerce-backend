@@ -45,17 +45,17 @@ public class AddressServiceImpl implements AddressService {
     }
 
     @Override
-    public List<AddressResponse> getAddressesByCustomerId(Long customerId) {
+    public Address getAddressById(Long customerId, Long addressId) {
+        return addressRepository.findByIdAndCustomerId(addressId, customerId)
+            .orElseThrow(() -> new AppException(ErrorCode.ADDRESS_NOT_FOUND));
+    }
+
+    @Override
+    public List<AddressResponse> getAllAddressesByCustomerId(Long customerId) {
         customerService.getCustomerById(customerId);
 
         List<Address> addresses = addressRepository.findAllByCustomerId(customerId);
         return addressMapper.toResponseList(addresses);
-    }
-
-    @Override
-    public Address getAddressById(Long customerId, Long addressId) {
-        return addressRepository.findByIdAndCustomerId(addressId, customerId)
-                .orElseThrow(() -> new AppException(ErrorCode.ADDRESS_NOT_FOUND));
     }
 
     @Override

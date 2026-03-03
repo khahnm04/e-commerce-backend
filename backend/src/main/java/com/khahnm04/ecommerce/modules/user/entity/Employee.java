@@ -5,8 +5,6 @@ import com.khahnm04.ecommerce.modules.auth.entity.User;
 import com.khahnm04.ecommerce.modules.branch.entity.Branch;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Getter
@@ -15,8 +13,6 @@ import org.hibernate.annotations.SQLRestriction;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "employees")
-@SQLDelete(sql = "UPDATE employees SET deleted_at = NOW() WHERE id = ?")
-@SQLRestriction("deleted_at IS NULL")
 public class Employee extends BaseEntity<Long> {
 
     @OneToOne(fetch = FetchType.LAZY)

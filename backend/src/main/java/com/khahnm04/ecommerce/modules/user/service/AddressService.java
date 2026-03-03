@@ -9,9 +9,9 @@ public interface AddressService {
 
     AddressResponse createAddress(Long customerId, AddressRequest request);
 
-    List<AddressResponse> getAddressesByCustomerId(Long customerId);
-
     Address getAddressById(Long customerId, Long addressId);
+
+    List<AddressResponse> getAllAddressesByCustomerId(Long customerId);
 
     AddressResponse getAddressDetailById(Long customerId, Long addressId);
 

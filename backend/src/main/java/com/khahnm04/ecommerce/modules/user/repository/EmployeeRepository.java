@@ -2,7 +2,6 @@ package com.khahnm04.ecommerce.modules.user.repository;
 
 import com.khahnm04.ecommerce.modules.user.entity.Employee;
 import org.springframework.data.jpa.repository.*;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
@@ -12,27 +11,33 @@ import java.util.Set;
 @Repository
 public interface EmployeeRepository extends JpaRepository<Employee, Long> {
 
-    @EntityGraph(attributePaths = { "user", "branch" })
-    Optional<Employee> findById(Long id);
-
     boolean existsByCode(String code);
 
     boolean existsByCodeAndIdNot(String code, Long id);
 
-    @Query(value = "SELECT * FROM employees WHERE id = :id", nativeQuery = true)
-    Optional<Employee> findDeletedEmployeeById(@Param("id") Long id);
+    @EntityGraph(attributePaths = { "user", "branch" })
+    Optional<Employee> findByIdAndDeletedAtIsNull(Long id);
 
-    @Modifying
-    @Transactional
-    @Query("UPDATE Employee e SET e.deletedAt = :now WHERE e.id IN :ids")
-    void softDeleteByIds(LocalDateTime now, Set<Long> ids);
+    @EntityGraph(attributePaths = { "user", "branch" })
+    Optional<Employee> findByIdAndDeletedAtIsNotNull(Long id);
 
-    @Query(value = "SELECT * FROM employees WHERE id IN :ids", nativeQuery = true)
+    @EntityGraph(attributePaths = { "user", "branch" })
+    Optional<Employee> findByCodeAndDeletedAtIsNull(String code);
+
+    @EntityGraph(attributePaths = { "user", "branch" })
+    Optional<Employee> findByCodeAndDeletedAtIsNotNull(String code);
+
+    @Query("SELECT e FROM Employee e WHERE e.id IN :ids AND e.deletedAt IS NOT NULL")
     Set<Employee> findAllDeletedByIds(Set<Long> ids);
 
     @Modifying
     @Transactional
-    @Query(value = "UPDATE employees SET deleted_at = NULL WHERE id IN :ids", nativeQuery = true)
+    @Query("UPDATE Employee e SET e.deletedAt = :now WHERE e.id IN :ids AND e.deletedAt IS NULL")
+    void softDeleteByIds(LocalDateTime now, Set<Long> ids);
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE Employee e SET e.deletedAt = NULL WHERE e.id IN :ids AND e.deletedAt IS NOT NULL")
     void restoreDeletedByIds(Set<Long> ids);
 
 }

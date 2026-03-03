@@ -31,24 +31,24 @@ public class CustomerAddressController {
                 .build();
     }
 
+    @GetMapping("/{id}")
+    public ApiResponse<AddressResponse> getAddressDetailById(
+        @PathVariable Long customerId,
+        @PathVariable Long id
+    ) {
+        return ApiResponse.<AddressResponse>builder()
+            .data(addressService.getAddressDetailById(customerId, id))
+            .message("Get address detail successfully")
+            .build();
+    }
+
     @GetMapping
-    public ApiResponse<List<AddressResponse>> getAddresses(
+    public ApiResponse<List<AddressResponse>> getAllAddressesByCustomerId(
             @PathVariable Long customerId
     ) {
         return ApiResponse.<List<AddressResponse>>builder()
-                .data(addressService.getAddressesByCustomerId(customerId))
+                .data(addressService.getAllAddressesByCustomerId(customerId))
                 .message("Get addresses successfully")
-                .build();
-    }
-
-    @GetMapping("/{id}")
-    public ApiResponse<AddressResponse> getAddressDetailById(
-            @PathVariable Long customerId,
-            @PathVariable Long id
-    ) {
-        return ApiResponse.<AddressResponse>builder()
-                .data(addressService.getAddressDetailById(customerId, id))
-                .message("Get address detail successfully")
                 .build();
     }
 

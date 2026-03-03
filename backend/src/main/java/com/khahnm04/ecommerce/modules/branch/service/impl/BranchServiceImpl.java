@@ -63,19 +63,22 @@ public class BranchServiceImpl implements BranchService {
     }
 
     @Override
-    public BranchResponse getBranchDetailById(Long id) {
-        return branchMapper.toBranchResponse(getBranchById(id));
-    }
+    public BranchResponse getBranchDetail(String identifier, boolean deleted) {
+        Branch branch;
 
-    @Override
-    public BranchResponse getDeletedBranchDetailById(Long id) {
-        return branchMapper.toBranchResponse(getDeletedBranchById(id));
-    }
+        if (identifier.matches("\\d+")) {
+            Long id = Long.parseLong(identifier);
+            branch = deleted
+                    ? getDeletedBranchById(id)
+                    : getBranchById(id);
+        } else {
+            branch = deleted
+                    ? branchRepository.findByCodeAndDeletedAtIsNotNull(identifier)
+                            .orElseThrow(() -> new AppException(ErrorCode.BRANCH_NOT_FOUND))
+                    : branchRepository.findByCodeAndDeletedAtIsNull(identifier)
+                            .orElseThrow(() -> new AppException(ErrorCode.BRANCH_NOT_FOUND));
+        }
 
-    @Override
-    public BranchResponse getBranchDetailByCode(String code) {
-        Branch branch = branchRepository.findByCodeAndDeletedAtIsNull(code)
-                .orElseThrow(() -> new AppException(ErrorCode.BRANCH_NOT_FOUND));
         return branchMapper.toBranchResponse(branch);
     }
 
@@ -139,12 +142,12 @@ public class BranchServiceImpl implements BranchService {
     @Override
     @Transactional
     public void restoreBranch(Long id) {
-        Branch branch = getBranchById(id);
+        Branch branch = getDeletedBranchById(id);
         if (branch.getDeletedAt() == null) {
             log.warn("Branch with id {} is not in a deleted state", id);
             return;
         }
-        branch.setDeletedAt(LocalDateTime.now());
+        branch.setDeletedAt(null);
         branchRepository.save(branch);
         log.info("Branch restored with id {}", id);
     }
@@ -196,6 +199,11 @@ public class BranchServiceImpl implements BranchService {
 
     // ======================== Private methods ========================
 
+    private Branch getDeletedBranchById(Long id) {
+        return branchRepository.findByIdAndDeletedAtIsNotNull(id)
+                .orElseThrow(() -> new AppException(ErrorCode.BRANCH_NOT_FOUND));
+    }
+
     private PageResponse<BranchResponse> getAllWithFilterAndSearch(BranchFilterRequest request, boolean isDeleted) {
         Pageable pageable = PageRequest.of(request.getPage() - 1, request.getSize(),
                 SortUtils.parseSort(request.getSort()));
@@ -229,11 +237,6 @@ public class BranchServiceImpl implements BranchService {
 
         Page<BranchResponse> page = new PageImpl<>(content, pageable, total);
         return PageResponse.fromPage(page);
-    }
-
-    private Branch getDeletedBranchById(Long id) {
-        return branchRepository.findByIdAndDeletedAtIsNotNull(id)
-                .orElseThrow(() -> new AppException(ErrorCode.BRANCH_NOT_FOUND));
     }
 
 }
