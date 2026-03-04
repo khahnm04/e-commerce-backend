@@ -1,7 +1,7 @@
 package com.khahnm04.ecommerce.modules.catalog.dto.response;
 
 import com.khahnm04.ecommerce.common.dto.BaseResponse;
-import com.khahnm04.ecommerce.modules.catalog.enums.CategoryStatus;
+
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
@@ -25,6 +25,5 @@ public class CategoryResponse extends BaseResponse<Long> {
     private String metaTitle;
     private String metaDescription;
     private String metaKeywords;
-    private CategoryStatus status;
 
 }

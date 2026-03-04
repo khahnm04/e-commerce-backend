@@ -1,12 +1,9 @@
 package com.khahnm04.ecommerce.modules.catalog.entity;
 
 import com.khahnm04.ecommerce.common.entity.BaseEntity;
-import com.khahnm04.ecommerce.modules.catalog.enums.CategoryStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Getter
@@ -15,8 +12,6 @@ import org.hibernate.annotations.SQLRestriction;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "categories")
-@SQLDelete(sql = "UPDATE categories SET deleted_at = NOW() WHERE id = ?")
-@SQLRestriction("deleted_at IS NULL")
 public class Category extends BaseEntity<Long> {
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -57,10 +52,5 @@ public class Category extends BaseEntity<Long> {
 
     @Column(name = "meta_keywords")
     private String metaKeywords;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status")
-    @Builder.Default
-    private CategoryStatus status = CategoryStatus.ACTIVE;
 
 }

@@ -9,7 +9,7 @@ import com.khahnm04.ecommerce.modules.catalog.dto.request.*;
 import com.khahnm04.ecommerce.modules.catalog.dto.response.CategoryResponse;
 import com.khahnm04.ecommerce.modules.catalog.entity.Category;
 import com.khahnm04.ecommerce.modules.catalog.enums.CategorySortField;
-import com.khahnm04.ecommerce.modules.catalog.enums.CategoryStatus;
+
 import com.khahnm04.ecommerce.modules.catalog.mapper.CategoryMapper;
 import com.khahnm04.ecommerce.modules.catalog.mapper.mybaits.CategoryMyBatisMapper;
 import com.khahnm04.ecommerce.modules.catalog.repository.CategoryRepository;
@@ -67,8 +67,34 @@ public class CategoryServiceImpl implements CategoryService {
         Category savedCategory = categoryRepository.save(category);
         savedCategory.setPath(parentPath + savedCategory.getId() + "/");
 
-        log.info("Created category id: {}", savedCategory.getId());
+        log.info("Created category with id: {}", savedCategory.getId());
         return categoryMapper.toCategoryResponse(savedCategory);
+    }
+
+    @Override
+    public Category getCategoryById(Long id) {
+        return categoryRepository.findByIdAndDeletedAtIsNull(id)
+                .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND));
+    }
+
+    @Override
+    public CategoryResponse getCategoryDetail(String identifier, boolean deleted) {
+        Category category;
+
+        if (identifier.matches("\\d+")) {
+            Long id = Long.parseLong(identifier);
+            category = deleted
+                    ? getDeletedCategoryById(id)
+                    : getCategoryById(id);
+        } else {
+            category = deleted
+                    ? categoryRepository.findBySlugAndDeletedAtIsNotNull(identifier)
+                            .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND))
+                    : categoryRepository.findBySlugAndDeletedAtIsNull(identifier)
+                            .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND));
+        }
+
+        return categoryMapper.toCategoryResponse(category);
     }
 
     @Override
@@ -90,41 +116,16 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public Category getCategoryById(Long id) {
-        return categoryRepository.findById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND));
-    }
-
-    @Override
-    public CategoryResponse getCategoryDetailById(Long id) {
-        return categoryMapper.toCategoryResponse(getCategoryById(id));
-    }
-
-    @Override
-    public CategoryResponse getCategoryDetailBySlug(String slug) {
-        Category category = categoryRepository.findBySlug(slug)
-                .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND));
-        return categoryMapper.toCategoryResponse(category);
-    }
-
-    @Override
-    public CategoryResponse getDeletedCategoryDetailById(Long id) {
-        Category category = categoryRepository.findDeletedCategoryById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND));
-        return categoryMapper.toCategoryResponse(category);
-    }
-
-    @Override
     @Transactional
     public CategoryResponse updateCategory(Long id, CategoryRequest request) {
         Category category = getCategoryById(id);
 
         if (StringUtils.hasText(request.getName())
-                && categoryRepository.existsByNameIgnoreCaseAndIdNot(request.getName(), id)) {
+                && categoryRepository.existsByNameAndIdNot(request.getName(), id)) {
             throw new AppException(ErrorCode.CATEGORY_EXISTED);
         }
         if (StringUtils.hasText(request.getSlug())
-                && categoryRepository.existsBySlugIgnoreCaseAndIdNot(request.getSlug(), id)) {
+                && categoryRepository.existsBySlugAndIdNot(request.getSlug(), id)) {
             throw new AppException(ErrorCode.CATEGORY_EXISTED);
         }
 
@@ -164,46 +165,32 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     @Transactional
-    public void updateCategoryStatus(Long id, CategoryUpdateStatusRequest request) {
-        Category category = getCategoryById(id);
-
-        if (category.getStatus() == request.getStatus()) {
-            return;
-        }
-
-        category.setStatus(request.getStatus());
-        categoryRepository.save(category);
-        log.info("Changed status for category id {} to {}", id, request.getStatus());
-    }
-
-    @Override
-    @Transactional
     public void softDeleteCategory(Long id) {
         Category category = getCategoryById(id);
+        if (category.getDeletedAt() != null) {
+            log.warn("Category with id {} is already soft deleted", id);
+            return;
+        }
         List<Long> allRelatedIds = categoryRepository.findAllIdsByPath(category.getPath());
         categoryRepository.softDeleteAllByIds(allRelatedIds, LocalDateTime.now());
-        log.info("Soft deleted category id {} and {} descendants", id, allRelatedIds.size() - 1);
+        log.info("Soft-deleted category with id: {} and {} descendants", id, allRelatedIds.size() - 1);
     }
 
     @Override
     @Transactional
     public void restoreCategory(Long id) {
-        categoryRepository.findDeletedCategoryById(id)
-                .ifPresentOrElse(category -> {
-                    if (category.getDeletedAt() == null) {
-                        log.warn("Category with id {} is not deleted, no restoration needed", id);
-                        return;
-                    }
+        Category category = getDeletedCategoryById(id);
+        if (category.getDeletedAt() == null) {
+            log.warn("Category with id {} is not in a deleted state", id);
+            return;
+        }
 
-                    LocalDateTime deletedTime = category.getDeletedAt();
-                    LocalDateTime start = deletedTime.minusSeconds(2);
-                    LocalDateTime end = deletedTime.plusSeconds(2);
+        LocalDateTime deletedTime = category.getDeletedAt();
+        LocalDateTime start = deletedTime.minusSeconds(2);
+        LocalDateTime end = deletedTime.plusSeconds(2);
 
-                    categoryRepository.restoreDescendantsByTimeRange(category.getPath(), start, end);
-                    log.info("Restored category id {} and matching descendants", id);
-                }, () -> {
-                    throw new AppException(ErrorCode.CATEGORY_NOT_FOUND);
-                });
+        categoryRepository.restoreDescendantsByTimeRange(category.getPath(), start, end);
+        log.info("Restored category with id {} and matching descendants", id);
     }
 
     @Override
@@ -233,11 +220,6 @@ public class CategoryServiceImpl implements CategoryService {
         }
 
         switch (action) {
-            case "ACTIVE", "INACTIVE" -> {
-                CategoryStatus status = CategoryStatus.valueOf(action);
-                categoryRepository.updateStatusByIds(status, existingCategoryIds);
-                log.info("Bulk update status {} categories ids: {}", action, existingCategoryIds);
-            }
             case "DELETE" -> {
                 categoryRepository.softDeleteByIds(LocalDateTime.now(), existingCategoryIds);
                 log.info("Bulk delete categories ids: {}", existingCategoryIds);
@@ -253,6 +235,11 @@ public class CategoryServiceImpl implements CategoryService {
 
     // ======================== Private methods ========================
 
+    private Category getDeletedCategoryById(Long id) {
+        return categoryRepository.findByIdAndDeletedAtIsNotNull(id)
+                .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND));
+    }
+
     private Page<CategoryResponse> getAllWithFilterAndSearch(CategoryFilterRequest request, Pageable pageable,
             boolean isDeleted) {
         String keyword = StringUtils.hasText(request.getKeyword())
@@ -266,7 +253,6 @@ public class CategoryServiceImpl implements CategoryService {
 
         List<CategoryResponse> content = categoryMyBatisMapper.findAllWithFilterAndSearch(
                 keyword,
-                request.getStatus(),
                 request.getParentId(),
                 request.getStartDate(),
                 request.getEndDate(),
@@ -278,7 +264,6 @@ public class CategoryServiceImpl implements CategoryService {
 
         long total = categoryMyBatisMapper.countWithFilterAndSearch(
                 keyword,
-                request.getStatus(),
                 request.getParentId(),
                 request.getStartDate(),
                 request.getEndDate(),

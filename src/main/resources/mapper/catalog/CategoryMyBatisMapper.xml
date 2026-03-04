@@ -19,7 +19,7 @@
         <result property="metaTitle" column="meta_title"/>
         <result property="metaDescription" column="meta_description"/>
         <result property="metaKeywords" column="meta_keywords"/>
-        <result property="status" column="status"/>
+
         <result property="createdAt" column="created_at"/>
         <result property="createdBy" column="created_by"/>
         <result property="updatedAt" column="updated_at"/>
@@ -41,7 +41,6 @@
         c.meta_title,
         c.meta_description,
         c.meta_keywords,
-        c.status,
         c.created_at,
         c.deleted_at
     </sql>
@@ -84,10 +83,7 @@
                 )
             </if>
 
-            <!-- Status filter -->
-            <if test="status != null">
-                AND c.status = #{status}
-            </if>
+
 
             <!-- Parent filter -->
             <if test="parentId != null">

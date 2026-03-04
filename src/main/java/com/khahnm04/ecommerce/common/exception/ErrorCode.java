@@ -115,7 +115,6 @@ public enum ErrorCode {
     // =================================================================
     CATEGORY_SELECTION_REQUIRED(4000, "At least one category must be selected", HttpStatus.BAD_REQUEST),
     CATEGORY_ACTION_REQUIRED(4001, "Bulk action type cannot be blank", HttpStatus.BAD_REQUEST),
-    CATEGORY_STATUS_REQUIRED(4002, "Category status cannot be blank", HttpStatus.BAD_REQUEST),
     CATEGORY_NAME_REQUIRED(4003, "Category name cannot be blank", HttpStatus.BAD_REQUEST),
     CATEGORY_SLUG_REQUIRED(4004, "Category slug cannot be blank", HttpStatus.BAD_REQUEST),
     CATEGORY_NOT_FOUND(4050, "Category not found", HttpStatus.NOT_FOUND),

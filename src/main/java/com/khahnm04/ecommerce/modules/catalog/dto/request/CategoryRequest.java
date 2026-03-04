@@ -1,6 +1,5 @@
 package com.khahnm04.ecommerce.modules.catalog.dto.request;
 
-import com.khahnm04.ecommerce.modules.catalog.enums.CategoryStatus;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import java.io.Serializable;
@@ -31,8 +30,6 @@ public class CategoryRequest implements Serializable {
     private String metaDescription;
 
     private String metaKeywords;
-
-    private CategoryStatus status;
 
     private Long parentId;
 

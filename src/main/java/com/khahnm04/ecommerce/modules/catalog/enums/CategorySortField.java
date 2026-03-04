@@ -12,8 +12,7 @@ public enum CategorySortField implements SortableField {
     UPDATED_AT("updatedAt", "c.updated_at", false),
     NAME("name", "c.name", false),
     SLUG("slug", "c.slug", false),
-    POSITION("position", "c.position", false),
-    STATUS("status", "c.status", false);
+    POSITION("position", "c.position", false);
 
     private final String fieldName;
     private final String sqlColumn;
