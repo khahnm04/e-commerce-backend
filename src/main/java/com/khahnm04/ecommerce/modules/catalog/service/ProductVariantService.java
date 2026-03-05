@@ -10,17 +10,15 @@ import com.khahnm04.ecommerce.modules.catalog.entity.ProductVariant;
 
 public interface ProductVariantService {
 
+    ProductVariant getProductVariantById(Long id);
+
+    ProductVariantResponse getProductVariantDetail(String identifier, boolean deleted);
+
     ProductVariantResponse createProductVariant(ProductVariantRequest request);
 
     PageResponse<ProductVariantResponse> getAllProductVariants(ProductVariantFilterRequest filter);
 
     PageResponse<ProductVariantResponse> getAllDeletedProductVariants(ProductVariantFilterRequest filter);
-
-    ProductVariant getProductVariantById(Long id);
-
-    ProductVariantResponse getProductVariantDetailById(Long id);
-
-    ProductVariantResponse getProductVariantDetailBySku(String sku);
 
     ProductVariantResponse updateProductVariant(Long id, ProductVariantRequest request);
 

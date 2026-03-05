@@ -16,7 +16,7 @@ public class ProductResponse extends BaseResponse<Long> {
 
     private String name;
     private String slug;
-    private String productCode;
+    private String code;
     private String brandName;
     private Long brandId;
     private Boolean hasSerialNumber;

@@ -24,18 +24,26 @@ public class AdminProductVariantController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ApiResponse<ProductVariantResponse> createProductVariant(
-            @Valid @RequestBody ProductVariantRequest request
-    ) {
+            @Valid @RequestBody ProductVariantRequest request) {
         return ApiResponse.<ProductVariantResponse>builder()
                 .data(productVariantService.createProductVariant(request))
                 .message("Product variant created successfully")
                 .build();
     }
 
+    @GetMapping("/{identifier}")
+    public ApiResponse<ProductVariantResponse> getProductVariantDetail(
+            @PathVariable String identifier,
+            @RequestParam(defaultValue = "false") boolean deleted) {
+        return ApiResponse.<ProductVariantResponse>builder()
+                .data(productVariantService.getProductVariantDetail(identifier, deleted))
+                .message("Get product variant detail successfully")
+                .build();
+    }
+
     @GetMapping
     public ApiResponse<List<ProductVariantResponse>> getAllProductVariants(
-            @Valid @ModelAttribute ProductVariantFilterRequest filter
-    ) {
+            @Valid @ModelAttribute ProductVariantFilterRequest filter) {
         PageResponse<ProductVariantResponse> pageResponse = productVariantService.getAllProductVariants(filter);
         return ApiResponse.<List<ProductVariantResponse>>builder()
                 .data(pageResponse.getData())
@@ -46,8 +54,7 @@ public class AdminProductVariantController {
 
     @GetMapping("/deleted")
     public ApiResponse<List<ProductVariantResponse>> getAllDeletedProductVariants(
-            @Valid @ModelAttribute ProductVariantFilterRequest filter
-    ) {
+            @Valid @ModelAttribute ProductVariantFilterRequest filter) {
         PageResponse<ProductVariantResponse> pageResponse = productVariantService
                 .getAllDeletedProductVariants(filter);
         return ApiResponse.<List<ProductVariantResponse>>builder()
@@ -57,31 +64,10 @@ public class AdminProductVariantController {
                 .build();
     }
 
-    @GetMapping("/{id}")
-    public ApiResponse<ProductVariantResponse> getProductVariantDetailById(
-            @PathVariable Long id
-    ) {
-        return ApiResponse.<ProductVariantResponse>builder()
-                .data(productVariantService.getProductVariantDetailById(id))
-                .message("Get product variant detail successfully")
-                .build();
-    }
-
-    @GetMapping("/sku/{sku}")
-    public ApiResponse<ProductVariantResponse> getProductVariantDetailBySku(
-            @PathVariable String sku
-    ) {
-        return ApiResponse.<ProductVariantResponse>builder()
-                .data(productVariantService.getProductVariantDetailBySku(sku))
-                .message("Get product variant detail by SKU successfully")
-                .build();
-    }
-
     @PutMapping("/{id}")
     public ApiResponse<ProductVariantResponse> updateProductVariant(
             @PathVariable Long id,
-            @Valid @RequestBody ProductVariantRequest request
-    ) {
+            @Valid @RequestBody ProductVariantRequest request) {
         return ApiResponse.<ProductVariantResponse>builder()
                 .data(productVariantService.updateProductVariant(id, request))
                 .message("Product variant updated successfully")
@@ -91,8 +77,7 @@ public class AdminProductVariantController {
     @PatchMapping("/{id}/status")
     public ApiResponse<ProductVariantResponse> updateProductVariantStatus(
             @PathVariable Long id,
-            @Valid @RequestBody ProductVariantUpdateStatusRequest request
-    ) {
+            @Valid @RequestBody ProductVariantUpdateStatusRequest request) {
         return ApiResponse.<ProductVariantResponse>builder()
                 .data(productVariantService.updateProductVariantStatus(id, request))
                 .message("Product variant status updated successfully")
@@ -101,8 +86,7 @@ public class AdminProductVariantController {
 
     @DeleteMapping("/{id}")
     public ApiResponse<Void> softDeleteProductVariant(
-            @PathVariable Long id
-    ) {
+            @PathVariable Long id) {
         productVariantService.softDeleteProductVariant(id);
         return ApiResponse.<Void>builder()
                 .message("Product variant soft deleted successfully")
@@ -111,8 +95,7 @@ public class AdminProductVariantController {
 
     @PatchMapping("/{id}/restore")
     public ApiResponse<Void> restoreProductVariant(
-            @PathVariable Long id
-    ) {
+            @PathVariable Long id) {
         productVariantService.restoreProductVariant(id);
         return ApiResponse.<Void>builder()
                 .message("Product variant restored successfully")
@@ -121,8 +104,7 @@ public class AdminProductVariantController {
 
     @PatchMapping("/bulk")
     public ApiResponse<Void> handleBulkAction(
-            @Valid @RequestBody ProductVariantBulkActionRequest request
-    ) {
+            @Valid @RequestBody ProductVariantBulkActionRequest request) {
         productVariantService.handleBulkAction(request);
         return ApiResponse.<Void>builder()
                 .message("Bulk action executed successfully")

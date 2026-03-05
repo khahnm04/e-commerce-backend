@@ -8,7 +8,7 @@
         <id property="id" column="id"/>
         <result property="name" column="name"/>
         <result property="slug" column="slug"/>
-        <result property="productCode" column="product_code"/>
+        <result property="code" column="code"/>
         <result property="brandId" column="brand_id"/>
         <result property="brandName" column="brand_name"/>
         <result property="hasSerialNumber" column="has_serial_number"/>
@@ -31,7 +31,7 @@
         p.id,
         p.name,
         p.slug,
-        p.product_code,
+        p.code,
         p.brand_id,
         p.has_serial_number,
         p.warranty_months,
@@ -76,12 +76,12 @@
                 </otherwise>
             </choose>
 
-            <!-- Keyword search: search in name, slug, product_code -->
+            <!-- Keyword search: search in name, slug, code -->
             <if test="keyword != null and keyword != ''">
                 AND (
                     p.name LIKE CONCAT('%', #{keyword}, '%')
                     OR p.slug LIKE CONCAT('%', #{keyword}, '%')
-                    OR p.product_code LIKE CONCAT('%', #{keyword}, '%')
+                    OR p.code LIKE CONCAT('%', #{keyword}, '%')
                 )
             </if>
 

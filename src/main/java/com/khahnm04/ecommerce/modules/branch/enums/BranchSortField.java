@@ -12,8 +12,7 @@ public enum BranchSortField implements SortableField {
     UPDATED_AT("updatedAt", "updated_at", false),
     CODE("code", "b.code", false),
     NAME("name", "b.name", false),
-    CITY("city", "b.city", false),
-    STATUS("status", "b.status", false);
+    CITY("city", "b.city", false);
 
     private final String fieldName;
     private final String sqlColumn;

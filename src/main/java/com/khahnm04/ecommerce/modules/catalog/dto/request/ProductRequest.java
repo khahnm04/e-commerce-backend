@@ -20,10 +20,9 @@ public class ProductRequest implements Serializable {
     @NotBlank(message = "PRODUCT_NAME_REQUIRED")
     private String name;
 
-    @NotBlank(message = "PRODUCT_SLUG_REQUIRED")
     private String slug;
 
-    private String productCode;
+    private String code;
 
     @NotNull(message = "PRODUCT_BRAND_REQUIRED")
     private Long brandId;

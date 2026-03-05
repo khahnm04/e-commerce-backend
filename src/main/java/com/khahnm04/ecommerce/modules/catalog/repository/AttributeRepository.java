@@ -5,7 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
@@ -19,26 +18,29 @@ public interface AttributeRepository extends JpaRepository<Attribute, Long>, Jpa
 
     boolean existsByName(String name);
 
-    Optional<Attribute> findByCode(String code);
+    Optional<Attribute> findByCodeAndDeletedAtIsNull(String code);
 
-    @Query(value = "SELECT * FROM attributes WHERE id = :id", nativeQuery = true)
-    Optional<Attribute> findDeletedAttributeById(@Param("id") Long id);
+    Optional<Attribute> findByCodeAndDeletedAtIsNotNull(String code);
+
+    Optional<Attribute> findByIdAndDeletedAtIsNull(Long id);
+
+    Optional<Attribute> findByIdAndDeletedAtIsNotNull(Long id);
 
     boolean existsByNameAndIdNot(String name, Long id);
 
     boolean existsByCodeAndIdNot(String code, Long id);
 
-    @Modifying
-    @Transactional
-    @Query("UPDATE Attribute a SET a.deletedAt = :now WHERE a.id IN :ids")
-    void softDeleteByIds(@Param("now") LocalDateTime now, @Param("ids") Set<Long> ids);
-
-    @Query(value = "SELECT * FROM attributes WHERE id IN :ids", nativeQuery = true)
-    Set<Attribute> findAllDeletedByIds(@Param("ids") Set<Long> ids);
+    @Query("SELECT a FROM Attribute a WHERE a.id IN :ids AND a.deletedAt IS NOT NULL")
+    Set<Attribute> findAllDeletedByIds(Set<Long> ids);
 
     @Modifying
     @Transactional
-    @Query(value = "UPDATE attributes SET deleted_at = NULL WHERE id IN :ids", nativeQuery = true)
-    void restoreDeletedByIds(@Param("ids") Set<Long> ids);
+    @Query("UPDATE Attribute a SET a.deletedAt = :now WHERE a.id IN :ids AND a.deletedAt IS NULL")
+    void softDeleteByIds(LocalDateTime now, Set<Long> ids);
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE Attribute a SET a.deletedAt = NULL WHERE a.id IN :ids AND a.deletedAt IS NOT NULL")
+    void restoreDeletedByIds(Set<Long> ids);
 
 }

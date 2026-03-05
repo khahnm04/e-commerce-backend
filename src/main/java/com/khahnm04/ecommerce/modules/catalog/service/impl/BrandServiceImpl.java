@@ -8,11 +8,9 @@ import com.khahnm04.ecommerce.common.util.SortUtils;
 import com.khahnm04.ecommerce.modules.catalog.dto.request.BrandBulkActionRequest;
 import com.khahnm04.ecommerce.modules.catalog.dto.request.BrandFilterRequest;
 import com.khahnm04.ecommerce.modules.catalog.dto.request.BrandRequest;
-import com.khahnm04.ecommerce.modules.catalog.dto.request.BrandUpdateStatusRequest;
 import com.khahnm04.ecommerce.modules.catalog.dto.response.BrandResponse;
 import com.khahnm04.ecommerce.modules.catalog.entity.Brand;
 import com.khahnm04.ecommerce.modules.catalog.enums.BrandSortField;
-import com.khahnm04.ecommerce.modules.catalog.enums.BrandStatus;
 import com.khahnm04.ecommerce.modules.catalog.mapper.BrandMapper;
 import com.khahnm04.ecommerce.modules.catalog.mapper.mybaits.BrandMyBatisMapper;
 import com.khahnm04.ecommerce.modules.catalog.repository.BrandRepository;
@@ -52,54 +50,45 @@ public class BrandServiceImpl implements BrandService {
         }
 
         Brand brand = brandMapper.toBrand(request);
-        brand.setStatus(request.getStatus() == null ? BrandStatus.ACTIVE : request.getStatus());
-
         Brand savedBrand = brandRepository.save(brand);
-        log.info("Created brand id: {}", savedBrand.getId());
+        log.info("Created brand with id: {}", savedBrand.getId());
         return brandMapper.toBrandResponse(savedBrand);
     }
 
     @Override
-    public PageResponse<BrandResponse> getAllBrands(BrandFilterRequest request) {
-        Pageable pageable = PageRequest.of(request.getPage() - 1, request.getSize(),
-                SortUtils.parseSort(request.getSort()));
+    public Brand getBrandById(Long id) {
+        return brandRepository.findByIdAndDeletedAtIsNull(id)
+                .orElseThrow(() -> new AppException(ErrorCode.BRAND_NOT_FOUND));
+    }
 
-        Page<BrandResponse> page = this.getAllWithFilterAndSearch(request, pageable, false);
-        return PageResponse.fromPage(page);
+    @Override
+    public BrandResponse getBrandDetail(String identifier, boolean deleted) {
+        Brand brand;
+
+        if (identifier.matches("\\d+")) {
+            Long id = Long.parseLong(identifier);
+            brand = deleted
+                    ? getDeletedBrandById(id)
+                    : getBrandById(id);
+        } else {
+            brand = deleted
+                    ? brandRepository.findBySlugAndDeletedAtIsNotNull(identifier)
+                            .orElseThrow(() -> new AppException(ErrorCode.BRAND_NOT_FOUND))
+                    : brandRepository.findBySlugAndDeletedAtIsNull(identifier)
+                            .orElseThrow(() -> new AppException(ErrorCode.BRAND_NOT_FOUND));
+        }
+
+        return brandMapper.toBrandResponse(brand);
+    }
+
+    @Override
+    public PageResponse<BrandResponse> getAllBrands(BrandFilterRequest request) {
+        return getAllWithFilterAndSearch(request, false);
     }
 
     @Override
     public PageResponse<BrandResponse> getAllDeletedBrands(BrandFilterRequest request) {
-        Pageable pageable = PageRequest.of(request.getPage() - 1, request.getSize(),
-                SortUtils.parseSort(request.getSort()));
-
-        Page<BrandResponse> page = this.getAllWithFilterAndSearch(request, pageable, true);
-        return PageResponse.fromPage(page);
-    }
-
-    @Override
-    public Brand getBrandById(Long id) {
-        return brandRepository.findById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.BRAND_NOT_FOUND));
-    }
-
-    @Override
-    public BrandResponse getBrandDetailById(Long id) {
-        return brandMapper.toBrandResponse(getBrandById(id));
-    }
-
-    @Override
-    public BrandResponse getBrandDetailBySlug(String slug) {
-        Brand brand = brandRepository.findBySlug(slug)
-                .orElseThrow(() -> new AppException(ErrorCode.BRAND_NOT_FOUND));
-        return brandMapper.toBrandResponse(brand);
-    }
-
-    @Override
-    public BrandResponse getDeletedBrandDetailById(Long id) {
-        Brand brand = brandRepository.findDeletedBrandById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.BRAND_NOT_FOUND));
-        return brandMapper.toBrandResponse(brand);
+        return getAllWithFilterAndSearch(request, true);
     }
 
     @Override
@@ -118,20 +107,8 @@ public class BrandServiceImpl implements BrandService {
 
         brandMapper.updateBrand(brand, request);
         Brand savedBrand = brandRepository.save(brand);
-        log.info("Updated brand id: {}", savedBrand.getId());
+        log.info("Updated brand with id: {}", savedBrand.getId());
         return brandMapper.toBrandResponse(savedBrand);
-    }
-
-    @Override
-    @Transactional
-    public void updateBrandStatus(Long id, BrandUpdateStatusRequest request) {
-        Brand brand = getBrandById(id);
-        if (brand.getStatus() == request.getStatus()) {
-            return;
-        }
-        brand.setStatus(request.getStatus());
-        brandRepository.save(brand);
-        log.info("Changed status for brand id {} to {}", id, request.getStatus());
     }
 
     @Override
@@ -139,28 +116,25 @@ public class BrandServiceImpl implements BrandService {
     public void softDeleteBrand(Long id) {
         Brand brand = getBrandById(id);
         if (brand.getDeletedAt() != null) {
+            log.warn("Brand with id {} is already soft deleted", id);
             return;
         }
         brand.setDeletedAt(LocalDateTime.now());
         brandRepository.save(brand);
-        log.info("Soft deleted brand id {}", id);
+        log.info("Soft-deleted brand with id: {}", id);
     }
 
     @Override
     @Transactional
     public void restoreBrand(Long id) {
-        brandRepository.findDeletedBrandById(id)
-                .ifPresentOrElse(brand -> {
-                    if (brand.getDeletedAt() == null) {
-                        log.warn("Brand with id {} is not deleted, no restoration needed", id);
-                        return;
-                    }
-                    brand.setDeletedAt(null);
-                    brandRepository.save(brand);
-                    log.info("Restored brand id {}", id);
-                }, () -> {
-                    throw new AppException(ErrorCode.BRAND_NOT_FOUND);
-                });
+        Brand brand = getDeletedBrandById(id);
+        if (brand.getDeletedAt() == null) {
+            log.warn("Brand with id {} is not in a deleted state", id);
+            return;
+        }
+        brand.setDeletedAt(null);
+        brandRepository.save(brand);
+        log.info("Brand restored with id {}", id);
     }
 
     @Override
@@ -190,11 +164,6 @@ public class BrandServiceImpl implements BrandService {
         }
 
         switch (action) {
-            case "ACTIVE", "INACTIVE" -> {
-                BrandStatus status = BrandStatus.valueOf(action);
-                brandRepository.updateStatusByIds(status, existingBrandIds);
-                log.info("Bulk update status {} brands ids: {}", action, existingBrandIds);
-            }
             case "DELETE" -> {
                 brandRepository.softDeleteByIds(LocalDateTime.now(), existingBrandIds);
                 log.info("Bulk delete brands ids: {}", existingBrandIds);
@@ -210,8 +179,16 @@ public class BrandServiceImpl implements BrandService {
 
     // ======================== Private methods ========================
 
-    private Page<BrandResponse> getAllWithFilterAndSearch(BrandFilterRequest request, Pageable pageable,
+    private Brand getDeletedBrandById(Long id) {
+        return brandRepository.findByIdAndDeletedAtIsNotNull(id)
+                .orElseThrow(() -> new AppException(ErrorCode.BRAND_NOT_FOUND));
+    }
+
+    private PageResponse<BrandResponse> getAllWithFilterAndSearch(BrandFilterRequest request,
             boolean isDeleted) {
+        Pageable pageable = PageRequest.of(request.getPage() - 1, request.getSize(),
+                SortUtils.parseSort(request.getSort()));
+
         String keyword = StringUtils.hasText(request.getKeyword())
                 ? request.getKeyword().trim()
                 : null;
@@ -222,7 +199,6 @@ public class BrandServiceImpl implements BrandService {
 
         List<BrandResponse> content = brandMyBatisMapper.findAllWithFilterAndSearch(
                 keyword,
-                request.getStatus(),
                 request.getStartDate(),
                 request.getEndDate(),
                 isDeleted,
@@ -233,12 +209,12 @@ public class BrandServiceImpl implements BrandService {
 
         long total = brandMyBatisMapper.countWithFilterAndSearch(
                 keyword,
-                request.getStatus(),
                 request.getStartDate(),
                 request.getEndDate(),
                 isDeleted);
 
-        return new PageImpl<>(content, pageable, total);
+        Page<BrandResponse> page = new PageImpl<>(content, pageable, total);
+        return PageResponse.fromPage(page);
     }
 
 }

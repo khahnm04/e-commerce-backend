@@ -10,7 +10,6 @@ import lombok.Setter;
 import org.springframework.format.annotation.DateTimeFormat;
 import java.io.Serializable;
 import java.time.LocalDate;
-import com.khahnm04.ecommerce.modules.branch.enums.BranchStatus;
 
 @Getter
 @Setter
@@ -30,8 +29,6 @@ public class BranchFilterRequest implements Serializable {
 
     @Builder.Default
     private String sort = "createdAt,desc";
-
-    private BranchStatus status;
 
     private String keyword;
 

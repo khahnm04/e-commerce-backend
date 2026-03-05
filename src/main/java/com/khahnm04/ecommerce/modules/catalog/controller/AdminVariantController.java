@@ -23,18 +23,26 @@ public class AdminVariantController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ApiResponse<VariantResponse> createVariant(
-            @Valid @RequestBody VariantRequest request
-    ) {
+            @Valid @RequestBody VariantRequest request) {
         return ApiResponse.<VariantResponse>builder()
                 .data(variantService.createVariant(request))
                 .message("Variant created successfully")
                 .build();
     }
 
+    @GetMapping("/{identifier}")
+    public ApiResponse<VariantResponse> getVariantDetail(
+            @PathVariable String identifier,
+            @RequestParam(defaultValue = "false") boolean deleted) {
+        return ApiResponse.<VariantResponse>builder()
+                .data(variantService.getVariantDetail(identifier, deleted))
+                .message("Get variant detail successfully")
+                .build();
+    }
+
     @GetMapping
     public ApiResponse<List<VariantResponse>> getAllVariants(
-            @Valid @ModelAttribute VariantFilterRequest filter
-    ) {
+            @Valid @ModelAttribute VariantFilterRequest filter) {
         PageResponse<VariantResponse> pageResponse = variantService.getAllVariants(filter);
         return ApiResponse.<List<VariantResponse>>builder()
                 .data(pageResponse.getData())
@@ -51,24 +59,6 @@ public class AdminVariantController {
                 .data(pageResponse.getData())
                 .meta(pageResponse.getMeta())
                 .message("Get deleted variants successfully")
-                .build();
-    }
-
-    @GetMapping("/{id}")
-    public ApiResponse<VariantResponse> getVariantDetailById(
-            @PathVariable Long id) {
-        return ApiResponse.<VariantResponse>builder()
-                .data(variantService.getVariantDetailById(id))
-                .message("Get variant detail successfully")
-                .build();
-    }
-
-    @GetMapping("/code/{code}")
-    public ApiResponse<VariantResponse> getVariantDetailByCode(
-            @PathVariable String code) {
-        return ApiResponse.<VariantResponse>builder()
-                .data(variantService.getVariantDetailByCode(code))
-                .message("Get variant detail by code successfully")
                 .build();
     }
 

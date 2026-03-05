@@ -13,7 +13,7 @@ public enum ProductSortField implements SortableField {
     NAME("name", "p.name", false),
     SLUG("slug", "p.slug", false),
     PRICE("price", "p.price", false),
-    PRODUCT_CODE("productCode", "p.product_code", false),
+    CODE("code", "p.code", false),
     STATUS("status", "p.status", false);
 
     private final String fieldName;

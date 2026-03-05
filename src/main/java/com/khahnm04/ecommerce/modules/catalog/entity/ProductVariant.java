@@ -5,8 +5,6 @@ import com.khahnm04.ecommerce.modules.catalog.enums.ProductVariantStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.SQLRestriction;
 import java.math.BigDecimal;
 
 @Entity
@@ -16,8 +14,6 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "product_variants")
-@SQLDelete(sql = "UPDATE product_variants SET deleted_at = NOW() WHERE id = ?")
-@SQLRestriction("deleted_at IS NULL")
 public class ProductVariant extends BaseEntity<Long> {
 
     @ManyToOne(fetch = FetchType.LAZY)

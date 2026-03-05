@@ -52,44 +52,44 @@ public class AttributeServiceImpl implements AttributeService {
         Attribute attribute = attributeMapper.toAttribute(request);
 
         Attribute savedAttribute = attributeRepository.save(attribute);
-        log.info("Created attribute id: {}", savedAttribute.getId());
+        log.info("Created attribute with id: {}", savedAttribute.getId());
         return attributeMapper.toAttributeResponse(savedAttribute);
     }
 
     @Override
-    public PageResponse<AttributeResponse> getAllAttributes(AttributeFilterRequest request) {
-        Pageable pageable = PageRequest.of(request.getPage() - 1, request.getSize(),
-                SortUtils.parseSort(request.getSort()));
+    public Attribute getAttributeById(Long id) {
+        return attributeRepository.findByIdAndDeletedAtIsNull(id)
+                .orElseThrow(() -> new AppException(ErrorCode.ATTRIBUTE_NOT_FOUND));
+    }
 
-        Page<AttributeResponse> page = this.getAllWithFilterAndSearch(request, pageable, false);
-        return PageResponse.fromPage(page);
+    @Override
+    public AttributeResponse getAttributeDetail(String identifier, boolean deleted) {
+        Attribute attribute;
+
+        if (identifier.matches("\\d+")) {
+            Long id = Long.parseLong(identifier);
+            attribute = deleted
+                    ? getDeletedAttributeById(id)
+                    : getAttributeById(id);
+        } else {
+            attribute = deleted
+                    ? attributeRepository.findByCodeAndDeletedAtIsNotNull(identifier)
+                            .orElseThrow(() -> new AppException(ErrorCode.ATTRIBUTE_NOT_FOUND))
+                    : attributeRepository.findByCodeAndDeletedAtIsNull(identifier)
+                            .orElseThrow(() -> new AppException(ErrorCode.ATTRIBUTE_NOT_FOUND));
+        }
+
+        return attributeMapper.toAttributeResponse(attribute);
+    }
+
+    @Override
+    public PageResponse<AttributeResponse> getAllAttributes(AttributeFilterRequest request) {
+        return getAllWithFilterAndSearch(request, false);
     }
 
     @Override
     public PageResponse<AttributeResponse> getAllDeletedAttributes(AttributeFilterRequest request) {
-        Pageable pageable = PageRequest.of(request.getPage() - 1, request.getSize(),
-                SortUtils.parseSort(request.getSort()));
-
-        Page<AttributeResponse> page = this.getAllWithFilterAndSearch(request, pageable, true);
-        return PageResponse.fromPage(page);
-    }
-
-    @Override
-    public Attribute getAttributeById(Long id) {
-        return attributeRepository.findById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.ATTRIBUTE_NOT_FOUND));
-    }
-
-    @Override
-    public AttributeResponse getAttributeDetailById(Long id) {
-        return attributeMapper.toAttributeResponse(getAttributeById(id));
-    }
-
-    @Override
-    public AttributeResponse getAttributeDetailByCode(String code) {
-        Attribute attribute = attributeRepository.findByCode(code)
-                .orElseThrow(() -> new AppException(ErrorCode.ATTRIBUTE_NOT_FOUND));
-        return attributeMapper.toAttributeResponse(attribute);
+        return getAllWithFilterAndSearch(request, true);
     }
 
     @Override
@@ -108,7 +108,7 @@ public class AttributeServiceImpl implements AttributeService {
 
         attributeMapper.updateAttribute(attribute, request);
         Attribute savedAttribute = attributeRepository.save(attribute);
-        log.info("Updated attribute id: {}", savedAttribute.getId());
+        log.info("Updated attribute with id: {}", savedAttribute.getId());
         return attributeMapper.toAttributeResponse(savedAttribute);
     }
 
@@ -117,28 +117,25 @@ public class AttributeServiceImpl implements AttributeService {
     public void softDeleteAttribute(Long id) {
         Attribute attribute = this.getAttributeById(id);
         if (attribute.getDeletedAt() != null) {
+            log.warn("Attribute with id {} is already soft deleted", id);
             return;
         }
         attribute.setDeletedAt(LocalDateTime.now());
         attributeRepository.save(attribute);
-        log.info("Soft deleted attribute id {}", id);
+        log.info("Soft-deleted attribute with id: {}", id);
     }
 
     @Override
     @Transactional
     public void restoreAttribute(Long id) {
-        attributeRepository.findDeletedAttributeById(id)
-                .ifPresentOrElse(attribute -> {
-                    if (attribute.getDeletedAt() == null) {
-                        log.warn("Attribute with id {} is not deleted, no restoration needed", id);
-                        return;
-                    }
-                    attribute.setDeletedAt(null);
-                    attributeRepository.save(attribute);
-                    log.info("Restored attribute id {}", id);
-                }, () -> {
-                    throw new AppException(ErrorCode.ATTRIBUTE_NOT_FOUND);
-                });
+        Attribute attribute = getDeletedAttributeById(id);
+        if (attribute.getDeletedAt() == null) {
+            log.warn("Attribute with id {} is not in a deleted state", id);
+            return;
+        }
+        attribute.setDeletedAt(null);
+        attributeRepository.save(attribute);
+        log.info("Attribute restored with id {}", id);
     }
 
     @Override
@@ -183,8 +180,15 @@ public class AttributeServiceImpl implements AttributeService {
 
     // ======================== Private methods ========================
 
-    private Page<AttributeResponse> getAllWithFilterAndSearch(AttributeFilterRequest request, Pageable pageable,
-            boolean isDeleted) {
+    private Attribute getDeletedAttributeById(Long id) {
+        return attributeRepository.findByIdAndDeletedAtIsNotNull(id)
+                .orElseThrow(() -> new AppException(ErrorCode.ATTRIBUTE_NOT_FOUND));
+    }
+
+    private PageResponse<AttributeResponse> getAllWithFilterAndSearch(AttributeFilterRequest request, boolean isDeleted) {
+        Pageable pageable = PageRequest.of(request.getPage() - 1, request.getSize(),
+                SortUtils.parseSort(request.getSort()));
+
         String keyword = StringUtils.hasText(request.getKeyword())
                 ? request.getKeyword().trim()
                 : null;
@@ -209,7 +213,8 @@ public class AttributeServiceImpl implements AttributeService {
                 request.getEndDate(),
                 isDeleted);
 
-        return new PageImpl<>(content, pageable, total);
+        Page<AttributeResponse> page = new PageImpl<>(content, pageable, total);
+        return PageResponse.fromPage(page);
     }
 
 }

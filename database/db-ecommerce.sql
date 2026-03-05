@@ -150,7 +150,7 @@ CREATE TABLE `products` (
   `brand_id` bigint NOT NULL,
   `name` varchar(255) NOT NULL,
   `slug` varchar(255) UNIQUE NOT NULL,
-  `product_code` varchar(255) UNIQUE COMMENT 'Mã chung: IP15PM',
+  `code` varchar(255) UNIQUE NOT NULL COMMENT 'Mã chung: IP15PM',
   `has_serial_number` boolean DEFAULT true COMMENT 'True: Bắt nhập IMEI (Điện thoại), False: Không (Ốp lưng)',
   `warranty_months` int DEFAULT 12,
   `price` decimal(15, 2) NOT NULL DEFAULT 0 COMMENT 'Giá thấp nhất trong các variant (Cache)',

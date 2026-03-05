@@ -51,51 +51,50 @@ public class VariantServiceImpl implements VariantService {
 
         Variant variant = variantMapper.toVariant(request);
         Variant savedVariant = variantRepository.save(variant);
-        log.info("Created variant id: {}", savedVariant.getId());
+        log.info("Created variant with id: {}", savedVariant.getId());
         return variantMapper.toVariantResponse(savedVariant);
     }
 
     @Override
-    public PageResponse<VariantResponse> getAllVariants(VariantFilterRequest request) {
-        Pageable pageable = PageRequest.of(request.getPage() - 1, request.getSize(),
-                SortUtils.parseSort(request.getSort()));
+    public Variant getVariantById(Long id) {
+        return variantRepository.findByIdAndDeletedAtIsNull(id)
+                .orElseThrow(() -> new AppException(ErrorCode.VARIANT_NOT_FOUND));
+    }
 
-        Page<VariantResponse> page = this.getAllWithFilterAndSearch(request, pageable, false);
-        return PageResponse.fromPage(page);
+    @Override
+    public VariantResponse getVariantDetail(String identifier, boolean deleted) {
+        Variant variant;
+
+        if (identifier.matches("\\d+")) {
+            Long id = Long.parseLong(identifier);
+            variant = deleted
+                    ? getDeletedVariantById(id)
+                    : getVariantById(id);
+        } else {
+            variant = deleted
+                    ? variantRepository.findByCodeAndDeletedAtIsNotNull(identifier)
+                            .orElseThrow(() -> new AppException(ErrorCode.VARIANT_NOT_FOUND))
+                    : variantRepository.findByCodeAndDeletedAtIsNull(identifier)
+                            .orElseThrow(() -> new AppException(ErrorCode.VARIANT_NOT_FOUND));
+        }
+
+        return variantMapper.toVariantResponse(variant);
+    }
+
+    @Override
+    public PageResponse<VariantResponse> getAllVariants(VariantFilterRequest request) {
+        return getAllWithFilterAndSearch(request, false);
     }
 
     @Override
     public PageResponse<VariantResponse> getAllDeletedVariants(VariantFilterRequest request) {
-        Pageable pageable = PageRequest.of(request.getPage() - 1, request.getSize(),
-                SortUtils.parseSort(request.getSort()));
-
-        Page<VariantResponse> page = this.getAllWithFilterAndSearch(request, pageable, true);
-        return PageResponse.fromPage(page);
-    }
-
-    @Override
-    public Variant getVariantById(Long id) {
-        return variantRepository.findById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.VARIANT_NOT_FOUND));
-    }
-
-    @Override
-    public VariantResponse getVariantDetailById(Long id) {
-        return variantMapper.toVariantResponse(getVariantById(id));
-    }
-
-    @Override
-    public VariantResponse getVariantDetailByCode(String code) {
-        Variant variant = variantRepository.findByCode(code)
-                .orElseThrow(() -> new AppException(ErrorCode.VARIANT_NOT_FOUND));
-        return variantMapper.toVariantResponse(variant);
+        return getAllWithFilterAndSearch(request, true);
     }
 
     @Override
     @Transactional
     public VariantResponse updateVariant(Long id, VariantRequest request) {
         Variant variant = getVariantById(id);
-
         if (StringUtils.hasText(request.getName())
                 && variantRepository.existsByNameAndIdNot(request.getName(), id)) {
             throw new AppException(ErrorCode.VARIANT_EXISTED);
@@ -104,10 +103,9 @@ public class VariantServiceImpl implements VariantService {
                 && variantRepository.existsByCodeAndIdNot(request.getCode(), id)) {
             throw new AppException(ErrorCode.VARIANT_EXISTED);
         }
-
         variantMapper.updateVariant(variant, request);
         Variant savedVariant = variantRepository.save(variant);
-        log.info("Updated variant id: {}", savedVariant.getId());
+        log.info("Updated variant with id: {}", savedVariant.getId());
         return variantMapper.toVariantResponse(savedVariant);
     }
 
@@ -116,28 +114,25 @@ public class VariantServiceImpl implements VariantService {
     public void softDeleteVariant(Long id) {
         Variant variant = getVariantById(id);
         if (variant.getDeletedAt() != null) {
+            log.warn("Variant with id {} is already soft deleted", id);
             return;
         }
         variant.setDeletedAt(LocalDateTime.now());
         variantRepository.save(variant);
-        log.info("Soft deleted variant id {}", id);
+        log.info("Soft-deleted variant with id: {}", id);
     }
 
     @Override
     @Transactional
     public void restoreVariant(Long id) {
-        variantRepository.findDeletedVariantById(id)
-                .ifPresentOrElse(variant -> {
-                    if (variant.getDeletedAt() == null) {
-                        log.warn("Variant with id {} is not deleted, no restoration needed", id);
-                        return;
-                    }
-                    variant.setDeletedAt(null);
-                    variantRepository.save(variant);
-                    log.info("Restored variant id {}", id);
-                }, () -> {
-                    throw new AppException(ErrorCode.VARIANT_NOT_FOUND);
-                });
+        Variant variant = getDeletedVariantById(id);
+        if (variant.getDeletedAt() == null) {
+            log.warn("Variant with id {} is not in a deleted state", id);
+            return;
+        }
+        variant.setDeletedAt(null);
+        variantRepository.save(variant);
+        log.info("Variant restored with id {}", id);
     }
 
     @Override
@@ -147,25 +142,19 @@ public class VariantServiceImpl implements VariantService {
         if (variantIds == null || variantIds.isEmpty()) {
             throw new AppException(ErrorCode.VARIANT_BULK_ACTION_REQUIRED_IDS);
         }
-
         String action = request.getAction().toUpperCase();
-
         Set<Variant> existingVariants = new HashSet<>(
                 action.equals("RESTORE")
                         ? variantRepository.findAllDeletedByIds(variantIds)
                         : variantRepository.findAllById(variantIds));
-
         Set<Long> existingVariantIds = existingVariants.stream()
-                .map(BaseEntity::getId)
-                .collect(Collectors.toSet());
-
+                .map(BaseEntity::getId).collect(Collectors.toSet());
         if (variantIds.size() != existingVariantIds.size()) {
             Set<Long> missingIds = new HashSet<>(variantIds);
             missingIds.removeAll(existingVariantIds);
             log.error("Bulk action variants failed. Missing Ids: {}", missingIds);
             throw new AppException(ErrorCode.VARIANT_NOT_FOUND);
         }
-
         switch (action) {
             case "DELETE" -> {
                 variantRepository.softDeleteByIds(LocalDateTime.now(), existingVariantIds);
@@ -182,33 +171,26 @@ public class VariantServiceImpl implements VariantService {
 
     // ======================== Private methods ========================
 
-    private Page<VariantResponse> getAllWithFilterAndSearch(VariantFilterRequest request, Pageable pageable,
+    private Variant getDeletedVariantById(Long id) {
+        return variantRepository.findByIdAndDeletedAtIsNotNull(id)
+                .orElseThrow(() -> new AppException(ErrorCode.VARIANT_NOT_FOUND));
+    }
+
+    private PageResponse<VariantResponse> getAllWithFilterAndSearch(VariantFilterRequest request,
             boolean isDeleted) {
-        String keyword = StringUtils.hasText(request.getKeyword())
-                ? request.getKeyword().trim()
-                : null;
+        Pageable pageable = PageRequest.of(request.getPage() - 1, request.getSize(),
+                SortUtils.parseSort(request.getSort()));
 
+        String keyword = StringUtils.hasText(request.getKeyword()) ? request.getKeyword().trim() : null;
         String[] sortParams = SortUtils.parseSortForMyBatis(request.getSort(), VariantSortField.class);
-        String sortColumn = sortParams[0];
-        String sortDirection = sortParams[1];
-
         List<VariantResponse> content = variantMyBatisMapper.findAllWithFilterAndSearch(
-                keyword,
-                request.getStartDate(),
-                request.getEndDate(),
-                isDeleted,
-                sortColumn,
-                sortDirection,
-                pageable.getOffset(),
-                pageable.getPageSize());
-
+                keyword, request.getStartDate(), request.getEndDate(), isDeleted,
+                sortParams[0], sortParams[1], pageable.getOffset(), pageable.getPageSize());
         long total = variantMyBatisMapper.countWithFilterAndSearch(
-                keyword,
-                request.getStartDate(),
-                request.getEndDate(),
-                isDeleted);
+                keyword, request.getStartDate(), request.getEndDate(), isDeleted);
 
-        return new PageImpl<>(content, pageable, total);
+        Page<VariantResponse> page = new PageImpl<>(content, pageable, total);
+        return PageResponse.fromPage(page);
     }
 
 }

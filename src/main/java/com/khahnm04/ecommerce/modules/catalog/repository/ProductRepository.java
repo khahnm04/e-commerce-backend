@@ -6,7 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
@@ -20,35 +19,38 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
 
     boolean existsByName(String name);
 
-    boolean existsByProductCode(String productCode);
+    boolean existsByCode(String code);
 
-    Optional<Product> findBySlug(String slug);
+    Optional<Product> findBySlugAndDeletedAtIsNull(String slug);
+
+    Optional<Product> findBySlugAndDeletedAtIsNotNull(String slug);
+
+    Optional<Product> findByIdAndDeletedAtIsNull(Long id);
+
+    Optional<Product> findByIdAndDeletedAtIsNotNull(Long id);
 
     boolean existsByNameAndIdNot(String name, Long id);
 
     boolean existsBySlugAndIdNot(String slug, Long id);
 
-    boolean existsByProductCodeAndIdNot(String productCode, Long id);
-
-    @Query(value = "SELECT * FROM products WHERE id = :id", nativeQuery = true)
-    Optional<Product> findDeletedProductById(@Param("id") Long id);
+    boolean existsByCodeAndIdNot(String code, Long id);
 
     @Modifying
     @Transactional
     @Query("UPDATE Product p SET p.status = :status WHERE p.id IN :ids")
-    void updateStatusByIds(@Param("status") ProductStatus status, @Param("ids") Set<Long> ids);
+    void updateStatusByIds(ProductStatus status, Set<Long> ids);
 
     @Modifying
     @Transactional
-    @Query("UPDATE Product p SET p.deletedAt = :now WHERE p.id IN :ids")
-    void softDeleteByIds(@Param("now") LocalDateTime now, @Param("ids") Set<Long> ids);
+    @Query("UPDATE Product p SET p.deletedAt = :now WHERE p.id IN :ids AND p.deletedAt IS NULL")
+    void softDeleteByIds(LocalDateTime now, Set<Long> ids);
 
-    @Query(value = "SELECT * FROM products WHERE id IN :ids", nativeQuery = true)
-    Set<Product> findAllDeletedByIds(@Param("ids") Set<Long> ids);
+    @Query("SELECT p FROM Product p WHERE p.id IN :ids AND p.deletedAt IS NOT NULL")
+    Set<Product> findAllDeletedByIds(Set<Long> ids);
 
     @Modifying
     @Transactional
-    @Query(value = "UPDATE products SET deleted_at = NULL WHERE id IN :ids", nativeQuery = true)
-    void restoreDeletedByIds(@Param("ids") Set<Long> ids);
+    @Query("UPDATE Product p SET p.deletedAt = NULL WHERE p.id IN :ids AND p.deletedAt IS NOT NULL")
+    void restoreDeletedByIds(Set<Long> ids);
 
 }

@@ -71,45 +71,44 @@ public class ProductVariantServiceImpl implements ProductVariantService {
             saveProductVariantValues(saved, request.getVariantValueIds());
         }
 
-        log.info("Created product variant id: {} with sku: {}", saved.getId(), sku);
+        log.info("Created product variant with id: {} and sku: {}", saved.getId(), sku);
         return buildResponse(saved);
     }
 
     @Override
-    public PageResponse<ProductVariantResponse> getAllProductVariants(ProductVariantFilterRequest request) {
-        Pageable pageable = PageRequest.of(request.getPage() - 1, request.getSize(),
-                SortUtils.parseSort(request.getSort()));
+    public ProductVariant getProductVariantById(Long id) {
+        return productVariantRepository.findByIdAndDeletedAtIsNull(id)
+                .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_VARIANT_NOT_FOUND));
+    }
 
-        Page<ProductVariantResponse> page = this.getAllWithFilterAndSearch(request, pageable, false);
-        return PageResponse.fromPage(page);
+    @Override
+    public ProductVariantResponse getProductVariantDetail(String identifier, boolean deleted) {
+        ProductVariant productVariant;
+
+        if (identifier.matches("\\d+")) {
+            Long id = Long.parseLong(identifier);
+            productVariant = deleted
+                    ? getDeletedProductVariantById(id)
+                    : getProductVariantById(id);
+        } else {
+            productVariant = deleted
+                    ? productVariantRepository.findBySkuAndDeletedAtIsNotNull(identifier)
+                            .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_VARIANT_NOT_FOUND))
+                    : productVariantRepository.findBySkuAndDeletedAtIsNull(identifier)
+                            .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_VARIANT_NOT_FOUND));
+        }
+
+        return buildResponse(productVariant);
+    }
+
+    @Override
+    public PageResponse<ProductVariantResponse> getAllProductVariants(ProductVariantFilterRequest request) {
+        return getAllWithFilterAndSearch(request, false);
     }
 
     @Override
     public PageResponse<ProductVariantResponse> getAllDeletedProductVariants(ProductVariantFilterRequest request) {
-        Pageable pageable = PageRequest.of(request.getPage() - 1, request.getSize(),
-                SortUtils.parseSort(request.getSort()));
-
-        Page<ProductVariantResponse> page = this.getAllWithFilterAndSearch(request, pageable, true);
-        return PageResponse.fromPage(page);
-    }
-
-    @Override
-    public ProductVariant getProductVariantById(Long id) {
-        return productVariantRepository.findById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_VARIANT_NOT_FOUND));
-    }
-
-    @Override
-    public ProductVariantResponse getProductVariantDetailById(Long id) {
-        ProductVariant productVariant = getProductVariantById(id);
-        return buildResponse(productVariant);
-    }
-
-    @Override
-    public ProductVariantResponse getProductVariantDetailBySku(String sku) {
-        ProductVariant productVariant = productVariantRepository.findBySku(sku)
-                .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_VARIANT_NOT_FOUND));
-        return buildResponse(productVariant);
+        return getAllWithFilterAndSearch(request, true);
     }
 
     @Override
@@ -142,7 +141,7 @@ public class ProductVariantServiceImpl implements ProductVariantService {
             }
         }
 
-        log.info("Updated product variant id: {}", saved.getId());
+        log.info("Updated product variant with id: {}", saved.getId());
         return buildResponse(saved);
     }
 
@@ -161,28 +160,25 @@ public class ProductVariantServiceImpl implements ProductVariantService {
     public void softDeleteProductVariant(Long id) {
         ProductVariant productVariant = getProductVariantById(id);
         if (productVariant.getDeletedAt() != null) {
+            log.warn("Product variant with id {} is already soft deleted", id);
             return;
         }
         productVariant.setDeletedAt(LocalDateTime.now());
         productVariantRepository.save(productVariant);
-        log.info("Soft deleted product variant id {}", id);
+        log.info("Soft-deleted product variant with id: {}", id);
     }
 
     @Override
     @Transactional
     public void restoreProductVariant(Long id) {
-        productVariantRepository.findDeletedProductVariantById(id)
-                .ifPresentOrElse(productVariant -> {
-                    if (productVariant.getDeletedAt() == null) {
-                        log.warn("Product variant with id {} is not deleted, no restoration needed", id);
-                        return;
-                    }
-                    productVariant.setDeletedAt(null);
-                    productVariantRepository.save(productVariant);
-                    log.info("Restored product variant id {}", id);
-                }, () -> {
-                    throw new AppException(ErrorCode.PRODUCT_VARIANT_NOT_FOUND);
-                });
+        ProductVariant productVariant = getDeletedProductVariantById(id);
+        if (productVariant.getDeletedAt() == null) {
+            log.warn("Product variant with id {} is not in a deleted state", id);
+            return;
+        }
+        productVariant.setDeletedAt(null);
+        productVariantRepository.save(productVariant);
+        log.info("Product variant restored with id {}", id);
     }
 
     @Override
@@ -227,13 +223,18 @@ public class ProductVariantServiceImpl implements ProductVariantService {
 
     // ======================== Private methods ========================
 
+    private ProductVariant getDeletedProductVariantById(Long id) {
+        return productVariantRepository.findByIdAndDeletedAtIsNotNull(id)
+                .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_VARIANT_NOT_FOUND));
+    }
+
     /**
-     * Generate SKU automatically: {PRODUCT_CODE}-{TIMESTAMP}
+     * Generate SKU automatically: {CODE}-{TIMESTAMP}
      * Example: IP15PM-20260220161044
      */
     private String generateSku(Product product) {
-        String prefix = StringUtils.hasText(product.getProductCode())
-                ? product.getProductCode().toUpperCase()
+        String prefix = StringUtils.hasText(product.getCode())
+                ? product.getCode().toUpperCase()
                 : "PV";
         String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
         return prefix + "-" + timestamp;
@@ -275,8 +276,11 @@ public class ProductVariantServiceImpl implements ProductVariantService {
         return response;
     }
 
-    private Page<ProductVariantResponse> getAllWithFilterAndSearch(
-            ProductVariantFilterRequest request, Pageable pageable, boolean isDeleted) {
+    private PageResponse<ProductVariantResponse> getAllWithFilterAndSearch(
+            ProductVariantFilterRequest request, boolean isDeleted) {
+        Pageable pageable = PageRequest.of(request.getPage() - 1, request.getSize(),
+                SortUtils.parseSort(request.getSort()));
+
         String keyword = StringUtils.hasText(request.getKeyword())
                 ? request.getKeyword().trim()
                 : null;
@@ -326,7 +330,8 @@ public class ProductVariantServiceImpl implements ProductVariantService {
                 request.getEndDate(),
                 isDeleted);
 
-        return new PageImpl<>(content, pageable, total);
+        Page<ProductVariantResponse> page = new PageImpl<>(content, pageable, total);
+        return PageResponse.fromPage(page);
     }
 
 }

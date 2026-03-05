@@ -17,7 +17,7 @@
         <result property="phoneNumber" column="phone_number"/>
         <result property="email" column="email"/>
         <result property="openingHours" column="opening_hours"/>
-        <result property="status" column="status" typeHandler="org.apache.ibatis.type.EnumTypeHandler"/>
+
         <result property="createdAt" column="created_at"/>
         <result property="createdBy" column="created_by"/>
         <result property="updatedAt" column="updated_at"/>
@@ -38,7 +38,6 @@
         b.phone_number,
         b.email,
         b.opening_hours,
-        b.status,
         b.created_at,
         b.deleted_at
     </sql>
@@ -84,10 +83,7 @@
                 )
             </if>
 
-            <!-- Status filter -->
-            <if test="status != null">
-                AND b.status = #{status}
-            </if>
+
 
             <!-- Date range filter -->
             <if test="startDate != null">

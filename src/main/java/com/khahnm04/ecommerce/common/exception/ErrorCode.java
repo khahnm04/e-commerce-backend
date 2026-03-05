@@ -94,7 +94,6 @@ public enum ErrorCode {
     // =================================================================
     // MODULE: BRANCH (Range: 3000 - 3999)
     // =================================================================
-    BRANCH_STATUS_REQUIRED(3000, "Branch status cannot be blank", HttpStatus.BAD_REQUEST),
     BRANCH_SELECTION_REQUIRED(3001, "At least one branch must be selected", HttpStatus.BAD_REQUEST),
     BRANCH_ACTION_REQUIRED(3002, "Bulk action type cannot be blank", HttpStatus.BAD_REQUEST),
     BRANCH_CODE_REQUIRED(3003, "Branch code cannot be blank", HttpStatus.BAD_REQUEST),
@@ -104,7 +103,6 @@ public enum ErrorCode {
     BRANCH_CITY_REQUIRED(3007, "City cannot be blank", HttpStatus.BAD_REQUEST),
     BRANCH_PHONE_REQUIRED(3008, "Phone number cannot be blank", HttpStatus.BAD_REQUEST),
     BRANCH_PHONE_INVALID(3009, "Phone number is invalid", HttpStatus.BAD_REQUEST),
-    BRANCH_STATUS_INVALID(3010, "Branch status is invalid", HttpStatus.BAD_REQUEST),
     BRANCH_NOT_FOUND(3050, "Branch not found", HttpStatus.NOT_FOUND),
     BRANCH_EXISTED(3051, "Branch already existed", HttpStatus.CONFLICT),
     BRANCH_BULK_ACTION_REQUIRED_IDS(3052, "At least one branch must be selected", HttpStatus.BAD_REQUEST),

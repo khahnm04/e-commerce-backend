@@ -61,20 +61,12 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public PageResponse<CustomerResponse> getAllCustomers(CustomerFilterRequest request) {
-        Pageable pageable = PageRequest.of(request.getPage() - 1, request.getSize(),
-                SortUtils.parseSort(request.getSort()));
-
-        Page<CustomerResponse> page = this.getAllWithFilterAndSearch(request, pageable, false);
-        return PageResponse.fromPage(page);
+        return getAllWithFilterAndSearch(request, false);
     }
 
     @Override
     public PageResponse<CustomerResponse> getAllDeletedCustomers(CustomerFilterRequest request) {
-        Pageable pageable = PageRequest.of(request.getPage() - 1, request.getSize(),
-                SortUtils.parseSort(request.getSort()));
-
-        Page<CustomerResponse> page = this.getAllWithFilterAndSearch(request, pageable, true);
-        return PageResponse.fromPage(page);
+        return getAllWithFilterAndSearch(request, true);
     }
 
     @Override
@@ -198,8 +190,10 @@ public class CustomerServiceImpl implements CustomerService {
                 .orElseThrow(() -> new AppException(ErrorCode.CUSTOMER_NOT_FOUND));
     }
 
-    private Page<CustomerResponse> getAllWithFilterAndSearch(CustomerFilterRequest request, Pageable pageable,
-            boolean isDeleted) {
+    private PageResponse<CustomerResponse> getAllWithFilterAndSearch(CustomerFilterRequest request, boolean isDeleted) {
+        Pageable pageable = PageRequest.of(request.getPage() - 1, request.getSize(),
+            SortUtils.parseSort(request.getSort()));
+
         String keyword = StringUtils.hasText(request.getKeyword())
                 ? request.getKeyword().trim()
                 : null;
@@ -229,7 +223,8 @@ public class CustomerServiceImpl implements CustomerService {
                 request.getEndDate(),
                 isDeleted);
 
-        return new PageImpl<>(content, pageable, total);
+        Page<CustomerResponse> page = new PageImpl<>(content, pageable, total);
+        return PageResponse.fromPage(page);
     }
 
 }

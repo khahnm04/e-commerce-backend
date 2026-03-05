@@ -1,6 +1,5 @@
 package com.khahnm04.ecommerce.modules.catalog.dto.request;
 
-import com.khahnm04.ecommerce.modules.catalog.enums.BrandStatus;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.AllArgsConstructor;
@@ -30,8 +29,6 @@ public class BrandFilterRequest implements Serializable {
 
     @Builder.Default
     private String sort = "createdAt,desc";
-
-    private BrandStatus status;
 
     private String keyword;
 

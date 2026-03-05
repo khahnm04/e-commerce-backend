@@ -9,7 +9,6 @@ import com.khahnm04.ecommerce.modules.catalog.dto.request.*;
 import com.khahnm04.ecommerce.modules.catalog.dto.response.CategoryResponse;
 import com.khahnm04.ecommerce.modules.catalog.entity.Category;
 import com.khahnm04.ecommerce.modules.catalog.enums.CategorySortField;
-
 import com.khahnm04.ecommerce.modules.catalog.mapper.CategoryMapper;
 import com.khahnm04.ecommerce.modules.catalog.mapper.mybaits.CategoryMyBatisMapper;
 import com.khahnm04.ecommerce.modules.catalog.repository.CategoryRepository;
@@ -99,20 +98,12 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public PageResponse<CategoryResponse> getAllCategories(CategoryFilterRequest request) {
-        Pageable pageable = PageRequest.of(request.getPage() - 1, request.getSize(),
-                SortUtils.parseSort(request.getSort()));
-
-        Page<CategoryResponse> page = this.getAllWithFilterAndSearch(request, pageable, false);
-        return PageResponse.fromPage(page);
+        return getAllWithFilterAndSearch(request, false);
     }
 
     @Override
     public PageResponse<CategoryResponse> getAllDeletedCategories(CategoryFilterRequest request) {
-        Pageable pageable = PageRequest.of(request.getPage() - 1, request.getSize(),
-                SortUtils.parseSort(request.getSort()));
-
-        Page<CategoryResponse> page = this.getAllWithFilterAndSearch(request, pageable, true);
-        return PageResponse.fromPage(page);
+        return getAllWithFilterAndSearch(request, true);
     }
 
     @Override
@@ -240,8 +231,10 @@ public class CategoryServiceImpl implements CategoryService {
                 .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND));
     }
 
-    private Page<CategoryResponse> getAllWithFilterAndSearch(CategoryFilterRequest request, Pageable pageable,
-            boolean isDeleted) {
+    private PageResponse<CategoryResponse> getAllWithFilterAndSearch(CategoryFilterRequest request, boolean isDeleted) {
+        Pageable pageable = PageRequest.of(request.getPage() - 1, request.getSize(),
+            SortUtils.parseSort(request.getSort()));
+
         String keyword = StringUtils.hasText(request.getKeyword())
                 ? request.getKeyword().trim()
                 : null;
@@ -269,7 +262,8 @@ public class CategoryServiceImpl implements CategoryService {
                 request.getEndDate(),
                 isDeleted);
 
-        return new PageImpl<>(content, pageable, total);
+        Page<CategoryResponse> page = new PageImpl<>(content, pageable, total);
+        return PageResponse.fromPage(page);
     }
 
 }

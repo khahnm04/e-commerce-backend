@@ -1,7 +1,7 @@
 package com.khahnm04.ecommerce.modules.branch.entity;
 
 import com.khahnm04.ecommerce.common.entity.BaseEntity;
-import com.khahnm04.ecommerce.modules.branch.enums.BranchStatus;
+
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
@@ -47,10 +47,5 @@ public class Branch extends BaseEntity<Long> {
 
     @Column(name = "opening_hours")
     private String openingHours;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status")
-    @Builder.Default
-    private BranchStatus status = BranchStatus.ACTIVE;
 
 }

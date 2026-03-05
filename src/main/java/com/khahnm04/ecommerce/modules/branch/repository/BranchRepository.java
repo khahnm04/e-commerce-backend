@@ -1,7 +1,6 @@
 package com.khahnm04.ecommerce.modules.branch.repository;
 
 import com.khahnm04.ecommerce.modules.branch.entity.Branch;
-import com.khahnm04.ecommerce.modules.branch.enums.BranchStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -29,11 +28,6 @@ public interface BranchRepository extends JpaRepository<Branch, Long> {
     boolean existsByCodeAndIdNot(String code, Long id);
 
     boolean existsByNameAndIdNot(String name, Long id);
-
-    @Modifying
-    @Transactional
-    @Query("UPDATE Branch b SET b.status = :status WHERE b.id IN :ids")
-    void updateStatusByIds(BranchStatus status, Set<Long> ids);
 
     @Query("SELECT b FROM Branch b WHERE b.id IN :ids AND b.deletedAt IS NOT NULL")
     Set<Branch> findAllDeletedByIds(Set<Long> ids);

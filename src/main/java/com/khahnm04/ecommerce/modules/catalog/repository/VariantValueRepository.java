@@ -30,20 +30,21 @@ public interface VariantValueRepository extends JpaRepository<VariantValue, Long
     @Query("DELETE FROM VariantValue vv WHERE vv.variant.id = :variantId AND vv.id NOT IN :ids")
     void deleteByVariantIdAndIdNotIn(@Param("variantId") Long variantId, @Param("ids") Set<Long> ids);
 
-    @Query(value = "SELECT * FROM variant_values WHERE id = :id", nativeQuery = true)
-    Optional<VariantValue> findDeletedVariantValueById(@Param("id") Long id);
+    Optional<VariantValue> findByIdAndDeletedAtIsNull(Long id);
 
-    @Query(value = "SELECT * FROM variant_values WHERE id IN :ids", nativeQuery = true)
-    Set<VariantValue> findAllDeletedByIds(@Param("ids") Set<Long> ids);
+    Optional<VariantValue> findByIdAndDeletedAtIsNotNull(Long id);
 
-    @Modifying
-    @Transactional
-    @Query("UPDATE VariantValue vv SET vv.deletedAt = :now WHERE vv.id IN :ids")
-    void softDeleteByIds(@Param("now") LocalDateTime now, @Param("ids") Set<Long> ids);
+    @Query("SELECT vv FROM VariantValue vv WHERE vv.id IN :ids AND vv.deletedAt IS NOT NULL")
+    Set<VariantValue> findAllDeletedByIds(Set<Long> ids);
 
     @Modifying
     @Transactional
-    @Query(value = "UPDATE variant_values SET deleted_at = NULL WHERE id IN :ids", nativeQuery = true)
-    void restoreDeletedByIds(@Param("ids") Set<Long> ids);
+    @Query("UPDATE VariantValue vv SET vv.deletedAt = :now WHERE vv.id IN :ids AND vv.deletedAt IS NULL")
+    void softDeleteByIds(LocalDateTime now, Set<Long> ids);
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE VariantValue vv SET vv.deletedAt = NULL WHERE vv.id IN :ids AND vv.deletedAt IS NOT NULL")
+    void restoreDeletedByIds(Set<Long> ids);
 
 }

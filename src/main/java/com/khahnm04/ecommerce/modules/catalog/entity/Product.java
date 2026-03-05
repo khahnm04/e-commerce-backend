@@ -5,8 +5,6 @@ import com.khahnm04.ecommerce.modules.catalog.enums.ProductStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.SQLRestriction;
 import java.math.BigDecimal;
 
 @Entity
@@ -16,8 +14,6 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "products")
-@SQLDelete(sql = "UPDATE products SET deleted_at = NOW() WHERE id = ?")
-@SQLRestriction("deleted_at IS NULL")
 public class Product extends BaseEntity<Long> {
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -30,8 +26,8 @@ public class Product extends BaseEntity<Long> {
     @Column(name = "slug", nullable = false, unique = true)
     private String slug;
 
-    @Column(name = "product_code", unique = true)
-    private String productCode;
+    @Column(name = "code", nullable = false, unique = true)
+    private String code;
 
     @Column(name = "has_serial_number")
     @Builder.Default

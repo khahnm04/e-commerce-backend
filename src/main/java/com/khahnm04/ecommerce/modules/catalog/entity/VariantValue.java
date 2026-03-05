@@ -4,8 +4,6 @@ import com.khahnm04.ecommerce.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Getter
@@ -16,8 +14,6 @@ import org.hibernate.annotations.SQLRestriction;
 @Table(name = "variant_values", uniqueConstraints = {
         @UniqueConstraint(columnNames = { "variant_id", "value" })
 })
-@SQLDelete(sql = "UPDATE variant_values SET deleted_at = NOW() WHERE id = ?")
-@SQLRestriction("deleted_at IS NULL")
 public class VariantValue extends BaseEntity<Long> {
 
     @ManyToOne(fetch = FetchType.LAZY)

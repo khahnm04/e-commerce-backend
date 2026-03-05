@@ -12,17 +12,13 @@ public interface ProductService {
 
     ProductResponse createProduct(ProductRequest request);
 
+    Product getProductById(Long id);
+
+    ProductResponse getProductDetail(String identifier, boolean deleted);
+
     PageResponse<ProductResponse> getAllProducts(ProductFilterRequest filter);
 
     PageResponse<ProductResponse> getAllDeletedProducts(ProductFilterRequest filter);
-
-    Product getProductById(Long id);
-
-    ProductResponse getProductDetailById(Long id);
-
-    ProductResponse getProductDetailBySlug(String slug);
-
-    ProductResponse getDeletedProductDetailById(Long id);
 
     ProductResponse updateProduct(Long id, ProductRequest request);
 

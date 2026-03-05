@@ -8,13 +8,13 @@ import com.khahnm04.ecommerce.modules.catalog.dto.response.VariantValueResponse;
 
 public interface VariantValueService {
 
+    VariantValueResponse getVariantValueDetail(Long id, boolean deleted);
+
     VariantValueResponse createVariantValue(VariantValueRequest request);
 
     PageResponse<VariantValueResponse> getAllVariantValues(VariantValueFilterRequest filter);
 
     PageResponse<VariantValueResponse> getAllDeletedVariantValues(VariantValueFilterRequest filter);
-
-    VariantValueResponse getVariantValueDetailById(Long id);
 
     VariantValueResponse updateVariantValue(Long id, VariantValueRequest request);
 

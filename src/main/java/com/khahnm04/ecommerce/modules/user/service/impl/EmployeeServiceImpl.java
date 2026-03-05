@@ -91,20 +91,12 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public PageResponse<EmployeeResponse> getAllEmployees(EmployeeFilterRequest request) {
-        Pageable pageable = PageRequest.of(request.getPage() - 1, request.getSize(),
-                SortUtils.parseSort(request.getSort()));
-
-        Page<EmployeeResponse> page = this.getAllWithFilterAndSearch(request, pageable, false);
-        return PageResponse.fromPage(page);
+        return getAllWithFilterAndSearch(request, false);
     }
 
     @Override
     public PageResponse<EmployeeResponse> getAllDeletedEmployees(EmployeeFilterRequest request) {
-        Pageable pageable = PageRequest.of(request.getPage() - 1, request.getSize(),
-                SortUtils.parseSort(request.getSort()));
-
-        Page<EmployeeResponse> page = this.getAllWithFilterAndSearch(request, pageable, true);
-        return PageResponse.fromPage(page);
+        return getAllWithFilterAndSearch(request, true);
     }
 
     @Override
@@ -232,8 +224,10 @@ public class EmployeeServiceImpl implements EmployeeService {
         return employeeResponse;
     }
 
-    private Page<EmployeeResponse> getAllWithFilterAndSearch(EmployeeFilterRequest request, Pageable pageable,
-            boolean isDeleted) {
+    private PageResponse<EmployeeResponse> getAllWithFilterAndSearch(EmployeeFilterRequest request, boolean isDeleted) {
+        Pageable pageable = PageRequest.of(request.getPage() - 1, request.getSize(),
+            SortUtils.parseSort(request.getSort()));
+
         String keyword = StringUtils.hasText(request.getKeyword())
                 ? request.getKeyword().trim()
                 : null;
@@ -274,7 +268,8 @@ public class EmployeeServiceImpl implements EmployeeService {
                 request.getEndDate(),
                 isDeleted);
 
-        return new PageImpl<>(content, pageable, total);
+        Page<EmployeeResponse> page = new PageImpl<>(content, pageable, total);
+        return PageResponse.fromPage(page);
     }
 
 }

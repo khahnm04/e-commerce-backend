@@ -1,7 +1,7 @@
 package com.khahnm04.ecommerce.modules.branch.dto.request;
 
 import com.khahnm04.ecommerce.common.validation.phone.ValidPhoneNumber;
-import com.khahnm04.ecommerce.modules.branch.enums.BranchStatus;
+
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import java.io.Serializable;
@@ -42,7 +42,5 @@ public class BranchRequest implements Serializable {
     private String email;
 
     private String openingHours;
-
-    private BranchStatus status;
 
 }

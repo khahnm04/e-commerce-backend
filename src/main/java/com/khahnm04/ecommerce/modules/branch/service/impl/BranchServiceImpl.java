@@ -9,7 +9,6 @@ import com.khahnm04.ecommerce.modules.branch.dto.request.*;
 import com.khahnm04.ecommerce.modules.branch.dto.response.BranchResponse;
 import com.khahnm04.ecommerce.modules.branch.entity.Branch;
 import com.khahnm04.ecommerce.modules.branch.enums.BranchSortField;
-import com.khahnm04.ecommerce.modules.branch.enums.BranchStatus;
 import com.khahnm04.ecommerce.modules.branch.mapper.BranchMapper;
 import com.khahnm04.ecommerce.modules.branch.mapper.BranchMyBatisMapper;
 import com.khahnm04.ecommerce.modules.branch.repository.BranchRepository;
@@ -49,7 +48,6 @@ public class BranchServiceImpl implements BranchService {
         }
 
         Branch branch = branchMapper.toBranch(request);
-        branch.setStatus(request.getStatus() == null ? BranchStatus.ACTIVE : request.getStatus());
 
         Branch savedBranch = branchRepository.save(branch);
         log.info("Created branch with id: {}", savedBranch.getId());
@@ -115,19 +113,6 @@ public class BranchServiceImpl implements BranchService {
 
     @Override
     @Transactional
-    public void updateBranchStatus(Long id, BranchUpdateStatusRequest request) {
-        Branch branch = getBranchById(id);
-        if (branch.getStatus() == request.getStatus()) {
-            log.info("Branch with id {} already has status {}", id, request.getStatus());
-            return;
-        }
-        branch.setStatus(request.getStatus());
-        branchRepository.save(branch);
-        log.info("Updated branch status to {} for id: {}", request.getStatus(), id);
-    }
-
-    @Override
-    @Transactional
     public void softDeleteBranch(Long id) {
         Branch branch = getBranchById(id);
         if (branch.getDeletedAt() != null) {
@@ -179,11 +164,6 @@ public class BranchServiceImpl implements BranchService {
         }
 
         switch (action) {
-            case "ACTIVE", "INACTIVE" -> {
-                BranchStatus status = BranchStatus.valueOf(action);
-                branchRepository.updateStatusByIds(status, existingBranchIds);
-                log.info("Bulk updated status to {} for branch IDs: {}", action, existingBranchIds);
-            }
             case "DELETE" -> {
                 branchRepository.softDeleteByIds(LocalDateTime.now(), existingBranchIds);
                 log.info("Bulk soft-deleted branches with IDs: {}", existingBranchIds);
@@ -219,7 +199,6 @@ public class BranchServiceImpl implements BranchService {
 
         List<BranchResponse> content = branchMyBatisMapper.findAllWithFilterAndSearch(
                 keyword,
-                request.getStatus(),
                 request.getStartDate(),
                 request.getEndDate(),
                 isDeleted,
@@ -230,7 +209,6 @@ public class BranchServiceImpl implements BranchService {
 
         long total = branchMyBatisMapper.countWithFilterAndSearch(
                 keyword,
-                request.getStatus(),
                 request.getStartDate(),
                 request.getEndDate(),
                 isDeleted);

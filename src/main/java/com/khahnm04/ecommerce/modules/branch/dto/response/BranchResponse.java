@@ -1,7 +1,7 @@
 package com.khahnm04.ecommerce.modules.branch.dto.response;
 
 import com.khahnm04.ecommerce.common.dto.BaseResponse;
-import com.khahnm04.ecommerce.modules.branch.enums.BranchStatus;
+
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import java.math.BigDecimal;
@@ -24,6 +24,5 @@ public class BranchResponse extends BaseResponse<Long> {
     private String phoneNumber;
     private String email;
     private String openingHours;
-    private BranchStatus status;
 
 }

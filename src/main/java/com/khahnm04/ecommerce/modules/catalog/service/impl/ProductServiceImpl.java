@@ -5,6 +5,7 @@ import com.khahnm04.ecommerce.common.entity.BaseEntity;
 import com.khahnm04.ecommerce.common.exception.AppException;
 import com.khahnm04.ecommerce.common.exception.ErrorCode;
 import com.khahnm04.ecommerce.common.util.SortUtils;
+import com.khahnm04.ecommerce.common.util.SlugUtils;
 import com.khahnm04.ecommerce.modules.catalog.dto.request.*;
 import com.khahnm04.ecommerce.modules.catalog.dto.response.ProductResponse;
 import com.khahnm04.ecommerce.modules.catalog.dto.response.ProductResponse.ProductAttributeValueResponse;
@@ -49,14 +50,21 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional
     public ProductResponse createProduct(ProductRequest request) {
-        if (productRepository.existsBySlug(request.getSlug())) {
-            throw new AppException(ErrorCode.PRODUCT_EXISTED);
-        }
         if (productRepository.existsByName(request.getName())) {
             throw new AppException(ErrorCode.PRODUCT_EXISTED);
         }
-        if (StringUtils.hasText(request.getProductCode())
-                && productRepository.existsByProductCode(request.getProductCode())) {
+
+        if (!StringUtils.hasText(request.getSlug())) {
+            request.setSlug(SlugUtils.toSlug(request.getName()));
+        }
+        if (productRepository.existsBySlug(request.getSlug())) {
+            throw new AppException(ErrorCode.PRODUCT_EXISTED);
+        }
+
+        if (!StringUtils.hasText(request.getCode())) {
+            request.setCode(request.getSlug().toUpperCase());
+        }
+        if (productRepository.existsByCode(request.getCode())) {
             throw new AppException(ErrorCode.PRODUCT_CODE_EXISTED);
         }
 
@@ -75,52 +83,44 @@ public class ProductServiceImpl implements ProductService {
         // Save images
         saveProductImages(savedProduct, request.getImages());
 
-        log.info("Created product id: {}", savedProduct.getId());
+        log.info("Created product with id: {}", savedProduct.getId());
         return buildProductDetailResponse(savedProduct);
     }
 
     @Override
-    public PageResponse<ProductResponse> getAllProducts(ProductFilterRequest request) {
-        Pageable pageable = PageRequest.of(request.getPage() - 1, request.getSize(),
-                SortUtils.parseSort(request.getSort()));
+    public Product getProductById(Long id) {
+        return productRepository.findByIdAndDeletedAtIsNull(id)
+                .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+    }
 
-        Page<ProductResponse> page = this.getAllWithFilterAndSearch(request, pageable, false);
-        return PageResponse.fromPage(page);
+    @Override
+    public ProductResponse getProductDetail(String identifier, boolean deleted) {
+        Product product;
+
+        if (identifier.matches("\\d+")) {
+            Long id = Long.parseLong(identifier);
+            product = deleted
+                    ? getDeletedProductById(id)
+                    : getProductById(id);
+        } else {
+            product = deleted
+                    ? productRepository.findBySlugAndDeletedAtIsNotNull(identifier)
+                            .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND))
+                    : productRepository.findBySlugAndDeletedAtIsNull(identifier)
+                            .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+        }
+
+        return buildProductDetailResponse(product);
+    }
+
+    @Override
+    public PageResponse<ProductResponse> getAllProducts(ProductFilterRequest request) {
+        return getAllWithFilterAndSearch(request, false);
     }
 
     @Override
     public PageResponse<ProductResponse> getAllDeletedProducts(ProductFilterRequest request) {
-        Pageable pageable = PageRequest.of(request.getPage() - 1, request.getSize(),
-                SortUtils.parseSort(request.getSort()));
-
-        Page<ProductResponse> page = this.getAllWithFilterAndSearch(request, pageable, true);
-        return PageResponse.fromPage(page);
-    }
-
-    @Override
-    public Product getProductById(Long id) {
-        return productRepository.findById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
-    }
-
-    @Override
-    public ProductResponse getProductDetailById(Long id) {
-        Product product = getProductById(id);
-        return buildProductDetailResponse(product);
-    }
-
-    @Override
-    public ProductResponse getProductDetailBySlug(String slug) {
-        Product product = productRepository.findBySlug(slug)
-                .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
-        return buildProductDetailResponse(product);
-    }
-
-    @Override
-    public ProductResponse getDeletedProductDetailById(Long id) {
-        Product product = productRepository.findDeletedProductById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
-        return buildProductDetailResponse(product);
+        return getAllWithFilterAndSearch(request, true);
     }
 
     @Override
@@ -136,8 +136,8 @@ public class ProductServiceImpl implements ProductService {
                 && productRepository.existsBySlugAndIdNot(request.getSlug(), id)) {
             throw new AppException(ErrorCode.PRODUCT_EXISTED);
         }
-        if (StringUtils.hasText(request.getProductCode())
-                && productRepository.existsByProductCodeAndIdNot(request.getProductCode(), id)) {
+        if (StringUtils.hasText(request.getCode())
+                && productRepository.existsByCodeAndIdNot(request.getCode(), id)) {
             throw new AppException(ErrorCode.PRODUCT_CODE_EXISTED);
         }
 
@@ -164,7 +164,7 @@ public class ProductServiceImpl implements ProductService {
             mergeProductImages(savedProduct, request.getImages());
         }
 
-        log.info("Updated product id: {}", savedProduct.getId());
+        log.info("Updated product with id: {}", savedProduct.getId());
         return buildProductDetailResponse(savedProduct);
     }
 
@@ -185,28 +185,25 @@ public class ProductServiceImpl implements ProductService {
     public void softDeleteProduct(Long id) {
         Product product = getProductById(id);
         if (product.getDeletedAt() != null) {
+            log.warn("Product with id {} is already soft deleted", id);
             return;
         }
         product.setDeletedAt(LocalDateTime.now());
         productRepository.save(product);
-        log.info("Soft deleted product id {}", id);
+        log.info("Soft-deleted product with id: {}", id);
     }
 
     @Override
     @Transactional
     public void restoreProduct(Long id) {
-        productRepository.findDeletedProductById(id)
-                .ifPresentOrElse(product -> {
-                    if (product.getDeletedAt() == null) {
-                        log.warn("Product with id {} is not deleted, no restoration needed", id);
-                        return;
-                    }
-                    product.setDeletedAt(null);
-                    productRepository.save(product);
-                    log.info("Restored product id {}", id);
-                }, () -> {
-                    throw new AppException(ErrorCode.PRODUCT_NOT_FOUND);
-                });
+        Product product = getDeletedProductById(id);
+        if (product.getDeletedAt() == null) {
+            log.warn("Product with id {} is not in a deleted state", id);
+            return;
+        }
+        product.setDeletedAt(null);
+        productRepository.save(product);
+        log.info("Product restored with id {}", id);
     }
 
     @Override
@@ -256,8 +253,16 @@ public class ProductServiceImpl implements ProductService {
 
     // ======================== Private methods ========================
 
-    private Page<ProductResponse> getAllWithFilterAndSearch(ProductFilterRequest request, Pageable pageable,
+    private Product getDeletedProductById(Long id) {
+        return productRepository.findByIdAndDeletedAtIsNotNull(id)
+                .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+    }
+
+    private PageResponse<ProductResponse> getAllWithFilterAndSearch(ProductFilterRequest request,
             boolean isDeleted) {
+        Pageable pageable = PageRequest.of(request.getPage() - 1, request.getSize(),
+                SortUtils.parseSort(request.getSort()));
+
         String keyword = StringUtils.hasText(request.getKeyword())
                 ? request.getKeyword().trim()
                 : null;
@@ -288,7 +293,8 @@ public class ProductServiceImpl implements ProductService {
                 request.getEndDate(),
                 isDeleted);
 
-        return new PageImpl<>(content, pageable, total);
+        Page<ProductResponse> page = new PageImpl<>(content, pageable, total);
+        return PageResponse.fromPage(page);
     }
 
     private List<Category> getALlCategoryByIds(Set<Long> ids) {
