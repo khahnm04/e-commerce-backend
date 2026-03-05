@@ -21,7 +21,6 @@ public interface ProductMapper {
     ProductResponse toProductResponse(Product product);
 
     @Mapping(target = "brand", ignore = true)
-    @Mapping(target = "code", ignore = true)
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateProduct(@MappingTarget Product product, ProductRequest request);
 

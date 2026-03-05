@@ -75,7 +75,7 @@ public class ProductServiceImpl implements ProductService {
         Product savedProduct = productRepository.save(product);
 
         // Save categories
-        saveProductCategories(savedProduct, request.getCategoryIds());
+        saveProductCategories(savedProduct, request.getCategories());
 
         // Save attribute values
         saveProductAttributeValues(savedProduct, request.getAttributes());
@@ -150,8 +150,8 @@ public class ProductServiceImpl implements ProductService {
         Product savedProduct = productRepository.save(product);
 
         // Merge categories
-        if (request.getCategoryIds() != null) {
-            mergeProductCategories(savedProduct, request.getCategoryIds());
+        if (request.getCategories() != null) {
+            mergeProductCategories(savedProduct, request.getCategories());
         }
 
         // Merge attribute values
@@ -310,7 +310,7 @@ public class ProductServiceImpl implements ProductService {
 
         List<Long> productIds = List.of(product.getId());
 
-        // Batch load categories
+        // Load categories
         response.setCategories(
                 productCategoryRepository.findAllByProductIdInWithCategory(productIds)
                         .stream()
@@ -321,7 +321,7 @@ public class ProductServiceImpl implements ProductService {
                                 .build())
                         .toList());
 
-        // Batch load attribute values
+        // Load attribute values
         response.setAttributes(
                 productAttributeValueRepository.findAllByProductIdInWithAttribute(productIds)
                         .stream()
@@ -333,7 +333,7 @@ public class ProductServiceImpl implements ProductService {
                                 .build())
                         .toList());
 
-        // Batch load images
+        // Load images
         response.setImages(
                 productImageRepository.findAllByProductIdIn(productIds)
                         .stream()

@@ -17,11 +17,11 @@ public interface ProductCategoryRepository extends JpaRepository<ProductCategory
     Set<Long> findCategoryIdsByProductId(@Param("productId") Long productId);
 
     @Query("""
-                SELECT pc
-                FROM ProductCategory pc
-                JOIN FETCH pc.category
-                WHERE pc.product.id IN :productIds
-            """)
+        SELECT pc
+        FROM ProductCategory pc
+        JOIN FETCH pc.category
+        WHERE pc.product.id IN :productIds
+    """)
     List<ProductCategory> findAllByProductIdInWithCategory(@Param("productIds") List<Long> productIds);
 
     @Modifying
@@ -32,10 +32,10 @@ public interface ProductCategoryRepository extends JpaRepository<ProductCategory
     @Modifying
     @Transactional
     @Query("""
-                DELETE FROM ProductCategory pc
-                WHERE pc.product.id = :productId
-                AND pc.category.id NOT IN :categoryIds
-            """)
+        DELETE FROM ProductCategory pc
+        WHERE pc.product.id = :productId
+        AND pc.category.id NOT IN :categoryIds
+    """)
     void deleteByProductIdAndCategoryIdNotIn(
             @Param("productId") Long productId,
             @Param("categoryIds") Set<Long> categoryIds);

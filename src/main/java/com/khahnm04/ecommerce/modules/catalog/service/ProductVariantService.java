@@ -10,11 +10,11 @@ import com.khahnm04.ecommerce.modules.catalog.entity.ProductVariant;
 
 public interface ProductVariantService {
 
+    ProductVariantResponse createProductVariant(ProductVariantRequest request);
+
     ProductVariant getProductVariantById(Long id);
 
     ProductVariantResponse getProductVariantDetail(String identifier, boolean deleted);
-
-    ProductVariantResponse createProductVariant(ProductVariantRequest request);
 
     PageResponse<ProductVariantResponse> getAllProductVariants(ProductVariantFilterRequest filter);
 

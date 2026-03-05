@@ -157,18 +157,35 @@ public class VariantValueServiceImpl implements VariantValueService {
                 .orElseThrow(() -> new AppException(ErrorCode.VARIANT_VALUE_NOT_FOUND));
     }
 
-    private PageResponse<VariantValueResponse> getAllWithFilterAndSearch(VariantValueFilterRequest request,
-            boolean isDeleted) {
+    private PageResponse<VariantValueResponse> getAllWithFilterAndSearch(VariantValueFilterRequest request, boolean isDeleted) {
         Pageable pageable = PageRequest.of(request.getPage() - 1, request.getSize(),
                 SortUtils.parseSort(request.getSort()));
 
-        String keyword = StringUtils.hasText(request.getKeyword()) ? request.getKeyword().trim() : null;
+        String keyword = StringUtils.hasText(request.getKeyword())
+                ? request.getKeyword().trim()
+                : null;
+
         String[] sortParams = SortUtils.parseSortForMyBatis(request.getSort(), VariantValueSortField.class);
+        String sortColumn = sortParams[0];
+        String sortDirection = sortParams[1];
+
         List<VariantValueResponse> content = variantValueMyBatisMapper.findAllWithFilterAndSearch(
-                request.getVariantId(), keyword, request.getStartDate(), request.getEndDate(),
-                isDeleted, sortParams[0], sortParams[1], pageable.getOffset(), pageable.getPageSize());
+                request.getVariantId(),
+                keyword,
+                request.getStartDate(),
+                request.getEndDate(),
+                isDeleted,
+                sortColumn,
+                sortDirection,
+                pageable.getOffset(),
+                pageable.getPageSize());
+
         long total = variantValueMyBatisMapper.countWithFilterAndSearch(
-                request.getVariantId(), keyword, request.getStartDate(), request.getEndDate(), isDeleted);
+                request.getVariantId(),
+                keyword,
+                request.getStartDate(),
+                request.getEndDate(),
+                isDeleted);
 
         Page<VariantValueResponse> page = new PageImpl<>(content, pageable, total);
         return PageResponse.fromPage(page);

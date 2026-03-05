@@ -9,10 +9,12 @@ import com.khahnm04.ecommerce.modules.catalog.dto.response.VariantResponse;
 import com.khahnm04.ecommerce.modules.catalog.service.VariantService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("${api.prefix}/admin/variants")
 @RequiredArgsConstructor
@@ -23,7 +25,8 @@ public class AdminVariantController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ApiResponse<VariantResponse> createVariant(
-            @Valid @RequestBody VariantRequest request) {
+            @Valid @RequestBody VariantRequest request
+    ) {
         return ApiResponse.<VariantResponse>builder()
                 .data(variantService.createVariant(request))
                 .message("Variant created successfully")
@@ -33,7 +36,8 @@ public class AdminVariantController {
     @GetMapping("/{identifier}")
     public ApiResponse<VariantResponse> getVariantDetail(
             @PathVariable String identifier,
-            @RequestParam(defaultValue = "false") boolean deleted) {
+            @RequestParam(defaultValue = "false") boolean deleted
+    ) {
         return ApiResponse.<VariantResponse>builder()
                 .data(variantService.getVariantDetail(identifier, deleted))
                 .message("Get variant detail successfully")
@@ -42,7 +46,8 @@ public class AdminVariantController {
 
     @GetMapping
     public ApiResponse<List<VariantResponse>> getAllVariants(
-            @Valid @ModelAttribute VariantFilterRequest filter) {
+            @Valid @ModelAttribute VariantFilterRequest filter
+    ) {
         PageResponse<VariantResponse> pageResponse = variantService.getAllVariants(filter);
         return ApiResponse.<List<VariantResponse>>builder()
                 .data(pageResponse.getData())
@@ -53,7 +58,8 @@ public class AdminVariantController {
 
     @GetMapping("/deleted")
     public ApiResponse<List<VariantResponse>> getAllDeletedVariants(
-            @Valid @ModelAttribute VariantFilterRequest filter) {
+            @Valid @ModelAttribute VariantFilterRequest filter
+    ) {
         PageResponse<VariantResponse> pageResponse = variantService.getAllDeletedVariants(filter);
         return ApiResponse.<List<VariantResponse>>builder()
                 .data(pageResponse.getData())
@@ -65,7 +71,8 @@ public class AdminVariantController {
     @PutMapping("/{id}")
     public ApiResponse<VariantResponse> updateVariant(
             @PathVariable Long id,
-            @Valid @RequestBody VariantRequest request) {
+            @Valid @RequestBody VariantRequest request
+    ) {
         return ApiResponse.<VariantResponse>builder()
                 .data(variantService.updateVariant(id, request))
                 .message("Variant updated successfully")
@@ -74,7 +81,8 @@ public class AdminVariantController {
 
     @DeleteMapping("/{id}")
     public ApiResponse<Void> softDeleteVariant(
-            @PathVariable Long id) {
+            @PathVariable Long id
+    ) {
         variantService.softDeleteVariant(id);
         return ApiResponse.<Void>builder()
                 .message("Variant soft deleted successfully")
@@ -83,7 +91,8 @@ public class AdminVariantController {
 
     @PatchMapping("/{id}/restore")
     public ApiResponse<Void> restoreVariant(
-            @PathVariable Long id) {
+            @PathVariable Long id
+    ) {
         variantService.restoreVariant(id);
         return ApiResponse.<Void>builder()
                 .message("Variant restored successfully")
@@ -92,7 +101,8 @@ public class AdminVariantController {
 
     @PatchMapping("/bulk")
     public ApiResponse<Void> handleBulkAction(
-            @Valid @RequestBody VariantBulkActionRequest request) {
+            @Valid @RequestBody VariantBulkActionRequest request
+    ) {
         variantService.handleBulkAction(request);
         return ApiResponse.<Void>builder()
                 .message("Bulk action executed successfully")

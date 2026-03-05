@@ -14,7 +14,6 @@ public class CategoryRequest implements Serializable {
     @NotBlank(message = "CATEGORY_NAME_REQUIRED")
     private String name;
 
-    @NotBlank(message = "CATEGORY_SLUG_REQUIRED")
     private String slug;
 
     private String description;

@@ -5,6 +5,7 @@ import com.khahnm04.ecommerce.common.entity.BaseEntity;
 import com.khahnm04.ecommerce.common.exception.AppException;
 import com.khahnm04.ecommerce.common.exception.ErrorCode;
 import com.khahnm04.ecommerce.common.util.SortUtils;
+import com.khahnm04.ecommerce.common.util.SlugUtils;
 import com.khahnm04.ecommerce.modules.catalog.dto.request.BrandBulkActionRequest;
 import com.khahnm04.ecommerce.modules.catalog.dto.request.BrandFilterRequest;
 import com.khahnm04.ecommerce.modules.catalog.dto.request.BrandRequest;
@@ -42,10 +43,14 @@ public class BrandServiceImpl implements BrandService {
     @Override
     @Transactional
     public BrandResponse createBrand(BrandRequest request) {
-        if (brandRepository.existsBySlug(request.getSlug())) {
+        if (brandRepository.existsByName(request.getName())) {
             throw new AppException(ErrorCode.BRAND_EXISTED);
         }
-        if (brandRepository.existsByName(request.getName())) {
+
+        if (!StringUtils.hasText(request.getSlug())) {
+            request.setSlug(SlugUtils.toSlug(request.getName()));
+        }
+        if (brandRepository.existsBySlug(request.getSlug())) {
             throw new AppException(ErrorCode.BRAND_EXISTED);
         }
 
@@ -184,8 +189,7 @@ public class BrandServiceImpl implements BrandService {
                 .orElseThrow(() -> new AppException(ErrorCode.BRAND_NOT_FOUND));
     }
 
-    private PageResponse<BrandResponse> getAllWithFilterAndSearch(BrandFilterRequest request,
-            boolean isDeleted) {
+    private PageResponse<BrandResponse> getAllWithFilterAndSearch(BrandFilterRequest request, boolean isDeleted) {
         Pageable pageable = PageRequest.of(request.getPage() - 1, request.getSize(),
                 SortUtils.parseSort(request.getSort()));
 

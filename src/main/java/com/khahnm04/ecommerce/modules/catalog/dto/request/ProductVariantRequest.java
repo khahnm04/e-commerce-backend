@@ -1,5 +1,6 @@
 package com.khahnm04.ecommerce.modules.catalog.dto.request;
 
+import com.khahnm04.ecommerce.modules.catalog.enums.ProductVariantStatus;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -29,6 +30,8 @@ public class ProductVariantRequest implements Serializable {
 
     private String image;
 
-    private Set<Long> variantValueIds;
+    private ProductVariantStatus status;
+
+    private Set<Long> variantValues;
 
 }

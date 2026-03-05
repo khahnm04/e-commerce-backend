@@ -1,8 +1,8 @@
 package com.khahnm04.ecommerce.modules.catalog.dto.request;
 
 import com.khahnm04.ecommerce.modules.catalog.enums.ProductStatus;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import java.io.Serializable;
@@ -49,12 +49,13 @@ public class ProductRequest implements Serializable {
 
     private ProductStatus status;
 
-    private Set<Long> categoryIds;
+    @NotEmpty(message = "PRODUCT_CATEGORIES_REQUIRED")
+    private Set<Long> categories;
 
-    @Valid
+    @NotEmpty(message = "PRODUCT_ATTRIBUTES_REQUIRED")
     private List<ProductAttributeValueRequest> attributes;
 
-    @Valid
+    @NotEmpty(message = "PRODUCT_IMAGES_REQUIRED")
     private List<ProductImageRequest> images;
 
 }

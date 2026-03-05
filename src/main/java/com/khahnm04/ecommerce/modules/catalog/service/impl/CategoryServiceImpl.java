@@ -5,6 +5,7 @@ import com.khahnm04.ecommerce.common.entity.BaseEntity;
 import com.khahnm04.ecommerce.common.exception.AppException;
 import com.khahnm04.ecommerce.common.exception.ErrorCode;
 import com.khahnm04.ecommerce.common.util.SortUtils;
+import com.khahnm04.ecommerce.common.util.SlugUtils;
 import com.khahnm04.ecommerce.modules.catalog.dto.request.*;
 import com.khahnm04.ecommerce.modules.catalog.dto.response.CategoryResponse;
 import com.khahnm04.ecommerce.modules.catalog.entity.Category;
@@ -38,10 +39,14 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     @Transactional
     public CategoryResponse createCategory(CategoryRequest request) {
-        if (categoryRepository.existsBySlug(request.getSlug())) {
+        if (categoryRepository.existsByName(request.getName())) {
             throw new AppException(ErrorCode.CATEGORY_EXISTED);
         }
-        if (categoryRepository.existsByName(request.getName())) {
+
+        if (!StringUtils.hasText(request.getSlug())) {
+            request.setSlug(SlugUtils.toSlug(request.getName()));
+        }
+        if (categoryRepository.existsBySlug(request.getSlug())) {
             throw new AppException(ErrorCode.CATEGORY_EXISTED);
         }
 
@@ -233,7 +238,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     private PageResponse<CategoryResponse> getAllWithFilterAndSearch(CategoryFilterRequest request, boolean isDeleted) {
         Pageable pageable = PageRequest.of(request.getPage() - 1, request.getSize(),
-            SortUtils.parseSort(request.getSort()));
+                SortUtils.parseSort(request.getSort()));
 
         String keyword = StringUtils.hasText(request.getKeyword())
                 ? request.getKeyword().trim()

@@ -176,18 +176,33 @@ public class VariantServiceImpl implements VariantService {
                 .orElseThrow(() -> new AppException(ErrorCode.VARIANT_NOT_FOUND));
     }
 
-    private PageResponse<VariantResponse> getAllWithFilterAndSearch(VariantFilterRequest request,
-            boolean isDeleted) {
+    private PageResponse<VariantResponse> getAllWithFilterAndSearch(VariantFilterRequest request, boolean isDeleted) {
         Pageable pageable = PageRequest.of(request.getPage() - 1, request.getSize(),
                 SortUtils.parseSort(request.getSort()));
 
-        String keyword = StringUtils.hasText(request.getKeyword()) ? request.getKeyword().trim() : null;
+        String keyword = StringUtils.hasText(request.getKeyword())
+                ? request.getKeyword().trim()
+                : null;
+
         String[] sortParams = SortUtils.parseSortForMyBatis(request.getSort(), VariantSortField.class);
+        String sortColumn = sortParams[0];
+        String sortDirection = sortParams[1];
+
         List<VariantResponse> content = variantMyBatisMapper.findAllWithFilterAndSearch(
-                keyword, request.getStartDate(), request.getEndDate(), isDeleted,
-                sortParams[0], sortParams[1], pageable.getOffset(), pageable.getPageSize());
+                keyword,
+                request.getStartDate(),
+                request.getEndDate(),
+                isDeleted,
+                sortColumn,
+                sortDirection,
+                pageable.getOffset(),
+                pageable.getPageSize());
+
         long total = variantMyBatisMapper.countWithFilterAndSearch(
-                keyword, request.getStartDate(), request.getEndDate(), isDeleted);
+                keyword,
+                request.getStartDate(),
+                request.getEndDate(),
+                isDeleted);
 
         Page<VariantResponse> page = new PageImpl<>(content, pageable, total);
         return PageResponse.fromPage(page);

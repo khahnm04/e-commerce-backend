@@ -3,7 +3,5 @@ package com.khahnm04.ecommerce.modules.catalog.enums;
 public enum ProductStatus {
     ACTIVE,
     INACTIVE,
-    OUT_OF_STOCK,
-    PENDING,
-    DISCONTINUED;
+    INCOMING
 }

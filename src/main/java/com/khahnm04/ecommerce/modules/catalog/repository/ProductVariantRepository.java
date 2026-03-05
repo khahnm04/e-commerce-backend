@@ -1,6 +1,7 @@
 package com.khahnm04.ecommerce.modules.catalog.repository;
 
 import com.khahnm04.ecommerce.modules.catalog.entity.ProductVariant;
+import com.khahnm04.ecommerce.modules.catalog.enums.ProductVariantStatus;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,5 +41,10 @@ public interface ProductVariantRepository
     @Transactional
     @Query("UPDATE ProductVariant pv SET pv.deletedAt = NULL WHERE pv.id IN :ids AND pv.deletedAt IS NOT NULL")
     void restoreDeletedByIds(Set<Long> ids);
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE ProductVariant pv SET pv.status = :status WHERE pv.id IN :ids")
+    void updateStatusByIds(ProductVariantStatus status, Set<Long> ids);
 
 }

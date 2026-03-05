@@ -9,11 +9,11 @@ import com.khahnm04.ecommerce.modules.catalog.entity.Variant;
 
 public interface VariantService {
 
+    VariantResponse createVariant(VariantRequest request);
+
     Variant getVariantById(Long id);
 
     VariantResponse getVariantDetail(String identifier, boolean deleted);
-
-    VariantResponse createVariant(VariantRequest request);
 
     PageResponse<VariantResponse> getAllVariants(VariantFilterRequest filter);
 

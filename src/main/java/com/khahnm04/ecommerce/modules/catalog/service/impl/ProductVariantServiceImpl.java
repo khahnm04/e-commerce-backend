@@ -15,6 +15,7 @@ import com.khahnm04.ecommerce.modules.catalog.entity.ProductVariant;
 import com.khahnm04.ecommerce.modules.catalog.entity.ProductVariantValue;
 import com.khahnm04.ecommerce.modules.catalog.entity.VariantValue;
 import com.khahnm04.ecommerce.modules.catalog.enums.ProductVariantSortField;
+import com.khahnm04.ecommerce.modules.catalog.enums.ProductVariantStatus;
 import com.khahnm04.ecommerce.modules.catalog.mapper.ProductVariantMapper;
 import com.khahnm04.ecommerce.modules.catalog.mapper.mybaits.ProductVariantMyBatisMapper;
 import com.khahnm04.ecommerce.modules.catalog.repository.ProductVariantRepository;
@@ -53,22 +54,25 @@ public class ProductVariantServiceImpl implements ProductVariantService {
     public ProductVariantResponse createProductVariant(ProductVariantRequest request) {
         Product product = productService.getProductById(request.getProductId());
 
-        String sku = StringUtils.hasText(request.getSku())
-                ? request.getSku().trim()
-                : generateSku(product);
-
-        if (productVariantRepository.existsBySku(sku)) {
-            throw new AppException(ErrorCode.PRODUCT_VARIANT_EXISTED);
+        String sku;
+        if (StringUtils.hasText(request.getSku())) {
+            sku = request.getSku().trim();
+            if (productVariantRepository.existsBySku(sku)) {
+                throw new AppException(ErrorCode.PRODUCT_VARIANT_EXISTED);
+            }
+        } else {
+            sku = generateSku(product, request.getVariantValues());
         }
 
         ProductVariant productVariant = productVariantMapper.toProductVariant(request);
         productVariant.setProduct(product);
         productVariant.setSku(sku);
+        productVariant.setStatus(request.getStatus() == null ? ProductVariantStatus.ACTIVE : request.getStatus());
 
         ProductVariant saved = productVariantRepository.save(productVariant);
 
-        if (request.getVariantValueIds() != null && !request.getVariantValueIds().isEmpty()) {
-            saveProductVariantValues(saved, request.getVariantValueIds());
+        if (request.getVariantValues() != null && !request.getVariantValues().isEmpty()) {
+            saveProductVariantValues(saved, request.getVariantValues());
         }
 
         log.info("Created product variant with id: {} and sku: {}", saved.getId(), sku);
@@ -134,10 +138,10 @@ public class ProductVariantServiceImpl implements ProductVariantService {
 
         ProductVariant saved = productVariantRepository.save(productVariant);
 
-        if (request.getVariantValueIds() != null) {
+        if (request.getVariantValues() != null) {
             productVariantValueRepository.deleteAllByProductVariantId(id);
-            if (!request.getVariantValueIds().isEmpty()) {
-                saveProductVariantValues(saved, request.getVariantValueIds());
+            if (!request.getVariantValues().isEmpty()) {
+                saveProductVariantValues(saved, request.getVariantValues());
             }
         }
 
@@ -208,6 +212,11 @@ public class ProductVariantServiceImpl implements ProductVariantService {
         }
 
         switch (action) {
+            case "ACTIVE", "INACTIVE", "OUT_OF_STOCK" -> {
+                ProductVariantStatus status = ProductVariantStatus.valueOf(action);
+                productVariantRepository.updateStatusByIds(status, existingIds);
+                log.info("Bulk update status {} product variants ids: {}", action, existingIds);
+            }
             case "DELETE" -> {
                 productVariantRepository.softDeleteByIds(LocalDateTime.now(), existingIds);
                 log.info("Bulk delete product variants ids: {}", existingIds);
@@ -229,15 +238,47 @@ public class ProductVariantServiceImpl implements ProductVariantService {
     }
 
     /**
-     * Generate SKU automatically: {CODE}-{TIMESTAMP}
-     * Example: IP15PM-20260220161044
+     * Generate SKU from product code and variant values.
+     * Format: {PRODUCT_CODE}-{VARIANT_VALUE_1}-{VARIANT_VALUE_2}-...
+     * Variant values are sorted by variant name for consistency.
+     * Falls back to timestamp suffix if no variant values are provided.
+     * Appends counter (-1, -2, ...) if SKU already exists.
+     *
+     * Examples:
+     * IP15PM-RED-256GB (Color=Red, Storage=256GB)
+     * IP15PM-BLK-512GB (Color=Black, Storage=512GB)
+     * IP15PM-20260220161044 (no variant values)
      */
-    private String generateSku(Product product) {
+    private String generateSku(Product product, Set<Long> variantValueIds) {
         String prefix = StringUtils.hasText(product.getCode())
                 ? product.getCode().toUpperCase()
                 : "PV";
-        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
-        return prefix + "-" + timestamp;
+
+        String baseSku;
+        if (variantValueIds != null && !variantValueIds.isEmpty()) {
+            List<VariantValue> variantValues = variantValueRepository.findAllById(variantValueIds);
+
+            String suffix = variantValues.stream()
+                    .sorted(Comparator.comparing(vv -> vv.getVariant().getName()))
+                    .map(vv -> StringUtils.hasText(vv.getCode())
+                            ? vv.getCode().toUpperCase()
+                            : vv.getValue().toUpperCase().replaceAll("\\s+", ""))
+                    .collect(Collectors.joining("-"));
+
+            baseSku = prefix + "-" + suffix;
+        } else {
+            String timestamp = LocalDateTime.now()
+                    .format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+            baseSku = prefix + "-" + timestamp;
+        }
+
+        String sku = baseSku;
+        int counter = 1;
+        while (productVariantRepository.existsBySku(sku)) {
+            sku = baseSku + "-" + counter;
+            counter++;
+        }
+        return sku;
     }
 
     private void saveProductVariantValues(ProductVariant productVariant, Set<Long> variantValueIds) {

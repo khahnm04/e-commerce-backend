@@ -14,7 +14,6 @@ public class BrandRequest implements Serializable {
     @NotBlank(message = "BRAND_NAME_REQUIRED")
     private String name;
 
-    @NotBlank(message = "BRAND_SLUG_REQUIRED")
     private String slug;
 
     private String description;
