@@ -1,33 +1,22 @@
 package com.khahnm04.ecommerce.modules.cart.service;
 
 import com.khahnm04.ecommerce.modules.cart.dto.request.AddCartItemRequest;
-import com.khahnm04.ecommerce.modules.cart.dto.request.ApplyCouponRequest;
 import com.khahnm04.ecommerce.modules.cart.dto.request.UpdateCartItemRequest;
 import com.khahnm04.ecommerce.modules.cart.dto.response.CartResponse;
-import com.khahnm04.ecommerce.modules.cart.dto.response.CartSummaryResponse;
-import com.khahnm04.ecommerce.modules.cart.dto.response.CartValidationResponse;
-import java.util.List;
+import java.util.Set;
 
 public interface CartService {
 
-    CartResponse getMyCart();
+    CartResponse getCart(Long customerId);
 
-    CartResponse addItemToCart(AddCartItemRequest request);
+    CartResponse addItem(Long customerId, AddCartItemRequest request);
 
-    CartResponse updateCartItem(Long itemId, UpdateCartItemRequest request);
+    CartResponse updateItem(Long customerId, Long itemId, UpdateCartItemRequest request);
 
-    void removeCartItem(Long itemId);
+    void removeItem(Long customerId, Long itemId);
 
-    void clearCart();
+    void removeItems(Long customerId, Set<Long> itemIds);
 
-    CartResponse applyCoupon(ApplyCouponRequest request);
-
-    CartResponse removeCoupon();
-
-    CartSummaryResponse getCartSummary();
-
-    List<CartValidationResponse> validateCart();
-
-    int getCartItemCount();
+    void clearCart(Long customerId);
 
 }

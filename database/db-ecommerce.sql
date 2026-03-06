@@ -440,7 +440,6 @@ CREATE TABLE `inventory_summary` (
 CREATE TABLE `carts` (
   `id` bigint PRIMARY KEY AUTO_INCREMENT,
   `customer_id` bigint UNIQUE NOT NULL,
-  `coupon_code` varchar(255),
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );

@@ -272,7 +272,6 @@ public enum ErrorCode {
     CART_ITEM_VARIANT_REQUIRED(6000, "Product variant is required", HttpStatus.BAD_REQUEST),
     CART_ITEM_QUANTITY_REQUIRED(6001, "Quantity is required", HttpStatus.BAD_REQUEST),
     CART_ITEM_QUANTITY_MIN(6002, "Quantity must be at least 1", HttpStatus.BAD_REQUEST),
-    CART_COUPON_CODE_REQUIRED(6003, "Coupon code is required", HttpStatus.BAD_REQUEST),
     CART_NOT_FOUND(6050, "Cart not found", HttpStatus.NOT_FOUND),
     CART_ITEM_NOT_FOUND(6051, "Cart item not found", HttpStatus.NOT_FOUND),
     CART_EMPTY(6052, "Cart is empty", HttpStatus.BAD_REQUEST),

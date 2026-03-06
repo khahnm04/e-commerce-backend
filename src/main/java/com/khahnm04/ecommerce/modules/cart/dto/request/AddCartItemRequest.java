@@ -15,8 +15,8 @@ public class AddCartItemRequest implements Serializable {
     @NotNull(message = "CART_ITEM_VARIANT_REQUIRED")
     private Long productVariantId;
 
-    @Builder.Default
+    @NotNull(message = "CART_ITEM_QUANTITY_REQUIRED")
     @Min(value = 1, message = "CART_ITEM_QUANTITY_MIN")
-    private Integer quantity = 1;
+    private Integer quantity;
 
 }

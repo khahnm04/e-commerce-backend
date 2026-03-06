@@ -3,23 +3,34 @@ package com.khahnm04.ecommerce.modules.cart.repository;
 import com.khahnm04.ecommerce.modules.cart.entity.CartItem;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Repository
 public interface CartItemRepository extends JpaRepository<CartItem, Long> {
 
-    @EntityGraph(attributePaths = { "productVariant" })
-    List<CartItem> findByCartId(Long cartId);
+    @EntityGraph(attributePaths = { "productVariant", "productVariant.product" })
+    List<CartItem> findAllByCartId(Long cartId);
 
     Optional<CartItem> findByCartIdAndProductVariantId(Long cartId, Long productVariantId);
 
-    void deleteByCartId(Long cartId);
+    Optional<CartItem> findByIdAndCartId(Long id, Long cartId);
 
-    @Query("SELECT COALESCE(SUM(ci.quantity), 0) FROM CartItem ci WHERE ci.cart.id = :cartId")
-    int countTotalItemsByCartId(@Param("cartId") Long cartId);
+    @Modifying
+    @Transactional
+    void deleteAllByCartId(Long cartId);
+
+    @Query("SELECT ci.id FROM CartItem ci WHERE ci.id IN :ids AND ci.cart.id = :cartId")
+    Set<Long> findIdsByIdInAndCartId(Set<Long> ids, Long cartId);
+
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM CartItem ci WHERE ci.id IN :ids AND ci.cart.id = :cartId")
+    void deleteByIdsAndCartId(Set<Long> ids, Long cartId);
 
 }

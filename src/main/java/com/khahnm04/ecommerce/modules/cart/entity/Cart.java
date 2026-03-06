@@ -26,9 +26,6 @@ public class Cart implements Serializable {
     @JoinColumn(name = "customer_id", nullable = false, unique = true)
     private Customer customer;
 
-    @Column(name = "coupon_code")
-    private String couponCode;
-
     @CreationTimestamp
     @Column(name = "created_at")
     private LocalDateTime createdAt;

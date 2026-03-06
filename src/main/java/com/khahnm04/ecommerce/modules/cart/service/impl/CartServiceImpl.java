@@ -2,20 +2,18 @@ package com.khahnm04.ecommerce.modules.cart.service.impl;
 
 import com.khahnm04.ecommerce.common.exception.AppException;
 import com.khahnm04.ecommerce.common.exception.ErrorCode;
-import com.khahnm04.ecommerce.common.util.SecurityUtils;
 import com.khahnm04.ecommerce.modules.cart.dto.request.AddCartItemRequest;
-import com.khahnm04.ecommerce.modules.cart.dto.request.ApplyCouponRequest;
 import com.khahnm04.ecommerce.modules.cart.dto.request.UpdateCartItemRequest;
-import com.khahnm04.ecommerce.modules.cart.dto.response.*;
+import com.khahnm04.ecommerce.modules.cart.dto.response.CartItemResponse;
+import com.khahnm04.ecommerce.modules.cart.dto.response.CartResponse;
 import com.khahnm04.ecommerce.modules.cart.entity.Cart;
 import com.khahnm04.ecommerce.modules.cart.entity.CartItem;
 import com.khahnm04.ecommerce.modules.cart.repository.CartItemRepository;
 import com.khahnm04.ecommerce.modules.cart.repository.CartRepository;
 import com.khahnm04.ecommerce.modules.cart.service.CartService;
 import com.khahnm04.ecommerce.modules.catalog.entity.ProductVariant;
+import com.khahnm04.ecommerce.modules.catalog.enums.ProductVariantStatus;
 import com.khahnm04.ecommerce.modules.catalog.repository.ProductVariantRepository;
-import com.khahnm04.ecommerce.modules.inventory.enums.SerialNumberStatus;
-import com.khahnm04.ecommerce.modules.inventory.repository.SerialNumberRepository;
 import com.khahnm04.ecommerce.modules.user.entity.Customer;
 import com.khahnm04.ecommerce.modules.user.repository.CustomerRepository;
 import lombok.RequiredArgsConstructor;
@@ -23,9 +21,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
-import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Slf4j
 @Service
@@ -34,42 +34,47 @@ public class CartServiceImpl implements CartService {
 
     private final CartRepository cartRepository;
     private final CartItemRepository cartItemRepository;
-    private final CustomerRepository customerRepository;
     private final ProductVariantRepository productVariantRepository;
-    private final SerialNumberRepository serialNumberRepository;
+    private final CustomerRepository customerRepository;
 
     @Override
-    public CartResponse getMyCart() {
-        Cart cart = getOrCreateCart();
-        return buildCartResponse(cart);
+    public CartResponse getCart(Long customerId) {
+        return cartRepository.findByCustomerId(customerId)
+                .map(this::buildCartResponse)
+                .orElse(buildEmptyCartResponse());
     }
 
     @Override
     @Transactional
-    public CartResponse addItemToCart(AddCartItemRequest request) {
-        Cart cart = getOrCreateCart();
+    public CartResponse addItem(Long customerId, AddCartItemRequest request) {
+        Cart cart = getOrCreateCart(customerId);
 
-        ProductVariant variant = productVariantRepository.findById(request.getProductVariantId())
+        ProductVariant productVariant = productVariantRepository
+                .findByIdAndDeletedAtIsNull(request.getProductVariantId())
                 .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_VARIANT_NOT_FOUND));
 
-        // If item already exists, increase quantity
+        if (productVariant.getStatus() != ProductVariantStatus.ACTIVE) {
+            throw new AppException(ErrorCode.PRODUCT_VARIANT_NOT_FOUND);
+        }
+
+        // If product variant already in cart, increase quantity
         Optional<CartItem> existingItem = cartItemRepository
-                .findByCartIdAndProductVariantId(cart.getId(), variant.getId());
+                .findByCartIdAndProductVariantId(cart.getId(), productVariant.getId());
 
         if (existingItem.isPresent()) {
             CartItem item = existingItem.get();
             item.setQuantity(item.getQuantity() + request.getQuantity());
             cartItemRepository.save(item);
-            log.info("Increased cart item quantity: cartId={}, variantId={}, newQty={}",
-                    cart.getId(), variant.getId(), item.getQuantity());
+            log.info("Updated cart item quantity: cartId={}, variantId={}, newQty={}", cart.getId(),
+                    productVariant.getId(), item.getQuantity());
         } else {
             CartItem newItem = CartItem.builder()
                     .cart(cart)
-                    .productVariant(variant)
+                    .productVariant(productVariant)
                     .quantity(request.getQuantity())
                     .build();
             cartItemRepository.save(newItem);
-            log.info("Added new cart item: cartId={}, variantId={}", cart.getId(), variant.getId());
+            log.info("Added new cart item: cartId={}, variantId={}, qty={}", cart.getId(), productVariant.getId(), request.getQuantity());
         }
 
         return buildCartResponse(cart);
@@ -77,200 +82,131 @@ public class CartServiceImpl implements CartService {
 
     @Override
     @Transactional
-    public CartResponse updateCartItem(Long itemId, UpdateCartItemRequest request) {
-        Cart cart = getOrCreateCart();
-        CartItem item = getCartItemBelongingToCart(itemId, cart);
+    public CartResponse updateItem(Long customerId, Long itemId, UpdateCartItemRequest request) {
+        Cart cart = getCartByCustomerId(customerId);
 
-        item.setQuantity(request.getQuantity());
-        cartItemRepository.save(item);
-        log.info("Updated cart item quantity: itemId={}, newQty={}", itemId, request.getQuantity());
+        CartItem cartItem = cartItemRepository.findByIdAndCartId(itemId, cart.getId())
+                .orElseThrow(() -> new AppException(ErrorCode.CART_ITEM_NOT_FOUND));
 
+        cartItem.setQuantity(request.getQuantity());
+        cartItemRepository.save(cartItem);
+
+        log.info("Updated cart item: cartId={}, itemId={}, newQty={}", cart.getId(), itemId, request.getQuantity());
         return buildCartResponse(cart);
     }
 
     @Override
     @Transactional
-    public void removeCartItem(Long itemId) {
-        Cart cart = getOrCreateCart();
-        CartItem item = getCartItemBelongingToCart(itemId, cart);
+    public void removeItem(Long customerId, Long itemId) {
+        Cart cart = getCartByCustomerId(customerId);
 
-        cartItemRepository.delete(item);
-        log.info("Removed cart item: itemId={}", itemId);
+        CartItem cartItem = cartItemRepository.findByIdAndCartId(itemId, cart.getId())
+                .orElseThrow(() -> new AppException(ErrorCode.CART_ITEM_NOT_FOUND));
+
+        cartItemRepository.delete(cartItem);
+        log.info("Removed cart item: cartId={}, itemId={}", cart.getId(), itemId);
     }
 
     @Override
     @Transactional
-    public void clearCart() {
-        Cart cart = getOrCreateCart();
-        cartItemRepository.deleteByCartId(cart.getId());
-        cart.setCouponCode(null);
-        cartRepository.save(cart);
+    public void removeItems(Long customerId, Set<Long> itemIds) {
+        Cart cart = getCartByCustomerId(customerId);
+
+        Set<Long> existingIds = cartItemRepository.findIdsByIdInAndCartId(itemIds, cart.getId());
+        if (existingIds.size() != itemIds.size()) {
+            Set<Long> notFoundIds = new HashSet<>(itemIds);
+            notFoundIds.removeAll(existingIds);
+            log.warn("Cart items not found: cartId={}, notFoundIds={}", cart.getId(), notFoundIds);
+            throw new AppException(ErrorCode.CART_ITEM_NOT_FOUND);
+        }
+
+        cartItemRepository.deleteByIdsAndCartId(itemIds, cart.getId());
+        log.info("Removed cart items: cartId={}, itemIds={}", cart.getId(), itemIds);
+    }
+
+    @Override
+    @Transactional
+    public void clearCart(Long customerId) {
+        Cart cart = getCartByCustomerId(customerId);
+
+        List<CartItem> items = cartItemRepository.findAllByCartId(cart.getId());
+        if (items.isEmpty()) {
+            log.warn("Cart is already empty: cartId={}", cart.getId());
+            return;
+        }
+
+        cartItemRepository.deleteAllByCartId(cart.getId());
         log.info("Cleared cart: cartId={}", cart.getId());
-    }
-
-    @Override
-    @Transactional
-    public CartResponse applyCoupon(ApplyCouponRequest request) {
-        Cart cart = getOrCreateCart();
-        // TODO: Validate coupon code when Coupon module is ready
-        cart.setCouponCode(request.getCouponCode());
-        cartRepository.save(cart);
-        log.info("Applied coupon '{}' to cart: cartId={}", request.getCouponCode(), cart.getId());
-
-        return buildCartResponse(cart);
-    }
-
-    @Override
-    @Transactional
-    public CartResponse removeCoupon() {
-        Cart cart = getOrCreateCart();
-        cart.setCouponCode(null);
-        cartRepository.save(cart);
-        log.info("Removed coupon from cart: cartId={}", cart.getId());
-
-        return buildCartResponse(cart);
-    }
-
-    @Override
-    public CartSummaryResponse getCartSummary() {
-        Cart cart = getOrCreateCart();
-        List<CartItem> items = cartItemRepository.findByCartId(cart.getId());
-        return buildSummary(items, cart.getCouponCode());
-    }
-
-    @Override
-    public List<CartValidationResponse> validateCart() {
-        Cart cart = getOrCreateCart();
-        List<CartItem> items = cartItemRepository.findByCartId(cart.getId());
-        List<CartValidationResponse> results = new ArrayList<>();
-
-        for (CartItem item : items) {
-            ProductVariant variant = item.getProductVariant();
-
-            // Count available serials for this variant (IN_STOCK)
-            long availableCount = serialNumberRepository
-                    .findByStatusAndProductVariantId(SerialNumberStatus.IN_STOCK, variant.getId())
-                    .size();
-
-            if (availableCount < item.getQuantity()) {
-                results.add(CartValidationResponse.builder()
-                        .valid(false)
-                        .productVariantId(variant.getId())
-                        .productVariantName(variant.getName())
-                        .message(
-                                "Only " + availableCount + " units available, but " + item.getQuantity() + " requested")
-                        .build());
-            } else {
-                results.add(CartValidationResponse.builder()
-                        .valid(true)
-                        .productVariantId(variant.getId())
-                        .productVariantName(variant.getName())
-                        .message("In stock")
-                        .build());
-            }
-        }
-
-        return results;
-    }
-
-    @Override
-    public int getCartItemCount() {
-        Cart cart = getOrCreateCart();
-        return cartItemRepository.countTotalItemsByCartId(cart.getId());
     }
 
     // ======================== Private methods ========================
 
-    private Customer getCurrentCustomer() {
-        String principal = SecurityUtils.extractPrincipal();
-        if (principal == null) {
-            throw new AppException(ErrorCode.UNAUTHENTICATED);
-        }
-        return customerRepository.findByUser_PhoneNumber(principal)
-                .orElseThrow(() -> new AppException(ErrorCode.CUSTOMER_NOT_FOUND));
+    private Cart getCartByCustomerId(Long customerId) {
+        return cartRepository.findByCustomerId(customerId)
+                .orElseThrow(() -> new AppException(ErrorCode.CART_NOT_FOUND));
     }
 
-    private Cart getOrCreateCart() {
-        Customer customer = getCurrentCustomer();
-        return cartRepository.findByCustomerId(customer.getId())
+    private Cart getOrCreateCart(Long customerId) {
+        return cartRepository.findByCustomerId(customerId)
                 .orElseGet(() -> {
+                    Customer customer = customerRepository.findByIdAndDeletedAtIsNull(customerId)
+                            .orElseThrow(() -> new AppException(
+                                    ErrorCode.CUSTOMER_NOT_FOUND));
                     Cart newCart = Cart.builder()
                             .customer(customer)
                             .build();
                     Cart saved = cartRepository.save(newCart);
-                    log.info("Created new cart for customer: {}", customer.getId());
+                    log.info("Created new cart for customer: {}", customerId);
                     return saved;
                 });
     }
 
-    private CartItem getCartItemBelongingToCart(Long itemId, Cart cart) {
-        CartItem item = cartItemRepository.findById(itemId)
-                .orElseThrow(() -> new AppException(ErrorCode.CART_ITEM_NOT_FOUND));
-        if (!item.getCart().getId().equals(cart.getId())) {
-            throw new AppException(ErrorCode.CART_ITEM_NOT_FOUND);
-        }
-        return item;
+    private CartResponse buildEmptyCartResponse() {
+        return CartResponse.builder()
+                .items(Collections.emptyList())
+                .totalItems(0)
+                .totalAmount(BigDecimal.ZERO)
+                .build();
     }
 
     private CartResponse buildCartResponse(Cart cart) {
-        List<CartItem> items = cartItemRepository.findByCartId(cart.getId());
+        List<CartItem> items = cartItemRepository.findAllByCartId(cart.getId());
+
         List<CartItemResponse> itemResponses = items.stream()
                 .map(this::toCartItemResponse)
                 .toList();
 
-        CartSummaryResponse summary = buildSummary(items, cart.getCouponCode());
+        BigDecimal totalAmount = itemResponses.stream()
+                .map(CartItemResponse::getSubtotal)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        int totalItems = itemResponses.stream()
+                .mapToInt(CartItemResponse::getQuantity)
+                .sum();
 
         return CartResponse.builder()
                 .id(cart.getId())
-                .couponCode(cart.getCouponCode())
                 .items(itemResponses)
-                .summary(summary)
-                .createdAt(cart.getCreatedAt())
-                .updatedAt(cart.getUpdatedAt())
+                .totalItems(totalItems)
+                .totalAmount(totalAmount)
                 .build();
     }
 
-    private CartItemResponse toCartItemResponse(CartItem item) {
-        ProductVariant variant = item.getProductVariant();
-        BigDecimal subtotal = variant.getPrice().multiply(BigDecimal.valueOf(item.getQuantity()));
+    private CartItemResponse toCartItemResponse(CartItem cartItem) {
+        ProductVariant productVariant = cartItem.getProductVariant();
+        BigDecimal subtotal = productVariant.getPrice().multiply(BigDecimal.valueOf(cartItem.getQuantity()));
 
         return CartItemResponse.builder()
-                .id(item.getId())
-                .productVariantId(variant.getId())
-                .productVariantSku(variant.getSku())
-                .productVariantName(variant.getName())
-                .productVariantImage(variant.getImage())
-                .price(variant.getPrice())
-                .oldPrice(variant.getOldPrice())
-                .quantity(item.getQuantity())
+                .id(cartItem.getId())
+                .productVariantId(productVariant.getId())
+                .productName(productVariant.getProduct().getName())
+                .productVariantName(productVariant.getName())
+                .sku(productVariant.getSku())
+                .image(productVariant.getImage())
+                .price(productVariant.getPrice())
+                .oldPrice(productVariant.getOldPrice())
+                .quantity(cartItem.getQuantity())
                 .subtotal(subtotal)
-                .createdAt(item.getCreatedAt())
-                .updatedAt(item.getUpdatedAt())
-                .build();
-    }
-
-    private CartSummaryResponse buildSummary(List<CartItem> items, String couponCode) {
-        BigDecimal subtotal = items.stream()
-                .map(item -> item.getProductVariant().getPrice()
-                        .multiply(BigDecimal.valueOf(item.getQuantity())))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        // TODO: Calculate discount from coupon when Coupon module is ready
-        BigDecimal discount = BigDecimal.ZERO;
-        // TODO: Calculate shipping when Shipping module is ready
-        BigDecimal shipping = BigDecimal.ZERO;
-
-        BigDecimal total = subtotal.subtract(discount).add(shipping);
-
-        int totalItems = items.stream().mapToInt(CartItem::getQuantity).sum();
-
-        return CartSummaryResponse.builder()
-                .subtotal(subtotal)
-                .discount(discount)
-                .shipping(shipping)
-                .total(total)
-                .couponCode(couponCode)
-                .totalItems(totalItems)
                 .build();
     }
 

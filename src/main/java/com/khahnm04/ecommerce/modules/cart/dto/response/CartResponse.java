@@ -1,8 +1,7 @@
 package com.khahnm04.ecommerce.modules.cart.dto.response;
 
 import lombok.*;
-import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.math.BigDecimal;
 import java.util.List;
 
 @Getter
@@ -10,13 +9,11 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CartResponse implements Serializable {
+public class CartResponse {
 
     private Long id;
-    private String couponCode;
     private List<CartItemResponse> items;
-    private CartSummaryResponse summary;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private int totalItems;
+    private BigDecimal totalAmount;
 
 }
