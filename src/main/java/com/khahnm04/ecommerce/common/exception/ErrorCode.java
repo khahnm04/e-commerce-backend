@@ -275,6 +275,23 @@ public enum ErrorCode {
     CART_NOT_FOUND(6050, "Cart not found", HttpStatus.NOT_FOUND),
     CART_ITEM_NOT_FOUND(6051, "Cart item not found", HttpStatus.NOT_FOUND),
     CART_EMPTY(6052, "Cart is empty", HttpStatus.BAD_REQUEST),
+
+    // =================================================================
+    // MODULE: ORDER (Range: 7000 - 7099)
+    // =================================================================
+    ORDER_SHIPPING_NAME_REQUIRED(7000, "Shipping name cannot be blank", HttpStatus.BAD_REQUEST),
+    ORDER_SHIPPING_PHONE_REQUIRED(7001, "Shipping phone cannot be blank", HttpStatus.BAD_REQUEST),
+    ORDER_SHIPPING_PROVINCE_REQUIRED(7002, "Shipping province cannot be blank", HttpStatus.BAD_REQUEST),
+    ORDER_SHIPPING_DISTRICT_REQUIRED(7003, "Shipping district cannot be blank", HttpStatus.BAD_REQUEST),
+    ORDER_SHIPPING_WARD_REQUIRED(7004, "Shipping ward cannot be blank", HttpStatus.BAD_REQUEST),
+    ORDER_SHIPPING_ADDRESS_DETAIL_REQUIRED(7005, "Shipping address detail cannot be blank", HttpStatus.BAD_REQUEST),
+    ORDER_PAYMENT_METHOD_REQUIRED(7006, "Payment method is required", HttpStatus.BAD_REQUEST),
+    ORDER_CART_ITEM_IDS_REQUIRED(7007, "Cart item IDs cannot be empty", HttpStatus.BAD_REQUEST),
+    ORDER_STATUS_REQUIRED(7008, "Order status is required", HttpStatus.BAD_REQUEST),
+    ORDER_NOT_FOUND(7050, "Order not found", HttpStatus.NOT_FOUND),
+    ORDER_INVALID_STATUS_TRANSITION(7051, "Invalid order status transition", HttpStatus.BAD_REQUEST),
+    ORDER_CANNOT_CANCEL(7052, "Order cannot be cancelled in current status", HttpStatus.BAD_REQUEST),
+    ORDER_INSUFFICIENT_STOCK(7053, "Insufficient stock for product variant", HttpStatus.BAD_REQUEST),
     ;
 
     private final Integer code;

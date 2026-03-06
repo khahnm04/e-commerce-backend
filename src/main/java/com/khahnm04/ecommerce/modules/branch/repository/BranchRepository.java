@@ -19,6 +19,8 @@ public interface BranchRepository extends JpaRepository<Branch, Long> {
 
     Optional<Branch> findByIdAndDeletedAtIsNull(Long id);
 
+    Optional<Branch> findFirstByDeletedAtIsNull();
+
     Optional<Branch> findByIdAndDeletedAtIsNotNull(Long id);
 
     Optional<Branch> findByCodeAndDeletedAtIsNull(String code);

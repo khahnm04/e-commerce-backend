@@ -5,8 +5,6 @@ import com.khahnm04.ecommerce.modules.inventory.entity.SerialNumber;
 import com.khahnm04.ecommerce.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.SQLRestriction;
 import java.math.BigDecimal;
 
 @Entity
@@ -18,8 +16,6 @@ import java.math.BigDecimal;
 @Table(name = "order_details", uniqueConstraints = {
         @UniqueConstraint(columnNames = { "order_id", "product_variant_id" })
 })
-@SQLDelete(sql = "UPDATE order_details SET deleted_at = NOW() WHERE id = ?")
-@SQLRestriction("deleted_at IS NULL")
 public class OrderDetail extends BaseEntity<Long> {
 
     @ManyToOne(fetch = FetchType.LAZY)

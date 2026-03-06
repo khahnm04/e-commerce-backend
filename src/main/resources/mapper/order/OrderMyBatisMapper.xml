@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.khahnm04.ecommerce.modules.order.mapper.mybatis.OrderMyBatisMapper">
+
+    <resultMap id="OrderResponseMap" type="com.khahnm04.ecommerce.modules.order.dto.response.OrderResponse">
+        <id property="id" column="id"/>
+        <result property="orderCode" column="order_code"/>
+        <result property="customerId" column="customer_id"/>
+        <result property="customerName" column="customer_name"/>
+        <result property="customerPhone" column="customer_phone"/>
+        <result property="branchId" column="branch_id"/>
+        <result property="branchName" column="branch_name"/>
+        <result property="orderStatus" column="order_status" javaType="com.khahnm04.ecommerce.modules.order.enums.OrderStatus"/>
+        <result property="totalAmount" column="total_amount"/>
+        <result property="shippingName" column="shipping_name"/>
+        <result property="shippingPhone" column="shipping_phone"/>
+        <result property="shippingProvince" column="shipping_province"/>
+        <result property="shippingDistrict" column="shipping_district"/>
+        <result property="shippingWard" column="shipping_ward"/>
+        <result property="shippingAddressDetail" column="shipping_address_detail"/>
+        <result property="note" column="note"/>
+        <result property="requiredDate" column="required_date"/>
+        <result property="shippedDate" column="shipped_date"/>
+        <result property="paymentMethod" column="payment_method" javaType="com.khahnm04.ecommerce.modules.payment.enums.PaymentMethod"/>
+        <result property="paymentStatus" column="payment_status" javaType="com.khahnm04.ecommerce.modules.payment.enums.PaymentStatus"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="createdBy" column="created_by"/>
+        <result property="updatedAt" column="updated_at"/>
+        <result property="updatedBy" column="updated_by"/>
+    </resultMap>
+
+    <resultMap id="OrderDetailResponseMap" type="com.khahnm04.ecommerce.modules.order.dto.response.OrderDetailResponse">
+        <id property="id" column="id"/>
+        <result property="productVariantId" column="product_variant_id"/>
+        <result property="productName" column="product_name"/>
+        <result property="productVariantName" column="product_variant_name"/>
+        <result property="sku" column="sku"/>
+        <result property="image" column="image"/>
+        <result property="unitPrice" column="unit_price"/>
+        <result property="quantity" column="quantity"/>
+        <result property="subtotal" column="subtotal"/>
+    </resultMap>
+
+    <sql id="baseColumns">
+        o.id,
+        o.order_code,
+        o.customer_id,
+        o.branch_id,
+        o.order_status,
+        o.total_amount,
+        o.shipping_name,
+        o.shipping_phone,
+        o.shipping_province,
+        o.shipping_district,
+        o.shipping_ward,
+        o.shipping_address_detail,
+        o.note,
+        o.required_date,
+        o.shipped_date,
+        o.created_at,
+        o.updated_at
+    </sql>
+
+    <sql id="joinedFields">
+        u.full_name AS customer_name,
+        u.phone_number AS customer_phone,
+        b.name AS branch_name,
+        p.payment_method AS payment_method,
+        p.payment_status AS payment_status,
+        uc.full_name AS created_by,
+        uu.full_name AS updated_by
+    </sql>
+
+    <sql id="baseFromJoinForSelect">
+        FROM orders o
+        LEFT JOIN customers c ON o.customer_id = c.id
+        LEFT JOIN users u ON c.user_id = u.id
+        LEFT JOIN branches b ON o.branch_id = b.id
+        LEFT JOIN payments p ON p.order_id = o.id AND p.deleted_at IS NULL
+        LEFT JOIN users uc ON o.created_by = uc.id
+        LEFT JOIN users uu ON o.updated_by = uu.id
+    </sql>
+
+    <sql id="baseFromJoinForCount">
+        FROM orders o
+    </sql>
+
+    <sql id="whereClause">
+        <where>
+            AND o.deleted_at IS NULL
+
+            <if test="customerId != null">
+                AND o.customer_id = #{customerId}
+            </if>
+
+            <if test="status != null">
+                AND o.order_status = #{status}
+            </if>
+
+            <if test="keyword != null and keyword != ''">
+                AND (
+                    o.order_code LIKE CONCAT('%', #{keyword}, '%')
+                    OR o.shipping_name LIKE CONCAT('%', #{keyword}, '%')
+                    OR o.shipping_phone LIKE CONCAT('%', #{keyword}, '%')
+                    OR o.note LIKE CONCAT('%', #{keyword}, '%')
+                )
+            </if>
+
+            <if test="startDate != null">
+                AND o.created_at &gt;= #{startDate}
+            </if>
+
+            <if test="endDate != null">
+                <![CDATA[
+                AND o.created_at <= DATE_ADD(#{endDate}, INTERVAL 1 DAY) - INTERVAL 1 SECOND
+                ]]>
+            </if>
+        </where>
+    </sql>
+
+    <select id="findAllWithFilterAndSearch" resultMap="OrderResponseMap">
+        SELECT
+            <include refid="baseColumns"/>,
+            <include refid="joinedFields"/>
+        <include refid="baseFromJoinForSelect"/>
+        <include refid="whereClause"/>
+        ORDER BY ${sortColumn} ${sortDirection}
+        LIMIT #{limit}
+        OFFSET #{offset}
+    </select>
+
+    <select id="countWithFilterAndSearch" resultType="long">
+        SELECT COUNT(*)
+        <include refid="baseFromJoinForCount"/>
+        <include refid="whereClause"/>
+    </select>
+
+    <select id="findDetailsByOrderId" resultMap="OrderDetailResponseMap">
+        SELECT
+            od.id,
+            od.product_variant_id,
+            p.name AS product_name,
+            pv.name AS product_variant_name,
+            pv.sku,
+            pv.image,
+            od.unit_price,
+            od.quantity,
+            (od.unit_price * od.quantity) AS subtotal
+        FROM order_details od
+        LEFT JOIN product_variants pv ON od.product_variant_id = pv.id
+        LEFT JOIN products p ON pv.product_id = p.id
+        WHERE od.order_id = #{orderId}
+        ORDER BY od.created_at ASC
+    </select>
+
+</mapper>

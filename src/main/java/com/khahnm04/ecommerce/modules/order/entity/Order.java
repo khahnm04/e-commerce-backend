@@ -8,8 +8,6 @@ import com.khahnm04.ecommerce.modules.order.enums.OrderStatus;
 import com.khahnm04.ecommerce.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.SQLRestriction;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -20,8 +18,6 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "orders")
-@SQLDelete(sql = "UPDATE orders SET deleted_at = NOW() WHERE id = ?")
-@SQLRestriction("deleted_at IS NULL")
 public class Order extends BaseEntity<Long> {
 
     @Column(name = "order_code", nullable = false, unique = true)
