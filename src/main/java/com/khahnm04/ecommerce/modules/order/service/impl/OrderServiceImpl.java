@@ -95,17 +95,14 @@ public class OrderServiceImpl implements OrderService {
             throw new AppException(ErrorCode.CART_ITEM_NOT_FOUND);
         }
 
-        // Get first active branch as default
         Branch branch = branchRepository.findFirstByDeletedAtIsNull()
                 .orElseThrow(() -> new AppException(ErrorCode.BRANCH_NOT_FOUND));
 
-        // Calculate total amount
         BigDecimal totalAmount = cartItems.stream()
                 .map(item -> item.getProductVariant().getPrice()
                         .multiply(BigDecimal.valueOf(item.getQuantity())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        // Generate order code
         String orderCode = generateOrderCode();
 
         // Create order

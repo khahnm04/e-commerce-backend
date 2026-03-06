@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.khahnm04.ecommerce.modules.news.mapper.mybatis.NewsMyBatisMapper">
+
+    <resultMap id="NewsResponseMap" type="com.khahnm04.ecommerce.modules.news.dto.response.NewsResponse">
+        <id property="id" column="id"/>
+        <result property="title" column="title"/>
+        <result property="slug" column="slug"/>
+        <result property="image" column="image"/>
+        <result property="summary" column="summary"/>
+        <result property="content" column="content"/>
+        <result property="viewCount" column="view_count"/>
+        <result property="isFeatured" column="is_featured"/>
+        <result property="status" column="status" javaType="com.khahnm04.ecommerce.modules.news.enums.NewsStatus"/>
+        <result property="publishedAt" column="published_at"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="createdBy" column="created_by"/>
+        <result property="updatedAt" column="updated_at"/>
+        <result property="updatedBy" column="updated_by"/>
+        <result property="deletedAt" column="deleted_at"/>
+    </resultMap>
+
+    <resultMap id="NewsProductResponseMap" type="com.khahnm04.ecommerce.modules.news.dto.response.NewsProductResponse">
+        <result property="productId" column="product_id"/>
+        <result property="productName" column="product_name"/>
+        <result property="productSlug" column="product_slug"/>
+        <result property="productThumbnail" column="product_thumbnail"/>
+        <result property="productPrice" column="product_price"/>
+    </resultMap>
+
+    <sql id="baseColumns">
+        n.id,
+        n.title,
+        n.slug,
+        n.image,
+        n.summary,
+        n.view_count,
+        n.is_featured,
+        n.status,
+        n.published_at,
+        n.created_at,
+        n.updated_at,
+        n.deleted_at
+    </sql>
+
+    <sql id="joinedFields">
+        uc.full_name AS created_by,
+        uu.full_name AS updated_by
+    </sql>
+
+    <sql id="baseFromJoinForSelect">
+        FROM news n
+        LEFT JOIN users uc ON n.created_by = uc.id
+        LEFT JOIN users uu ON n.updated_by = uu.id
+    </sql>
+
+    <sql id="baseFromJoinForCount">
+        FROM news n
+    </sql>
+
+    <sql id="whereClause">
+        <where>
+            <if test="deletedOnly">
+                AND n.deleted_at IS NOT NULL
+            </if>
+            <if test="!deletedOnly">
+                AND n.deleted_at IS NULL
+            </if>
+
+            <if test="publishedOnly">
+                AND n.status = 'PUBLISHED'
+            </if>
+
+            <if test="status != null">
+                AND n.status = #{status}
+            </if>
+
+            <if test="isFeatured != null">
+                AND n.is_featured = #{isFeatured}
+            </if>
+
+            <if test="keyword != null and keyword != ''">
+                AND (
+                    n.title LIKE CONCAT('%', #{keyword}, '%')
+                    OR n.summary LIKE CONCAT('%', #{keyword}, '%')
+                )
+            </if>
+
+            <if test="startDate != null">
+                AND n.created_at &gt;= #{startDate}
+            </if>
+
+            <if test="endDate != null">
+                <![CDATA[
+                AND n.created_at <= DATE_ADD(#{endDate}, INTERVAL 1 DAY) - INTERVAL 1 SECOND
+                ]]>
+            </if>
+        </where>
+    </sql>
+
+    <select id="findAllWithFilterAndSearch" resultMap="NewsResponseMap">
+        SELECT
+            <include refid="baseColumns"/>,
+            <include refid="joinedFields"/>
+        <include refid="baseFromJoinForSelect"/>
+        <include refid="whereClause"/>
+        ORDER BY ${sortColumn} ${sortDirection}
+        LIMIT #{limit}
+        OFFSET #{offset}
+    </select>
+
+    <select id="countWithFilterAndSearch" resultType="long">
+        SELECT COUNT(*)
+        <include refid="baseFromJoinForCount"/>
+        <include refid="whereClause"/>
+    </select>
+
+    <select id="findProductsByNewsId" resultMap="NewsProductResponseMap">
+        SELECT
+            p.id AS product_id,
+            p.name AS product_name,
+            p.slug AS product_slug,
+            p.thumbnail AS product_thumbnail,
+            p.price AS product_price
+        FROM news_products np
+        INNER JOIN products p ON np.product_id = p.id AND p.deleted_at IS NULL
+        WHERE np.news_id = #{newsId}
+        ORDER BY np.created_at ASC
+    </select>
+
+</mapper>

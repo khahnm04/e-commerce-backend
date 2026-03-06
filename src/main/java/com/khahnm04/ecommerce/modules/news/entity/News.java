@@ -4,8 +4,6 @@ import com.khahnm04.ecommerce.common.entity.BaseEntity;
 import com.khahnm04.ecommerce.modules.news.enums.NewsStatus;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.SQLRestriction;
 import java.time.LocalDateTime;
 
 @Entity
@@ -15,8 +13,6 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "news")
-@SQLDelete(sql = "UPDATE news SET deleted_at = NOW() WHERE id = ?")
-@SQLRestriction("deleted_at IS NULL")
 public class News extends BaseEntity<Long> {
 
     @Column(name = "title", nullable = false)

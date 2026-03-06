@@ -292,6 +292,20 @@ public enum ErrorCode {
     ORDER_INVALID_STATUS_TRANSITION(7051, "Invalid order status transition", HttpStatus.BAD_REQUEST),
     ORDER_CANNOT_CANCEL(7052, "Order cannot be cancelled in current status", HttpStatus.BAD_REQUEST),
     ORDER_INSUFFICIENT_STOCK(7053, "Insufficient stock for product variant", HttpStatus.BAD_REQUEST),
+
+    // =================================================================
+    // MODULE: NEWS (Range: 8000 - 8099)
+    // =================================================================
+    NEWS_TITLE_REQUIRED(8000, "News title cannot be blank", HttpStatus.BAD_REQUEST),
+    NEWS_SLUG_REQUIRED(8001, "News slug cannot be blank", HttpStatus.BAD_REQUEST),
+    NEWS_CONTENT_REQUIRED(8002, "News content cannot be blank", HttpStatus.BAD_REQUEST),
+    NEWS_STATUS_REQUIRED(8003, "News status is required", HttpStatus.BAD_REQUEST),
+    NEWS_NOT_FOUND(8050, "News not found", HttpStatus.NOT_FOUND),
+    NEWS_SLUG_EXISTED(8051, "News slug already existed", HttpStatus.CONFLICT),
+    NEWS_INVALID_STATUS_TRANSITION(8052, "Invalid news status transition", HttpStatus.BAD_REQUEST),
+    NEWS_SELECTION_REQUIRED(8053, "At least one news must be selected", HttpStatus.BAD_REQUEST),
+    NEWS_ACTION_REQUIRED(8054, "Bulk action is required", HttpStatus.BAD_REQUEST),
+    NEWS_INVALID_BULK_ACTION(8055, "Invalid bulk action", HttpStatus.BAD_REQUEST),
     ;
 
     private final Integer code;
