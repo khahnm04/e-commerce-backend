@@ -211,6 +211,56 @@ CREATE TABLE `product_images` (
     `deleted_at` DATETIME
 );
 
+CREATE TABLE `variants` (
+    `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
+    `name` VARCHAR(255) NOT NULL,
+    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+    `created_by` BIGINT,
+    `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    `updated_by` BIGINT,
+    `deleted_at` DATETIME
+);
+
+CREATE TABLE `variant_values` (
+    `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
+    `variant_id` BIGINT NOT NULL,
+    `value` VARCHAR(255) NOT NULL,
+    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+    `created_by` BIGINT,
+    `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    `updated_by` BIGINT,
+    `deleted_at` DATETIME,
+    UNIQUE (`variant_id`, `value`)
+);
+
+CREATE TABLE `product_variants` (
+    `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
+    `product_id` BIGINT NOT NULL,
+    `sku` VARCHAR(255) UNIQUE NOT NULL,
+    `name` VARCHAR(255) NOT NULL,
+    `price` DECIMAL(15, 2) NOT NULL,
+    `old_price` DECIMAL(15, 2),
+    `image` VARCHAR(500),
+    `status` ENUM('ACTIVE', 'INACTIVE', 'OUT_OF_STOCK') NOT NULL DEFAULT 'ACTIVE',
+    `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+    `created_by` BIGINT,
+    `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    `updated_by` BIGINT,
+    `deleted_at` DATETIME
+);
+
+CREATE TABLE `product_variant_values` (
+    `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
+    `product_variant_id` BIGINT NOT NULL,
+    `variant_value_id` BIGINT NOT NULL,
+    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+    `created_by` BIGINT,
+    `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    `updated_by` BIGINT,
+    `deleted_at` DATETIME,
+    UNIQUE (`product_variant_id`, `variant_value_id`)
+);
+
 
 
 /* ====================== FOREIGN KEY ========================= */
@@ -232,5 +282,9 @@ ALTER TABLE `product_categories` ADD FOREIGN KEY (`category_id`) REFERENCES `cat
 ALTER TABLE `product_attribute_values` ADD FOREIGN KEY (`product_id`) REFERENCES `products` (`id`);
 ALTER TABLE `product_attribute_values` ADD FOREIGN KEY (`attribute_id`) REFERENCES `attributes` (`id`);
 ALTER TABLE `product_images` ADD FOREIGN KEY (`product_id`) REFERENCES `products` (`id`);
+ALTER TABLE `variant_values` ADD FOREIGN KEY (`variant_id`) REFERENCES `variants` (`id`);
+ALTER TABLE `product_variants` ADD FOREIGN KEY (`product_id`) REFERENCES `products` (`id`);
+ALTER TABLE `product_variant_values` ADD FOREIGN KEY (`product_variant_id`) REFERENCES `product_variants` (`id`);
+ALTER TABLE `product_variant_values` ADD FOREIGN KEY (`variant_value_id`) REFERENCES `variant_values` (`id`);
 
 
