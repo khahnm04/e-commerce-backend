@@ -18,7 +18,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -35,18 +34,18 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public User createUser(UserCreationRequest request) {
-        if (userRepository.existsByPhoneNumber(request.getPhoneNumber())) {
+        if (userRepository.existsByPhoneNumber(request.phoneNumber())) {
             throw new AppException(ErrorCode.PHONE_NUMBER_EXISTED);
         }
-        if (userRepository.existsByEmail(request.getEmail())) {
+        if (userRepository.existsByEmail(request.email())) {
             throw new AppException(ErrorCode.EMAIL_EXISTED);
         }
 
         User newUser = userMapper.toUser(request);
-        newUser.setPassword(passwordEncoder.encode(request.getPassword()));
-        newUser.setStatus(request.getStatus() == null ? UserStatus.ACTIVE : request.getStatus());
-        newUser.setGender(request.getGender() == null ? Gender.OTHER : request.getGender());
-        assignRoleToUser(newUser, request.getRoles());
+        newUser.setPassword(passwordEncoder.encode(request.password()));
+        newUser.setStatus(request.status() == null ? UserStatus.ACTIVE : request.status());
+        newUser.setGender(request.gender() == null ? Gender.OTHER : request.gender());
+        assignRoleToUser(newUser, request.roles());
 
         User savedUser = userRepository.save(newUser);
         log.info("Created new user with id: {}", savedUser.getId());
@@ -56,20 +55,20 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void updateUser(Long id, UserUpdateRequest request) {
-        if (StringUtils.hasText(request.getPhoneNumber())
-                && userRepository.existsByPhoneNumberAndIdNot(request.getPhoneNumber(), id)) {
+        if (StringUtils.hasText(request.phoneNumber())
+                && userRepository.existsByPhoneNumberAndIdNot(request.phoneNumber(), id)) {
             throw new AppException(ErrorCode.PHONE_NUMBER_EXISTED);
         }
-        if (StringUtils.hasText(request.getEmail()) &&
-                userRepository.existsByEmailAndIdNot(request.getEmail(), id)) {
+        if (StringUtils.hasText(request.email()) &&
+                userRepository.existsByEmailAndIdNot(request.email(), id)) {
             throw new AppException(ErrorCode.EMAIL_EXISTED);
         }
 
         User user = getUserById(id);
         userMapper.updateUser(user, request);
 
-        if (request.getRoles() != null) {
-            assignRoleToUser(user, request.getRoles());
+        if (request.roles() != null) {
+            assignRoleToUser(user, request.roles());
         }
         userRepository.save(user);
     }
@@ -98,28 +97,6 @@ public class UserServiceImpl implements UserService {
         user.setStatus(status);
         userRepository.save(user);
         log.info("Updated status for user {} to {}", id, status);
-    }
-
-    @Override
-    @Transactional
-    public void softDeleteUser(Long id) {
-        User user = getUserById(id);
-        user.setDeletedAt(LocalDateTime.now());
-        user.setStatus(UserStatus.BANNED);
-        userRepository.save(user);
-        log.info("Soft deleted user with id: {}", id);
-    }
-
-    @Override
-    @Transactional
-    public void restoreUser(Long id) {
-        User user = getUserById(id);
-
-        if (user.getDeletedAt() != null) {
-            user.setDeletedAt(null);
-            userRepository.save(user);
-            log.info("Restored user with id: {}", id);
-        }
     }
 
     @Override

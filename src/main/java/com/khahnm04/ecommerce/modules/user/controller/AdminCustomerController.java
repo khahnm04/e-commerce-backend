@@ -1,16 +1,22 @@
 package com.khahnm04.ecommerce.modules.user.controller;
 
-import com.khahnm04.ecommerce.common.dto.ApiResponse;
-import com.khahnm04.ecommerce.common.dto.PageResponse;
-import com.khahnm04.ecommerce.modules.user.dto.request.*;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.khahnm04.ecommerce.common.base.dto.ApiResponse;
+import com.khahnm04.ecommerce.common.exception.AppException;
+import com.khahnm04.ecommerce.common.exception.ErrorCode;
+import com.khahnm04.ecommerce.common.base.dto.PageResponse;
+import com.khahnm04.ecommerce.modules.user.dto.request.CustomerFilterRequest;
+import com.khahnm04.ecommerce.modules.user.dto.request.CustomerUpdateRequest;
 import com.khahnm04.ecommerce.modules.user.dto.response.CustomerResponse;
 import com.khahnm04.ecommerce.modules.user.service.CustomerService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import com.khahnm04.ecommerce.modules.auth.enums.UserStatus;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Slf4j
 @RestController
@@ -18,104 +24,119 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AdminCustomerController {
 
-    private final CustomerService customerService;
+	private final CustomerService customerService;
 
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public ApiResponse<CustomerResponse> createCustomer(
-            @Valid @RequestBody CustomerCreationRequest request
+	@GetMapping("/{id}")
+	public ApiResponse<CustomerResponse> getCustomerDetail (
+			@PathVariable Long id,
+			@RequestParam(defaultValue = "false") boolean deleted
     ) {
-        return ApiResponse.<CustomerResponse>builder()
-                .data(customerService.createCustomer(request))
-                .message("Customer created successfully")
-                .build();
-    }
+		return ApiResponse.<CustomerResponse>builder()
+				.data(customerService.getCustomerDetail(id, deleted))
+				.message("Get customer detail successfully")
+				.build();
+	}
 
-    @GetMapping("/{id}")
-    public ApiResponse<CustomerResponse> getCustomerDetail(
-        @PathVariable Long id,
-        @RequestParam(defaultValue = "false") boolean deleted
+	@GetMapping
+	public ApiResponse<List<CustomerResponse>> getAllCustomers (
+			@Valid @ModelAttribute CustomerFilterRequest filter
     ) {
-        return ApiResponse.<CustomerResponse>builder()
-            .data(customerService.getCustomerDetail(id, deleted))
-            .message("Get customer detail successfully")
-            .build();
-    }
+		PageResponse<CustomerResponse> pageResponse = customerService.getAllCustomers(filter);
+		return ApiResponse.<List<CustomerResponse>>builder()
+				.data(pageResponse.data())
+				.meta(pageResponse.meta())
+				.message("Get all customers successfully")
+				.build();
+	}
 
-    @GetMapping
-    public ApiResponse<List<CustomerResponse>> getAllCustomers(
-            @Valid @ModelAttribute CustomerFilterRequest filter
+	@GetMapping("/deleted")
+	public ApiResponse<List<CustomerResponse>> getAllDeletedCustomers (
+			@Valid @ModelAttribute CustomerFilterRequest filter
     ) {
-        PageResponse<CustomerResponse> pageResponse = customerService.getAllCustomers(filter);
-        return ApiResponse.<List<CustomerResponse>>builder()
-                .data(pageResponse.getData())
-                .meta(pageResponse.getMeta())
-                .message("Get all customers successfully")
-                .build();
-    }
+		PageResponse<CustomerResponse> pageResponse = customerService.getAllDeletedCustomers(filter);
+		return ApiResponse.<List<CustomerResponse>>builder()
+				.data(pageResponse.data())
+				.meta(pageResponse.meta())
+				.message("Get deleted customers successfully")
+				.build();
+	}
 
-    @GetMapping("/deleted")
-    public ApiResponse<List<CustomerResponse>> getAllDeletedCustomers(
-            @Valid @ModelAttribute CustomerFilterRequest filter
+	@PutMapping("/{id}")
+	public ApiResponse<CustomerResponse> updateCustomer (
+			@PathVariable Long id,
+			@Valid @RequestBody CustomerUpdateRequest request
     ) {
-        PageResponse<CustomerResponse> pageResponse = customerService.getAllDeletedCustomers(filter);
-        return ApiResponse.<List<CustomerResponse>>builder()
-                .data(pageResponse.getData())
-                .meta(pageResponse.getMeta())
-                .message("Get deleted customers successfully")
-                .build();
-    }
+		return ApiResponse.<CustomerResponse>builder()
+				.data(customerService.updateCustomer(id, request))
+				.message("Customer updated successfully")
+				.build();
+	}
 
-    @PutMapping("/{id}")
-    public ApiResponse<CustomerResponse> updateCustomer(
-            @PathVariable Long id,
-            @Valid @RequestBody CustomerUpdateRequest request
+	@PatchMapping("/{id}/status")
+	public ApiResponse<Void> updateCustomerStatus (
+			@PathVariable Long id,
+			@RequestBody JsonNode request
     ) {
-        return ApiResponse.<CustomerResponse>builder()
-                .data(customerService.updateCustomer(id, request))
-                .message("Customer updated successfully")
-                .build();
-    }
+		JsonNode statusNode = request.get("status");
+		if (statusNode == null || statusNode.isNull()) {
+			throw new AppException(ErrorCode.CUSTOMER_STATUS_REQUIRED);
+		}
+		UserStatus status;
+		try {
+			status = UserStatus.valueOf(statusNode.asText().toUpperCase());
+		} catch (IllegalArgumentException e) {
+			throw new AppException(ErrorCode.CUSTOMER_STATUS_INVALID);
+		}
+		customerService.updateCustomerStatus(id, status);
+		return ApiResponse.<Void>builder()
+				.message("Customer status updated successfully")
+				.build();
+	}
 
-    @PatchMapping("/{id}/status")
-    public ApiResponse<Void> updateCustomerStatus(
-            @PathVariable Long id,
-            @Valid @RequestBody CustomerUpdateStatusRequest status
+	@DeleteMapping("/{id}")
+	public ApiResponse<Void> softDeleteCustomer (
+			@PathVariable Long id
     ) {
-        customerService.updateCustomerStatus(id, status);
-        return ApiResponse.<Void>builder()
-                .message("Customer status updated successfully")
-                .build();
-    }
+		customerService.softDeleteCustomer(id);
+		return ApiResponse.<Void>builder()
+				.message("Customer soft deleted successfully")
+				.build();
+	}
 
-    @DeleteMapping("/{id}")
-    public ApiResponse<Void> softDeleteCustomer(
-            @PathVariable Long id
+	@PatchMapping("/{id}/restore")
+	public ApiResponse<Void> restoreCustomer (
+			@PathVariable Long id
     ) {
-        customerService.softDeleteCustomer(id);
-        return ApiResponse.<Void>builder()
-                .message("Customer soft deleted successfully")
-                .build();
-    }
+		customerService.restoreCustomer(id);
+		return ApiResponse.<Void>builder()
+				.message("Customer restored successfully")
+				.build();
+	}
 
-    @PatchMapping("/{id}/restore")
-    public ApiResponse<Void> restoreCustomer(
-            @PathVariable Long id
+	@PatchMapping("/bulk")
+	public ApiResponse<Void> handleBulkAction (
+			@RequestBody JsonNode request
     ) {
-        customerService.restoreCustomer(id);
-        return ApiResponse.<Void>builder()
-                .message("Customer restored successfully")
-                .build();
-    }
+		JsonNode customerIdsNode = request.get("customerIds");
+		if (customerIdsNode == null || !customerIdsNode.isArray()) {
+			throw new AppException(ErrorCode.CUSTOMER_SELECTION_REQUIRED);
+		}
+		Set<Long> customerIds = new HashSet<>();
+		customerIdsNode.forEach(node -> customerIds.add(node.asLong()));
+		if (customerIds.isEmpty()) {
+			throw new AppException(ErrorCode.CUSTOMER_SELECTION_REQUIRED);
+		}
 
-    @PatchMapping("/bulk")
-    public ApiResponse<Void> bulkAction(
-            @Valid @RequestBody CustomerBulkActionRequest request
-    ) {
-        customerService.handleBulkAction(request);
-        return ApiResponse.<Void>builder()
-                .message("Bulk action executed successfully")
-                .build();
-    }
+		JsonNode actionNode = request.get("action");
+		if (actionNode == null || actionNode.asText().isBlank()) {
+			throw new AppException(ErrorCode.CUSTOMER_ACTION_REQUIRED);
+		}
+		String action = actionNode.asText();
+
+		customerService.handleBulkAction(customerIds, action);
+		return ApiResponse.<Void>builder()
+				.message("Bulk action executed successfully")
+				.build();
+	}
 
 }

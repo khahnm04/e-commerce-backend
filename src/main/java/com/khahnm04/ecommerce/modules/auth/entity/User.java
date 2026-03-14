@@ -1,11 +1,7 @@
 package com.khahnm04.ecommerce.modules.auth.entity;
 
-import com.khahnm04.ecommerce.modules.auth.enums.AuthProvider;
 import com.khahnm04.ecommerce.modules.auth.enums.UserStatus;
-import com.khahnm04.ecommerce.common.entity.BaseEntity;
 import com.khahnm04.ecommerce.modules.auth.enums.Gender;
-import org.hibernate.annotations.ColumnDefault;
-import org.hibernate.annotations.SQLDelete;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -24,8 +20,12 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "users")
-@SQLDelete(sql = "UPDATE users SET deleted_at = NOW() WHERE id = ?")
-public class User extends BaseEntity<Long> implements UserDetails {
+public class User implements UserDetails {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false)
+    private Long id;
 
     @Column(name = "email", unique = true)
     private String email;
@@ -36,14 +36,8 @@ public class User extends BaseEntity<Long> implements UserDetails {
     @Column(name = "password", length = 500)
     private String password;
 
-    @ColumnDefault("'LOCAL'")
-    @Column(name = "provider")
-    @Enumerated(EnumType.STRING)
-    @Builder.Default
-    private AuthProvider provider = AuthProvider.LOCAL;
-
-    @Column(name = "provider_id")
-    private String providerId;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<UserProvider> userProviders;
 
     @Builder.Default
     @Column(name = "is_email_verified")
@@ -59,8 +53,8 @@ public class User extends BaseEntity<Long> implements UserDetails {
     @Column(name = "date_of_birth")
     private LocalDate dateOfBirth;
 
-    @Column(name = "avatar_url", length = 500)
-    private String avatarUrl;
+    @Column(name = "avatar", length = 500)
+    private String avatar;
 
     @Builder.Default
     @Column(name = "gender")
@@ -79,7 +73,11 @@ public class User extends BaseEntity<Long> implements UserDetails {
     private String loginIp;
 
     @ManyToMany
-    @JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
+    @JoinTable(
+        name = "user_roles",
+        joinColumns = @JoinColumn(name = "user_id"),
+        inverseJoinColumns = @JoinColumn(name = "role_id")
+    )
     @OrderBy("name ASC")
     private Set<Role> roles;
 

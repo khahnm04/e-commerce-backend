@@ -1,33 +1,30 @@
 package com.khahnm04.ecommerce.modules.user.dto.response;
 
 import com.khahnm04.ecommerce.modules.user.enums.AddressType;
-import lombok.*;
+import lombok.Builder;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
-@Getter
-@Setter
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class AddressResponse implements Serializable {
+@Builder(toBuilder = true)
+public record AddressResponse(
 
-    private Long id;
-    private Long customerId;
-    private String receiverName;
-    private String receiverPhone;
-    private Integer provinceCode;
-    private String provinceName;
-    private Integer districtCode;
-    private String districtName;
-    private String wardCode;
-    private String wardName;
-    private String detailAddress;
-    private AddressType addressType;
-    private String addressName;
-    private Boolean isDefault;
-    private String fullAddress;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    Long id,
+    Long customerId,
+    String receiverName,
+    String receiverPhone,
+    Integer provinceCode,
+    String provinceName,
+    Integer districtCode,
+    String districtName,
+    String wardCode,
+    String wardName,
+    String detailAddress,
+    AddressType addressType,
+    String addressName,
+    Boolean isDefault,
+    String fullAddress,
+    LocalDateTime createdAt,
+    LocalDateTime updatedAt
 
+) implements Serializable {
 }

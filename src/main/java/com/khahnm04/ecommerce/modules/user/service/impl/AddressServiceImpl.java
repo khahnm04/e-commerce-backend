@@ -34,7 +34,7 @@ public class AddressServiceImpl implements AddressService {
         address.setCustomer(customer);
 
         // Set as default if it's the first address or isDefault is true
-        if (Boolean.TRUE.equals(request.getIsDefault()) || addressRepository.countByCustomerId(customerId) == 0) {
+        if (Boolean.TRUE.equals(request.isDefault()) || addressRepository.countByCustomerId(customerId) == 0) {
             addressRepository.clearDefaultAddressByCustomerId(customerId);
             address.setIsDefault(true);
         }
@@ -47,7 +47,7 @@ public class AddressServiceImpl implements AddressService {
     @Override
     public Address getAddressById(Long customerId, Long addressId) {
         return addressRepository.findByIdAndCustomerId(addressId, customerId)
-            .orElseThrow(() -> new AppException(ErrorCode.ADDRESS_NOT_FOUND));
+                .orElseThrow(() -> new AppException(ErrorCode.ADDRESS_NOT_FOUND));
     }
 
     @Override
@@ -97,7 +97,8 @@ public class AddressServiceImpl implements AddressService {
         addressRepository.delete(address);
         log.info("Deleted address {} for customer {}", addressId, customerId);
 
-        // If the deleted address was the default, set the first remaining address as default
+        // If the deleted address was the default, set the first remaining address as
+        // default
         if (wasDefault) {
             List<Address> remainingAddresses = addressRepository
                     .findAllByCustomerId(customerId);

@@ -25,6 +25,9 @@ public class Permission {
     @Column(name = "name", nullable = false)
     private String name;
 
+    @Column(name = "sub_module")
+    private String subModule;
+
     @Column(name = "module")
     private String module;
 

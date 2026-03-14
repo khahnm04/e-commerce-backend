@@ -15,7 +15,9 @@ import com.khahnm04.ecommerce.common.exception.ErrorCode;
 import com.khahnm04.ecommerce.modules.auth.repository.RedisTokenRepository;
 import com.khahnm04.ecommerce.modules.auth.service.AuthService;
 import com.khahnm04.ecommerce.modules.auth.service.JwtService;
-import com.khahnm04.ecommerce.modules.auth.service.strategy.LoginStrategy;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import com.nimbusds.jwt.SignedJWT;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -25,9 +27,9 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import java.text.ParseException;
 import java.time.LocalDateTime;
-import java.util.*;
 
 @Slf4j
 @Service
@@ -37,30 +39,37 @@ public class AuthServiceImpl implements AuthService {
     private final RedisTokenRepository redisTokenRepository;
     private final UserRepository userRepository;
     private final JwtService jwtService;
-    private final List<LoginStrategy> loginStrategies;
+    private final AuthenticationManager authenticationManager;
     private final CookieProperties cookieProperties;
     private final PasswordEncoder passwordEncoder;
 
     @Override
     @Transactional
     public LoginResponse login(LoginRequest request, HttpServletResponse response) {
-        LoginStrategy loginStrategy = loginStrategies.stream()
-                .filter(s -> s.supports(request))
-                .findFirst()
-                .orElseThrow(() -> new AppException(ErrorCode.LOGIN_IDENTIFIER_REQUIRED));
+        String identifier = null;
+        if (StringUtils.hasText(request.email())) {
+            identifier = request.email();
+        } else if (StringUtils.hasText(request.phoneNumber())) {
+            identifier = request.phoneNumber();
+        } else {
+            throw new AppException(ErrorCode.LOGIN_IDENTIFIER_REQUIRED);
+        }
 
-        User user = loginStrategy.authenticate(request);
+        Authentication authentication = authenticationManager
+                .authenticate(new UsernamePasswordAuthenticationToken(identifier, request.password()));
+
+        User user = (User) authentication.getPrincipal();
 
         TokenPayload accessToken = jwtService.generateAccessToken(user);
         TokenPayload refreshToken = jwtService.generateRefreshToken(user);
 
         redisTokenRepository.save(RedisToken.builder()
-                .jwtId(refreshToken.getJwtId())
-                .expiredTime(refreshToken.getExpiredTime().getTime())
+                .jwtId(refreshToken.jwtId())
+                .expiredTime(refreshToken.expiredTime().getTime())
                 .build());
 
-        addAccessTokenCookies(response, accessToken.getToken());
-        addRefreshTokenCookies(response, refreshToken.getToken());
+        addAccessTokenCookies(response, accessToken.token());
+        addRefreshTokenCookies(response, refreshToken.token());
 
         user.setLastLoginAt(LocalDateTime.now());
         userRepository.save(user);
@@ -69,7 +78,7 @@ public class AuthServiceImpl implements AuthService {
         return LoginResponse.builder()
                 .id(user.getId())
                 .fullName(user.getFullName())
-                .avatarUrl(user.getAvatarUrl())
+                .avatar(user.getAvatar())
                 .build();
     }
 
@@ -108,7 +117,7 @@ public class AuthServiceImpl implements AuthService {
                     .orElseThrow(() -> new AppException(ErrorCode.REFRESH_TOKEN_FAILED));
 
             TokenPayload accessToken = jwtService.generateAccessToken(user);
-            addAccessTokenCookies(response, accessToken.getToken());
+            addAccessTokenCookies(response, accessToken.token());
 
             log.info("refresh token success");
         } catch (ParseException e) {
@@ -120,22 +129,22 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public void changePassword(Long userId, ChangePasswordRequest request) {
-        if (!request.getNewPassword().equals(request.getConfirmNewPassword())) {
+        if (!request.newPassword().equals(request.confirmNewPassword())) {
             throw new AppException(ErrorCode.PASSWORD_CONFIRMATION_MISMATCH);
         }
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
-        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+        if (!passwordEncoder.matches(request.currentPassword(), user.getPassword())) {
             throw new AppException(ErrorCode.PASSWORD_NOT_MATCH);
         }
 
-        if (passwordEncoder.matches(request.getNewPassword(), user.getPassword())) {
+        if (passwordEncoder.matches(request.newPassword(), user.getPassword())) {
             throw new AppException(ErrorCode.NEW_PASSWORD_SAME_AS_OLD);
         }
 
-        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        user.setPassword(passwordEncoder.encode(request.newPassword()));
         userRepository.save(user);
         log.info("Changed password for user with id: {}", userId);
     }

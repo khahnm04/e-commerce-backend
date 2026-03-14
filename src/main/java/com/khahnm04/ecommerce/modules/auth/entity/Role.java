@@ -1,6 +1,6 @@
 package com.khahnm04.ecommerce.modules.auth.entity;
 
-import com.khahnm04.ecommerce.common.entity.BaseEntity;
+import com.khahnm04.ecommerce.common.base.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import java.util.Set;

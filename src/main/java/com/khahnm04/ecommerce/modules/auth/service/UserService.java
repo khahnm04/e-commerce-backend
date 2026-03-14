@@ -17,10 +17,6 @@ public interface UserService {
 
     void updateUserStatus(Long userId, UserStatus status);
 
-    void softDeleteUser(Long userId);
-
-    void restoreUser(Long userId);
-
     void bulkUpdateStatus(Set<Long> userIds, UserStatus status);
 
 }

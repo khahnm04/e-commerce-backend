@@ -5,37 +5,30 @@ import com.khahnm04.ecommerce.common.validation.phone.ValidPhoneNumber;
 import com.khahnm04.ecommerce.modules.auth.enums.UserStatus;
 import com.khahnm04.ecommerce.modules.auth.enums.Gender;
 import jakarta.validation.constraints.NotBlank;
-import lombok.*;
+import lombok.Builder;
 import java.io.Serializable;
 import java.time.LocalDate;
 
-@Getter
-@Setter
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class CustomerCreationRequest implements Serializable {
+public record CustomerCreationRequest(
 
     @ValidEmail
-    private String email;
+    String email,
 
     @ValidPhoneNumber
     @NotBlank(message = "CUSTOMER_PHONE_NUMBER_REQUIRED")
-    private String phoneNumber;
+    String phoneNumber,
 
-    private String password;
-
-    private String confirmPassword;
+    String password,
+    String confirmPassword,
 
     @NotBlank(message = "CUSTOMER_FULL_NAME_REQUIRED")
-    private String fullName;
+    String fullName,
 
-    private LocalDate dateOfBirth;
+    LocalDate dateOfBirth,
+    String avatar,
+    Gender gender,
+    UserStatus status
 
-    private String avatarUrl;
-
-    private Gender gender;
-
-    private UserStatus status;
-
+) implements Serializable {
 }

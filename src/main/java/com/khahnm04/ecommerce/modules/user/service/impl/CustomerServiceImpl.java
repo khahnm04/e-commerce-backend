@@ -1,19 +1,19 @@
 package com.khahnm04.ecommerce.modules.user.service.impl;
 
-import com.khahnm04.ecommerce.common.dto.PageResponse;
-import com.khahnm04.ecommerce.common.entity.BaseEntity;
+import com.khahnm04.ecommerce.common.base.dto.PageResponse;
+import com.khahnm04.ecommerce.common.base.entity.BaseEntity;
+import com.khahnm04.ecommerce.modules.user.dto.request.CustomerCreationRequest;
+import com.khahnm04.ecommerce.modules.user.dto.request.CustomerFilterRequest;
+import com.khahnm04.ecommerce.modules.user.dto.request.CustomerUpdateRequest;
 import com.khahnm04.ecommerce.common.exception.AppException;
 import com.khahnm04.ecommerce.common.exception.ErrorCode;
-import com.khahnm04.ecommerce.common.util.SortUtils;
 import com.khahnm04.ecommerce.modules.auth.entity.User;
 import com.khahnm04.ecommerce.modules.auth.enums.UserStatus;
 import com.khahnm04.ecommerce.modules.auth.service.UserService;
-import com.khahnm04.ecommerce.modules.user.dto.request.*;
 import com.khahnm04.ecommerce.modules.user.dto.response.CustomerResponse;
 import com.khahnm04.ecommerce.modules.user.entity.Customer;
-import com.khahnm04.ecommerce.modules.user.enums.CustomerSortField;
+import com.khahnm04.ecommerce.modules.user.repository.specification.CustomerSpecification;
 import com.khahnm04.ecommerce.modules.user.mapper.CustomerMapper;
-import com.khahnm04.ecommerce.modules.user.mapper.CustomerMyBatisMapper;
 import com.khahnm04.ecommerce.modules.user.repository.CustomerRepository;
 import com.khahnm04.ecommerce.modules.user.service.CustomerService;
 import lombok.RequiredArgsConstructor;
@@ -22,9 +22,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
@@ -39,13 +39,12 @@ public class CustomerServiceImpl implements CustomerService {
 
     private final CustomerRepository customerRepository;
     private final CustomerMapper customerMapper;
-    private final CustomerMyBatisMapper customerMyBatisMapper;
     private final UserService userService;
 
     @Override
     @Transactional
     public CustomerResponse createCustomer(CustomerCreationRequest request) {
-        if (!Objects.equals(request.getPassword(), request.getConfirmPassword())) {
+        if (!Objects.equals(request.password(), request.confirmPassword())) {
             throw new AppException(ErrorCode.PASSWORD_CONFIRMATION_MISMATCH);
         }
 
@@ -60,16 +59,6 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    public PageResponse<CustomerResponse> getAllCustomers(CustomerFilterRequest request) {
-        return getAllWithFilterAndSearch(request, false);
-    }
-
-    @Override
-    public PageResponse<CustomerResponse> getAllDeletedCustomers(CustomerFilterRequest request) {
-        return getAllWithFilterAndSearch(request, true);
-    }
-
-    @Override
     public Customer getCustomerById(Long id) {
         return customerRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new AppException(ErrorCode.CUSTOMER_NOT_FOUND));
@@ -81,6 +70,16 @@ public class CustomerServiceImpl implements CustomerService {
                 ? getDeletedCustomerById(id)
                 : getCustomerById(id);
         return customerMapper.toResponse(customer);
+    }
+
+    @Override
+    public PageResponse<CustomerResponse> getAllCustomers(CustomerFilterRequest request) {
+        return getAllWithFilterAndSearch(request, false);
+    }
+
+    @Override
+    public PageResponse<CustomerResponse> getAllDeletedCustomers(CustomerFilterRequest request) {
+        return getAllWithFilterAndSearch(request, true);
     }
 
     @Override
@@ -99,10 +98,10 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     @Transactional
-    public void updateCustomerStatus(Long id, CustomerUpdateStatusRequest request) {
+    public void updateCustomerStatus(Long id, UserStatus status) {
         Customer customer = this.getCustomerById(id);
-        userService.updateUserStatus(customer.getUser().getId(), request.getStatus());
-        log.info("Updated status for customer {} to {}", customer.getId(), request.getStatus());
+        userService.updateUserStatus(customer.getUser().getId(), status);
+        log.info("Updated status for customer {} to {}", customer.getId(), status);
     }
 
     @Override
@@ -115,8 +114,6 @@ public class CustomerServiceImpl implements CustomerService {
         }
         customer.setDeletedAt(LocalDateTime.now());
         customerRepository.save(customer);
-
-        userService.softDeleteUser(customer.getUser().getId());
         log.info("Soft-deleted customer with id: {}", id);
     }
 
@@ -130,20 +127,17 @@ public class CustomerServiceImpl implements CustomerService {
         }
         customer.setDeletedAt(null);
         customerRepository.save(customer);
-
-        userService.restoreUser(customer.getUser().getId());
         log.info("Customer restored with id {}", id);
     }
 
     @Override
     @Transactional
-    public void handleBulkAction(CustomerBulkActionRequest request) {
-        Set<Long> customerIds = request.getCustomers();
+    public void handleBulkAction(Set<Long> customerIds, String actionInput) {
         if (customerIds == null || customerIds.isEmpty()) {
             throw new AppException(ErrorCode.CUSTOMER_BULK_ACTION_REQUIRED_IDS);
         }
 
-        String action = request.getAction().toUpperCase();
+        String action = actionInput.toUpperCase();
 
         Set<Customer> existingCustomers = new HashSet<>(
                 action.equals("RESTORE")
@@ -191,40 +185,18 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     private PageResponse<CustomerResponse> getAllWithFilterAndSearch(CustomerFilterRequest request, boolean isDeleted) {
-        Pageable pageable = PageRequest.of(request.getPage() - 1, request.getSize(),
-            SortUtils.parseSort(request.getSort()));
+        Pageable pageable = PageRequest.of(request.page() - 1, request.size(),
+                CustomerSpecification.getSort(request.sort()));
 
-        String keyword = StringUtils.hasText(request.getKeyword())
-                ? request.getKeyword().trim()
-                : null;
+        Specification<Customer> spec = CustomerSpecification.buildSpecification(request, isDeleted);
+        Page<Customer> page = customerRepository.findAll(spec, pageable);
 
-        // Parse sort
-        String[] sortParams = SortUtils.parseSortForMyBatis(request.getSort(), CustomerSortField.class);
-        String sortColumn = sortParams[0];
-        String sortDirection = sortParams[1];
+        List<CustomerResponse> content = page.getContent().stream()
+                .map(customerMapper::toResponse)
+                .collect(Collectors.toList());
 
-        List<CustomerResponse> content = customerMyBatisMapper.findAllWithFilterAndSearch(
-                keyword,
-                request.getStatus(),
-                request.getGender(),
-                request.getStartDate(),
-                request.getEndDate(),
-                isDeleted,
-                sortColumn,
-                sortDirection,
-                pageable.getOffset(),
-                pageable.getPageSize());
-
-        long total = customerMyBatisMapper.countWithFilterAndSearch(
-                keyword,
-                request.getStatus(),
-                request.getGender(),
-                request.getStartDate(),
-                request.getEndDate(),
-                isDeleted);
-
-        Page<CustomerResponse> page = new PageImpl<>(content, pageable, total);
-        return PageResponse.fromPage(page);
+        Page<CustomerResponse> responsePage = new PageImpl<>(content, pageable, page.getTotalElements());
+        return PageResponse.fromPage(responsePage);
     }
 
 }

@@ -3,23 +3,20 @@ package com.khahnm04.ecommerce.modules.auth.dto.request;
 import com.khahnm04.ecommerce.common.validation.email.ValidEmail;
 import com.khahnm04.ecommerce.common.validation.phone.ValidPhoneNumber;
 import jakarta.validation.constraints.NotBlank;
-import lombok.*;
+import lombok.Builder;
 import java.io.Serializable;
 
-@Getter
-@Setter
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class LoginRequest implements Serializable {
+public record LoginRequest(
 
     @ValidPhoneNumber
-    private String phoneNumber;
+    String phoneNumber,
 
     @ValidEmail
-    private String email;
+    String email,
 
     @NotBlank(message = "password cannot be blank")
-    private String password;
+    String password
 
+) implements Serializable {
 }

@@ -1,17 +1,14 @@
 package com.khahnm04.ecommerce.modules.auth.dto.response;
 
-import lombok.*;
+import lombok.Builder;
 import java.io.Serializable;
 
-@Getter
-@Setter
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class LoginResponse implements Serializable {
+public record LoginResponse(
 
-    private Long id;
-    private String fullName;
-    private String avatarUrl;
+    Long id,
+    String fullName,
+    String avatar
 
+) implements Serializable {
 }

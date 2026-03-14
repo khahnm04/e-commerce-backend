@@ -1,8 +1,13 @@
 package com.khahnm04.ecommerce.modules.user.controller;
 
-import com.khahnm04.ecommerce.common.dto.ApiResponse;
-import com.khahnm04.ecommerce.common.dto.PageResponse;
-import com.khahnm04.ecommerce.modules.user.dto.request.*;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.khahnm04.ecommerce.common.base.dto.ApiResponse;
+import com.khahnm04.ecommerce.common.exception.AppException;
+import com.khahnm04.ecommerce.common.exception.ErrorCode;
+import com.khahnm04.ecommerce.common.base.dto.PageResponse;
+import com.khahnm04.ecommerce.modules.user.dto.request.EmployeeCreationRequest;
+import com.khahnm04.ecommerce.modules.user.dto.request.EmployeeFilterRequest;
+import com.khahnm04.ecommerce.modules.user.dto.request.EmployeeUpdateRequest;
 import com.khahnm04.ecommerce.modules.user.dto.response.EmployeeResponse;
 import com.khahnm04.ecommerce.modules.user.service.EmployeeService;
 import jakarta.validation.Valid;
@@ -10,7 +15,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import com.khahnm04.ecommerce.modules.auth.enums.UserStatus;
+
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Slf4j
 @RestController
@@ -33,13 +42,13 @@ public class AdminEmployeeController {
 
     @GetMapping("/{identifier}")
     public ApiResponse<EmployeeResponse> getEmployeeDetail(
-        @PathVariable String identifier,
-        @RequestParam(defaultValue = "false") boolean deleted
+            @PathVariable String identifier,
+            @RequestParam(defaultValue = "false") boolean deleted
     ) {
         return ApiResponse.<EmployeeResponse>builder()
-            .data(employeeService.getEmployeeDetail(identifier, deleted))
-            .message("Get employee detail successfully")
-            .build();
+                .data(employeeService.getEmployeeDetail(identifier, deleted))
+                .message("Get employee detail successfully")
+                .build();
     }
 
     @GetMapping
@@ -48,8 +57,8 @@ public class AdminEmployeeController {
     ) {
         PageResponse<EmployeeResponse> pageResponse = employeeService.getAllEmployees(filter);
         return ApiResponse.<List<EmployeeResponse>>builder()
-                .data(pageResponse.getData())
-                .meta(pageResponse.getMeta())
+                .data(pageResponse.data())
+                .meta(pageResponse.meta())
                 .message("Get all employees successfully")
                 .build();
     }
@@ -60,8 +69,8 @@ public class AdminEmployeeController {
     ) {
         PageResponse<EmployeeResponse> pageResponse = employeeService.getAllDeletedEmployees(filter);
         return ApiResponse.<List<EmployeeResponse>>builder()
-                .data(pageResponse.getData())
-                .meta(pageResponse.getMeta())
+                .data(pageResponse.data())
+                .meta(pageResponse.meta())
                 .message("Get deleted employees successfully")
                 .build();
     }
@@ -80,8 +89,18 @@ public class AdminEmployeeController {
     @PatchMapping("/{id}/status")
     public ApiResponse<Void> updateEmployeeStatus(
             @PathVariable Long id,
-            @Valid @RequestBody EmployeeUpdateStatusRequest status
+            @RequestBody JsonNode request
     ) {
+        JsonNode statusNode = request.get("status");
+        if (statusNode == null || statusNode.isNull()) {
+            throw new AppException(ErrorCode.EMPLOYEE_STATUS_REQUIRED);
+        }
+        UserStatus status;
+        try {
+            status = UserStatus.valueOf(statusNode.asText().toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new AppException(ErrorCode.EMPLOYEE_STATUS_INVALID);
+        }
         employeeService.updateEmployeeStatus(id, status);
         return ApiResponse.<Void>builder()
                 .message("Employee status updated successfully")
@@ -109,10 +128,25 @@ public class AdminEmployeeController {
     }
 
     @PatchMapping("/bulk")
-    public ApiResponse<Void> bulkAction(
-            @Valid @RequestBody EmployeeBulkActionRequest request
+    public ApiResponse<Void> handleBulkAction (
+        @RequestBody JsonNode request
     ) {
-        employeeService.handleBulkAction(request);
+        JsonNode employeeIdsNode = request.get("employeeIds");
+        if (employeeIdsNode == null || !employeeIdsNode.isArray()) {
+            throw new AppException(ErrorCode.EMPLOYEE_SELECTION_REQUIRED);
+        }
+        Set<Long> employeeIds = new HashSet<>();
+        employeeIdsNode.forEach(id -> employeeIds.add(id.asLong()));
+        if (employeeIds.isEmpty()) {
+            throw new AppException(ErrorCode.EMPLOYEE_SELECTION_REQUIRED);
+        }
+
+        JsonNode actionNode = request.get("action");
+        if (actionNode == null || actionNode.asText().isBlank()) {
+            throw new AppException(ErrorCode.EMPLOYEE_ACTION_REQUIRED);
+        }
+        String action = actionNode.asText();
+        employeeService.handleBulkAction(employeeIds, action);
         return ApiResponse.<Void>builder()
                 .message("Bulk action executed successfully")
                 .build();

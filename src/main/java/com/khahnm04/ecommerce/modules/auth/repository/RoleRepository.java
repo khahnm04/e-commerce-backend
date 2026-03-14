@@ -11,16 +11,18 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+
 @Repository
-public interface RoleRepository extends JpaRepository<Role, Long> {
+public interface RoleRepository extends JpaRepository<Role, Long>, JpaSpecificationExecutor<Role> {
 
-    boolean existsByCode(String code);
+    boolean existsByCodeAndDeletedAtIsNull(String code);
 
-    boolean existsByName(String name);
+    boolean existsByNameAndDeletedAtIsNull(String name);
 
-    boolean existsByNameAndIdNot(String name, Long id);
+    boolean existsByNameAndIdNotAndDeletedAtIsNull(String name, Long id);
 
-    boolean existsByCodeAndIdNot(String code, Long id);
+    boolean existsByCodeAndIdNotAndDeletedAtIsNull(String code, Long id);
 
     Optional<Role> findByIdAndDeletedAtIsNull(Long id);
 

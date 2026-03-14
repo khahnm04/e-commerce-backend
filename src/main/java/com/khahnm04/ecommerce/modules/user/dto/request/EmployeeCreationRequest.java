@@ -6,50 +6,38 @@ import com.khahnm04.ecommerce.modules.auth.enums.UserStatus;
 import com.khahnm04.ecommerce.modules.auth.enums.Gender;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
-import lombok.*;
+import lombok.Builder;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.Set;
 
-@Getter
-@Setter
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class EmployeeCreationRequest implements Serializable {
+public record EmployeeCreationRequest(
 
     @ValidEmail
-    private String email;
+    String email,
 
     @ValidPhoneNumber
     @NotBlank(message = "EMPLOYEE_PHONE_NUMBER_REQUIRED")
-    private String phoneNumber;
+    String phoneNumber,
 
-    private String password;
-
-    private String confirmPassword;
+    String password,
+    String confirmPassword,
 
     @NotBlank(message = "EMPLOYEE_CODE_REQUIRED")
-    private String code;
+    String code,
 
     @NotBlank(message = "EMPLOYEE_FULL_NAME_REQUIRED")
-    private String fullName;
+    String fullName,
 
-    @NotNull(message = "EMPLOYEE_BRANCH_ID_REQUIRED")
-    private Long branchId;
-
-    private String jobTitle;
-
-    private LocalDate dateOfBirth;
-
-    private String avatarUrl;
-
-    private Gender gender;
-
-    private UserStatus status;
+    String jobTitle,
+    LocalDate dateOfBirth,
+    String avatar,
+    Gender gender,
+    UserStatus status,
 
     @NotEmpty(message = "EMPLOYEE_ROLES_REQUIRED")
-    private Set<Long> roles;
+    Set<Long> roles
 
+) implements Serializable {
 }

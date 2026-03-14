@@ -1,7 +1,7 @@
 package com.khahnm04.ecommerce.common.exception;
 
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
-import com.khahnm04.ecommerce.common.dto.ErrorResponse;
+import com.khahnm04.ecommerce.common.base.dto.ErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -44,7 +44,6 @@ public class GlobalExceptionHandler {
                 .code(ErrorCode.UNCATEGORIZED_EXCEPTION.getCode())
                 .message(ErrorCode.UNCATEGORIZED_EXCEPTION.getMessage())
                 .path(request.getRequestURI())
-                .method(request.getMethod())
                 .build();
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
     }
@@ -57,7 +56,6 @@ public class GlobalExceptionHandler {
                 .code(errorCode.getCode())
                 .message(errorCode.getMessage())
                 .path(request.getRequestURI())
-                .method(request.getMethod())
                 .build();
         return ResponseEntity.status(errorCode.getStatusCode()).body(errorResponse);
     }
@@ -78,7 +76,6 @@ public class GlobalExceptionHandler {
                 .code(errorCode.getCode())
                 .message(errorCode.getMessage())
                 .path(request.getRequestURI())
-                .method(request.getMethod())
                 .build();
         return ResponseEntity.status(errorCode.getStatusCode()).body(errorResponse);
     }

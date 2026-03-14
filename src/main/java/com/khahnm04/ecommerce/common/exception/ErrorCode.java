@@ -56,6 +56,7 @@ public enum ErrorCode {
     // MODULE: USER (Range: 2000 - 2999)
     // =================================================================
     EMPLOYEE_STATUS_REQUIRED(2000, "Status cannot be blank", HttpStatus.BAD_REQUEST),
+    EMPLOYEE_STATUS_INVALID(2009, "Invalid employee status", HttpStatus.BAD_REQUEST),
     EMPLOYEE_SELECTION_REQUIRED(2001, "At least one branch must be selected", HttpStatus.BAD_REQUEST),
     EMPLOYEE_ACTION_REQUIRED(2002, "Bulk action type cannot be blank", HttpStatus.BAD_REQUEST),
     EMPLOYEE_PHONE_NUMBER_REQUIRED(2003, "Phone number cannot be blank", HttpStatus.BAD_REQUEST),
@@ -71,6 +72,7 @@ public enum ErrorCode {
     EMPLOYEE_CODE_EXISTED(2054, "Employee code already existed", HttpStatus.CONFLICT),
 
     CUSTOMER_STATUS_REQUIRED(2100, "Status cannot be blank", HttpStatus.BAD_REQUEST),
+    CUSTOMER_STATUS_INVALID(2109, "Invalid customer status", HttpStatus.BAD_REQUEST),
     CUSTOMER_SELECTION_REQUIRED(2101, "At least one branch must be selected", HttpStatus.BAD_REQUEST),
     CUSTOMER_ACTION_REQUIRED(2102, "Bulk action type cannot be blank", HttpStatus.BAD_REQUEST),
     CUSTOMER_PHONE_NUMBER_REQUIRED(2103, "Phone number cannot be blank", HttpStatus.BAD_REQUEST),
@@ -95,6 +97,7 @@ public enum ErrorCode {
     // MODULE: BRANCH (Range: 3000 - 3999)
     // =================================================================
     BRANCH_SELECTION_REQUIRED(3001, "At least one branch must be selected", HttpStatus.BAD_REQUEST),
+    BRAND_STATUS_INVALID(2109, "Invalid brand status", HttpStatus.BAD_REQUEST),
     BRANCH_ACTION_REQUIRED(3002, "Bulk action type cannot be blank", HttpStatus.BAD_REQUEST),
     BRANCH_CODE_REQUIRED(3003, "Branch code cannot be blank", HttpStatus.BAD_REQUEST),
     BRANCH_NAME_REQUIRED(3004, "Branch name cannot be blank", HttpStatus.BAD_REQUEST),
@@ -113,6 +116,8 @@ public enum ErrorCode {
     // =================================================================
     CATEGORY_SELECTION_REQUIRED(4000, "At least one category must be selected", HttpStatus.BAD_REQUEST),
     CATEGORY_ACTION_REQUIRED(4001, "Bulk action type cannot be blank", HttpStatus.BAD_REQUEST),
+    CATEGORY_STATUS_REQUIRED(4002, "Category status cannot be blank", HttpStatus.BAD_REQUEST),
+    CATEGORY_STATUS_INVALID(4005, "Invalid category status", HttpStatus.BAD_REQUEST),
     CATEGORY_NAME_REQUIRED(4003, "Category name cannot be blank", HttpStatus.BAD_REQUEST),
     CATEGORY_SLUG_REQUIRED(4004, "Category slug cannot be blank", HttpStatus.BAD_REQUEST),
     CATEGORY_NOT_FOUND(4050, "Category not found", HttpStatus.NOT_FOUND),
@@ -148,6 +153,7 @@ public enum ErrorCode {
     PRODUCT_SELECTION_REQUIRED(4300, "At least one product must be selected", HttpStatus.BAD_REQUEST),
     PRODUCT_ACTION_REQUIRED(4301, "Bulk action type cannot be blank", HttpStatus.BAD_REQUEST),
     PRODUCT_STATUS_REQUIRED(4302, "Product status cannot be blank", HttpStatus.BAD_REQUEST),
+    PRODUCT_STATUS_INVALID(4312, "Invalid product status", HttpStatus.BAD_REQUEST),
     PRODUCT_NAME_REQUIRED(4303, "Product name cannot be blank", HttpStatus.BAD_REQUEST),
     PRODUCT_SLUG_REQUIRED(4304, "Product slug cannot be blank", HttpStatus.BAD_REQUEST),
     PRODUCT_BRAND_REQUIRED(4305, "Product brand cannot be blank", HttpStatus.BAD_REQUEST),

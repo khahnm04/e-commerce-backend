@@ -2,28 +2,28 @@ package com.khahnm04.ecommerce.modules.auth.dto.request;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
-import lombok.*;
+import lombok.Builder;
 import java.io.Serializable;
 
-@Getter
-@Setter
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class RoleFilterRequest implements Serializable {
+public record RoleFilterRequest(
 
-    @Builder.Default
-    @Min(value = 1, message = "LIST_PAGE_MIN")
-    private Integer page = 1;
+        @Min(value = 1, message = "LIST_PAGE_MIN")
+        Integer page,
 
-    @Builder.Default
-    @Min(value = 1, message = "LIST_SIZE_MIN")
-    @Max(value = 100, message = "LIST_SIZE_MAX")
-    private Integer size = 10;
+        @Min(value = 1, message = "LIST_SIZE_MIN")
+        @Max(value = 100, message = "LIST_SIZE_MAX")
+        Integer size,
 
-    @Builder.Default
-    private String sort = "createdAt,desc";
+        String sort,
+        String keyword
 
-    private String keyword;
+) implements Serializable {
+
+    public RoleFilterRequest {
+        if (page == null) page = 1;
+        if (size == null) size = 10;
+        if (sort == null) sort = "createdAt,desc";
+    }
 
 }

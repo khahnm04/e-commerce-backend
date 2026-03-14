@@ -1,20 +1,23 @@
 package com.khahnm04.ecommerce.modules.auth.dto.response;
 
-import com.khahnm04.ecommerce.common.dto.BaseResponse;
-import lombok.*;
-import lombok.experimental.SuperBuilder;
+import lombok.Builder;
 import java.util.Set;
+import java.io.Serializable;
+import java.time.LocalDateTime;
 
-@Getter
-@Setter
-@SuperBuilder
-@NoArgsConstructor
-@AllArgsConstructor
-public class RoleResponse extends BaseResponse<Long> {
+@Builder(toBuilder = true)
+public record RoleResponse(
 
-    private String code;
-    private String name;
-    private String description;
-    private Set<String> permissions;
+    Long id,
+    String code,
+    String name,
+    String description,
+    Set<String> permissions,
+    LocalDateTime createdAt,
+    String createdBy,
+    LocalDateTime updatedAt,
+    String updatedBy,
+    LocalDateTime deletedAt
 
+) implements Serializable {
 }

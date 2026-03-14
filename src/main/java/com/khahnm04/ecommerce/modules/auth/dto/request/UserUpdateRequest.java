@@ -7,36 +7,34 @@ import com.khahnm04.ecommerce.modules.auth.enums.Gender;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
 import java.time.LocalDate;
 import java.util.Set;
+import java.io.Serializable;
 
-@Getter
-@Setter
 @Builder
-public class UserUpdateRequest {
+public record UserUpdateRequest(
 
     @ValidEmail
-    private String email;
+    String email,
 
     @ValidPhoneNumber
     @NotBlank(message = "Phone number cannot be blank")
-    private String phoneNumber;
+    String phoneNumber,
 
     @NotBlank(message = "Full name cannot be blank")
-    private String fullName;
+    String fullName,
 
-    private LocalDate dateOfBirth;
+    LocalDate dateOfBirth,
 
-    @NotBlank(message = "avatarUrl cannot be blank")
-    private String avatarUrl;
+    @NotBlank(message = "avatar cannot be blank")
+    String avatar,
 
-    private Gender gender;
+    Gender gender,
 
-    private UserStatus status;
+    UserStatus status,
 
     @NotEmpty(message = "roles cannot be empty")
-    private Set<Long> roles;
+    Set<Long> roles
 
+) implements Serializable {
 }

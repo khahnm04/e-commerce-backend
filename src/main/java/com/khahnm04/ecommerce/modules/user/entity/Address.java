@@ -29,22 +29,22 @@ public class Address implements Serializable {
     @Column(name = "receiver_name", nullable = false)
     private String receiverName;
 
-    @Column(name = "receiver_phone", nullable = false)
+    @Column(name = "receiver_phone", nullable = false, length = 20)
     private String receiverPhone;
 
-    @Column(name = "province_code")
-    private Integer provinceCode;
+    @Column(name = "province_code", length = 50)
+    private String provinceCode;
 
     @Column(name = "province_name", nullable = false)
     private String provinceName;
 
-    @Column(name = "district_code")
-    private Integer districtCode;
+    @Column(name = "district_code", length = 50)
+    private String districtCode;
 
     @Column(name = "district_name", nullable = false)
     private String districtName;
 
-    @Column(name = "ward_code")
+    @Column(name = "ward_code", length = 50)
     private String wardCode;
 
     @Column(name = "ward_name", nullable = false)

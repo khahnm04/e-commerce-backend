@@ -1,6 +1,6 @@
 package com.khahnm04.ecommerce.modules.user.controller;
 
-import com.khahnm04.ecommerce.common.dto.ApiResponse;
+import com.khahnm04.ecommerce.common.base.dto.ApiResponse;
 import com.khahnm04.ecommerce.modules.user.dto.request.AddressRequest;
 import com.khahnm04.ecommerce.modules.user.dto.response.AddressResponse;
 import com.khahnm04.ecommerce.modules.user.service.AddressService;

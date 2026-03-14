@@ -6,7 +6,7 @@ import com.khahnm04.ecommerce.modules.user.entity.Address;
 import org.mapstruct.*;
 import java.util.List;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface AddressMapper {
 
     @Mapping(target = "customer", ignore = true)

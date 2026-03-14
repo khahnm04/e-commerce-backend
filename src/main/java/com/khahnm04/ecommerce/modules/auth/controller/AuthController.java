@@ -6,7 +6,7 @@ import com.khahnm04.ecommerce.modules.auth.dto.request.LoginRequest;
 import com.khahnm04.ecommerce.modules.auth.dto.response.IntrospectResponse;
 import com.khahnm04.ecommerce.modules.auth.dto.response.LoginResponse;
 import com.khahnm04.ecommerce.modules.auth.service.AuthService;
-import com.khahnm04.ecommerce.common.dto.ApiResponse;
+import com.khahnm04.ecommerce.common.base.dto.ApiResponse;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

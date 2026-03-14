@@ -8,23 +8,23 @@ import com.khahnm04.ecommerce.modules.user.dto.response.CustomerResponse;
 import com.khahnm04.ecommerce.modules.user.entity.Customer;
 import org.mapstruct.*;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface CustomerMapper {
 
     @Mapping(target = "user", ignore = true)
     Customer toCustomer(CustomerCreationRequest request);
 
+    @Mapping(target = "addressCount", ignore = true)
     @Mapping(target = "userId", source = "user.id")
     @Mapping(target = "email", source = "user.email")
     @Mapping(target = "phoneNumber", source = "user.phoneNumber")
     @Mapping(target = "dateOfBirth", source = "user.dateOfBirth")
     @Mapping(target = "fullName", source = "user.fullName")
-    @Mapping(target = "avatarUrl", source = "user.avatarUrl")
+    @Mapping(target = "avatar", source = "user.avatar")
     @Mapping(target = "gender", source = "user.gender")
     @Mapping(target = "status", source = "user.status")
     @Mapping(target = "createdBy", source = "createdBy.fullName")
     @Mapping(target = "updatedBy", source = "updatedBy.fullName")
-    @Mapping(target = "addressCount", ignore = true)
     CustomerResponse toResponse(Customer customer);
 
     @Mapping(target = "user", ignore = true)

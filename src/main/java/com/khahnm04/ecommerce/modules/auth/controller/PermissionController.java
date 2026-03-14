@@ -1,6 +1,6 @@
 package com.khahnm04.ecommerce.modules.auth.controller;
 
-import com.khahnm04.ecommerce.common.dto.ApiResponse;
+import com.khahnm04.ecommerce.common.base.dto.ApiResponse;
 import com.khahnm04.ecommerce.modules.auth.dto.response.PermissionResponse;
 import com.khahnm04.ecommerce.modules.auth.service.PermissionService;
 import lombok.RequiredArgsConstructor;

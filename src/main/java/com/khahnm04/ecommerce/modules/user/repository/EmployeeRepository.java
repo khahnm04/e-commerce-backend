@@ -9,22 +9,22 @@ import java.util.Optional;
 import java.util.Set;
 
 @Repository
-public interface EmployeeRepository extends JpaRepository<Employee, Long> {
+public interface EmployeeRepository extends JpaRepository<Employee, Long>, JpaSpecificationExecutor<Employee> {
 
     boolean existsByCode(String code);
 
     boolean existsByCodeAndIdNot(String code, Long id);
 
-    @EntityGraph(attributePaths = { "user", "branch" })
+    @EntityGraph(attributePaths = { "user" })
     Optional<Employee> findByIdAndDeletedAtIsNull(Long id);
 
-    @EntityGraph(attributePaths = { "user", "branch" })
+    @EntityGraph(attributePaths = { "user" })
     Optional<Employee> findByIdAndDeletedAtIsNotNull(Long id);
 
-    @EntityGraph(attributePaths = { "user", "branch" })
+    @EntityGraph(attributePaths = { "user" })
     Optional<Employee> findByCodeAndDeletedAtIsNull(String code);
 
-    @EntityGraph(attributePaths = { "user", "branch" })
+    @EntityGraph(attributePaths = { "user" })
     Optional<Employee> findByCodeAndDeletedAtIsNotNull(String code);
 
     @Query("SELECT e FROM Employee e WHERE e.id IN :ids AND e.deletedAt IS NOT NULL")

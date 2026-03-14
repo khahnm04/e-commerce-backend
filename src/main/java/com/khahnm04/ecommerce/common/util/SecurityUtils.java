@@ -11,11 +11,6 @@ public class SecurityUtils {
 
     private SecurityUtils() {}
 
-    /**
-     * Lấy thông tin định danh (principal) của người dùng hiện tại từ SecurityContext.
-     * Có thể là UserDetails, subject (Jwt) hoặc String.
-     * @return thông tin principal của người dùng hoặc null nếu không có
-     */
     public static String extractPrincipal() {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

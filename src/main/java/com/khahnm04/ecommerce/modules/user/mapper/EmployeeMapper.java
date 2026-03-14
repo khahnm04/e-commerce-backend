@@ -8,11 +8,10 @@ import com.khahnm04.ecommerce.modules.user.dto.response.EmployeeResponse;
 import com.khahnm04.ecommerce.modules.user.entity.Employee;
 import org.mapstruct.*;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface EmployeeMapper {
 
     @Mapping(target = "user", ignore = true)
-    @Mapping(target = "branch", ignore = true)
     @Mapping(target = "code", source = "code", qualifiedByName = "normalizeCode")
     Employee toEmployee(EmployeeCreationRequest request);
 
@@ -22,16 +21,14 @@ public interface EmployeeMapper {
     @Mapping(target = "phoneNumber", source = "user.phoneNumber")
     @Mapping(target = "dateOfBirth", source = "user.dateOfBirth")
     @Mapping(target = "fullName", source = "user.fullName")
-    @Mapping(target = "avatarUrl", source = "user.avatarUrl")
+    @Mapping(target = "avatar", source = "user.avatar")
     @Mapping(target = "gender", source = "user.gender")
     @Mapping(target = "status", source = "user.status")
-    @Mapping(target = "branch", source = "branch.name")
     @Mapping(target = "createdBy", source = "createdBy.fullName")
     @Mapping(target = "updatedBy", source = "updatedBy.fullName")
     EmployeeResponse toResponse(Employee employee);
 
     @Mapping(target = "user", ignore = true)
-    @Mapping(target = "branch", ignore = true)
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateEmployee(@MappingTarget Employee employee, EmployeeUpdateRequest request);
 
@@ -39,7 +36,7 @@ public interface EmployeeMapper {
     default String normalizeCode(String code) {
         return code == null ? null : code.trim().toUpperCase();
     }
-    
+
     UserCreationRequest toUserCreationRequest(EmployeeCreationRequest request);
 
     UserUpdateRequest toUserUpdateRequest(EmployeeUpdateRequest request);

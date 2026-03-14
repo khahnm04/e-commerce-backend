@@ -35,10 +35,10 @@ public class SecurityConfig {
 
     public static final String[] PUBLIC_POST_ENDPOINTS = {
             "/api/v1/auth/login",
-            "/api/v1/auth/register",
+            "/api/v1/auth/logout",
             "/api/v1/auth/refresh",
             "/api/v1/auth/introspect",
-            "/api/v1/upload"
+            "/api/v1/customers/**",
     };
 
     public static final String[] PUBLIC_GET_ENDPOINTS = {
@@ -58,8 +58,7 @@ public class SecurityConfig {
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwtConfigurer -> jwtConfigurer
                         .decoder(jwtDecoderConfig)
                         .jwtAuthenticationConverter(jwtAuthenticationConverter()))
-                        .authenticationEntryPoint(new JwtAuthenticationEntryPoint()) // Catch exception when
-                                                                                     // Unauthenticated
+                        .authenticationEntryPoint(new JwtAuthenticationEntryPoint()) // Catch exception when Unauthenticated
                         .bearerTokenResolver(cookieBearerTokenResolver))
 
                 .csrf(AbstractHttpConfigurer::disable)

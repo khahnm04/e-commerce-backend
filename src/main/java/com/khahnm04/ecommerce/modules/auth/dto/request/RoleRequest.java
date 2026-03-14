@@ -2,27 +2,24 @@ package com.khahnm04.ecommerce.modules.auth.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
-import lombok.*;
+import lombok.Builder;
 import java.io.Serializable;
 import java.util.Set;
 
-@Getter
-@Setter
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class RoleRequest implements Serializable {
+public record RoleRequest(
 
     @NotBlank(message = "ROLE_CODE_REQUIRED")
-    private String code;
+    String code,
 
     @NotBlank(message = "ROLE_NAME_REQUIRED")
-    private String name;
+    String name,
 
     @NotBlank(message = "ROLE_DESCRIPTION_REQUIRED")
-    private String description;
+    String description,
 
     @NotEmpty(message = "ROLE_PERMISSIONS_REQUIRED")
-    private Set<Long> permissions;
+    Set<Long> permissions
 
+) implements Serializable {
 }

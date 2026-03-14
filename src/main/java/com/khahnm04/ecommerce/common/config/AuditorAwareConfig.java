@@ -33,13 +33,19 @@ public class AuditorAwareConfig implements AuditorAware<User> {
             Object principal = authentication.getPrincipal();
 
             if (principal instanceof Jwt jwt) {
-                userId = jwt.getClaim("userId");
+                Object userIdClaim = jwt.getClaim("userId");
+                if (userIdClaim instanceof Number number) {
+                    userId = number.longValue();
+                } else if (userIdClaim instanceof String s) {
+                    userId = Long.parseLong(s);
+                }
             } else if (principal instanceof User user) {
                 userId = user.getId();
             }
 
             if (userId != null) {
-                return Optional.of(entityManager.getReference(User.class, userId));
+                User auditor = entityManager.getReference(User.class, userId);
+                return Optional.of(auditor);
             }
 
             return Optional.empty();

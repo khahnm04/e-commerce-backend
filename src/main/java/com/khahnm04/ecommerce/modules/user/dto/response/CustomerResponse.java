@@ -1,28 +1,32 @@
 package com.khahnm04.ecommerce.modules.user.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.khahnm04.ecommerce.modules.auth.enums.UserStatus;
 import com.khahnm04.ecommerce.modules.auth.enums.Gender;
-import com.khahnm04.ecommerce.common.dto.BaseResponse;
-import lombok.*;
-import lombok.experimental.SuperBuilder;
+import lombok.Builder;
+import java.io.Serializable;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
-@Getter
-@Setter
-@SuperBuilder
-@NoArgsConstructor
-@AllArgsConstructor
-public class CustomerResponse extends BaseResponse<Long> {
+@Builder(toBuilder = true)
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public record CustomerResponse(
 
-    private Long id;
-    private Long userId;
-    private String fullName;
-    private String email;
-    private String phoneNumber;
-    private LocalDate dateOfBirth;
-    private Gender gender;
-    private String avatarUrl;
-    private UserStatus status;
-    private Integer addressCount;
+    Long id,
+    Long userId,
+    String fullName,
+    String email,
+    String phoneNumber,
+    LocalDate dateOfBirth,
+    Gender gender,
+    String avatar,
+    UserStatus status,
+    Integer addressCount,
+    LocalDateTime createdAt,
+    String createdBy,
+    LocalDateTime updatedAt,
+    String updatedBy,
+    LocalDateTime deletedAt
 
+) implements Serializable {
 }

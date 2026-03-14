@@ -1,21 +1,19 @@
 package com.khahnm04.ecommerce.modules.auth.dto.response;
 
-import lombok.*;
+import lombok.Builder;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
-@Getter
-@Setter
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class PermissionResponse implements Serializable {
+public record PermissionResponse(
 
-    private Long id;
-    private String code;
-    private String name;
-    private String module;
-    private String description;
-    private LocalDateTime createdAt;
+    Long id,
+    String code,
+    String name,
+    String subModule,
+    String module,
+    String description,
+    LocalDateTime createdAt
 
+) implements Serializable {
 }

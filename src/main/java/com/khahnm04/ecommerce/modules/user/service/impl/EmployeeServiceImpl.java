@@ -1,21 +1,20 @@
 package com.khahnm04.ecommerce.modules.user.service.impl;
 
-import com.khahnm04.ecommerce.common.dto.PageResponse;
-import com.khahnm04.ecommerce.common.entity.BaseEntity;
+import com.khahnm04.ecommerce.common.base.dto.PageResponse;
+import com.khahnm04.ecommerce.common.base.entity.BaseEntity;
+import com.khahnm04.ecommerce.modules.user.dto.request.EmployeeCreationRequest;
+import com.khahnm04.ecommerce.modules.user.dto.request.EmployeeFilterRequest;
+import com.khahnm04.ecommerce.modules.user.dto.request.EmployeeUpdateRequest;
 import com.khahnm04.ecommerce.common.exception.AppException;
 import com.khahnm04.ecommerce.common.exception.ErrorCode;
-import com.khahnm04.ecommerce.common.util.SortUtils;
 import com.khahnm04.ecommerce.modules.auth.entity.Role;
 import com.khahnm04.ecommerce.modules.auth.entity.User;
 import com.khahnm04.ecommerce.modules.auth.enums.UserStatus;
 import com.khahnm04.ecommerce.modules.auth.service.UserService;
-import com.khahnm04.ecommerce.modules.branch.service.BranchService;
-import com.khahnm04.ecommerce.modules.user.dto.request.*;
 import com.khahnm04.ecommerce.modules.user.dto.response.EmployeeResponse;
 import com.khahnm04.ecommerce.modules.user.entity.Employee;
-import com.khahnm04.ecommerce.modules.user.enums.EmployeeSortField;
+import com.khahnm04.ecommerce.modules.user.repository.specification.EmployeeSpecification;
 import com.khahnm04.ecommerce.modules.user.mapper.EmployeeMapper;
-import com.khahnm04.ecommerce.modules.user.mapper.EmployeeMyBatisMapper;
 import com.khahnm04.ecommerce.modules.user.repository.EmployeeRepository;
 import com.khahnm04.ecommerce.modules.user.service.EmployeeService;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +23,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -38,17 +38,15 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     private final EmployeeRepository employeeRepository;
     private final EmployeeMapper employeeMapper;
-    private final EmployeeMyBatisMapper employeeMyBatisMapper;
-    private final BranchService branchService;
     private final UserService userService;
 
     @Override
     @Transactional
     public EmployeeResponse createEmployee(EmployeeCreationRequest request) {
-        if (!Objects.equals(request.getPassword(), request.getConfirmPassword())) {
+        if (!Objects.equals(request.password(), request.confirmPassword())) {
             throw new AppException(ErrorCode.PASSWORD_CONFIRMATION_MISMATCH);
         }
-        if (employeeRepository.existsByCode(request.getCode())) {
+        if (employeeRepository.existsByCode(request.code())) {
             throw new AppException(ErrorCode.EMPLOYEE_CODE_EXISTED);
         }
 
@@ -56,7 +54,6 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         Employee newEmployee = employeeMapper.toEmployee(request);
         newEmployee.setUser(user);
-        newEmployee.setBranch(branchService.getBranchById(request.getBranchId()));
         Employee savedEmployee = employeeRepository.save(newEmployee);
 
         log.info("Created new employee with code: {}", savedEmployee.getCode());
@@ -104,17 +101,14 @@ public class EmployeeServiceImpl implements EmployeeService {
     public EmployeeResponse updateEmployee(Long id, EmployeeUpdateRequest request) {
         Employee employee = this.getEmployeeById(id);
 
-        if (StringUtils.hasText(request.getCode()) &&
-                employeeRepository.existsByCodeAndIdNot(request.getCode(), employee.getId())) {
+        if (StringUtils.hasText(request.code()) &&
+                employeeRepository.existsByCodeAndIdNot(request.code(), employee.getId())) {
             throw new AppException(ErrorCode.EMPLOYEE_CODE_EXISTED);
         }
 
         userService.updateUser(employee.getUser().getId(), employeeMapper.toUserUpdateRequest(request));
 
         employeeMapper.updateEmployee(employee, request);
-        if (request.getBranchId() != null) {
-            employee.setBranch(branchService.getBranchById(request.getBranchId()));
-        }
         employeeRepository.save(employee);
 
         log.info("Updated employee with id: {}", id);
@@ -123,10 +117,10 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     @Transactional
-    public void updateEmployeeStatus(Long id, EmployeeUpdateStatusRequest request) {
+    public void updateEmployeeStatus(Long id, UserStatus status) {
         Employee employee = this.getEmployeeById(id);
-        userService.updateUserStatus(employee.getUser().getId(), request.getStatus());
-        log.info("Updated status for employee {} to {}", employee.getCode(), request.getStatus());
+        userService.updateUserStatus(employee.getUser().getId(), status);
+        log.info("Updated status for employee {} to {}", employee.getCode(), status);
     }
 
     @Override
@@ -139,8 +133,6 @@ public class EmployeeServiceImpl implements EmployeeService {
         }
         employee.setDeletedAt(LocalDateTime.now());
         employeeRepository.save(employee);
-
-        userService.softDeleteUser(employee.getUser().getId());
         log.info("Soft-deleted employee with id: {}", id);
     }
 
@@ -154,20 +146,17 @@ public class EmployeeServiceImpl implements EmployeeService {
         }
         employee.setDeletedAt(null);
         employeeRepository.save(employee);
-
-        userService.restoreUser(employee.getUser().getId());
         log.info("Employee restored with id {}", id);
     }
 
     @Override
     @Transactional
-    public void handleBulkAction(EmployeeBulkActionRequest request) {
-        Set<Long> employeeIds = request.getEmployees();
+    public void handleBulkAction(Set<Long> employeeIds, String actionInput) {
         if (employeeIds == null || employeeIds.isEmpty()) {
             throw new AppException(ErrorCode.EMPLOYEE_BULK_ACTION_REQUIRED_IDS);
         }
 
-        String action = request.getAction().toUpperCase();
+        String action = actionInput.toUpperCase();
 
         Set<Employee> existingEmployees = new HashSet<>(
                 action.equals("RESTORE")
@@ -220,55 +209,35 @@ public class EmployeeServiceImpl implements EmployeeService {
         Set<String> roleNames = roles != null
                 ? roles.stream().map(Role::getName).collect(Collectors.toSet())
                 : Set.of();
-        employeeResponse.setRoles(roleNames);
-        return employeeResponse;
+        return employeeResponse.toBuilder().roles(roleNames).build();
     }
 
     private PageResponse<EmployeeResponse> getAllWithFilterAndSearch(EmployeeFilterRequest request, boolean isDeleted) {
-        Pageable pageable = PageRequest.of(request.getPage() - 1, request.getSize(),
-            SortUtils.parseSort(request.getSort()));
+        Pageable pageable = PageRequest.of(request.page() - 1, request.size(),
+                EmployeeSpecification.getSort(request.sort()));
 
-        String keyword = StringUtils.hasText(request.getKeyword())
-                ? request.getKeyword().trim()
-                : null;
+        Specification<Employee> spec = EmployeeSpecification.buildSpecification(request, isDeleted);
+        Page<Employee> employeePage = employeeRepository.findAll(spec, pageable);
 
-        // Parse sort
-        String[] sortParams = SortUtils.parseSortForMyBatis(request.getSort(), EmployeeSortField.class);
-        String sortColumn = sortParams[0];
-        String sortDirection = sortParams[1];
-
-        List<EmployeeResponse> content = employeeMyBatisMapper.findAllWithFilterAndSearch(
-                keyword,
-                request.getBranchId(),
-                request.getStatus(),
-                request.getStartDate(),
-                request.getEndDate(),
-                isDeleted,
-                sortColumn,
-                sortDirection,
-                pageable.getOffset(),
-                pageable.getPageSize());
+        List<EmployeeResponse> content = employeePage.getContent().stream()
+                .map(employeeMapper::toResponse)
+                .collect(Collectors.toList());
 
         if (!content.isEmpty()) {
             Set<Long> userIds = content.stream()
-                    .map(EmployeeResponse::getUserId)
+                    .map(EmployeeResponse::userId)
                     .collect(Collectors.toSet());
 
             Map<Long, Set<String>> userRolesMap = userService.getRoleNamesByUserIds(userIds);
 
-            content.forEach(employeeResponse -> employeeResponse
-                    .setRoles(userRolesMap.getOrDefault(employeeResponse.getUserId(), Set.of())));
+            content = content.stream()
+                    .map(employeeResponse -> employeeResponse.toBuilder()
+                            .roles(userRolesMap.getOrDefault(employeeResponse.userId(), Set.of()))
+                            .build())
+                    .collect(Collectors.toList());
         }
 
-        long total = employeeMyBatisMapper.countWithFilterAndSearch(
-                keyword,
-                request.getBranchId(),
-                request.getStatus(),
-                request.getStartDate(),
-                request.getEndDate(),
-                isDeleted);
-
-        Page<EmployeeResponse> page = new PageImpl<>(content, pageable, total);
+        Page<EmployeeResponse> page = new PageImpl<>(content, pageable, employeePage.getTotalElements());
         return PageResponse.fromPage(page);
     }
 

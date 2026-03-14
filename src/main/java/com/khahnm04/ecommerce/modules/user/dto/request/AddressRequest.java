@@ -3,46 +3,45 @@ package com.khahnm04.ecommerce.modules.user.dto.request;
 import com.khahnm04.ecommerce.common.validation.phone.ValidPhoneNumber;
 import com.khahnm04.ecommerce.modules.user.enums.AddressType;
 import jakarta.validation.constraints.NotBlank;
-import lombok.*;
+import lombok.Builder;
 import java.io.Serializable;
 
-@Getter
-@Setter
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class AddressRequest implements Serializable {
+public record AddressRequest(
 
     @NotBlank(message = "ADDRESS_RECEIVER_NAME_REQUIRED")
-    private String receiverName;
+    String receiverName,
 
     @NotBlank(message = "ADDRESS_RECEIVER_PHONE_REQUIRED")
     @ValidPhoneNumber
-    private String receiverPhone;
+    String receiverPhone,
 
-    private Integer provinceCode;
+    Integer provinceCode,
 
     @NotBlank(message = "ADDRESS_PROVINCE_NAME_REQUIRED")
-    private String provinceName;
+    String provinceName,
 
-    private Integer districtCode;
+    Integer districtCode,
 
     @NotBlank(message = "ADDRESS_DISTRICT_NAME_REQUIRED")
-    private String districtName;
+    String districtName,
 
-    private String wardCode;
+    String wardCode,
 
     @NotBlank(message = "ADDRESS_WARD_NAME_REQUIRED")
-    private String wardName;
+    String wardName,
 
     @NotBlank(message = "ADDRESS_DETAIL_REQUIRED")
-    private String detailAddress;
+    String detailAddress,
 
-    private AddressType addressType;
+    AddressType addressType,
+    String addressName,
+    Boolean isDefault
 
-    private String addressName;
+) implements Serializable {
 
-    @Builder.Default
-    private Boolean isDefault = false;
+    public AddressRequest {
+        if (isDefault == null) isDefault = false;
+    }
 
 }

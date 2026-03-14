@@ -1,8 +1,7 @@
 package com.khahnm04.ecommerce.modules.auth.service.impl;
 
-import com.khahnm04.ecommerce.common.dto.PageResponse;
+import com.khahnm04.ecommerce.common.base.dto.PageResponse;
 import com.khahnm04.ecommerce.common.util.SortUtils;
-import com.khahnm04.ecommerce.modules.auth.dto.request.RoleBulkActionRequest;
 import com.khahnm04.ecommerce.modules.auth.dto.request.RoleFilterRequest;
 import com.khahnm04.ecommerce.modules.auth.dto.request.RoleRequest;
 import com.khahnm04.ecommerce.modules.auth.dto.response.RoleResponse;
@@ -10,9 +9,8 @@ import com.khahnm04.ecommerce.modules.auth.entity.Permission;
 import com.khahnm04.ecommerce.modules.auth.entity.Role;
 import com.khahnm04.ecommerce.common.exception.AppException;
 import com.khahnm04.ecommerce.common.exception.ErrorCode;
-import com.khahnm04.ecommerce.modules.auth.enums.RoleSortField;
 import com.khahnm04.ecommerce.modules.auth.mapper.RoleMapper;
-import com.khahnm04.ecommerce.modules.auth.mapper.mybaits.RoleMyBatisMapper;
+import com.khahnm04.ecommerce.modules.auth.repository.specification.RoleSpecification;
 import com.khahnm04.ecommerce.modules.auth.repository.PermissionRepository;
 import com.khahnm04.ecommerce.modules.auth.repository.RoleRepository;
 import com.khahnm04.ecommerce.modules.auth.service.RoleService;
@@ -24,9 +22,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -36,31 +34,26 @@ public class RoleServiceImpl implements RoleService {
     private final RoleRepository roleRepository;
     private final PermissionRepository permissionRepository;
     private final RoleMapper roleMapper;
-    private final RoleMyBatisMapper roleMyBatisMapper;
 
     @Override
     public RoleResponse createRole(RoleRequest request) {
-        if (roleRepository.existsByCode(request.getCode())) {
+        if (roleRepository.existsByCodeAndDeletedAtIsNull(request.code())) {
             throw new AppException(ErrorCode.ROLE_EXISTED);
         }
-        if (roleRepository.existsByName(request.getName())) {
+        if (roleRepository.existsByNameAndDeletedAtIsNull(request.name())) {
             throw new AppException(ErrorCode.ROLE_EXISTED);
         }
         Role role = roleMapper.toRole(request);
-        assignPermissionsToRole(role, request.getPermissions());
+        assignPermissionsToRole(role, request.permissions());
         role = roleRepository.save(role);
         log.info("Role created with name: {}", role.getName());
         return roleMapper.toRoleResponse(role);
     }
 
     @Override
-    public RoleResponse getRoleDetailById(Long id) {
-        return roleMapper.toRoleResponse(getRoleById(id));
-    }
-
-    @Override
-    public RoleResponse getDeletedRoleDetailById(Long id) {
-        return roleMapper.toRoleResponse(getDeletedRoleById(id));
+    public RoleResponse getRoleDetail(Long id, boolean isDeleted) {
+        Role role = isDeleted ? getDeletedRoleById(id) : getRoleById(id);
+        return roleMapper.toRoleResponse(role);
     }
 
     @Override
@@ -75,15 +68,15 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public RoleResponse updateRole(Long id, RoleRequest request) {
-        if (roleRepository.existsByCodeAndIdNot(request.getCode(), id)) {
+        if (roleRepository.existsByCodeAndIdNotAndDeletedAtIsNull(request.code(), id)) {
             throw new AppException(ErrorCode.ROLE_EXISTED);
         }
-        if (roleRepository.existsByNameAndIdNot(request.getName(), id)) {
+        if (roleRepository.existsByNameAndIdNotAndDeletedAtIsNull(request.name(), id)) {
             throw new AppException(ErrorCode.ROLE_EXISTED);
         }
         Role role = getRoleById(id);
         roleMapper.updateRole(role, request);
-        assignPermissionsToRole(role, request.getPermissions());
+        assignPermissionsToRole(role, request.permissions());
         role = roleRepository.save(role);
         log.info("Role updated with name: {}", role.getName());
         return roleMapper.toRoleResponse(role);
@@ -110,6 +103,10 @@ public class RoleServiceImpl implements RoleService {
             log.warn("Role with id {} is not in a deleted state", id);
             return;
         }
+        if (roleRepository.existsByCodeAndDeletedAtIsNull(role.getCode()) ||
+                roleRepository.existsByNameAndDeletedAtIsNull(role.getName())) {
+            throw new AppException(ErrorCode.ROLE_EXISTED);
+        }
         role.setDeletedAt(null);
         roleRepository.save(role);
         log.info("Role restored with id: {}", id);
@@ -117,9 +114,8 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     @Transactional
-    public void handleBulkAction(RoleBulkActionRequest request) {
-        Set<Long> roleIds = request.getRoles();
-        String action = request.getAction().toUpperCase();
+    public void handleBulkAction(Set<Long> roleIds, String action) {
+        action = action.toUpperCase();
 
         switch (action) {
             case "DELETE" -> {
@@ -135,6 +131,12 @@ public class RoleServiceImpl implements RoleService {
                 if (deletedRoles.size() != roleIds.size()) {
                     throw new AppException(ErrorCode.ROLE_NOT_FOUND);
                 }
+                for (Role role : deletedRoles) {
+                    if (roleRepository.existsByCodeAndDeletedAtIsNull(role.getCode()) ||
+                            roleRepository.existsByNameAndDeletedAtIsNull(role.getName())) {
+                        throw new AppException(ErrorCode.ROLE_EXISTED);
+                    }
+                }
                 roleRepository.restoreByIds(roleIds);
                 log.info("Bulk restored roles with IDs: {}", roleIds);
             }
@@ -145,29 +147,18 @@ public class RoleServiceImpl implements RoleService {
     // ======================== Private methods ========================
 
     private PageResponse<RoleResponse> getAllRolesWithFilterAndSearch(RoleFilterRequest filter, boolean isDeleted) {
-        Pageable pageable = PageRequest.of(filter.getPage() - 1, filter.getSize(),
-                SortUtils.parseSort(filter.getSort()));
+        Pageable pageable = PageRequest.of(filter.page() - 1, filter.size(),
+                SortUtils.parseSort(filter.sort()));
 
-        String keyword = StringUtils.hasText(filter.getKeyword())
-                ? filter.getKeyword().trim()
-                : null;
+        org.springframework.data.jpa.domain.Specification<Role> spec = RoleSpecification.buildSpecification(filter,
+                isDeleted);
+        Page<Role> rolePage = roleRepository.findAll(spec, pageable);
 
-        // Parse sort for MyBatis
-        String[] sortParams = SortUtils.parseSortForMyBatis(filter.getSort(), RoleSortField.class);
-        String sortColumn = sortParams[0];
-        String sortDirection = sortParams[1];
+        List<RoleResponse> content = rolePage.getContent().stream()
+                .map(roleMapper::toRoleResponse)
+                .collect(Collectors.toList());
 
-        List<RoleResponse> content = roleMyBatisMapper.findAllWithFilterAndSearch(
-                keyword,
-                isDeleted,
-                sortColumn,
-                sortDirection,
-                pageable.getOffset(),
-                pageable.getPageSize());
-
-        long total = roleMyBatisMapper.countWithFilterAndSearch(keyword, isDeleted);
-
-        Page<RoleResponse> page = new PageImpl<>(content, pageable, total);
+        Page<RoleResponse> page = new PageImpl<>(content, pageable, rolePage.getTotalElements());
         return PageResponse.fromPage(page);
     }
 

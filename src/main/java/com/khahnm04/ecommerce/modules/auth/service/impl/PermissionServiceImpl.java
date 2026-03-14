@@ -24,6 +24,7 @@ public class PermissionServiceImpl implements PermissionService {
                         .id(permission.getId())
                         .code(permission.getCode())
                         .name(permission.getName())
+                        .subModule(permission.getSubModule())
                         .module(permission.getModule())
                         .description(permission.getDescription())
                         .createdAt(permission.getCreatedAt())
