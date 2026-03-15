@@ -283,6 +283,17 @@ CREATE TABLE `cart_items` (
     `deleted_at` DATETIME
 );
 
+CREATE TABLE `inventories` (
+   `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
+   `product_variant_id` BIGINT UNIQUE NOT NULL,
+   `quantity` INT,
+   `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+   `created_by` BIGINT,
+   `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+   `updated_by` BIGINT,
+   `deleted_at` DATETIME
+);
+
 CREATE TABLE `coupons` (
     `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
     `code` VARCHAR(100) UNIQUE NOT NULL,        -- Mã giảm giá
@@ -305,10 +316,12 @@ CREATE TABLE `coupons` (
     `deleted_at` DATETIME
 );
 
-CREATE TABLE `inventories` (
+CREATE TABLE `coupon_usages` (
     `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
-    `product_variant_id` BIGINT UNIQUE NOT NULL,
-    `quantity` INT,
+    `coupon_id` BIGINT NOT NULL,
+    `customer_id` BIGINT NOT NULL,
+    `order_id` BIGINT NOT NULL,
+    `discount_amount` DECIMAL(15, 2) NOT NULL,
     `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
     `created_by` BIGINT,
     `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -316,51 +329,66 @@ CREATE TABLE `inventories` (
     `deleted_at` DATETIME
 );
 
+CREATE TABLE `orders` (
+    `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
+    `code` VARCHAR(100) UNIQUE NOT NULL,
+    `customer_id` BIGINT NOT NULL,
+    `coupon` VARCHAR(100),
+    `sub_total` DECIMAL(15,2) NOT NULL, # tổng tiền hàng trước khi giảm
+    `discount` DECIMAL(15,2) DEFAULT 0, # số tiền giảm từ coupon.
+    `total` DECIMAL(15,2) NOT NULL,     # số tiền cuối cùng khách phải trả.
+    `order_status` ENUM(
+        'PENDING',
+        'CONFIRMED',
+        'SHIPPING',
+        'COMPLETED',
+        'CANCELLED',
+        'RETURNED'
+    ) NOT NULL DEFAULT 'PENDING',
+    `shipping_name` VARCHAR(255) NOT NULL,
+    `shipping_phone` VARCHAR(20) NOT NULL,
+    `shipping_province` VARCHAR(255) NOT NULL,
+    `shipping_district` VARCHAR(255) NOT NULL,
+    `shipping_ward` VARCHAR(255) NOT NULL,
+    `shipping_address_detail` VARCHAR(255) NOT NULL,
+    `note` TEXT,
+    `expected_delivery_date` DATETIME,  # Ngày giao hàng dự kiến
+    `actual_delivery_date` DATETIME,    # Ngày giao hàng thực tế
+    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+    `created_by` BIGINT,
+    `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    `updated_by` BIGINT,
+    `deleted_at` DATETIME
+);
 
-# CREATE TABLE `orders` (
-#     `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
-#     `order_code` VARCHAR(100) UNIQUE NOT NULL,
-#     `customer_id` BIGINT NOT NULL,
-#     `coupon_id` BIGINT,
-#     `sub_total` DECIMAL(15,2) NOT NULL, # tổng tiền hàng trước khi giảm
-#     `discount` DECIMAL(15,2) DEFAULT 0, # số tiền giảm từ coupon.
-#     `total` DECIMAL(15,2) NOT NULL,     # số tiền cuối cùng khách phải trả.
-#     `order_status` ENUM(
-#         'PENDING',
-#         'CONFIRMED',
-#         'SHIPPING',
-#         'COMPLETED',
-#         'CANCELLED',
-#         'RETURNED'
-#     ) NOT NULL DEFAULT 'PENDING',
-#     `shipping_name` VARCHAR(255) NOT NULL,
-#     `shipping_phone` VARCHAR(20) NOT NULL,
-#     `shipping_province` VARCHAR(255) NOT NULL,
-#     `shipping_district` VARCHAR(255) NOT NULL,
-#     `shipping_ward` VARCHAR(255) NOT NULL,
-#     `shipping_address_detail` VARCHAR(255) NOT NULL,
-#     `note` TEXT,
-#     `expected_delivery_date` DATETIME,  # Ngày giao hàng dự kiến
-#     `actual_delivery_date` DATETIME,    # Ngày giao hàng thực tế
-#     `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
-#     `created_by` BIGINT,
-#     `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-#     `updated_by` BIGINT,
-#     `deleted_at` DATETIME
-# );
-#
-# CREATE TABLE `order_details` (
-#     `id` bigint PRIMARY KEY AUTO_INCREMENT,
-#     `order_id` bigint NOT NULL,
-#     `product_variant_id` bigint NOT NULL,
-#     `unit_price` decimal(15, 2) NOT NULL,
-#     `quantity` bigint NOT NULL,
-#     `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
-#     `created_by` bigint,
-#     `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-#     `updated_by` bigint,
-#     `deleted_at` datetime
-# );
+CREATE TABLE `order_details` (
+    `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
+    `order_id` BIGINT NOT NULL,
+    `product_variant_id` bigint NOT NULL,
+    `unit_price` DECIMAL(15, 2) NOT NULL,
+    `quantity` BIGINT NOT NULL,
+    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+    `created_by` BIGINT,
+    `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    `updated_by` BIGINT,
+    `deleted_at` DATETIME
+);
+
+CREATE TABLE `payments` (
+    `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
+    `order_id` BIGINT UNIQUE NOT NULL,
+    `payment_method` ENUM('MONEY', 'VNPAY', 'ZALOPAY'),
+    `payment_status` ENUM('UNPAID', 'PAID', 'REFUNDED') NOT NULL DEFAULT 'UNPAID',
+    `amount` DECIMAL(15, 2) NOT NULL,
+    `transaction_code` VARCHAR(255),
+    `paid_at` DATETIME,
+    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+    `created_by` BIGINT,
+    `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    `updated_by` BIGINT,
+    `deleted_at` DATETIME
+);
+
 
 
 /* ====================== FOREIGN KEY ========================= */
@@ -392,7 +420,15 @@ ALTER TABLE `cart_items` ADD FOREIGN KEY (`cart_id`) REFERENCES `carts` (`id`);
 ALTER TABLE `cart_items` ADD FOREIGN KEY (`product_variant_id`) REFERENCES `product_variants` (`id`);
 /* ====================== INVENTORY ========================= */
 ALTER TABLE `inventories` ADD FOREIGN KEY (`product_variant_id`) REFERENCES `product_variants` (`id`);
-
-
+/* ====================== COUPON ========================= */
+ALTER TABLE `coupon_usages` ADD FOREIGN KEY (`coupon_id`) REFERENCES `coupons` (`id`);
+ALTER TABLE `coupon_usages` ADD FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`);
+ALTER TABLE `coupon_usages` ADD FOREIGN KEY (`order_id`) REFERENCES `orders` (`id`);
+/* ====================== ORDER ========================= */
+ALTER TABLE `orders` ADD FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`);
+ALTER TABLE `order_details` ADD FOREIGN KEY (`order_id`) REFERENCES `orders` (`id`);
+ALTER TABLE `order_details` ADD FOREIGN KEY (`product_variant_id`) REFERENCES `product_variants` (`id`);
+/* ====================== PAYMENT ========================= */
+ALTER TABLE `payments` ADD FOREIGN KEY (`order_id`) REFERENCES `orders` (`id`);
 
 
