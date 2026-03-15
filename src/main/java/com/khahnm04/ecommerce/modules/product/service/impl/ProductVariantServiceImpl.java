@@ -20,6 +20,7 @@ import com.khahnm04.ecommerce.modules.product.repository.ProductVariantValueRepo
 import com.khahnm04.ecommerce.modules.product.repository.VariantValueRepository;
 import com.khahnm04.ecommerce.modules.product.service.ProductService;
 import com.khahnm04.ecommerce.modules.product.service.ProductVariantService;
+import com.khahnm04.ecommerce.modules.inventory.service.InventoryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -44,6 +45,7 @@ public class ProductVariantServiceImpl implements ProductVariantService {
     private final VariantValueRepository variantValueRepository;
     private final ProductVariantMapper productVariantMapper;
     private final ProductService productService;
+    private final InventoryService inventoryService;
 
     @Override
     @Transactional
@@ -70,6 +72,9 @@ public class ProductVariantServiceImpl implements ProductVariantService {
         if (request.variantValues() != null && !request.variantValues().isEmpty()) {
             saveProductVariantValues(saved, request.variantValues());
         }
+
+        // Initialize inventory for the new variant
+        inventoryService.initializeStock(saved, request.quantity() != null ? request.quantity() : 0);
 
         log.info("Created product variant with id: {} and sku: {}", saved.getId(), sku);
         return buildResponse(saved);
@@ -139,6 +144,10 @@ public class ProductVariantServiceImpl implements ProductVariantService {
             if (!request.variantValues().isEmpty()) {
                 saveProductVariantValues(saved, request.variantValues());
             }
+        }
+
+        if (request.quantity() != null) {
+            inventoryService.updateStock(id, request.quantity());
         }
 
         log.info("Updated product variant with id: {}", saved.getId());
@@ -295,12 +304,16 @@ public class ProductVariantServiceImpl implements ProductVariantService {
                         .build())
                 .toList();
 
+        Integer quantity = inventoryService.getQuantityByVariantId(productVariant.getId());
+
         return response.toBuilder()
+                .quantity(quantity)
                 .variantValues(variantValueInfos)
                 .build();
     }
 
-    private PageResponse<ProductVariantResponse> getAllWithFilterAndSearch(ProductVariantFilterRequest request, boolean isDeleted) {
+    private PageResponse<ProductVariantResponse> getAllWithFilterAndSearch(ProductVariantFilterRequest request,
+            boolean isDeleted) {
         Pageable pageable = PageRequest.of(request.page() - 1, request.size(),
                 SortUtils.parseSort(request.sort()));
 
@@ -319,6 +332,8 @@ public class ProductVariantServiceImpl implements ProductVariantService {
             List<ProductVariantValue> allPvValues = productVariantValueRepository
                     .findAllByProductVariantIdInWithVariantValue(pvIds);
 
+            Map<Long, Integer> quantityMap = inventoryService.getQuantitiesByVariantIds(pvIds);
+
             Map<Long, List<ProductVariantResponse.VariantValueInfo>> grouped = allPvValues.stream()
                     .collect(Collectors.groupingBy(
                             pvv -> pvv.getProductVariant().getId(),
@@ -332,6 +347,7 @@ public class ProductVariantServiceImpl implements ProductVariantService {
 
             content = content.stream()
                     .map(pv -> pv.toBuilder()
+                            .quantity(quantityMap.getOrDefault(pv.id(), 0))
                             .variantValues(grouped.getOrDefault(pv.id(), List.of()))
                             .build())
                     .collect(Collectors.toList());

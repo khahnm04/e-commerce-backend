@@ -305,6 +305,18 @@ CREATE TABLE `coupons` (
     `deleted_at` DATETIME
 );
 
+CREATE TABLE `inventories` (
+    `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
+    `product_variant_id` BIGINT UNIQUE NOT NULL,
+    `quantity` INT,
+    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+    `created_by` BIGINT,
+    `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    `updated_by` BIGINT,
+    `deleted_at` DATETIME
+);
+
+
 # CREATE TABLE `orders` (
 #     `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
 #     `order_code` VARCHAR(100) UNIQUE NOT NULL,
@@ -378,7 +390,8 @@ ALTER TABLE `product_variant_values` ADD FOREIGN KEY (`variant_value_id`) REFERE
 ALTER TABLE `carts` ADD FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`);
 ALTER TABLE `cart_items` ADD FOREIGN KEY (`cart_id`) REFERENCES `carts` (`id`);
 ALTER TABLE `cart_items` ADD FOREIGN KEY (`product_variant_id`) REFERENCES `product_variants` (`id`);
-
+/* ====================== INVENTORY ========================= */
+ALTER TABLE `inventories` ADD FOREIGN KEY (`product_variant_id`) REFERENCES `product_variants` (`id`);
 
 
 

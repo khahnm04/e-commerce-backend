@@ -10,7 +10,7 @@ import java.util.List;
 
 @Builder(toBuilder = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public record ProductVariantResponse (
+public record ProductVariantResponse(
 
     Long id,
     String product,
@@ -20,6 +20,7 @@ public record ProductVariantResponse (
     BigDecimal oldPrice,
     String image,
     ProductVariantStatus status,
+    Integer quantity,
     List<VariantValueInfo> variantValues,
     LocalDateTime createdAt,
     String createdBy,
@@ -30,7 +31,7 @@ public record ProductVariantResponse (
 ) implements Serializable {
 
     @Builder
-    public record VariantValueInfo (
+    public record VariantValueInfo(
         Long id,
         String variant,
         String value

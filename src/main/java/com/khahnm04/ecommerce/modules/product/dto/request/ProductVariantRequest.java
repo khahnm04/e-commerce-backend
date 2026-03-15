@@ -25,7 +25,8 @@ public record ProductVariantRequest(
     BigDecimal oldPrice,
     String image,
     ProductVariantStatus status,
-    Set<Long> variantValues
+    Set<Long> variantValues,
+    Integer quantity
 
 ) implements Serializable {
 }

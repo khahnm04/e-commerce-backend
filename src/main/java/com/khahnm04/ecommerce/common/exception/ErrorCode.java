@@ -297,6 +297,10 @@ public enum ErrorCode {
     COUPON_EXISTED(6151, "Coupon code already exists", HttpStatus.CONFLICT),
     COUPON_INVALID_BULK_ACTION(6159, "The requested bulk action is invalid", HttpStatus.BAD_REQUEST),
 
+    // Inventory (6200 - 6299)
+    INVENTORY_NOT_FOUND(6250, "Inventory record not found", HttpStatus.NOT_FOUND),
+    INSUFFICIENT_STOCK(6251, "Insufficient stock", HttpStatus.BAD_REQUEST),
+
     // =================================================================
     // MODULE: ORDER (Range: 7000 - 7099)
     // =================================================================

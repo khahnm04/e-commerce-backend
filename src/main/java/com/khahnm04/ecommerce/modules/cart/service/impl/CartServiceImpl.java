@@ -16,6 +16,7 @@ import com.khahnm04.ecommerce.modules.product.enums.ProductVariantStatus;
 import com.khahnm04.ecommerce.modules.product.repository.ProductVariantRepository;
 import com.khahnm04.ecommerce.modules.user.entity.Customer;
 import com.khahnm04.ecommerce.modules.user.repository.CustomerRepository;
+import com.khahnm04.ecommerce.modules.inventory.service.InventoryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -36,6 +37,7 @@ public class CartServiceImpl implements CartService {
     private final CartItemRepository cartItemRepository;
     private final ProductVariantRepository productVariantRepository;
     private final CustomerRepository customerRepository;
+    private final InventoryService inventoryService;
 
     @Override
     public CartResponse getCart(Long customerId) {
@@ -56,6 +58,9 @@ public class CartServiceImpl implements CartService {
         if (productVariant.getStatus() != ProductVariantStatus.ACTIVE) {
             throw new AppException(ErrorCode.PRODUCT_VARIANT_NOT_FOUND);
         }
+
+        // Check inventory availability
+        inventoryService.checkAvailability(request.productVariantId(), request.quantity());
 
         // If product variant already in cart, increase quantity
         Optional<CartItem> existingItem = cartItemRepository
@@ -88,6 +93,9 @@ public class CartServiceImpl implements CartService {
 
         CartItem cartItem = cartItemRepository.findByIdAndCartId(itemId, cart.getId())
                 .orElseThrow(() -> new AppException(ErrorCode.CART_ITEM_NOT_FOUND));
+
+        // Check inventory availability
+        inventoryService.checkAvailability(cartItem.getProductVariant().getId(), request.quantity());
 
         cartItem.setQuantity(request.quantity());
         cartItemRepository.save(cartItem);
