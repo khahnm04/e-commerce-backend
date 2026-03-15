@@ -261,6 +261,25 @@ CREATE TABLE `product_variant_values` (
     UNIQUE (`product_variant_id`, `variant_value_id`)
 );
 
+CREATE TABLE `carts` (
+    `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
+    `customer_id` BIGINT UNIQUE NOT NULL,
+    `created_by` BIGINT,
+    `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    `updated_by` BIGINT,
+    `deleted_at` DATETIME
+);
+
+CREATE TABLE `cart_items` (
+    `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
+    `cart_id` BIGINT NOT NULL,
+    `product_variant_id` BIGINT NOT NULL,
+    `quantity` INT,
+    `created_by` BIGINT,
+    `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    `updated_by` BIGINT,
+    `deleted_at` DATETIME
+);
 
 
 /* ====================== FOREIGN KEY ========================= */
@@ -274,7 +293,7 @@ ALTER TABLE `user_providers` ADD FOREIGN KEY (`user_id`) REFERENCES `users` (`id
 ALTER TABLE `customers` ADD FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
 ALTER TABLE `employees` ADD FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
 ALTER TABLE `addresses` ADD FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`);
-/* ====================== CATEGORY ========================= */
+/* ====================== CATALOG ========================= */
 ALTER TABLE `categories` ADD FOREIGN KEY (`parent_id`) REFERENCES `categories` (`id`);
 ALTER TABLE `products` ADD FOREIGN KEY (`brand_id`) REFERENCES `brands` (`id`);
 ALTER TABLE `product_categories` ADD FOREIGN KEY (`product_id`) REFERENCES `products` (`id`);
@@ -286,5 +305,12 @@ ALTER TABLE `variant_values` ADD FOREIGN KEY (`variant_id`) REFERENCES `variants
 ALTER TABLE `product_variants` ADD FOREIGN KEY (`product_id`) REFERENCES `products` (`id`);
 ALTER TABLE `product_variant_values` ADD FOREIGN KEY (`product_variant_id`) REFERENCES `product_variants` (`id`);
 ALTER TABLE `product_variant_values` ADD FOREIGN KEY (`variant_value_id`) REFERENCES `variant_values` (`id`);
+/* ====================== CART ========================= */
+ALTER TABLE `carts` ADD FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`);
+ALTER TABLE `cart_items` ADD FOREIGN KEY (`cart_id`) REFERENCES `carts` (`id`);
+ALTER TABLE `cart_items` ADD FOREIGN KEY (`product_variant_id`) REFERENCES `product_variants` (`id`);
+
+
+
 
 
