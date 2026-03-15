@@ -1,0 +1,61 @@
+package com.khahnm04.ecommerce.modules.catalog.dto.request;
+
+import com.khahnm04.ecommerce.modules.catalog.enums.ProductStatus;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import lombok.*;
+import java.io.Serializable;
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Set;
+
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class ProductRequest implements Serializable {
+
+    @NotBlank(message = "PRODUCT_NAME_REQUIRED")
+    private String name;
+
+    private String slug;
+
+    private String code;
+
+    @NotNull(message = "PRODUCT_BRAND_REQUIRED")
+    private Long brandId;
+
+    private Boolean hasSerialNumber;
+
+    private Integer warrantyMonths;
+
+    @NotNull(message = "PRODUCT_PRICE_REQUIRED")
+    private BigDecimal price;
+
+    private BigDecimal oldPrice;
+
+    @NotBlank(message = "PRODUCT_THUMBNAIL_REQUIRED")
+    private String thumbnail;
+
+    private String description;
+
+    private String shortDescription;
+
+    private String metaTitle;
+
+    private String metaDescription;
+
+    private ProductStatus status;
+
+    @NotEmpty(message = "PRODUCT_CATEGORIES_REQUIRED")
+    private Set<Long> categories;
+
+    @NotEmpty(message = "PRODUCT_ATTRIBUTES_REQUIRED")
+    private List<ProductAttributeValueRequest> attributes;
+
+    @NotEmpty(message = "PRODUCT_IMAGES_REQUIRED")
+    private List<ProductImageRequest> images;
+
+}
