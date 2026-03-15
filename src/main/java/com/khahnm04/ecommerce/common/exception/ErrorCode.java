@@ -282,6 +282,21 @@ public enum ErrorCode {
     CART_ITEM_NOT_FOUND(6051, "Cart item not found", HttpStatus.NOT_FOUND),
     CART_EMPTY(6052, "Cart is empty", HttpStatus.BAD_REQUEST),
 
+    // Coupon (6100 - 6199)
+    COUPON_CODE_REQUIRED(6100, "Coupon code cannot be blank", HttpStatus.BAD_REQUEST),
+    COUPON_NAME_REQUIRED(6101, "Coupon name cannot be blank", HttpStatus.BAD_REQUEST),
+    COUPON_DISC_TYPE_REQUIRED(6102, "Discount type is required", HttpStatus.BAD_REQUEST),
+    COUPON_VALUE_REQUIRED(6103, "Discount value is required", HttpStatus.BAD_REQUEST),
+    COUPON_START_DATE_REQUIRED(6104, "Start date is required", HttpStatus.BAD_REQUEST),
+    COUPON_END_DATE_REQUIRED(6105, "End date is required", HttpStatus.BAD_REQUEST),
+    COUPON_DISPLAY_TYPE_REQUIRED(6106, "Display type is required", HttpStatus.BAD_REQUEST),
+    COUPON_STATUS_REQUIRED(6107, "Coupon status is required", HttpStatus.BAD_REQUEST),
+    COUPON_SELECTION_REQUIRED(6108, "At least one coupon must be selected", HttpStatus.BAD_REQUEST),
+    COUPON_ACTION_REQUIRED(6109, "Bulk action is required", HttpStatus.BAD_REQUEST),
+    COUPON_NOT_FOUND(6150, "Coupon not found", HttpStatus.NOT_FOUND),
+    COUPON_EXISTED(6151, "Coupon code already exists", HttpStatus.CONFLICT),
+    COUPON_INVALID_BULK_ACTION(6159, "The requested bulk action is invalid", HttpStatus.BAD_REQUEST),
+
     // =================================================================
     // MODULE: ORDER (Range: 7000 - 7099)
     // =================================================================

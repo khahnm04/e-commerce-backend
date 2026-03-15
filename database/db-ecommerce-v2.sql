@@ -264,6 +264,7 @@ CREATE TABLE `product_variant_values` (
 CREATE TABLE `carts` (
     `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
     `customer_id` BIGINT UNIQUE NOT NULL,
+    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
     `created_by` BIGINT,
     `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     `updated_by` BIGINT,
@@ -275,11 +276,79 @@ CREATE TABLE `cart_items` (
     `cart_id` BIGINT NOT NULL,
     `product_variant_id` BIGINT NOT NULL,
     `quantity` INT,
+    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
     `created_by` BIGINT,
     `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     `updated_by` BIGINT,
     `deleted_at` DATETIME
 );
+
+CREATE TABLE `coupons` (
+    `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
+    `code` VARCHAR(100) UNIQUE NOT NULL,        -- Mã giảm giá
+    `name` VARCHAR(255) NOT NULL,               -- Tên mã giảm giá
+    `description` TEXT,                         -- Mô tả giới thiệu
+    `type_discount` ENUM('PERCENTAGE', 'FIXED') NOT NULL DEFAULT 'PERCENTAGE', -- Kiểu giảm giá: PERCENTAGE – Phần trăm, FIXED – Số tiền cố định
+    `value` DECIMAL(15,2) NOT NULL,             -- Giá trị giảm (VD: 10 = 10%, hoặc 10000 = 10,000đ)
+    `min_order_value` DECIMAL(15,2) DEFAULT 0,  -- Giá trị đơn hàng tối thiểu để áp dụng mã
+    `max_discount_value` DECIMAL(15,2),         -- Số tiền giảm tối đa (chỉ áp dụng khi type_discount = PERCENTAGE)
+    `usage_limit` INT,                          -- Giới hạn số lần sử dụng tổng cộng (NULL = không giới hạn)
+    `used_count` INT NOT NULL DEFAULT 0,        -- Số lần đã sử dụng
+    `start_date` DATETIME NOT NULL,             -- Ngày bắt đầu hiệu lực
+    `end_date` DATETIME NOT NULL,               -- Ngày hết hạn
+    `type_display` ENUM('PUBLIC', 'PRIVATE') NOT NULL DEFAULT 'PRIVATE',  -- Kiểu hiển thị: PUBLIC – Công khai, PRIVATE – Riêng tư
+    `status` ENUM('ACTIVE', 'INACTIVE') NOT NULL DEFAULT 'INACTIVE',
+    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+    `created_by` BIGINT,
+    `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    `updated_by` BIGINT,
+    `deleted_at` DATETIME
+);
+
+# CREATE TABLE `orders` (
+#     `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
+#     `order_code` VARCHAR(100) UNIQUE NOT NULL,
+#     `customer_id` BIGINT NOT NULL,
+#     `coupon_id` BIGINT,
+#     `sub_total` DECIMAL(15,2) NOT NULL, # tổng tiền hàng trước khi giảm
+#     `discount` DECIMAL(15,2) DEFAULT 0, # số tiền giảm từ coupon.
+#     `total` DECIMAL(15,2) NOT NULL,     # số tiền cuối cùng khách phải trả.
+#     `order_status` ENUM(
+#         'PENDING',
+#         'CONFIRMED',
+#         'SHIPPING',
+#         'COMPLETED',
+#         'CANCELLED',
+#         'RETURNED'
+#     ) NOT NULL DEFAULT 'PENDING',
+#     `shipping_name` VARCHAR(255) NOT NULL,
+#     `shipping_phone` VARCHAR(20) NOT NULL,
+#     `shipping_province` VARCHAR(255) NOT NULL,
+#     `shipping_district` VARCHAR(255) NOT NULL,
+#     `shipping_ward` VARCHAR(255) NOT NULL,
+#     `shipping_address_detail` VARCHAR(255) NOT NULL,
+#     `note` TEXT,
+#     `expected_delivery_date` DATETIME,  # Ngày giao hàng dự kiến
+#     `actual_delivery_date` DATETIME,    # Ngày giao hàng thực tế
+#     `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+#     `created_by` BIGINT,
+#     `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+#     `updated_by` BIGINT,
+#     `deleted_at` DATETIME
+# );
+#
+# CREATE TABLE `order_details` (
+#     `id` bigint PRIMARY KEY AUTO_INCREMENT,
+#     `order_id` bigint NOT NULL,
+#     `product_variant_id` bigint NOT NULL,
+#     `unit_price` decimal(15, 2) NOT NULL,
+#     `quantity` bigint NOT NULL,
+#     `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+#     `created_by` bigint,
+#     `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+#     `updated_by` bigint,
+#     `deleted_at` datetime
+# );
 
 
 /* ====================== FOREIGN KEY ========================= */
