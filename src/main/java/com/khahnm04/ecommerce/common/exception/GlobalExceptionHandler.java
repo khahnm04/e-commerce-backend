@@ -11,16 +11,22 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import jakarta.validation.ConstraintViolation;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import lombok.RequiredArgsConstructor;
 
 @Slf4j
 @RestControllerAdvice
+@RequiredArgsConstructor
 public class GlobalExceptionHandler {
+
+    private final MessageSource messageSource;
 
     // Catch exception when Duplicate entry
     @ExceptionHandler(value = DataIntegrityViolationException.class)
@@ -51,10 +57,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(value = AppException.class)
     ResponseEntity<ErrorResponse> handlingAppException(AppException exception, HttpServletRequest request) {
         ErrorCode errorCode = exception.getErrorCode();
+        String message = resolveErrorCodeMessage(errorCode);
+
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .timestamp(LocalDateTime.now())
                 .code(errorCode.getCode())
-                .message(errorCode.getMessage())
+                .message(message)
                 .path(request.getRequestURI())
                 .build();
         return ResponseEntity.status(errorCode.getStatusCode()).body(errorResponse);
@@ -183,7 +191,7 @@ public class GlobalExceptionHandler {
             return fallbackMessage;
         }
 
-        String message = errorCode.getMessage();
+        String message = resolveErrorCodeMessage(errorCode);
         try {
             ConstraintViolation<?> constraintViolation = fieldError.unwrap(ConstraintViolation.class);
             Map<String, Object> attributes = constraintViolation.getConstraintDescriptor().getAttributes();
@@ -193,6 +201,11 @@ public class GlobalExceptionHandler {
         } catch (Exception ignored) {
         }
         return message;
+    }
+
+    private String resolveErrorCodeMessage(ErrorCode errorCode) {
+        return messageSource.getMessage(errorCode.name(), null, errorCode.getMessage(),
+                LocaleContextHolder.getLocale());
     }
 
 }
