@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -19,6 +21,11 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long> {
     @Query("UPDATE Inventory i SET i.quantity = i.quantity + :qty WHERE i.productVariant.id = :variantId")
     void addQuantity(@Param("variantId") Long variantId, @Param("qty") Integer qty);
 
-    java.util.List<Inventory> findAllByProductVariantIdIn(java.util.Collection<Long> productVariantIds);
+    @Modifying
+    @Transactional
+    @Query("UPDATE Inventory i SET i.quantity = i.quantity - :qty WHERE i.productVariant.id = :variantId AND i.quantity >= :qty")
+    int decreaseQuantity(@Param("variantId") Long variantId, @Param("qty") Integer qty);
+
+    List<Inventory> findAllByProductVariantIdIn(Collection<Long> productVariantIds);
 
 }

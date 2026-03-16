@@ -39,7 +39,7 @@ public class Order extends BaseEntity<Long> {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "order_status", nullable = false)
-    private OrderStatus orderStatus;
+    private OrderStatus status;
 
     @Column(name = "shipping_name", nullable = false)
     private String shippingName;

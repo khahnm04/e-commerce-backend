@@ -295,6 +295,9 @@ public enum ErrorCode {
     COUPON_ACTION_REQUIRED(6109, "Bulk action is required", HttpStatus.BAD_REQUEST),
     COUPON_NOT_FOUND(6150, "Coupon not found", HttpStatus.NOT_FOUND),
     COUPON_EXISTED(6151, "Coupon code already exists", HttpStatus.CONFLICT),
+    COUPON_EXPIRED(6152, "Coupon is expired", HttpStatus.BAD_REQUEST),
+    COUPON_USAGE_LIMIT_REACHED(6153, "Coupon usage limit reached", HttpStatus.BAD_REQUEST),
+    COUPON_MIN_ORDER_VALUE_NOT_MET(6154, "Minimum order value for this coupon not met", HttpStatus.BAD_REQUEST),
     COUPON_INVALID_BULK_ACTION(6159, "The requested bulk action is invalid", HttpStatus.BAD_REQUEST),
 
     // Inventory (6200 - 6299)
@@ -317,6 +320,9 @@ public enum ErrorCode {
     ORDER_INVALID_STATUS_TRANSITION(7051, "Invalid order status transition", HttpStatus.BAD_REQUEST),
     ORDER_CANNOT_CANCEL(7052, "Order cannot be cancelled in current status", HttpStatus.BAD_REQUEST),
     ORDER_INSUFFICIENT_STOCK(7053, "Insufficient stock for product variant", HttpStatus.BAD_REQUEST),
+    ORDER_SELECTION_REQUIRED(7054, "At least one order must be selected", HttpStatus.BAD_REQUEST),
+    ORDER_ACTION_REQUIRED(7055, "Bulk action type cannot be blank", HttpStatus.BAD_REQUEST),
+    ORDER_INVALID_BULK_ACTION(7056, "The requested bulk action is invalid", HttpStatus.BAD_REQUEST),
 
     // =================================================================
     // MODULE: NEWS (Range: 8000 - 8099)
