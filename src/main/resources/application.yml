@@ -8,8 +8,6 @@ app:
       secure: ${COOKIE_SECURE:false}
       http-only: true
       same-site: Lax
-      access-token-max-age: 10000s
-      refresh-token-max-age: 86400s
 
 spring:
   config:
@@ -38,16 +36,6 @@ spring:
       max-file-size: 30MB # Tối đa 1 file là 10MB
       max-request-size: 10MB  # Tổng cả request tối đa 50MB
 
-# MyBatis Configuration
-mybatis:
-  mapper-locations: classpath:mapper/**/*.xml
-  type-aliases-package: com.khahnm04.ecommerce.modules
-  configuration:
-    map-underscore-to-camel-case: true
-    cache-enabled: false
-    lazy-loading-enabled: true
-    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
-
 logging:
   level:
     org:
@@ -68,5 +56,6 @@ cloudinary:
 
 jwt:
   signerKey: "${SIGNER_KEY}"
-  access-token-expiration: 10000
-  refresh-token-expiration: 86400 # in seconds (24 hours)
+  access-token-expiration: 900        # 15 phút
+  refresh-token-expiration: 86400     # 1 ngày
+  refresh-token-remember-expiration: 2592000  # 30 ngày
