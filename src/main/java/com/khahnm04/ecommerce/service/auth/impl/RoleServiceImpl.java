@@ -5,12 +5,14 @@ import com.khahnm04.ecommerce.dto.response.PageResponse;
 import com.khahnm04.ecommerce.common.util.SortUtils;
 import com.khahnm04.ecommerce.dto.request.auth.RoleFilterRequest;
 import com.khahnm04.ecommerce.dto.request.auth.RoleRequest;
+import com.khahnm04.ecommerce.dto.projection.auth.RoleProjection;
 import com.khahnm04.ecommerce.dto.response.auth.RoleResponse;
 import com.khahnm04.ecommerce.entity.auth.Permission;
 import com.khahnm04.ecommerce.entity.auth.Role;
 import com.khahnm04.ecommerce.exception.AppException;
 import com.khahnm04.ecommerce.exception.ErrorCode;
 import com.khahnm04.ecommerce.mapper.auth.RoleMapper;
+import com.khahnm04.ecommerce.repository.auth.UserRepository;
 import com.khahnm04.ecommerce.specification.auth.RoleSpecification;
 import com.khahnm04.ecommerce.repository.auth.PermissionRepository;
 import com.khahnm04.ecommerce.repository.auth.RoleRepository;
@@ -21,6 +23,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
@@ -33,6 +36,7 @@ import java.util.stream.Collectors;
 public class RoleServiceImpl implements RoleService {
 
     private final RoleRepository roleRepository;
+    private final UserRepository userRepository;
     private final PermissionRepository permissionRepository;
     private final RoleMapper roleMapper;
 
@@ -48,13 +52,13 @@ public class RoleServiceImpl implements RoleService {
         assignPermissionsToRole(role, request.permissions());
         role = roleRepository.save(role);
         log.info("Role created with name: {}", role.getName());
-        return roleMapper.toRoleResponse(role);
+        return buildRoleResponse(role);
     }
 
     @Override
     public RoleResponse getRoleDetail(Long id, boolean isDeleted) {
         Role role = isDeleted ? getDeletedRoleById(id) : getRoleById(id);
-        return roleMapper.toRoleResponse(role);
+        return buildRoleResponse(role);
     }
 
     @Override
@@ -68,6 +72,7 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
+    @Transactional
     public RoleResponse updateRole(Long id, RoleRequest request) {
         if (roleRepository.existsByCodeAndIdNotAndDeletedAtIsNull(request.code(), id)) {
             throw new AppException(ErrorCode.ROLE_EXISTED);
@@ -80,7 +85,7 @@ public class RoleServiceImpl implements RoleService {
         assignPermissionsToRole(role, request.permissions());
         role = roleRepository.save(role);
         log.info("Role updated with name: {}", role.getName());
-        return roleMapper.toRoleResponse(role);
+        return buildRoleResponse(role);
     }
 
     @Override
@@ -94,6 +99,17 @@ public class RoleServiceImpl implements RoleService {
         role.setDeletedAt(LocalDateTime.now());
         roleRepository.save(role);
         log.info("Soft-deleted role with id: {}", id);
+    }
+
+    @Override
+    @Transactional
+    public void deleteRole(Long id) {
+        Role role = getDeletedRoleById(id);
+        if (userRepository.existsByRoles_Id(role.getId())) {
+            throw new AppException(ErrorCode.ROLE_HAS_USERS);
+        }
+        roleRepository.delete(role);
+        log.info("Deleted role with id: {}", id);
     }
 
     @Override
@@ -134,12 +150,23 @@ public class RoleServiceImpl implements RoleService {
         Pageable pageable = PageRequest.of(filter.page() - 1, filter.size(),
                 SortUtils.parseSort(filter.sort()));
 
-        org.springframework.data.jpa.domain.Specification<Role> spec = RoleSpecification.buildSpecification(filter,
-                isDeleted);
-        Page<Role> rolePage = roleRepository.findAll(spec, pageable);
+        Specification<Role> spec = RoleSpecification.buildSpecification(filter, isDeleted);
+
+        Page<RoleProjection> rolePage = roleRepository
+                .findBy(spec, q -> q.as(RoleProjection.class).page(pageable));
 
         List<RoleResponse> content = rolePage.getContent().stream()
-                .map(roleMapper::toRoleResponse)
+                .map(proj -> RoleResponse.builder()
+                        .id(proj.getId())
+                        .code(proj.getCode())
+                        .name(proj.getName())
+                        .description(proj.getDescription())
+                        .createdAt(proj.getCreatedAt())
+                        .createdBy(proj.getCreatedByFullName())
+                        .updatedAt(proj.getUpdatedAt())
+                        .updatedBy(proj.getUpdatedByFullName())
+                        .deletedAt(proj.getDeletedAt())
+                        .build())
                 .collect(Collectors.toList());
 
         Page<RoleResponse> page = new PageImpl<>(content, pageable, rolePage.getTotalElements());
@@ -171,11 +198,19 @@ public class RoleServiceImpl implements RoleService {
                     .filter(id -> !foundIds.contains(id))
                     .toList();
 
-            log.error("Failed to assign permissions to role: {}. Missing Permission IDs: {}", role.getName(),
-                    missingIds);
+            log.error("Failed to assign permissions to role: {}. Missing Permission IDs: {}", role.getName(), missingIds);
             throw new AppException(ErrorCode.PERMISSION_NOT_FOUND);
         }
         role.setPermissions(new HashSet<>(permissions));
+    }
+
+    private RoleResponse buildRoleResponse(Role role) {
+        RoleResponse response = roleMapper.toRoleResponse(role);
+        Set<Permission> permissions = role.getPermissions();
+        Set<String> PermissionCodes = permissions.stream()
+                .map(Permission::getCode)
+                .collect(Collectors.toSet());
+        return response.toBuilder().permissions(PermissionCodes).build();
     }
 
 }

@@ -18,7 +18,7 @@ public record RoleFilterRequest(
 
     String sort,
     String keyword,
-    String creator,
+    Long creatorId,
     LocalDate startDate,
     LocalDate endDate
 

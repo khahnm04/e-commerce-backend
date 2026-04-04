@@ -28,6 +28,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     boolean existsByPhoneNumberAndIdNot(String phoneNumber, Long id);
 
+    boolean existsByRoles_Id(@Param("roleId") Long roleId);
+
     @Modifying
     @Transactional
     @Query("UPDATE User u SET u.status = :status WHERE u.id IN :ids")

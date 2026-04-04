@@ -1,7 +1,8 @@
 package com.khahnm04.ecommerce.service.user.impl;
 
+import com.khahnm04.ecommerce.dto.projection.user.EmployeeProjection;
+import com.khahnm04.ecommerce.dto.request.BulkActionRequest;
 import com.khahnm04.ecommerce.dto.response.PageResponse;
-import com.khahnm04.ecommerce.entity.BaseEntity;
 import com.khahnm04.ecommerce.dto.request.user.EmployeeCreationRequest;
 import com.khahnm04.ecommerce.dto.request.user.EmployeeFilterRequest;
 import com.khahnm04.ecommerce.dto.request.user.EmployeeUpdateRequest;
@@ -117,14 +118,6 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     @Transactional
-    public void updateEmployeeStatus(Long id, UserStatus status) {
-        Employee employee = this.getEmployeeById(id);
-        userService.updateUserStatus(employee.getUser().getId(), status);
-        log.info("Updated status for employee {} to {}", employee.getCode(), status);
-    }
-
-    @Override
-    @Transactional
     public void softDeleteEmployee(Long id) {
         Employee employee = this.getEmployeeById(id);
         if (employee.getDeletedAt() != null) {
@@ -151,49 +144,35 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     @Transactional
-    public void handleBulkAction(Set<Long> employeeIds, String actionInput) {
+    public void handleBulkAction(BulkActionRequest request) {
+        Set<Long> employeeIds = request.ids();
+        String action = request.action().toUpperCase();
+
         if (employeeIds == null || employeeIds.isEmpty()) {
             throw new AppException(ErrorCode.EMPLOYEE_BULK_ACTION_REQUIRED_IDS);
         }
 
-        String action = actionInput.toUpperCase();
-
-        Set<Employee> existingEmployees = new HashSet<>(
-                action.equals("RESTORE")
-                        ? employeeRepository.findAllDeletedByIds(employeeIds)
-                        : employeeRepository.findAllById(employeeIds));
-
-        Set<Long> existingEmployeeIds = existingEmployees.stream()
-                .map(BaseEntity::getId)
-                .collect(Collectors.toSet());
-
-        if (employeeIds.size() != existingEmployeeIds.size()) {
-            Set<Long> missingIds = new HashSet<>(employeeIds);
-            missingIds.removeAll(existingEmployeeIds);
-            log.error("Bulk action employees failed. Missing Ids: {}", missingIds);
-            throw new AppException(ErrorCode.EMPLOYEE_NOT_FOUND);
-        }
-
-        Set<Long> existingUserIds = existingEmployees.stream()
+        Set<Long> existingUserIds = employeeRepository.findAllById(employeeIds)
+                .stream()
                 .map(employee -> employee.getUser().getId())
                 .collect(Collectors.toSet());
 
         switch (action) {
             case "ACTIVE", "INACTIVE", "BANNED", "LOCKED" -> {
                 userService.bulkUpdateStatus(existingUserIds, UserStatus.valueOf(action));
-                log.info("Bulk update status {} employees ids: {}", action, existingEmployeeIds);
+                log.info("Bulk update status {} employees ids: {}", action, employeeIds);
             }
             case "DELETE" -> {
-                employeeRepository.softDeleteByIds(LocalDateTime.now(), existingEmployeeIds);
-                log.info("Bulk delete employees ids: {}", existingEmployeeIds);
+                employeeRepository.softDeleteByIds(LocalDateTime.now(), employeeIds);
+                log.info("Bulk delete employees ids: {}", employeeIds);
             }
             case "RESTORE" -> {
-                employeeRepository.restoreDeletedByIds(existingEmployeeIds);
-                log.info("Bulk restore employees ids: {}", existingEmployeeIds);
+                employeeRepository.restoreDeletedByIds(employeeIds);
+                log.info("Bulk restore employees ids: {}", employeeIds);
             }
             default -> throw new AppException(ErrorCode.EMPLOYEE_INVALID_BULK_ACTION);
         }
-        log.info("Executed bulk action {} for {} employees", action, existingEmployeeIds.size());
+        log.info("Executed bulk action {} for {} employees", action, employeeIds.size());
     }
 
     // ======================== Private methods ========================
@@ -217,25 +196,30 @@ public class EmployeeServiceImpl implements EmployeeService {
                 EmployeeSpecification.getSort(request.sort()));
 
         Specification<Employee> spec = EmployeeSpecification.buildSpecification(request, isDeleted);
-        Page<Employee> employeePage = employeeRepository.findAll(spec, pageable);
+
+        Page<EmployeeProjection> employeePage = employeeRepository
+            .findBy(spec, q -> q.as(EmployeeProjection.class).page(pageable));
 
         List<EmployeeResponse> content = employeePage.getContent().stream()
-                .map(employeeMapper::toResponse)
+                .map(proj -> EmployeeResponse.builder()
+                        .id(proj.getId())
+                        .userId(proj.getUserId())
+                        .code(proj.getCode())
+                        .fullName(proj.getUserFullName())
+                        .email(proj.getUserEmail())
+                        .phoneNumber(proj.getUserPhoneNumber())
+                        .jobTitle(proj.getJobTitle())
+                        .dateOfBirth(proj.getUserDateOfBirth())
+                        .gender(proj.getUserGender())
+                        .avatar(proj.getUserAvatar())
+                        .status(proj.getUserStatus())
+                        .createdAt(proj.getCreatedAt())
+                        .createdBy(proj.getCreatedByFullName())
+                        .updatedAt(proj.getUpdatedAt())
+                        .updatedBy(proj.getUpdatedByFullName())
+                        .deletedAt(proj.getDeletedAt())
+                        .build())
                 .collect(Collectors.toList());
-
-        if (!content.isEmpty()) {
-            Set<Long> userIds = content.stream()
-                    .map(EmployeeResponse::userId)
-                    .collect(Collectors.toSet());
-
-            Map<Long, Set<String>> userRolesMap = userService.getRoleNamesByUserIds(userIds);
-
-            content = content.stream()
-                    .map(employeeResponse -> employeeResponse.toBuilder()
-                            .roles(userRolesMap.getOrDefault(employeeResponse.userId(), Set.of()))
-                            .build())
-                    .collect(Collectors.toList());
-        }
 
         Page<EmployeeResponse> page = new PageImpl<>(content, pageable, employeePage.getTotalElements());
         return PageResponse.fromPage(page);

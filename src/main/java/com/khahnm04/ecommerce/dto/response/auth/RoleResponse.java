@@ -1,11 +1,13 @@
 package com.khahnm04.ecommerce.dto.response.auth;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import java.util.Set;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Builder(toBuilder = true)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public record RoleResponse(
 
     Long id,

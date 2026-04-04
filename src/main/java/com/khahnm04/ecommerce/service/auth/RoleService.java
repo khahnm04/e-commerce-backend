@@ -20,6 +20,8 @@ public interface RoleService {
 
     void softDeleteRole(Long id);
 
+    void deleteRole(Long id);
+
     void restoreRole(Long id);
 
     void handleBulkAction(BulkActionRequest request);

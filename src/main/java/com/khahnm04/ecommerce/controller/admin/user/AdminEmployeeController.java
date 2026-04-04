@@ -1,9 +1,7 @@
 package com.khahnm04.ecommerce.controller.admin.user;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import com.khahnm04.ecommerce.dto.request.BulkActionRequest;
 import com.khahnm04.ecommerce.dto.response.ApiResponse;
-import com.khahnm04.ecommerce.exception.AppException;
-import com.khahnm04.ecommerce.exception.ErrorCode;
 import com.khahnm04.ecommerce.dto.response.PageResponse;
 import com.khahnm04.ecommerce.dto.request.user.EmployeeCreationRequest;
 import com.khahnm04.ecommerce.dto.request.user.EmployeeFilterRequest;
@@ -15,11 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import com.khahnm04.ecommerce.common.enums.UserStatus;
-
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 @Slf4j
 @RestController
@@ -86,27 +80,6 @@ public class AdminEmployeeController {
                 .build();
     }
 
-    @PatchMapping("/{id}/status")
-    public ApiResponse<Void> updateEmployeeStatus(
-            @PathVariable Long id,
-            @RequestBody JsonNode request
-    ) {
-        JsonNode statusNode = request.get("status");
-        if (statusNode == null || statusNode.isNull()) {
-            throw new AppException(ErrorCode.EMPLOYEE_STATUS_REQUIRED);
-        }
-        UserStatus status;
-        try {
-            status = UserStatus.valueOf(statusNode.asText().toUpperCase());
-        } catch (IllegalArgumentException e) {
-            throw new AppException(ErrorCode.EMPLOYEE_STATUS_INVALID);
-        }
-        employeeService.updateEmployeeStatus(id, status);
-        return ApiResponse.<Void>builder()
-                .message("Employee status updated successfully")
-                .build();
-    }
-
     @DeleteMapping("/{id}")
     public ApiResponse<Void> softDeleteEmployee(
             @PathVariable Long id
@@ -129,24 +102,9 @@ public class AdminEmployeeController {
 
     @PatchMapping("/bulk")
     public ApiResponse<Void> handleBulkAction (
-        @RequestBody JsonNode request
+        @RequestBody BulkActionRequest request
     ) {
-        JsonNode employeeIdsNode = request.get("employeeIds");
-        if (employeeIdsNode == null || !employeeIdsNode.isArray()) {
-            throw new AppException(ErrorCode.EMPLOYEE_SELECTION_REQUIRED);
-        }
-        Set<Long> employeeIds = new HashSet<>();
-        employeeIdsNode.forEach(id -> employeeIds.add(id.asLong()));
-        if (employeeIds.isEmpty()) {
-            throw new AppException(ErrorCode.EMPLOYEE_SELECTION_REQUIRED);
-        }
-
-        JsonNode actionNode = request.get("action");
-        if (actionNode == null || actionNode.asText().isBlank()) {
-            throw new AppException(ErrorCode.EMPLOYEE_ACTION_REQUIRED);
-        }
-        String action = actionNode.asText();
-        employeeService.handleBulkAction(employeeIds, action);
+        employeeService.handleBulkAction(request);
         return ApiResponse.<Void>builder()
                 .message("Bulk action executed successfully")
                 .build();

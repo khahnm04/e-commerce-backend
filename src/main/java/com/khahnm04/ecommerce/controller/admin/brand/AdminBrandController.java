@@ -1,4 +1,4 @@
-package com.khahnm04.ecommerce.controller.admin;
+package com.khahnm04.ecommerce.controller.admin.brand;
 
 
 import com.khahnm04.ecommerce.dto.request.BulkActionRequest;

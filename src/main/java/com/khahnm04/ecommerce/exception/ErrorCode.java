@@ -38,6 +38,7 @@ public enum ErrorCode {
     ROLE_ACTION_REQUIRED(1106, "Bulk action type cannot be blank", HttpStatus.BAD_REQUEST),
     ROLE_NOT_FOUND(1150, "Role not found", HttpStatus.NOT_FOUND),
     ROLE_EXISTED(1151, "Role already exists", HttpStatus.BAD_REQUEST),
+    ROLE_HAS_USERS(1153, "Role is assigned to users, cannot be permanently deleted", HttpStatus.BAD_REQUEST),
     PERMISSION_NOT_FOUND(1152, "Permission not found", HttpStatus.BAD_REQUEST),
 
     USER_NOT_FOUND(1200, "User not found", HttpStatus.NOT_FOUND),

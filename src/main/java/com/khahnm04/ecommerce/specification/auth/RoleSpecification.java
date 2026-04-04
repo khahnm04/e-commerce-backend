@@ -21,7 +21,7 @@ public class RoleSpecification {
                 .and(BaseSpecification.withDeletedStatus(isDeleted))
                 .and(BaseSpecification.withKeyword(request.keyword(), KEYWORD_FIELDS))
                 .and(BaseSpecification.withDateRange("createdAt", request.startDate(), request.endDate()))
-                .and(BaseSpecification.equals("createdBy.fullName", request.creator()));
+                .and(BaseSpecification.equals("createdBy.id", request.creatorId()));
     }
 
 }

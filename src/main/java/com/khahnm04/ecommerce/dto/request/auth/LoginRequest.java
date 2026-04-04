@@ -21,4 +21,9 @@ public record LoginRequest(
     Boolean rememberMe
 
 ) implements Serializable {
+
+    public LoginRequest {
+        if (rememberMe == null) rememberMe = false;
+    }
+
 }

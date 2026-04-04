@@ -80,7 +80,7 @@ public class AdminRoleController {
                 .build();
     }
 
-    @DeleteMapping("/{id}")
+    @PatchMapping("/{id}/soft-delete")
     ApiResponse<Void> softDeleteRole(
             @PathVariable Long id
     ) {
@@ -88,6 +88,16 @@ public class AdminRoleController {
         return ApiResponse.<Void>builder()
                 .message("role soft deleted successfully")
                 .build();
+    }
+
+    @DeleteMapping("/{id}")
+    ApiResponse<Void> deleteRole(
+            @PathVariable Long id
+    ) {
+        roleService.deleteRole(id);
+        return ApiResponse.<Void>builder()
+            .message("role deleted successfully")
+            .build();
     }
 
     @PatchMapping("/{id}/restore")

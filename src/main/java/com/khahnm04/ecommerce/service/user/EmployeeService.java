@@ -1,13 +1,12 @@
 package com.khahnm04.ecommerce.service.user;
 
+import com.khahnm04.ecommerce.dto.request.BulkActionRequest;
 import com.khahnm04.ecommerce.dto.response.PageResponse;
-import com.khahnm04.ecommerce.common.enums.UserStatus;
 import com.khahnm04.ecommerce.dto.request.user.EmployeeCreationRequest;
 import com.khahnm04.ecommerce.dto.request.user.EmployeeFilterRequest;
 import com.khahnm04.ecommerce.dto.request.user.EmployeeUpdateRequest;
 import com.khahnm04.ecommerce.dto.response.user.EmployeeResponse;
 import com.khahnm04.ecommerce.entity.user.Employee;
-import java.util.Set;
 
 public interface EmployeeService {
 
@@ -23,12 +22,10 @@ public interface EmployeeService {
 
     EmployeeResponse updateEmployee(Long id, EmployeeUpdateRequest request);
 
-    void updateEmployeeStatus(Long id, UserStatus status);
-
     void softDeleteEmployee(Long id);
 
     void restoreEmployee(Long id);
 
-    void handleBulkAction(Set<Long> employeeIds, String action);
+    void handleBulkAction(BulkActionRequest request);
 
 }
