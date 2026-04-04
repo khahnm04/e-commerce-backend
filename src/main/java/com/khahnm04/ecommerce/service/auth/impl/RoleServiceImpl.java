@@ -132,13 +132,21 @@ public class RoleServiceImpl implements RoleService {
         String action = request.action().toUpperCase();
 
         switch (action) {
-            case "DELETE" -> {
+            case "SOFT_DELETE" -> {
                 roleRepository.softDeleteByIds(LocalDateTime.now(), roleIds);
                 log.info("Bulk soft-deleted roles with IDs: {}", roleIds);
             }
             case "RESTORE" -> {
                 roleRepository.restoreByIds(roleIds);
                 log.info("Bulk restored roles with IDs: {}", roleIds);
+            }
+            case "DELETE" -> {
+                if (userRepository.existsByRoles_IdIn(roleIds)) {
+                    throw new AppException(ErrorCode.ROLE_HAS_USERS);
+                }
+                List<Role> roles = roleRepository.findAllDeletedByIds(roleIds);
+                roleRepository.deleteAll(roles);
+                log.info("Bulk permanently deleted roles with IDs: {}", roleIds);
             }
             default -> throw new AppException(ErrorCode.ROLE_NOT_FOUND);
         }
@@ -198,7 +206,8 @@ public class RoleServiceImpl implements RoleService {
                     .filter(id -> !foundIds.contains(id))
                     .toList();
 
-            log.error("Failed to assign permissions to role: {}. Missing Permission IDs: {}", role.getName(), missingIds);
+            log.error("Failed to assign permissions to role: {}. Missing Permission IDs: {}", role.getName(),
+                    missingIds);
             throw new AppException(ErrorCode.PERMISSION_NOT_FOUND);
         }
         role.setPermissions(new HashSet<>(permissions));

@@ -30,6 +30,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     boolean existsByRoles_Id(@Param("roleId") Long roleId);
 
+    boolean existsByRoles_IdIn(@Param("roleIds") Set<Long> roleIds);
+
     @Modifying
     @Transactional
     @Query("UPDATE User u SET u.status = :status WHERE u.id IN :ids")
