@@ -1,11 +1,11 @@
 package com.khahnm04.ecommerce.controller;
 
 import com.khahnm04.ecommerce.common.constant.TokenConstants;
-import com.khahnm04.ecommerce.dto.request.auth.ChangePasswordRequest;
-import com.khahnm04.ecommerce.dto.request.auth.LoginRequest;
-import com.khahnm04.ecommerce.dto.response.auth.IntrospectResponse;
-import com.khahnm04.ecommerce.dto.response.auth.LoginResponse;
-import com.khahnm04.ecommerce.service.auth.AuthService;
+import com.khahnm04.ecommerce.dto.request.ChangePasswordRequest;
+import com.khahnm04.ecommerce.dto.request.LoginRequest;
+import com.khahnm04.ecommerce.dto.response.IntrospectResponse;
+import com.khahnm04.ecommerce.dto.response.LoginResponse;
+import com.khahnm04.ecommerce.service.AuthService;
 import com.khahnm04.ecommerce.dto.response.ApiResponse;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;

@@ -1,9 +1,9 @@
 package com.khahnm04.ecommerce.controller.client;
 
 import com.khahnm04.ecommerce.dto.response.ApiResponse;
-import com.khahnm04.ecommerce.dto.request.user.AddressRequest;
-import com.khahnm04.ecommerce.dto.response.user.AddressResponse;
-import com.khahnm04.ecommerce.service.user.AddressService;
+import com.khahnm04.ecommerce.dto.request.AddressRequest;
+import com.khahnm04.ecommerce.dto.response.AddressResponse;
+import com.khahnm04.ecommerce.service.AddressService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

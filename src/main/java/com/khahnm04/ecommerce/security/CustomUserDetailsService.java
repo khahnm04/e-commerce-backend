@@ -1,7 +1,7 @@
 package com.khahnm04.ecommerce.security;
 
 import com.khahnm04.ecommerce.exception.ErrorCode;
-import com.khahnm04.ecommerce.repository.auth.UserRepository;
+import com.khahnm04.ecommerce.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

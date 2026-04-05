@@ -1,6 +1,5 @@
 package com.khahnm04.ecommerce.entity;
 
-import com.khahnm04.ecommerce.entity.auth.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

@@ -1,8 +1,8 @@
 package com.khahnm04.ecommerce.controller;
 
 import com.khahnm04.ecommerce.dto.response.ApiResponse;
-import com.khahnm04.ecommerce.dto.response.upload.CloudinarySignatureResponse;
-import com.khahnm04.ecommerce.service.upload.CloudinaryService;
+import com.khahnm04.ecommerce.dto.response.CloudinarySignatureResponse;
+import com.khahnm04.ecommerce.service.CloudinaryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;

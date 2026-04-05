@@ -1,6 +1,6 @@
 package com.khahnm04.ecommerce.security;
 
-import com.khahnm04.ecommerce.service.auth.JwtService;
+import com.khahnm04.ecommerce.service.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;

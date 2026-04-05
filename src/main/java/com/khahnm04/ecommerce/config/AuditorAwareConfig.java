@@ -1,6 +1,6 @@
 package com.khahnm04.ecommerce.config;
 
-import com.khahnm04.ecommerce.entity.auth.User;
+import com.khahnm04.ecommerce.entity.User;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.NonNull;

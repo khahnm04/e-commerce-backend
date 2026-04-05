@@ -1,11 +1,11 @@
 package com.khahnm04.ecommerce.controller.client;
 
-import com.khahnm04.ecommerce.dto.request.order.OrderCreationRequest;
-import com.khahnm04.ecommerce.dto.request.order.OrderFilterRequest;
+import com.khahnm04.ecommerce.dto.request.OrderCreationRequest;
+import com.khahnm04.ecommerce.dto.request.filter.OrderFilterRequest;
 import com.khahnm04.ecommerce.dto.response.ApiResponse;
 import com.khahnm04.ecommerce.dto.response.PageResponse;
-import com.khahnm04.ecommerce.dto.response.order.OrderResponse;
-import com.khahnm04.ecommerce.service.order.OrderService;
+import com.khahnm04.ecommerce.dto.response.OrderResponse;
+import com.khahnm04.ecommerce.service.OrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

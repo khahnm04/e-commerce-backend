@@ -1,7 +1,7 @@
 package com.khahnm04.ecommerce.config;
 
-import com.khahnm04.ecommerce.entity.auth.User;
-import com.khahnm04.ecommerce.repository.auth.UserRepository;
+import com.khahnm04.ecommerce.entity.User;
+import com.khahnm04.ecommerce.repository.UserRepository;
 import com.khahnm04.ecommerce.common.enums.UserRole;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
