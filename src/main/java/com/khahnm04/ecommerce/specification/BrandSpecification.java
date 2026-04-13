@@ -8,9 +8,7 @@ public class BrandSpecification {
 
     private static final String[] KEYWORD_FIELDS = {
             "name",
-            "slug",
-            "description",
-            "country"
+            "slug"
     };
 
     public static Specification<Brand> buildSpecification(BrandFilterRequest request, boolean isDeleted) {
@@ -18,10 +16,16 @@ public class BrandSpecification {
             request = BrandFilterRequest.builder().build();
         }
 
+        Specification<Brand> dateSpec = BaseSpecification
+                .<Brand>withDateRange("createdAt", request.startDate(), request.endDate())
+                .or(BaseSpecification.withDateRange("updatedAt", request.startDate(), request.endDate()));
+
         return BaseSpecification.<Brand>withAuditingFetch()
                 .and(BaseSpecification.withDeletedStatus(isDeleted))
                 .and(BaseSpecification.withKeyword(request.keyword(), KEYWORD_FIELDS))
-                .and(BaseSpecification.withDateRange("createdAt", request.startDate(), request.endDate()));
+                .and(BaseSpecification.equals("createdBy.id", request.creatorId()))
+                .and(BaseSpecification.equals("status", request.status()))
+                .and(dateSpec);
     }
 
 }

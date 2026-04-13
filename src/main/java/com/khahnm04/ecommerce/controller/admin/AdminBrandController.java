@@ -25,7 +25,8 @@ public class AdminBrandController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ApiResponse<BrandResponse> createBrand(
-            @Valid @RequestBody BrandRequest request) {
+            @Valid @RequestBody BrandRequest request
+    ) {
         return ApiResponse.<BrandResponse>builder()
                 .data(brandService.createBrand(request))
                 .message("Brand created successfully")
@@ -35,7 +36,8 @@ public class AdminBrandController {
     @GetMapping("/{identifier}")
     public ApiResponse<BrandResponse> getBrandDetail(
             @PathVariable String identifier,
-            @RequestParam(defaultValue = "false") boolean deleted) {
+            @RequestParam(defaultValue = "false") boolean deleted
+    ) {
         return ApiResponse.<BrandResponse>builder()
                 .data(brandService.getBrandDetail(identifier, deleted))
                 .message("Get brand detail successfully")
@@ -44,7 +46,8 @@ public class AdminBrandController {
 
     @GetMapping
     public ApiResponse<List<BrandResponse>> getAllBrands(
-            @Valid @ModelAttribute BrandFilterRequest filter) {
+            @Valid @ModelAttribute BrandFilterRequest filter
+    ) {
         PageResponse<BrandResponse> pageResponse = brandService.getAllBrands(filter);
         return ApiResponse.<List<BrandResponse>>builder()
                 .data(pageResponse.data())
@@ -55,7 +58,8 @@ public class AdminBrandController {
 
     @GetMapping("/deleted")
     public ApiResponse<List<BrandResponse>> getAllDeletedBrands(
-            @Valid @ModelAttribute BrandFilterRequest filter) {
+            @Valid @ModelAttribute BrandFilterRequest filter
+    ) {
         PageResponse<BrandResponse> pageResponse = brandService.getAllDeletedBrands(filter);
         return ApiResponse.<List<BrandResponse>>builder()
                 .data(pageResponse.data())
@@ -67,7 +71,8 @@ public class AdminBrandController {
     @PutMapping("/{id}")
     public ApiResponse<BrandResponse> updateBrand(
             @PathVariable Long id,
-            @Valid @RequestBody BrandRequest request) {
+            @Valid @RequestBody BrandRequest request
+    ) {
         return ApiResponse.<BrandResponse>builder()
                 .data(brandService.updateBrand(id, request))
                 .message("Brand updated successfully")
@@ -76,7 +81,8 @@ public class AdminBrandController {
 
     @PatchMapping("/{id}/soft-delete")
     public ApiResponse<Void> softDeleteBrand(
-            @PathVariable Long id) {
+            @PathVariable Long id
+    ) {
         brandService.softDeleteBrand(id);
         return ApiResponse.<Void>builder()
                 .message("Brand soft deleted successfully")
@@ -85,7 +91,8 @@ public class AdminBrandController {
 
     @DeleteMapping("/{id}")
     public ApiResponse<Void> deleteBrand(
-            @PathVariable Long id) {
+            @PathVariable Long id
+    ) {
         brandService.deleteBrand(id);
         return ApiResponse.<Void>builder()
                 .message("Brand deleted successfully")
@@ -94,7 +101,8 @@ public class AdminBrandController {
 
     @PatchMapping("/{id}/restore")
     public ApiResponse<Void> restoreBrand(
-            @PathVariable Long id) {
+            @PathVariable Long id
+    ) {
         brandService.restoreBrand(id);
         return ApiResponse.<Void>builder()
                 .message("Brand restored successfully")
@@ -103,7 +111,8 @@ public class AdminBrandController {
 
     @PatchMapping("/bulk")
     public ApiResponse<Void> handleBulkAction(
-            @RequestBody BulkActionRequest request) {
+            @RequestBody BulkActionRequest request
+    ) {
         brandService.handleBulkAction(request);
         return ApiResponse.<Void>builder()
                 .message("Bulk action executed successfully")

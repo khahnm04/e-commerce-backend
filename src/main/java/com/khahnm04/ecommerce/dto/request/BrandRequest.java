@@ -14,8 +14,6 @@ public record BrandRequest(
     String slug,
     String description,
     String logo,
-    String country,
-    String website,
     BrandStatus status
 
 ) implements Serializable {

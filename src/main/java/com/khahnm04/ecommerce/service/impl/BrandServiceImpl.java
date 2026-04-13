@@ -105,11 +105,11 @@ public class BrandServiceImpl implements BrandService {
         Brand brand = getBrandById(id);
 
         if (StringUtils.hasText(request.name())
-                && brandRepository.existsByNameIgnoreCaseAndIdNot(request.name(), id)) {
+                && brandRepository.existsByNameAndIdNot(request.name(), id)) {
             throw new AppException(ErrorCode.BRAND_EXISTED);
         }
         if (StringUtils.hasText(request.slug())
-                && brandRepository.existsBySlugIgnoreCaseAndIdNot(request.slug(), id)) {
+                && brandRepository.existsBySlugAndIdNot(request.slug(), id)) {
             throw new AppException(ErrorCode.BRAND_EXISTED);
         }
 
@@ -202,11 +202,11 @@ public class BrandServiceImpl implements BrandService {
     }
 
     private PageResponse<BrandResponse> getAllWithFilterAndSearch(BrandFilterRequest request, boolean isDeleted) {
-        Pageable pageable = PageRequest.of(request.page() - 1, request.size(),
-                SortUtils.parseSort(request.sort()));
+        Pageable pageable = PageRequest.of(request.page() - 1, request.size(), SortUtils.parseSort(request.sort()));
 
         Specification<Brand> spec = BrandSpecification.buildSpecification(request, isDeleted);
-        Page<BrandProjection> page = brandRepository.findBy(spec, q -> q.as(BrandProjection.class).page(pageable));
+        Page<BrandProjection> page = brandRepository
+                .findBy(spec, q -> q.as(BrandProjection.class).page(pageable));
 
         List<BrandResponse> content = page.getContent().stream()
                 .map(proj -> BrandResponse.builder()
@@ -215,8 +215,6 @@ public class BrandServiceImpl implements BrandService {
                         .slug(proj.getSlug())
                         .description(proj.getDescription())
                         .logo(proj.getLogo())
-                        .country(proj.getCountry())
-                        .website(proj.getWebsite())
                         .status(proj.getStatus())
                         .createdAt(proj.getCreatedAt())
                         .createdBy(proj.getCreatedByFullName())

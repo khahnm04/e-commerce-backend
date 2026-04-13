@@ -26,12 +26,6 @@ public class Brand extends BaseEntity<Long> {
     @Column(name = "logo")
     private String logo;
 
-    @Column(name = "country")
-    private String country;
-
-    @Column(name = "website")
-    private String website;
-
     @Builder.Default
     @Column(name = "status")
     @Enumerated(EnumType.STRING)

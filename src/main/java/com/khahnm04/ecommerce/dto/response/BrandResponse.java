@@ -15,8 +15,6 @@ public record BrandResponse(
     String slug,
     String description,
     String logo,
-    String country,
-    String website,
     BrandStatus status,
     LocalDateTime createdAt,
     String createdBy,

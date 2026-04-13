@@ -4,29 +4,27 @@ import com.khahnm04.ecommerce.common.enums.BrandStatus;
 import java.time.LocalDateTime;
 
 public interface BrandProjection {
-  Long getId();
 
-  String getName();
+    Long getId();
 
-  String getSlug();
+    String getName();
 
-  String getDescription();
+    String getSlug();
 
-  String getLogo();
+    String getDescription();
 
-  String getCountry();
+    String getLogo();
 
-  String getWebsite();
+    BrandStatus getStatus();
 
-  BrandStatus getStatus();
+    LocalDateTime getCreatedAt();
 
-  LocalDateTime getCreatedAt();
+    LocalDateTime getUpdatedAt();
 
-  LocalDateTime getUpdatedAt();
+    LocalDateTime getDeletedAt();
 
-  LocalDateTime getDeletedAt();
+    String getCreatedByFullName();
 
-  String getCreatedByFullName();
+    String getUpdatedByFullName();
 
-  String getUpdatedByFullName();
 }

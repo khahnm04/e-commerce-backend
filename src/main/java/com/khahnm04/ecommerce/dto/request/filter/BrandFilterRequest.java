@@ -1,5 +1,6 @@
 package com.khahnm04.ecommerce.dto.request.filter;
 
+import com.khahnm04.ecommerce.common.enums.BrandStatus;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.Builder;
@@ -18,8 +19,9 @@ public record BrandFilterRequest(
     Integer size,
 
     String sort,
-
     String keyword,
+    BrandStatus status,
+    Long creatorId,
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     LocalDate startDate,

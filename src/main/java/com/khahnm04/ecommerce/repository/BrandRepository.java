@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
@@ -21,20 +22,15 @@ public interface BrandRepository extends JpaRepository<Brand, Long>, JpaSpecific
 
     Optional<Brand> findBySlugAndDeletedAtIsNull(String slug);
 
+    Optional<Brand> findBySlugAndDeletedAtIsNotNull(String slug);
+
     Optional<Brand> findByIdAndDeletedAtIsNull(Long id);
 
     Optional<Brand> findByIdAndDeletedAtIsNotNull(Long id);
 
-    Optional<Brand> findBySlugAndDeletedAtIsNotNull(String slug);
+    boolean existsByNameAndIdNot(String name, Long id);
 
-    @Query("SELECT COUNT(b) > 0 FROM Brand b WHERE UPPER(b.name) = UPPER(:name) AND b.id != :id")
-    boolean existsByNameIgnoreCaseAndIdNot(String name, Long id);
-
-    @Query("SELECT COUNT(b) > 0 FROM Brand b WHERE UPPER(b.slug) = UPPER(:slug) AND b.id != :id")
-    boolean existsBySlugIgnoreCaseAndIdNot(String slug, Long id);
-
-    @Query("SELECT b FROM Brand b WHERE b.id IN :ids AND b.deletedAt IS NOT NULL")
-    Set<Brand> findAllDeletedByIds(Set<Long> ids);
+    boolean existsBySlugAndIdNot(String slug, Long id);
 
     @Modifying
     @Transactional
@@ -48,7 +44,10 @@ public interface BrandRepository extends JpaRepository<Brand, Long>, JpaSpecific
 
     @Modifying
     @Transactional
-    @Query("UPDATE Brand b SET b.status = :status WHERE b.id IN :ids")
-    void updateStatusByIds(BrandStatus status, Set<Long> ids);
+    @Query("UPDATE Brand b SET b.status = :status WHERE b.id IN :ids AND b.deletedAt IS NULL")
+    void updateStatusByIds(@Param("status") BrandStatus status, @Param("ids") Set<Long> ids);
+
+    @Query("SELECT b FROM Brand b WHERE b.id IN :ids AND b.deletedAt IS NOT NULL")
+    Set<Brand> findAllDeletedByIds(Set<Long> ids);
 
 }

@@ -116,8 +116,6 @@ CREATE TABLE `brands` (
     `slug` VARCHAR(255) UNIQUE NOT NULL,
     `description` TEXT,
     `logo` VARCHAR(255),
-    `country` VARCHAR(255),
-    `website` VARCHAR(255),
     `status` ENUM ('ACTIVE', 'INACTIVE') DEFAULT 'ACTIVE',
     `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
     `created_by` BIGINT,
