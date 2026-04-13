@@ -2,6 +2,7 @@ package com.khahnm04.ecommerce.service.impl;
 
 import com.khahnm04.ecommerce.common.enums.CouponStatus;
 import com.khahnm04.ecommerce.common.util.SortUtils;
+import com.khahnm04.ecommerce.dto.projection.CouponProjection;
 import com.khahnm04.ecommerce.dto.request.BulkActionRequest;
 import com.khahnm04.ecommerce.dto.request.filter.CouponFilterRequest;
 import com.khahnm04.ecommerce.dto.request.CouponRequest;
@@ -12,6 +13,7 @@ import com.khahnm04.ecommerce.exception.AppException;
 import com.khahnm04.ecommerce.exception.ErrorCode;
 import com.khahnm04.ecommerce.mapper.CouponMapper;
 import com.khahnm04.ecommerce.repository.CouponRepository;
+import com.khahnm04.ecommerce.repository.CouponUsageRepository;
 import com.khahnm04.ecommerce.service.CouponService;
 import com.khahnm04.ecommerce.specification.CouponSpecification;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +36,7 @@ import java.util.stream.Collectors;
 public class CouponServiceImpl implements CouponService {
 
     private final CouponRepository couponRepository;
+    private final CouponUsageRepository couponUsageRepository;
     private final CouponMapper couponMapper;
 
     @Override
@@ -114,6 +117,17 @@ public class CouponServiceImpl implements CouponService {
 
     @Override
     @Transactional
+    public void deleteCoupon(Long id) {
+        Coupon coupon = getDeletedCouponById(id);
+        if (couponUsageRepository.existsByCouponId(id)) {
+            throw new AppException(ErrorCode.COUPON_HAS_USAGES);
+        }
+        couponRepository.delete(coupon);
+        log.info("Permanently deleted coupon with id: {}", id);
+    }
+
+    @Override
+    @Transactional
     public void restoreCoupon(Long id) {
         Coupon coupon = getDeletedCouponById(id);
         coupon.setDeletedAt(null);
@@ -136,7 +150,20 @@ public class CouponServiceImpl implements CouponService {
                 CouponStatus status = CouponStatus.valueOf(action);
                 couponRepository.updateStatusByIds(status, couponIds);
             }
-            case "DELETE" -> couponRepository.softDeleteByIds(LocalDateTime.now(), couponIds);
+            case "SOFT_DELETE" -> {
+                couponRepository.softDeleteByIds(LocalDateTime.now(), couponIds);
+                log.info("Bulk soft-delete coupons ids: {}", couponIds);
+            }
+            case "DELETE" -> {
+                for (Long id : couponIds) {
+                    if (couponUsageRepository.existsByCouponId(id)) {
+                        throw new AppException(ErrorCode.COUPON_HAS_USAGES);
+                    }
+                }
+                Set<Coupon> coupons = couponRepository.findAllDeletedByIds(couponIds);
+                couponRepository.deleteAll(coupons);
+                log.info("Bulk permanently delete coupons ids: {}", couponIds);
+            }
             case "RESTORE" -> couponRepository.restoreDeletedByIds(couponIds);
             default -> throw new AppException(ErrorCode.COUPON_INVALID_BULK_ACTION);
         }
@@ -155,10 +182,30 @@ public class CouponServiceImpl implements CouponService {
                 SortUtils.parseSort(request.sort()));
 
         Specification<Coupon> spec = CouponSpecification.buildSpecification(request, isDeleted);
-        Page<Coupon> page = couponRepository.findAll(spec, pageable);
+        Page<CouponProjection> page = couponRepository.findBy(spec, q -> q.as(CouponProjection.class).page(pageable));
 
         List<CouponResponse> content = page.getContent().stream()
-                .map(couponMapper::toCouponResponse)
+                .map(proj -> CouponResponse.builder()
+                        .id(proj.getId())
+                        .code(proj.getCode())
+                        .name(proj.getName())
+                        .description(proj.getDescription())
+                        .typeDiscount(proj.getTypeDiscount())
+                        .value(proj.getValue())
+                        .minOrderValue(proj.getMinOrderValue())
+                        .maxDiscountValue(proj.getMaxDiscountValue())
+                        .usageLimit(proj.getUsageLimit())
+                        .usedCount(proj.getUsedCount())
+                        .startDate(proj.getStartDate())
+                        .endDate(proj.getEndDate())
+                        .typeDisplay(proj.getTypeDisplay())
+                        .status(proj.getStatus())
+                        .createdAt(proj.getCreatedAt())
+                        .createdBy(proj.getCreatedByFullName())
+                        .updatedAt(proj.getUpdatedAt())
+                        .updatedBy(proj.getUpdatedByFullName())
+                        .deletedAt(proj.getDeletedAt())
+                        .build())
                 .collect(Collectors.toList());
 
         Page<CouponResponse> responsePage = new PageImpl<>(content, pageable, page.getTotalElements());

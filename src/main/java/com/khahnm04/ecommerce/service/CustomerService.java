@@ -24,6 +24,8 @@ public interface CustomerService {
 
     void softDeleteCustomer(Long id);
 
+    void deleteCustomer(Long id);
+
     void restoreCustomer(Long id);
 
     void handleBulkAction(BulkActionRequest request);

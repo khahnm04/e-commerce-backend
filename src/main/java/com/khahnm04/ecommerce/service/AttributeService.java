@@ -23,6 +23,8 @@ public interface AttributeService {
 
     void softDeleteAttribute(Long id);
 
+    void deleteAttribute(Long id);
+
     void restoreAttribute(Long id);
 
     void handleBulkAction(BulkActionRequest request);

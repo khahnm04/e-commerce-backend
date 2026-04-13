@@ -1,7 +1,6 @@
 package com.khahnm04.ecommerce.service.impl;
 
 import com.khahnm04.ecommerce.entity.User;
-import com.khahnm04.ecommerce.common.constant.TokenConstants;
 import com.khahnm04.ecommerce.dto.response.TokenPayload;
 import com.khahnm04.ecommerce.exception.AppException;
 import com.khahnm04.ecommerce.exception.ErrorCode;
@@ -34,17 +33,7 @@ public class JwtServiceImpl implements JwtService {
     private final JwtProperties jwtProperties;
 
     @Override
-    public TokenPayload generateAccessToken(User user) {
-        return generateToken(user, TokenConstants.ACCESS_TOKEN, false);
-    }
-
-    @Override
-    public TokenPayload generateRefreshToken(User user, boolean rememberMe) {
-        return generateToken(user, TokenConstants.REFRESH_TOKEN, rememberMe);
-    }
-
-    @Override
-    public SignedJWT verifyAccessToken(String token) {
+    public SignedJWT validateToken(String token) {
         SignedJWT signedJWT = verifyToken(token);
         if (isExistTokenInRedis(signedJWT)) {
             throw new AppException(ErrorCode.UNAUTHENTICATED);
@@ -53,25 +42,15 @@ public class JwtServiceImpl implements JwtService {
     }
 
     @Override
-    public SignedJWT verifyRefreshToken(String token) {
-        SignedJWT signedJWT = verifyToken(token);
-        if (!isExistTokenInRedis(signedJWT)) {
-            throw new AppException(ErrorCode.REFRESH_TOKEN_FAILED);
-        }
-        return signedJWT;
-    }
-
-    private TokenPayload generateToken(User user, String typeToken, boolean rememberMe) {
+    public TokenPayload generateToken(User user, boolean rememberMe) {
         JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
 
         String subject = StringUtils.hasText(user.getPhoneNumber()) ? user.getPhoneNumber() : user.getEmail();
         Date issueTime = new Date();
         Date expiredTime = new Date(Instant.now()
-                .plus(typeToken.equalsIgnoreCase(TokenConstants.ACCESS_TOKEN)
-                        ? jwtProperties.getAccessTokenExpiration()
-                        : rememberMe
-                              ? jwtProperties.getRefreshTokenRememberExpiration()
-                              : jwtProperties.getRefreshTokenExpiration(), ChronoUnit.SECONDS)
+                .plus(rememberMe
+                      ? jwtProperties.getTokenRememberExpiration()
+                      : jwtProperties.getTokenExpiration(), ChronoUnit.SECONDS)
                 .toEpochMilli());
         String jwtId = UUID.randomUUID().toString();
 
@@ -80,12 +59,8 @@ public class JwtServiceImpl implements JwtService {
                 .issueTime(issueTime)
                 .expirationTime(expiredTime)
                 .jwtID(jwtId)
-                .claim("scope", buildScope(user))
-                .claim("type", typeToken);
-
-        if (typeToken.equalsIgnoreCase(TokenConstants.ACCESS_TOKEN)) {
-            claimsBuilder.claim("userId", user.getId());
-        }
+                .claim("userId", user.getId())
+                .claim("scope", buildScope(user));
 
         JWTClaimsSet jwtClaimsSet = claimsBuilder.build();
 
@@ -107,6 +82,20 @@ public class JwtServiceImpl implements JwtService {
                 .build();
     }
 
+    private String buildScope(User user) {
+        StringJoiner scope = new StringJoiner(" ");
+        if (!CollectionUtils.isEmpty(user.getRoles())) {
+            user.getRoles().forEach(role -> {
+                scope.add("ROLE_" + role.getCode());
+                if (!CollectionUtils.isEmpty(role.getPermissions())) {
+                    role.getPermissions()
+                            .forEach(permission -> scope.add(permission.getCode()));
+                }
+            });
+        }
+        return scope.toString();
+    }
+
     private SignedJWT verifyToken(String token) {
         try {
             JWSVerifier verifier = new MACVerifier(jwtProperties.getSignerKey().getBytes());
@@ -124,20 +113,6 @@ public class JwtServiceImpl implements JwtService {
             log.error("Cannot verify token", e);
             throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
-    }
-
-    private String buildScope(User user) {
-        StringJoiner scope = new StringJoiner(" ");
-        if (!CollectionUtils.isEmpty(user.getRoles())) {
-            user.getRoles().forEach(role -> {
-                scope.add("ROLE_" + role.getCode());
-                if (!CollectionUtils.isEmpty(role.getPermissions())) {
-                    role.getPermissions()
-                            .forEach(permission -> scope.add(permission.getCode()));
-                }
-            });
-        }
-        return scope.toString();
     }
 
     private boolean isExistTokenInRedis(SignedJWT signedJWT) {

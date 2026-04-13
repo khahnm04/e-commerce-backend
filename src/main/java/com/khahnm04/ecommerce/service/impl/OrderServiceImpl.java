@@ -3,9 +3,11 @@ package com.khahnm04.ecommerce.service.impl;
 import com.khahnm04.ecommerce.common.enums.CouponDiscountType;
 import com.khahnm04.ecommerce.common.enums.OrderStatus;
 import com.khahnm04.ecommerce.common.enums.PaymentStatus;
+import com.khahnm04.ecommerce.dto.request.BulkActionRequest;
 import com.khahnm04.ecommerce.dto.request.OrderCreationRequest;
 import com.khahnm04.ecommerce.dto.request.filter.OrderFilterRequest;
 import com.khahnm04.ecommerce.dto.request.OrderItemRequest;
+import com.khahnm04.ecommerce.dto.projection.OrderProjection;
 import com.khahnm04.ecommerce.dto.response.PageResponse;
 import com.khahnm04.ecommerce.dto.response.OrderItemResponse;
 import com.khahnm04.ecommerce.dto.response.OrderResponse;
@@ -168,21 +170,21 @@ public class OrderServiceImpl implements OrderService {
                 OrderSpecification.getSort(filter.sort()));
         Specification<Order> spec = OrderSpecification.buildSpecification(filter);
 
-        Page<Order> orders = orderRepository.findAll(spec, pageable);
+        Page<OrderProjection> orders = orderRepository.findBy(spec, q -> q.as(OrderProjection.class).page(pageable));
 
         if (orders.isEmpty()) {
             return PageResponse.fromPage(Page.empty(pageable));
         }
 
-        List<Long> orderIds = orders.getContent().stream().map(Order::getId).toList();
+        List<Long> orderIds = orders.getContent().stream().map(OrderProjection::getId).toList();
         List<Payment> allPayments = paymentRepository.findByOrderIdIn(orderIds);
 
         Map<Long, Payment> paymentsMap = allPayments.stream()
                 .collect(Collectors.toMap(p -> p.getOrder().getId(), p -> p));
 
-        Page<OrderResponse> responsePage = orders.map(order -> {
-            Payment payment = paymentsMap.get(order.getId());
-            return mapToOrderResponse(order, null, payment);
+        Page<OrderResponse> responsePage = orders.map(proj -> {
+            Payment payment = paymentsMap.get(proj.getId());
+            return mapProjectionToResponse(proj, payment);
         });
         return PageResponse.fromPage(responsePage);
     }
@@ -197,20 +199,20 @@ public class OrderServiceImpl implements OrderService {
         Pageable pageable = PageRequest.of(filter.page() - 1, filter.size(), OrderSpecification.getSort(sortStr));
         Specification<Order> spec = CustomerOrderSpecification.buildSpecification(customerId, filter);
 
-        Page<Order> orders = orderRepository.findAll(spec, pageable);
+        Page<OrderProjection> orders = orderRepository.findBy(spec, q -> q.as(OrderProjection.class).page(pageable));
 
         if (orders.isEmpty()) {
             return PageResponse.fromPage(Page.empty(pageable));
         }
 
-        List<Long> orderIds = orders.getContent().stream().map(Order::getId).toList();
+        List<Long> orderIds = orders.getContent().stream().map(OrderProjection::getId).toList();
         List<Payment> allPayments = paymentRepository.findByOrderIdIn(orderIds);
         Map<Long, Payment> paymentsMap = allPayments.stream()
                 .collect(Collectors.toMap(p -> p.getOrder().getId(), p -> p));
 
-        Page<OrderResponse> responsePage = orders.map(order -> {
-            Payment payment = paymentsMap.get(order.getId());
-            return mapToOrderResponse(order, null, payment);
+        Page<OrderResponse> responsePage = orders.map(proj -> {
+            Payment payment = paymentsMap.get(proj.getId());
+            return mapProjectionToResponse(proj, payment);
         });
         return PageResponse.fromPage(responsePage);
     }
@@ -250,12 +252,14 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public void handleBulkAction(Set<Long> orderIds, String actionInput) {
+    public void handleBulkAction(BulkActionRequest request) {
+        Set<Long> orderIds = request.ids();
+        String action = request.action().toUpperCase();
+
         if (orderIds == null || orderIds.isEmpty()) {
             throw new AppException(ErrorCode.ORDER_SELECTION_REQUIRED);
         }
 
-        String action = actionInput.toUpperCase();
         Set<Order> existingOrders = new HashSet<>(
                 action.equals("RESTORE")
                         ? orderRepository.findAllDeletedByIds(orderIds)
@@ -293,6 +297,29 @@ public class OrderServiceImpl implements OrderService {
         return mapToOrderResponse(order, details, payment);
     }
 
+    private OrderResponse mapProjectionToResponse(OrderProjection proj, Payment payment) {
+        return OrderResponse.builder()
+                .id(proj.getId())
+                .code(proj.getCode())
+                .subTotal(proj.getSubTotal())
+                .discount(proj.getDiscount())
+                .total(proj.getTotal())
+                .status(proj.getStatus())
+                .shippingName(proj.getShippingName())
+                .shippingPhone(proj.getShippingPhone())
+                .shippingProvince(proj.getShippingProvince())
+                .shippingDistrict(proj.getShippingDistrict())
+                .shippingWard(proj.getShippingWard())
+                .shippingAddressDetail(proj.getShippingAddressDetail())
+                .note(proj.getNote())
+                .customer(proj.getCustomerFullName())
+                .paymentUrl(proj.getPaymentUrl())
+                .estimatedDeliveryDate(proj.getExpectedDeliveryDate())
+                .createdAt(proj.getCreatedAt())
+                .paymentMethod(payment != null ? payment.getPaymentMethod() : null)
+                .build();
+    }
+
     private OrderResponse mapToOrderResponse(Order order, List<OrderDetail> details, Payment payment) {
         OrderResponse response = orderMapper.toOrderResponse(order)
                 .toBuilder()
@@ -321,7 +348,7 @@ public class OrderServiceImpl implements OrderService {
             case PENDING -> next == OrderStatus.CONFIRMED || next == OrderStatus.CANCELLED;
             case CONFIRMED -> next == OrderStatus.SHIPPING || next == OrderStatus.CANCELLED;
             case SHIPPING -> next == OrderStatus.COMPLETED || next == OrderStatus.RETURNED;
-            default -> false; // COMPLETED, CANCELLED, RETURNED are terminal
+            default -> false;
         };
 
         if (!valid) {

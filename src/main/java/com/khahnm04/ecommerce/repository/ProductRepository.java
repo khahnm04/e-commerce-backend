@@ -15,6 +15,8 @@ import java.util.Set;
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpecificationExecutor<Product> {
 
+    boolean existsByBrandId(Long brandId);
+
     boolean existsBySlugAndDeletedAtIsNull(String slug);
 
     boolean existsByNameAndDeletedAtIsNull(String name);

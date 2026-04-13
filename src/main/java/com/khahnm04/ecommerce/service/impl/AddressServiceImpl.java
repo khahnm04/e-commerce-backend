@@ -33,7 +33,6 @@ public class AddressServiceImpl implements AddressService {
         Address address = addressMapper.toAddress(request);
         address.setCustomer(customer);
 
-        // Set as default if it's the first address or isDefault is true
         if (Boolean.TRUE.equals(request.isDefault()) || addressRepository.countByCustomerId(customerId) == 0) {
             addressRepository.clearDefaultAddressByCustomerId(customerId);
             address.setIsDefault(true);
@@ -97,8 +96,6 @@ public class AddressServiceImpl implements AddressService {
         addressRepository.delete(address);
         log.info("Deleted address {} for customer {}", addressId, customerId);
 
-        // If the deleted address was the default, set the first remaining address as
-        // default
         if (wasDefault) {
             List<Address> remainingAddresses = addressRepository
                     .findAllByCustomerId(customerId);

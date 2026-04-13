@@ -6,12 +6,8 @@ import com.nimbusds.jwt.SignedJWT;
 
 public interface JwtService {
 
-    TokenPayload generateAccessToken(User user);
+    SignedJWT validateToken(String token);
 
-    TokenPayload generateRefreshToken(User user, boolean rememberMe);
-
-    SignedJWT verifyAccessToken(String token);
-
-    SignedJWT verifyRefreshToken(String token);
+    TokenPayload generateToken(User user, boolean rememberMe);
 
 }

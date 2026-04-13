@@ -1,6 +1,7 @@
 package com.khahnm04.ecommerce.service.impl;
 
 import com.khahnm04.ecommerce.dto.response.PageResponse;
+import com.khahnm04.ecommerce.dto.projection.CustomerProjection;
 import com.khahnm04.ecommerce.dto.request.BulkActionRequest;
 import com.khahnm04.ecommerce.dto.request.CustomerCreationRequest;
 import com.khahnm04.ecommerce.dto.request.filter.CustomerFilterRequest;
@@ -14,6 +15,7 @@ import com.khahnm04.ecommerce.entity.Customer;
 import com.khahnm04.ecommerce.specification.CustomerSpecification;
 import com.khahnm04.ecommerce.mapper.CustomerMapper;
 import com.khahnm04.ecommerce.repository.CustomerRepository;
+import com.khahnm04.ecommerce.repository.OrderRepository;
 import com.khahnm04.ecommerce.service.CustomerService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,6 +38,7 @@ import java.util.stream.Collectors;
 public class CustomerServiceImpl implements CustomerService {
 
     private final CustomerRepository customerRepository;
+    private final OrderRepository orderRepository;
     private final CustomerMapper customerMapper;
     private final UserService userService;
 
@@ -109,6 +112,17 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     @Transactional
+    public void deleteCustomer(Long id) {
+        Customer customer = getDeletedCustomerById(id);
+        if (orderRepository.existsByCustomerId(id)) {
+            throw new AppException(ErrorCode.CUSTOMER_HAS_ORDERS);
+        }
+        customerRepository.delete(customer);
+        log.info("Permanently deleted customer with id: {}", id);
+    }
+
+    @Override
+    @Transactional
     public void restoreCustomer(Long id) {
         Customer customer = getDeletedCustomerById(id);
         if (customer.getDeletedAt() == null) {
@@ -135,9 +149,19 @@ public class CustomerServiceImpl implements CustomerService {
                 // userService.bulkUpdateStatus(existingUserIds, UserStatus.valueOf(action));
                 log.info("Bulk update status {} customers ids: {}", action, customerIds);
             }
-            case "DELETE" -> {
+            case "SOFT_DELETE" -> {
                 customerRepository.softDeleteByIds(LocalDateTime.now(), customerIds);
-                log.info("Bulk delete customers ids: {}", customerIds);
+                log.info("Bulk soft-delete customers ids: {}", customerIds);
+            }
+            case "DELETE" -> {
+                for (Long id : customerIds) {
+                    if (orderRepository.existsByCustomerId(id)) {
+                        throw new AppException(ErrorCode.CUSTOMER_HAS_ORDERS);
+                    }
+                }
+                Set<Customer> customers = customerRepository.findAllDeletedByIds(customerIds);
+                customerRepository.deleteAll(customers);
+                log.info("Bulk permanently delete customers ids: {}", customerIds);
             }
             case "RESTORE" -> {
                 customerRepository.restoreDeletedByIds(customerIds);
@@ -160,10 +184,27 @@ public class CustomerServiceImpl implements CustomerService {
                 CustomerSpecification.getSort(request.sort()));
 
         Specification<Customer> spec = CustomerSpecification.buildSpecification(request, isDeleted);
-        Page<Customer> page = customerRepository.findAll(spec, pageable);
+        Page<CustomerProjection> page = customerRepository.findBy(spec,
+                q -> q.as(CustomerProjection.class).page(pageable));
 
         List<CustomerResponse> content = page.getContent().stream()
-                .map(customerMapper::toResponse)
+                .map(proj -> CustomerResponse.builder()
+                        .id(proj.getId())
+                        .userId(proj.getUserId())
+                        .fullName(proj.getFullName())
+                        .email(proj.getEmail())
+                        .phoneNumber(proj.getPhoneNumber())
+                        .dateOfBirth(proj.getDateOfBirth())
+                        .gender(proj.getGender())
+                        .avatar(proj.getAvatar())
+                        .status(proj.getUserStatus())
+                        .addressCount(0)
+                        .createdAt(proj.getCreatedAt())
+                        .createdBy(proj.getCreatedByFullName())
+                        .updatedAt(proj.getUpdatedAt())
+                        .updatedBy(proj.getUpdatedByFullName())
+                        .deletedAt(proj.getDeletedAt())
+                        .build())
                 .collect(Collectors.toList());
 
         Page<CustomerResponse> responsePage = new PageImpl<>(content, pageable, page.getTotalElements());

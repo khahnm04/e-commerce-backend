@@ -1,6 +1,5 @@
 package com.khahnm04.ecommerce.service;
 
-
 import com.khahnm04.ecommerce.dto.request.BulkActionRequest;
 import com.khahnm04.ecommerce.dto.request.filter.BrandFilterRequest;
 import com.khahnm04.ecommerce.dto.request.BrandRequest;
@@ -23,6 +22,8 @@ public interface BrandService {
     BrandResponse updateBrand(Long id, BrandRequest request);
 
     void softDeleteBrand(Long id);
+
+    void deleteBrand(Long id);
 
     void restoreBrand(Long id);
 

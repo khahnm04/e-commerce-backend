@@ -24,7 +24,7 @@ public class AdminCategoryController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ApiResponse<CategoryResponse> createCategory (
+    public ApiResponse<CategoryResponse> createCategory(
             @Valid @RequestBody CategoryRequest request
     ) {
         return ApiResponse.<CategoryResponse>builder()
@@ -34,7 +34,7 @@ public class AdminCategoryController {
     }
 
     @GetMapping("/{identifier}")
-    public ApiResponse<CategoryResponse> getCategoryDetail (
+    public ApiResponse<CategoryResponse> getCategoryDetail(
             @PathVariable String identifier,
             @RequestParam(defaultValue = "false") boolean deleted
     ) {
@@ -45,7 +45,7 @@ public class AdminCategoryController {
     }
 
     @GetMapping
-    public ApiResponse<List<CategoryResponse>> getAllCategories (
+    public ApiResponse<List<CategoryResponse>> getAllCategories(
             @Valid @ModelAttribute CategoryFilterRequest filter
     ) {
         PageResponse<CategoryResponse> pageResponse = categoryService.getAllCategories(filter);
@@ -57,7 +57,7 @@ public class AdminCategoryController {
     }
 
     @GetMapping("/deleted")
-    public ApiResponse<List<CategoryResponse>> getAllDeletedCategories (
+    public ApiResponse<List<CategoryResponse>> getAllDeletedCategories(
             @Valid @ModelAttribute CategoryFilterRequest filter
     ) {
         PageResponse<CategoryResponse> pageResponse = categoryService.getAllDeletedCategories(filter);
@@ -69,7 +69,7 @@ public class AdminCategoryController {
     }
 
     @PutMapping("/{id}")
-    public ApiResponse<CategoryResponse> updateCategory (
+    public ApiResponse<CategoryResponse> updateCategory(
             @PathVariable Long id,
             @Valid @RequestBody CategoryRequest request
     ) {
@@ -79,8 +79,8 @@ public class AdminCategoryController {
                 .build();
     }
 
-    @DeleteMapping("/{id}")
-    public ApiResponse<Void> softDeleteCategory (
+    @PatchMapping("/{id}/soft-delete")
+    public ApiResponse<Void> softDeleteCategory(
             @PathVariable Long id
     ) {
         categoryService.softDeleteCategory(id);
@@ -89,8 +89,18 @@ public class AdminCategoryController {
                 .build();
     }
 
+    @DeleteMapping("/{id}")
+    public ApiResponse<Void> deleteCategory(
+            @PathVariable Long id
+    ) {
+        categoryService.deleteCategory(id);
+        return ApiResponse.<Void>builder()
+                .message("Category deleted successfully")
+                .build();
+    }
+
     @PatchMapping("/{id}/restore")
-    public ApiResponse<Void> restoreCategory (
+    public ApiResponse<Void> restoreCategory(
             @PathVariable Long id
     ) {
         categoryService.restoreCategory(id);
@@ -100,7 +110,7 @@ public class AdminCategoryController {
     }
 
     @PatchMapping("/bulk")
-    public ApiResponse<Void> handleBulkAction (
+    public ApiResponse<Void> handleBulkAction(
             @RequestBody BulkActionRequest request
     ) {
         categoryService.handleBulkAction(request);

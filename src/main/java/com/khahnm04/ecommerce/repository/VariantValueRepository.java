@@ -12,7 +12,10 @@ import java.util.Optional;
 import java.util.Set;
 
 @Repository
-public interface VariantValueRepository extends JpaRepository<VariantValue, Long>, JpaSpecificationExecutor<VariantValue> {
+public interface VariantValueRepository
+        extends JpaRepository<VariantValue, Long>, JpaSpecificationExecutor<VariantValue> {
+
+    boolean existsByVariantId(Long variantId);
 
     Optional<VariantValue> findByIdAndDeletedAtIsNull(Long id);
 

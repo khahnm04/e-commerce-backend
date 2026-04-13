@@ -20,93 +20,95 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AdminProductVariantController {
 
-    private final ProductVariantService productVariantService;
+        private final ProductVariantService productVariantService;
 
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public ApiResponse<ProductVariantResponse> createProductVariant(
-            @Valid @RequestBody ProductVariantRequest request
-    ) {
-        return ApiResponse.<ProductVariantResponse>builder()
-                .data(productVariantService.createProductVariant(request))
-                .message("Product variant created successfully")
-                .build();
-    }
+        @PostMapping
+        @ResponseStatus(HttpStatus.CREATED)
+        public ApiResponse<ProductVariantResponse> createProductVariant(
+                        @Valid @RequestBody ProductVariantRequest request) {
+                return ApiResponse.<ProductVariantResponse>builder()
+                                .data(productVariantService.createProductVariant(request))
+                                .message("Product variant created successfully")
+                                .build();
+        }
 
-    @GetMapping("/{identifier}")
-    public ApiResponse<ProductVariantResponse> getProductVariantDetail(
-            @PathVariable String identifier,
-            @RequestParam(defaultValue = "false") boolean deleted
-    ) {
-        return ApiResponse.<ProductVariantResponse>builder()
-                .data(productVariantService.getProductVariantDetail(identifier, deleted))
-                .message("Get product variant detail successfully")
-                .build();
-    }
+        @GetMapping("/{identifier}")
+        public ApiResponse<ProductVariantResponse> getProductVariantDetail(
+                        @PathVariable String identifier,
+                        @RequestParam(defaultValue = "false") boolean deleted) {
+                return ApiResponse.<ProductVariantResponse>builder()
+                                .data(productVariantService.getProductVariantDetail(identifier, deleted))
+                                .message("Get product variant detail successfully")
+                                .build();
+        }
 
-    @GetMapping
-    public ApiResponse<List<ProductVariantResponse>> getAllProductVariants(
-            @Valid @ModelAttribute ProductVariantFilterRequest filter
-    ) {
-        PageResponse<ProductVariantResponse> pageResponse = productVariantService.getAllProductVariants(filter);
-        return ApiResponse.<List<ProductVariantResponse>>builder()
-                .data(pageResponse.data())
-                .meta(pageResponse.meta())
-                .message("Get all product variants successfully")
-                .build();
-    }
+        @GetMapping
+        public ApiResponse<List<ProductVariantResponse>> getAllProductVariants(
+                        @Valid @ModelAttribute ProductVariantFilterRequest filter) {
+                PageResponse<ProductVariantResponse> pageResponse = productVariantService.getAllProductVariants(filter);
+                return ApiResponse.<List<ProductVariantResponse>>builder()
+                                .data(pageResponse.data())
+                                .meta(pageResponse.meta())
+                                .message("Get all product variants successfully")
+                                .build();
+        }
 
-    @GetMapping("/deleted")
-    public ApiResponse<List<ProductVariantResponse>> getAllDeletedProductVariants(
-            @Valid @ModelAttribute ProductVariantFilterRequest filter
-    ) {
-        PageResponse<ProductVariantResponse> pageResponse = productVariantService.getAllDeletedProductVariants(filter);
-        return ApiResponse.<List<ProductVariantResponse>>builder()
-                .data(pageResponse.data())
-                .meta(pageResponse.meta())
-                .message("Get deleted product variants successfully")
-                .build();
-    }
+        @GetMapping("/deleted")
+        public ApiResponse<List<ProductVariantResponse>> getAllDeletedProductVariants(
+                        @Valid @ModelAttribute ProductVariantFilterRequest filter) {
+                PageResponse<ProductVariantResponse> pageResponse = productVariantService
+                                .getAllDeletedProductVariants(filter);
+                return ApiResponse.<List<ProductVariantResponse>>builder()
+                                .data(pageResponse.data())
+                                .meta(pageResponse.meta())
+                                .message("Get deleted product variants successfully")
+                                .build();
+        }
 
-    @PutMapping("/{id}")
-    public ApiResponse<ProductVariantResponse> updateProductVariant(
-            @PathVariable Long id,
-            @Valid @RequestBody ProductVariantRequest request
-    ) {
-        return ApiResponse.<ProductVariantResponse>builder()
-                .data(productVariantService.updateProductVariant(id, request))
-                .message("Product variant updated successfully")
-                .build();
-    }
+        @PutMapping("/{id}")
+        public ApiResponse<ProductVariantResponse> updateProductVariant(
+                        @PathVariable Long id,
+                        @Valid @RequestBody ProductVariantRequest request) {
+                return ApiResponse.<ProductVariantResponse>builder()
+                                .data(productVariantService.updateProductVariant(id, request))
+                                .message("Product variant updated successfully")
+                                .build();
+        }
 
-    @DeleteMapping("/{id}")
-    public ApiResponse<Void> softDeleteProductVariant(
-            @PathVariable Long id
-    ) {
-        productVariantService.softDeleteProductVariant(id);
-        return ApiResponse.<Void>builder()
-                .message("Product variant soft deleted successfully")
-                .build();
-    }
+        @PatchMapping("/{id}/soft-delete")
+        public ApiResponse<Void> softDeleteProductVariant(
+                        @PathVariable Long id) {
+                productVariantService.softDeleteProductVariant(id);
+                return ApiResponse.<Void>builder()
+                                .message("Product variant soft deleted successfully")
+                                .build();
+        }
 
-    @PatchMapping("/{id}/restore")
-    public ApiResponse<Void> restoreProductVariant(
-            @PathVariable Long id
-    ) {
-        productVariantService.restoreProductVariant(id);
-        return ApiResponse.<Void>builder()
-                .message("Product variant restored successfully")
-                .build();
-    }
+        @DeleteMapping("/{id}")
+        public ApiResponse<Void> deleteProductVariant(
+                        @PathVariable Long id) {
+                productVariantService.deleteProductVariant(id);
+                return ApiResponse.<Void>builder()
+                                .message("Product variant deleted successfully")
+                                .build();
+        }
 
-    @PatchMapping("/bulk")
-    public ApiResponse<Void> handleBulkAction(
-            @RequestBody BulkActionRequest request
-    ) {
-        productVariantService.handleBulkAction(request);
-        return ApiResponse.<Void>builder()
-                .message("Bulk action executed successfully")
-                .build();
-    }
+        @PatchMapping("/{id}/restore")
+        public ApiResponse<Void> restoreProductVariant(
+                        @PathVariable Long id) {
+                productVariantService.restoreProductVariant(id);
+                return ApiResponse.<Void>builder()
+                                .message("Product variant restored successfully")
+                                .build();
+        }
+
+        @PatchMapping("/bulk")
+        public ApiResponse<Void> handleBulkAction(
+                        @RequestBody BulkActionRequest request) {
+                productVariantService.handleBulkAction(request);
+                return ApiResponse.<Void>builder()
+                                .message("Bulk action executed successfully")
+                                .build();
+        }
 
 }

@@ -23,6 +23,8 @@ public interface CouponService {
 
     void softDeleteCoupon(Long id);
 
+    void deleteCoupon(Long id);
+
     void restoreCoupon(Long id);
 
     void handleBulkAction(BulkActionRequest request);

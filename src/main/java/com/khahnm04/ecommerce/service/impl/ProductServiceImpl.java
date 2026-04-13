@@ -3,6 +3,7 @@ package com.khahnm04.ecommerce.service.impl;
 import com.khahnm04.ecommerce.common.enums.ProductStatus;
 import com.khahnm04.ecommerce.common.util.SlugUtils;
 import com.khahnm04.ecommerce.common.util.SortUtils;
+import com.khahnm04.ecommerce.dto.projection.ProductProjection;
 import com.khahnm04.ecommerce.dto.request.BulkActionRequest;
 import com.khahnm04.ecommerce.dto.request.filter.ProductFilterRequest;
 import com.khahnm04.ecommerce.dto.request.ProductRequest;
@@ -36,6 +37,7 @@ import java.util.stream.Collectors;
 public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
+    private final ProductVariantRepository productVariantRepository;
     private final ProductCategoryRepository productCategoryRepository;
     private final ProductAttributeValueRepository productAttributeValueRepository;
     private final ProductImageRepository productImageRepository;
@@ -184,6 +186,17 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional
+    public void deleteProduct(Long id) {
+        Product product = getDeletedProductById(id);
+        if (productVariantRepository.existsByProductId(id)) {
+            throw new AppException(ErrorCode.PRODUCT_HAS_VARIANTS);
+        }
+        productRepository.delete(product);
+        log.info("Permanently deleted product with id: {}", id);
+    }
+
+    @Override
+    @Transactional
     public void restoreProduct(Long id) {
         Product product = getDeletedProductById(id);
         if (product.getDeletedAt() == null) {
@@ -220,9 +233,19 @@ public class ProductServiceImpl implements ProductService {
                 productRepository.updateStatusByIds(status, productIds);
                 log.info("Bulk update status {} products ids: {}", action, productIds);
             }
-            case "DELETE" -> {
+            case "SOFT_DELETE" -> {
                 productRepository.softDeleteByIds(LocalDateTime.now(), productIds);
-                log.info("Bulk delete products ids: {}", productIds);
+                log.info("Bulk soft-delete products ids: {}", productIds);
+            }
+            case "DELETE" -> {
+                for (Long id : productIds) {
+                    if (productVariantRepository.existsByProductId(id)) {
+                        throw new AppException(ErrorCode.PRODUCT_HAS_VARIANTS);
+                    }
+                }
+                Set<Product> products = productRepository.findAllDeletedByIds(productIds);
+                productRepository.deleteAll(products);
+                log.info("Bulk permanently delete products ids: {}", productIds);
             }
             case "RESTORE" -> {
                 productRepository.restoreDeletedByIds(productIds);
@@ -245,10 +268,30 @@ public class ProductServiceImpl implements ProductService {
                 SortUtils.parseSort(request.sort()));
 
         Specification<Product> spec = ProductSpecification.buildSpecification(request, isDeleted);
-        Page<Product> page = productRepository.findAll(spec, pageable);
+        Page<ProductProjection> page = productRepository.findBy(spec,
+                q -> q.as(ProductProjection.class).page(pageable));
 
         List<ProductResponse> content = page.getContent().stream()
-                .map(productMapper::toProductResponse)
+                .map(proj -> ProductResponse.builder()
+                        .id(proj.getId())
+                        .name(proj.getName())
+                        .slug(proj.getSlug())
+                        .code(proj.getCode())
+                        .brandName(proj.getBrandName())
+                        .brandId(proj.getBrandId())
+                        .warrantyMonths(proj.getWarrantyMonths())
+                        .price(proj.getPrice())
+                        .oldPrice(proj.getOldPrice())
+                        .thumbnail(proj.getThumbnail())
+                        .description(proj.getDescription())
+                        .shortDescription(proj.getShortDescription())
+                        .status(proj.getStatus())
+                        .createdAt(proj.getCreatedAt())
+                        .createdBy(proj.getCreatedByFullName())
+                        .updatedAt(proj.getUpdatedAt())
+                        .updatedBy(proj.getUpdatedByFullName())
+                        .deletedAt(proj.getDeletedAt())
+                        .build())
                 .collect(Collectors.toList());
 
         Page<ProductResponse> responsePage = new PageImpl<>(content, pageable, page.getTotalElements());
@@ -321,7 +364,8 @@ public class ProductServiceImpl implements ProductService {
         productCategoryRepository.saveAll(productCategories);
     }
 
-    private void saveProductAttributeValues(Product product, List<ProductRequest.ProductAttributeValueRequest> attributeRequests) {
+    private void saveProductAttributeValues(Product product,
+            List<ProductRequest.ProductAttributeValueRequest> attributeRequests) {
         if (attributeRequests == null || attributeRequests.isEmpty()) {
             return;
         }
@@ -396,7 +440,8 @@ public class ProductServiceImpl implements ProductService {
         }
     }
 
-    private void mergeProductAttributeValues(Product product, List<ProductRequest.ProductAttributeValueRequest> incomingAttributes) {
+    private void mergeProductAttributeValues(Product product,
+            List<ProductRequest.ProductAttributeValueRequest> incomingAttributes) {
         Long productId = product.getId();
 
         if (incomingAttributes.isEmpty()) {

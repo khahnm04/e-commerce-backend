@@ -13,23 +13,25 @@ import java.util.Set;
 @Repository
 public interface ProductVariantValueRepository extends JpaRepository<ProductVariantValue, Long> {
 
+    boolean existsByVariantValueId(Long variantValueId);
+
     @Query("""
-        SELECT pvv
-        FROM ProductVariantValue pvv
-        JOIN FETCH pvv.variantValue vv
-        JOIN FETCH vv.variant v
-        WHERE pvv.productVariant.id = :productVariantId
-    """)
+                SELECT pvv
+                FROM ProductVariantValue pvv
+                JOIN FETCH pvv.variantValue vv
+                JOIN FETCH vv.variant v
+                WHERE pvv.productVariant.id = :productVariantId
+            """)
     List<ProductVariantValue> findAllByProductVariantIdWithVariantValue(
             @Param("productVariantId") Long productVariantId);
 
     @Query("""
-        SELECT pvv
-        FROM ProductVariantValue pvv
-        JOIN FETCH pvv.variantValue vv
-        JOIN FETCH vv.variant v
-        WHERE pvv.productVariant.id IN :productVariantIds
-    """)
+                SELECT pvv
+                FROM ProductVariantValue pvv
+                JOIN FETCH pvv.variantValue vv
+                JOIN FETCH vv.variant v
+                WHERE pvv.productVariant.id IN :productVariantIds
+            """)
     List<ProductVariantValue> findAllByProductVariantIdInWithVariantValue(
             @Param("productVariantIds") Set<Long> productVariantIds);
 

@@ -14,6 +14,8 @@ public record CategoryRequest(
     String slug,
     String description,
     String thumbnail,
+    String icon,
+    Boolean isFeatured,
     Integer position,
     Long parentId,
     CategoryStatus status

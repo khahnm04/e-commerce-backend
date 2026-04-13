@@ -3,6 +3,7 @@ package com.khahnm04.ecommerce.service.impl;
 import com.khahnm04.ecommerce.common.enums.CategoryStatus;
 import com.khahnm04.ecommerce.common.util.SlugUtils;
 import com.khahnm04.ecommerce.common.util.SortUtils;
+import com.khahnm04.ecommerce.dto.projection.CategoryProjection;
 import com.khahnm04.ecommerce.dto.request.BulkActionRequest;
 import com.khahnm04.ecommerce.dto.request.filter.CategoryFilterRequest;
 import com.khahnm04.ecommerce.dto.request.CategoryRequest;
@@ -13,6 +14,7 @@ import com.khahnm04.ecommerce.exception.AppException;
 import com.khahnm04.ecommerce.exception.ErrorCode;
 import com.khahnm04.ecommerce.mapper.CategoryMapper;
 import com.khahnm04.ecommerce.repository.CategoryRepository;
+import com.khahnm04.ecommerce.repository.ProductCategoryRepository;
 import com.khahnm04.ecommerce.service.CategoryService;
 import com.khahnm04.ecommerce.specification.CategorySpecification;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +37,7 @@ import java.util.stream.Collectors;
 public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryRepository categoryRepository;
+    private final ProductCategoryRepository productCategoryRepository;
     private final CategoryMapper categoryMapper;
 
     @Override
@@ -54,24 +57,11 @@ public class CategoryServiceImpl implements CategoryService {
         Category category = categoryMapper.toCategory(request);
         category.setSlug(slug);
 
-        // Set parent
         category.setParent(Optional.ofNullable(request.parentId())
                 .map(this::getCategoryById)
                 .orElse(null));
 
-        // Calculate path and level
-        String parentPath = Optional.ofNullable(category.getParent())
-                .map(Category::getPath)
-                .orElse("");
-
-        int parentLevel = Optional.ofNullable(category.getParent())
-                .map(Category::getLevel)
-                .orElse(-1);
-
-        category.setLevel(parentLevel + 1);
-
         Category savedCategory = categoryRepository.save(category);
-        savedCategory.setPath(parentPath + savedCategory.getId() + "/");
 
         log.info("Created category with id: {}", savedCategory.getId());
         return categoryMapper.toCategoryResponse(savedCategory);
@@ -129,35 +119,22 @@ public class CategoryServiceImpl implements CategoryService {
 
         categoryMapper.updateCategory(category, request);
 
-        // Handle parent change
         Long currentParentId = (category.getParent() != null) ? category.getParent().getId() : null;
         Long newParentId = request.parentId();
 
-        if (Objects.equals(currentParentId, newParentId)) {
-            return categoryMapper.toCategoryResponse(categoryRepository.save(category));
-        }
-
-        String oldPath = category.getPath();
-        String newPath = category.getId() + "/";
-        Category newParent = null;
-
-        if (newParentId != null) {
-            newParent = getCategoryById(newParentId);
-            if (newParent.getPath().startsWith(oldPath)) {
-                throw new AppException(ErrorCode.CANNOT_MOVE_PARENT_TO_CHILD);
+        if (!Objects.equals(currentParentId, newParentId)) {
+            Category newParent = null;
+            if (newParentId != null) {
+                newParent = getCategoryById(newParentId);
+                if (Objects.equals(newParent.getId(), category.getId())) {
+                    throw new AppException(ErrorCode.CANNOT_MOVE_PARENT_TO_CHILD);
+                }
             }
-            newPath = newParent.getPath() + newPath;
+            category.setParent(newParent);
         }
-
-        int newLevel = (newParent != null) ? newParent.getLevel() + 1 : 0;
-
-        category.setParent(newParent);
-        category.setPath(newPath);
-        category.setLevel(newLevel);
 
         Category savedCategory = categoryRepository.save(category);
-        categoryRepository.updateDescendantPaths(oldPath + "%", newPath, oldPath.length());
-        log.info("Updated category tree for id {}", savedCategory.getId());
+        log.info("Updated category for id {}", savedCategory.getId());
         return categoryMapper.toCategoryResponse(savedCategory);
     }
 
@@ -169,9 +146,23 @@ public class CategoryServiceImpl implements CategoryService {
             log.warn("Category with id {} is already soft deleted", id);
             return;
         }
-        List<Long> allRelatedIds = categoryRepository.findAllIdsByPath(category.getPath());
-        categoryRepository.softDeleteAllByIds(allRelatedIds, LocalDateTime.now());
-        log.info("Soft-deleted category with id: {} and {} descendants", id, allRelatedIds.size() - 1);
+        category.setDeletedAt(LocalDateTime.now());
+        categoryRepository.save(category);
+        log.info("Soft-deleted category with id: {}", id);
+    }
+
+    @Override
+    @Transactional
+    public void deleteCategory(Long id) {
+        Category category = getDeletedCategoryById(id);
+        if (categoryRepository.existsByParentId(id)) {
+            throw new AppException(ErrorCode.CATEGORY_HAS_CHILDREN);
+        }
+        if (productCategoryRepository.existsByCategoryId(id)) {
+            throw new AppException(ErrorCode.CATEGORY_HAS_PRODUCTS);
+        }
+        categoryRepository.delete(category);
+        log.info("Permanently deleted category with id: {}", id);
     }
 
     @Override
@@ -182,13 +173,9 @@ public class CategoryServiceImpl implements CategoryService {
             log.warn("Category with id {} is not in a deleted state", id);
             return;
         }
-
-        LocalDateTime deletedTime = category.getDeletedAt();
-        LocalDateTime start = deletedTime.minusSeconds(2);
-        LocalDateTime end = deletedTime.plusSeconds(2);
-
-        categoryRepository.restoreDescendantsByTimeRange(category.getPath(), start, end);
-        log.info("Restored category with id {} and matching descendants", id);
+        category.setDeletedAt(null);
+        categoryRepository.save(category);
+        log.info("Restored category with id {}", id);
     }
 
     @Override
@@ -206,9 +193,22 @@ public class CategoryServiceImpl implements CategoryService {
                 categoryRepository.updateStatusByIds(CategoryStatus.valueOf(action), categoryIds);
                 log.info("Bulk update status {} categories ids: {}", action, categoryIds);
             }
-            case "DELETE" -> {
+            case "SOFT_DELETE" -> {
                 categoryRepository.softDeleteByIds(LocalDateTime.now(), categoryIds);
-                log.info("Bulk delete categories ids: {}", categoryIds);
+                log.info("Bulk soft-delete categories ids: {}", categoryIds);
+            }
+            case "DELETE" -> {
+                for (Long id : categoryIds) {
+                    if (categoryRepository.existsByParentId(id)) {
+                        throw new AppException(ErrorCode.CATEGORY_HAS_CHILDREN);
+                    }
+                    if (productCategoryRepository.existsByCategoryId(id)) {
+                        throw new AppException(ErrorCode.CATEGORY_HAS_PRODUCTS);
+                    }
+                }
+                Set<Category> categories = categoryRepository.findAllDeletedByIds(categoryIds);
+                categoryRepository.deleteAll(categories);
+                log.info("Bulk permanently delete categories ids: {}", categoryIds);
             }
             case "RESTORE" -> {
                 categoryRepository.restoreDeletedByIds(categoryIds);
@@ -227,14 +227,31 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     private PageResponse<CategoryResponse> getAllWithFilterAndSearch(CategoryFilterRequest request, boolean isDeleted) {
-        Pageable pageable = PageRequest.of(request.page() - 1, request.size(),
-                SortUtils.parseSort(request.sort()));
+        Pageable pageable = PageRequest.of(request.page() - 1, request.size(), SortUtils.parseSort(request.sort()));
 
         Specification<Category> spec = CategorySpecification.buildSpecification(request, isDeleted);
-        Page<Category> page = categoryRepository.findAll(spec, pageable);
+        Page<CategoryProjection> page = categoryRepository
+                .findBy(spec, q -> q.as(CategoryProjection.class).page(pageable));
 
         List<CategoryResponse> content = page.getContent().stream()
-                .map(categoryMapper::toCategoryResponse)
+                .map(proj -> CategoryResponse.builder()
+                        .id(proj.getId())
+                        .name(proj.getName())
+                        .slug(proj.getSlug())
+                        .description(proj.getDescription())
+                        .thumbnail(proj.getThumbnail())
+                        .position(proj.getPosition())
+                        .icon(proj.getIcon())
+                        .isFeatured(proj.getIsFeatured())
+                        .status(proj.getStatus())
+                        .parentId(proj.getParentId())
+                        .parentName(proj.getParentName())
+                        .createdAt(proj.getCreatedAt())
+                        .createdBy(proj.getCreatedByFullName())
+                        .updatedAt(proj.getUpdatedAt())
+                        .updatedBy(proj.getUpdatedByFullName())
+                        .deletedAt(proj.getDeletedAt())
+                        .build())
                 .collect(Collectors.toList());
 
         Page<CategoryResponse> responsePage = new PageImpl<>(content, pageable, page.getTotalElements());

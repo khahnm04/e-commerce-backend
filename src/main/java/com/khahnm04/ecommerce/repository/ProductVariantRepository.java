@@ -10,7 +10,10 @@ import java.util.Optional;
 import java.util.Set;
 
 @Repository
-public interface ProductVariantRepository extends JpaRepository<ProductVariant, Long>, JpaSpecificationExecutor<ProductVariant> {
+public interface ProductVariantRepository
+        extends JpaRepository<ProductVariant, Long>, JpaSpecificationExecutor<ProductVariant> {
+
+    boolean existsByProductId(Long productId);
 
     boolean existsBySku(String sku);
 

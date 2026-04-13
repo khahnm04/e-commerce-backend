@@ -131,6 +131,14 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     @Transactional
+    public void deleteEmployee(Long id) {
+        Employee employee = getDeletedEmployeeById(id);
+        employeeRepository.delete(employee);
+        log.info("Permanently deleted employee with id: {}", id);
+    }
+
+    @Override
+    @Transactional
     public void restoreEmployee(Long id) {
         Employee employee = getDeletedEmployeeById(id);
         if (employee.getDeletedAt() == null) {
@@ -162,9 +170,14 @@ public class EmployeeServiceImpl implements EmployeeService {
                 userService.bulkUpdateStatus(existingUserIds, UserStatus.valueOf(action));
                 log.info("Bulk update status {} employees ids: {}", action, employeeIds);
             }
-            case "DELETE" -> {
+            case "SOFT_DELETE" -> {
                 employeeRepository.softDeleteByIds(LocalDateTime.now(), employeeIds);
-                log.info("Bulk delete employees ids: {}", employeeIds);
+                log.info("Bulk soft-delete employees ids: {}", employeeIds);
+            }
+            case "DELETE" -> {
+                Set<Employee> employees = employeeRepository.findAllDeletedByIds(employeeIds);
+                employeeRepository.deleteAll(employees);
+                log.info("Bulk permanently delete employees ids: {}", employeeIds);
             }
             case "RESTORE" -> {
                 employeeRepository.restoreDeletedByIds(employeeIds);
@@ -198,7 +211,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         Specification<Employee> spec = EmployeeSpecification.buildSpecification(request, isDeleted);
 
         Page<EmployeeProjection> employeePage = employeeRepository
-            .findBy(spec, q -> q.as(EmployeeProjection.class).page(pageable));
+                .findBy(spec, q -> q.as(EmployeeProjection.class).page(pageable));
 
         List<EmployeeResponse> content = employeePage.getContent().stream()
                 .map(proj -> EmployeeResponse.builder()

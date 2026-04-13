@@ -1,6 +1,7 @@
 package com.khahnm04.ecommerce.service.impl;
 
 import com.khahnm04.ecommerce.common.util.SortUtils;
+import com.khahnm04.ecommerce.dto.projection.VariantProjection;
 import com.khahnm04.ecommerce.dto.request.BulkActionRequest;
 import com.khahnm04.ecommerce.dto.request.filter.VariantFilterRequest;
 import com.khahnm04.ecommerce.dto.request.VariantRequest;
@@ -11,6 +12,7 @@ import com.khahnm04.ecommerce.exception.AppException;
 import com.khahnm04.ecommerce.exception.ErrorCode;
 import com.khahnm04.ecommerce.mapper.VariantMapper;
 import com.khahnm04.ecommerce.repository.VariantRepository;
+import com.khahnm04.ecommerce.repository.VariantValueRepository;
 import com.khahnm04.ecommerce.service.VariantService;
 import com.khahnm04.ecommerce.specification.VariantSpecification;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +35,7 @@ import java.util.stream.Collectors;
 public class VariantServiceImpl implements VariantService {
 
     private final VariantRepository variantRepository;
+    private final VariantValueRepository variantValueRepository;
     private final VariantMapper variantMapper;
 
     @Override
@@ -98,6 +101,17 @@ public class VariantServiceImpl implements VariantService {
 
     @Override
     @Transactional
+    public void deleteVariant(Long id) {
+        Variant variant = getDeletedVariantById(id);
+        if (variantValueRepository.existsByVariantId(id)) {
+            throw new AppException(ErrorCode.VARIANT_HAS_VALUES);
+        }
+        variantRepository.delete(variant);
+        log.info("Permanently deleted variant with id: {}", id);
+    }
+
+    @Override
+    @Transactional
     public void restoreVariant(Long id) {
         Variant variant = getDeletedVariantById(id);
         variant.setDeletedAt(null);
@@ -116,9 +130,19 @@ public class VariantServiceImpl implements VariantService {
         }
 
         switch (action) {
-            case "DELETE" -> {
+            case "SOFT_DELETE" -> {
                 variantRepository.softDeleteByIds(LocalDateTime.now(), variantIds);
-                log.info("Bulk delete variants ids: {}", variantIds);
+                log.info("Bulk soft-delete variants ids: {}", variantIds);
+            }
+            case "DELETE" -> {
+                for (Long id : variantIds) {
+                    if (variantValueRepository.existsByVariantId(id)) {
+                        throw new AppException(ErrorCode.VARIANT_HAS_VALUES);
+                    }
+                }
+                List<Variant> variants = variantRepository.findAllDeletedByIds(variantIds);
+                variantRepository.deleteAll(variants);
+                log.info("Bulk permanently delete variants ids: {}", variantIds);
             }
             case "RESTORE" -> {
                 variantRepository.restoreDeletedByIds(variantIds);
@@ -141,10 +165,19 @@ public class VariantServiceImpl implements VariantService {
                 SortUtils.parseSort(request.sort()));
 
         Specification<Variant> spec = VariantSpecification.buildSpecification(request, isDeleted);
-        Page<Variant> page = variantRepository.findAll(spec, pageable);
+        Page<VariantProjection> page = variantRepository.findBy(spec,
+                q -> q.as(VariantProjection.class).page(pageable));
 
         List<VariantResponse> content = page.getContent().stream()
-                .map(variantMapper::toVariantResponse)
+                .map(proj -> VariantResponse.builder()
+                        .id(proj.getId())
+                        .name(proj.getName())
+                        .createdAt(proj.getCreatedAt())
+                        .createdBy(proj.getCreatedByFullName())
+                        .updatedAt(proj.getUpdatedAt())
+                        .updatedBy(proj.getUpdatedByFullName())
+                        .deletedAt(proj.getDeletedAt())
+                        .build())
                 .collect(Collectors.toList());
 
         Page<VariantResponse> responsePage = new PageImpl<>(content, pageable, page.getTotalElements());

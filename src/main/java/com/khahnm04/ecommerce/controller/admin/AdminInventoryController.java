@@ -1,10 +1,9 @@
 package com.khahnm04.ecommerce.controller.admin;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import com.khahnm04.ecommerce.dto.request.UpdateStockRequest;
 import com.khahnm04.ecommerce.dto.response.ApiResponse;
-import com.khahnm04.ecommerce.exception.AppException;
-import com.khahnm04.ecommerce.exception.ErrorCode;
 import com.khahnm04.ecommerce.repository.InventoryRepository;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -20,14 +19,9 @@ public class AdminInventoryController {
     @PatchMapping("/{variantId}/add")
     public ApiResponse<Void> addStock(
             @PathVariable Long variantId,
-            @RequestBody JsonNode request
+            @Valid @RequestBody UpdateStockRequest request
     ) {
-        JsonNode qtyNode = request.get("quantity");
-        if (qtyNode == null || qtyNode.isNull()) {
-            throw new AppException(ErrorCode.VALIDATION_EXCEPTION);
-        }
-
-        int quantity = qtyNode.asInt();
+        int quantity = request.quantity();
         inventoryRepository.addQuantity(variantId, quantity);
 
         log.info("Stock updated for variant ID {}: added {}", variantId, quantity);

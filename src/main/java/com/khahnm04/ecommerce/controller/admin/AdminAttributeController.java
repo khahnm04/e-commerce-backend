@@ -24,7 +24,7 @@ public class AdminAttributeController {
 
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
-	public ApiResponse<AttributeResponse> createAttribute (
+	public ApiResponse<AttributeResponse> createAttribute(
 			@Valid @RequestBody AttributeRequest request
     ) {
 		return ApiResponse.<AttributeResponse>builder()
@@ -34,7 +34,7 @@ public class AdminAttributeController {
 	}
 
 	@GetMapping("/{id}")
-	public ApiResponse<AttributeResponse> getAttributeDetail (
+	public ApiResponse<AttributeResponse> getAttributeDetail(
 			@PathVariable Long id,
 			@RequestParam(defaultValue = "false") boolean deleted
     ) {
@@ -45,7 +45,7 @@ public class AdminAttributeController {
 	}
 
 	@GetMapping
-	public ApiResponse<List<AttributeResponse>> getAllAttributes (
+	public ApiResponse<List<AttributeResponse>> getAllAttributes(
 			@Valid @ModelAttribute AttributeFilterRequest filter
     ) {
 		PageResponse<AttributeResponse> pageResponse = attributeService.getAllAttributes(filter);
@@ -57,7 +57,7 @@ public class AdminAttributeController {
 	}
 
 	@GetMapping("/deleted")
-	public ApiResponse<List<AttributeResponse>> getAllDeletedAttributes (
+	public ApiResponse<List<AttributeResponse>> getAllDeletedAttributes(
 			@Valid @ModelAttribute AttributeFilterRequest filter
     ) {
 		PageResponse<AttributeResponse> pageResponse = attributeService.getAllDeletedAttributes(filter);
@@ -69,7 +69,7 @@ public class AdminAttributeController {
 	}
 
 	@PutMapping("/{id}")
-	public ApiResponse<AttributeResponse> updateAttribute (
+	public ApiResponse<AttributeResponse> updateAttribute(
 			@PathVariable Long id,
 			@Valid @RequestBody AttributeRequest request
     ) {
@@ -79,8 +79,8 @@ public class AdminAttributeController {
 				.build();
 	}
 
-	@DeleteMapping("/{id}")
-	public ApiResponse<Void> softDeleteAttribute (
+	@PatchMapping("/{id}/soft-delete")
+	public ApiResponse<Void> softDeleteAttribute(
 			@PathVariable Long id
     ) {
 		attributeService.softDeleteAttribute(id);
@@ -89,8 +89,18 @@ public class AdminAttributeController {
 				.build();
 	}
 
+	@DeleteMapping("/{id}")
+	public ApiResponse<Void> deleteAttribute(
+			@PathVariable Long id
+    ) {
+		attributeService.deleteAttribute(id);
+		return ApiResponse.<Void>builder()
+				.message("Attribute deleted successfully")
+				.build();
+	}
+
 	@PatchMapping("/{id}/restore")
-	public ApiResponse<Void> restoreAttribute (
+	public ApiResponse<Void> restoreAttribute(
 			@PathVariable Long id
     ) {
 		attributeService.restoreAttribute(id);
@@ -100,7 +110,7 @@ public class AdminAttributeController {
 	}
 
 	@PatchMapping("/bulk")
-	public ApiResponse<Void> handleBulkAction (
+	public ApiResponse<Void> handleBulkAction(
 			@RequestBody BulkActionRequest request
     ) {
 		attributeService.handleBulkAction(request);

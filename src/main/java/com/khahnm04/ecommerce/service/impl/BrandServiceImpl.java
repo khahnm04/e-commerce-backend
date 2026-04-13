@@ -3,6 +3,7 @@ package com.khahnm04.ecommerce.service.impl;
 import com.khahnm04.ecommerce.common.enums.BrandStatus;
 import com.khahnm04.ecommerce.common.util.SlugUtils;
 import com.khahnm04.ecommerce.common.util.SortUtils;
+import com.khahnm04.ecommerce.dto.projection.BrandProjection;
 import com.khahnm04.ecommerce.dto.request.BulkActionRequest;
 import com.khahnm04.ecommerce.dto.request.filter.BrandFilterRequest;
 import com.khahnm04.ecommerce.dto.request.BrandRequest;
@@ -13,6 +14,7 @@ import com.khahnm04.ecommerce.exception.AppException;
 import com.khahnm04.ecommerce.exception.ErrorCode;
 import com.khahnm04.ecommerce.mapper.BrandMapper;
 import com.khahnm04.ecommerce.repository.BrandRepository;
+import com.khahnm04.ecommerce.repository.ProductRepository;
 import com.khahnm04.ecommerce.service.BrandService;
 import com.khahnm04.ecommerce.specification.BrandSpecification;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +38,7 @@ import java.util.stream.Collectors;
 public class BrandServiceImpl implements BrandService {
 
     private final BrandRepository brandRepository;
+    private final ProductRepository productRepository;
     private final BrandMapper brandMapper;
 
     @Override
@@ -131,6 +134,17 @@ public class BrandServiceImpl implements BrandService {
 
     @Override
     @Transactional
+    public void deleteBrand(Long id) {
+        Brand brand = getDeletedBrandById(id);
+        if (productRepository.existsByBrandId(id)) {
+            throw new AppException(ErrorCode.BRAND_HAS_PRODUCTS);
+        }
+        brandRepository.delete(brand);
+        log.info("Permanently deleted brand with id: {}", id);
+    }
+
+    @Override
+    @Transactional
     public void restoreBrand(Long id) {
         Brand brand = getDeletedBrandById(id);
         if (brand.getDeletedAt() == null) {
@@ -157,9 +171,19 @@ public class BrandServiceImpl implements BrandService {
                 brandRepository.updateStatusByIds(BrandStatus.valueOf(action), brandIds);
                 log.info("Bulk update status {} brands ids: {}", action, brandIds);
             }
-            case "DELETE" -> {
+            case "SOFT_DELETE" -> {
                 brandRepository.softDeleteByIds(LocalDateTime.now(), brandIds);
-                log.info("Bulk delete brands ids: {}", brandIds);
+                log.info("Bulk soft-delete brands ids: {}", brandIds);
+            }
+            case "DELETE" -> {
+                for (Long id : brandIds) {
+                    if (productRepository.existsByBrandId(id)) {
+                        throw new AppException(ErrorCode.BRAND_HAS_PRODUCTS);
+                    }
+                }
+                Set<Brand> brands = brandRepository.findAllDeletedByIds(brandIds);
+                brandRepository.deleteAll(brands);
+                log.info("Bulk permanently delete brands ids: {}", brandIds);
             }
             case "RESTORE" -> {
                 brandRepository.restoreDeletedByIds(brandIds);
@@ -182,10 +206,24 @@ public class BrandServiceImpl implements BrandService {
                 SortUtils.parseSort(request.sort()));
 
         Specification<Brand> spec = BrandSpecification.buildSpecification(request, isDeleted);
-        Page<Brand> page = brandRepository.findAll(spec, pageable);
+        Page<BrandProjection> page = brandRepository.findBy(spec, q -> q.as(BrandProjection.class).page(pageable));
 
         List<BrandResponse> content = page.getContent().stream()
-                .map(brandMapper::toBrandResponse)
+                .map(proj -> BrandResponse.builder()
+                        .id(proj.getId())
+                        .name(proj.getName())
+                        .slug(proj.getSlug())
+                        .description(proj.getDescription())
+                        .logo(proj.getLogo())
+                        .country(proj.getCountry())
+                        .website(proj.getWebsite())
+                        .status(proj.getStatus())
+                        .createdAt(proj.getCreatedAt())
+                        .createdBy(proj.getCreatedByFullName())
+                        .updatedAt(proj.getUpdatedAt())
+                        .updatedBy(proj.getUpdatedByFullName())
+                        .deletedAt(proj.getDeletedAt())
+                        .build())
                 .collect(Collectors.toList());
 
         Page<BrandResponse> responsePage = new PageImpl<>(content, pageable, page.getTotalElements());

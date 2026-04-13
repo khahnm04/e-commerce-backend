@@ -13,6 +13,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.web.bind.MissingRequestCookieException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import jakarta.validation.ConstraintViolation;
@@ -30,8 +31,7 @@ public class GlobalExceptionHandler {
 
     // Catch exception when Duplicate entry
     @ExceptionHandler(value = DataIntegrityViolationException.class)
-    ResponseEntity<ErrorResponse> handlingDataIntegrityViolationException(DataIntegrityViolationException exception,
-            HttpServletRequest request) {
+    ResponseEntity<ErrorResponse> handlingDataIntegrityViolationException(DataIntegrityViolationException exception, HttpServletRequest request) {
         ErrorCode errorCode = ErrorCode.DUPLICATE_ENTRY;
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .timestamp(LocalDateTime.now())
@@ -69,16 +69,8 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(value = org.springframework.web.bind.MissingRequestCookieException.class)
-    ResponseEntity<ErrorResponse> handlingMissingRequestCookieException(
-            org.springframework.web.bind.MissingRequestCookieException exception, HttpServletRequest request) {
-        ErrorCode errorCode = ErrorCode.VALIDATION_EXCEPTION;
-        if (com.khahnm04.ecommerce.common.constant.TokenConstants.REFRESH_TOKEN.equals(exception.getCookieName())) {
-            errorCode = ErrorCode.REFRESH_TOKEN_FAILED;
-        } else if (com.khahnm04.ecommerce.common.constant.TokenConstants.ACCESS_TOKEN
-                .equals(exception.getCookieName())) {
-            errorCode = ErrorCode.UNAUTHENTICATED;
-        }
-
+    ResponseEntity<ErrorResponse> handlingMissingRequestCookieException(MissingRequestCookieException exception, HttpServletRequest request) {
+        ErrorCode errorCode = ErrorCode.UNAUTHENTICATED;
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .timestamp(LocalDateTime.now())
                 .code(errorCode.getCode())
@@ -90,8 +82,7 @@ public class GlobalExceptionHandler {
 
     // Catch exception when Access Denied
     @ExceptionHandler(value = AccessDeniedException.class)
-    ResponseEntity<ErrorResponse> handlingAccessDeniedException(AccessDeniedException exception,
-            HttpServletRequest request) {
+    ResponseEntity<ErrorResponse> handlingAccessDeniedException(AccessDeniedException exception, HttpServletRequest request) {
         ErrorCode errorCode = ErrorCode.UNAUTHORIZED;
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .timestamp(LocalDateTime.now())
@@ -103,8 +94,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(value = ServiceValidationException.class)
-    ResponseEntity<ErrorResponse> handlingServiceValidationException(ServiceValidationException exception,
-            HttpServletRequest request) {
+    ResponseEntity<ErrorResponse> handlingServiceValidationException(ServiceValidationException exception, HttpServletRequest request) {
 
         List<ErrorResponse.FieldErrorResponse> errors = exception.getErrors().entrySet()
                 .stream()

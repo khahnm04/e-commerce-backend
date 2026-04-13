@@ -23,6 +23,8 @@ public interface ProductVariantService {
 
     void softDeleteProductVariant(Long id);
 
+    void deleteProductVariant(Long id);
+
     void restoreProductVariant(Long id);
 
     void handleBulkAction(BulkActionRequest request);

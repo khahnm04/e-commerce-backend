@@ -19,7 +19,6 @@ import com.khahnm04.ecommerce.service.JwtService;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import com.nimbusds.jwt.SignedJWT;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -60,16 +59,8 @@ public class AuthServiceImpl implements AuthService {
 
         User user = (User) authentication.getPrincipal();
 
-        TokenPayload accessToken = jwtService.generateAccessToken(user);
-        TokenPayload refreshToken = jwtService.generateRefreshToken(user, request.rememberMe());
-
-        redisTokenRepository.save(RedisToken.builder()
-                .jwtId(refreshToken.jwtId())
-                .expiredTime(refreshToken.expiredTime().getTime())
-                .build());
-
-        addAccessTokenCookies(response, accessToken.token());
-        addRefreshTokenCookies(response, refreshToken.token(), request.rememberMe());
+        TokenPayload token = jwtService.generateToken(user, request.rememberMe());
+        addTokenCookies(response, token.token(), request.rememberMe());
 
         user.setLastLoginAt(LocalDateTime.now());
         userRepository.save(user);
@@ -77,52 +68,31 @@ public class AuthServiceImpl implements AuthService {
         log.info("User with id = {} has been authenticated", user.getId());
         return LoginResponse.builder()
                 .id(user.getId())
+                .email(user.getEmail())
+                .phoneNumber(user.getPhoneNumber())
                 .fullName(user.getFullName())
                 .avatar(user.getAvatar())
                 .build();
     }
 
     @Override
-    public void logout(String accessToken, String refreshToken, HttpServletResponse response) {
+    public void logout(String accessToken, HttpServletResponse response) {
         try {
-            // save access token
-            var signAccessToken = jwtService.verifyAccessToken(accessToken);
+            // save token to blacklist
+            var signToken = jwtService.validateToken(accessToken);
             redisTokenRepository.save(RedisToken.builder()
-                    .jwtId(signAccessToken.getJWTClaimsSet().getJWTID())
-                    .expiredTime(signAccessToken.getJWTClaimsSet().getExpirationTime().getTime())
+                    .jwtId(signToken.getJWTClaimsSet().getJWTID())
+                    .expiredTime(signToken.getJWTClaimsSet().getExpirationTime().getTime())
                     .build());
-            log.info("save access token success");
-
-            // remove refresh token
-            var signRefreshToken = jwtService.verifyRefreshToken(refreshToken);
-            redisTokenRepository.deleteById(signRefreshToken.getJWTClaimsSet().getJWTID());
-            log.info("remove refresh token success");
+            log.info("save token successfully");
 
             // delete token from cookie
-            clearAccessTokenCookie(response);
-            clearRefreshTokenCookie(response);
+            clearTokenCookie(response);
+            log.info("delete token from cookie successfully");
 
         } catch (AppException | ParseException e) {
             log.error("Token already expired");
             throw new AppException(ErrorCode.UNAUTHENTICATED);
-        }
-    }
-
-    @Override
-    public void refreshToken(String token, HttpServletResponse response) {
-        try {
-            SignedJWT signedJWT = jwtService.verifyRefreshToken(token);
-
-            User user = userRepository.findByIdentifier(signedJWT.getJWTClaimsSet().getSubject())
-                    .orElseThrow(() -> new AppException(ErrorCode.REFRESH_TOKEN_FAILED));
-
-            TokenPayload accessToken = jwtService.generateAccessToken(user);
-            addAccessTokenCookies(response, accessToken.token());
-
-            log.info("refresh token success");
-        } catch (ParseException e) {
-            log.error("cannot refresh token");
-            throw new AppException(ErrorCode.REFRESH_TOKEN_FAILED);
         }
     }
 
@@ -152,7 +122,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public IntrospectResponse introspect(String token) {
         try {
-            jwtService.verifyAccessToken(token);
+            jwtService.validateToken(token);
             return IntrospectResponse.builder()
                     .valid(true)
                     .build();
@@ -165,34 +135,22 @@ public class AuthServiceImpl implements AuthService {
 
     // ======================== Private methods ========================
 
-    private void addAccessTokenCookies(HttpServletResponse response, String accessToken) {
-        ResponseCookie accessCookie = ResponseCookie.from(TokenConstants.ACCESS_TOKEN, accessToken)
-                .httpOnly(cookieProperties.isHttpOnly())
-                .secure(cookieProperties.isSecure())
-                .domain(cookieProperties.getDomain())
-                .path("/")
-                .maxAge(jwtProperties.getAccessTokenExpiration())
-                .sameSite(cookieProperties.getSameSite())
-                .build();
-        response.addHeader(HttpHeaders.SET_COOKIE, accessCookie.toString());
-    }
-
-    private void addRefreshTokenCookies(HttpServletResponse response, String refreshToken, boolean rememberMe) {
-        ResponseCookie refreshCookie = ResponseCookie.from(TokenConstants.REFRESH_TOKEN, refreshToken)
+    private void addTokenCookies(HttpServletResponse response, String token, boolean rememberMe) {
+        ResponseCookie refreshCookie = ResponseCookie.from(TokenConstants.TOKEN, token)
                 .httpOnly(cookieProperties.isHttpOnly())
                 .secure(cookieProperties.isSecure())
                 .domain(cookieProperties.getDomain())
                 .path("/")
                 .maxAge(rememberMe
-                        ? jwtProperties.getRefreshTokenRememberExpiration()
-                        : jwtProperties.getRefreshTokenExpiration())
+                        ? jwtProperties.getTokenRememberExpiration()
+                        : jwtProperties.getTokenExpiration())
                 .sameSite(cookieProperties.getSameSite())
                 .build();
         response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
     }
 
-    public void clearAccessTokenCookie(HttpServletResponse response) {
-        ResponseCookie accessTokenCookie = ResponseCookie.from(TokenConstants.ACCESS_TOKEN, "")
+    public void clearTokenCookie(HttpServletResponse response) {
+        ResponseCookie accessTokenCookie = ResponseCookie.from(TokenConstants.TOKEN, "")
                 .maxAge(0)
                 .domain(cookieProperties.getDomain())
                 .path("/")
@@ -201,18 +159,6 @@ public class AuthServiceImpl implements AuthService {
                 .sameSite(cookieProperties.getSameSite())
                 .build();
         response.addHeader(HttpHeaders.SET_COOKIE, accessTokenCookie.toString());
-    }
-
-    public void clearRefreshTokenCookie(HttpServletResponse response) {
-        ResponseCookie refreshTokenCookie = ResponseCookie.from(TokenConstants.REFRESH_TOKEN, "")
-                .maxAge(0)
-                .domain(cookieProperties.getDomain())
-                .path("/")
-                .httpOnly(cookieProperties.isHttpOnly())
-                .secure(cookieProperties.isSecure())
-                .sameSite(cookieProperties.getSameSite())
-                .build();
-        response.addHeader(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
     }
 
 }

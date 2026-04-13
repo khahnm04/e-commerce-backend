@@ -1,6 +1,7 @@
 package com.khahnm04.ecommerce.service.impl;
 
 import com.khahnm04.ecommerce.common.util.SortUtils;
+import com.khahnm04.ecommerce.dto.projection.AttributeProjection;
 import com.khahnm04.ecommerce.dto.request.BulkActionRequest;
 import com.khahnm04.ecommerce.dto.request.filter.AttributeFilterRequest;
 import com.khahnm04.ecommerce.dto.request.AttributeRequest;
@@ -104,6 +105,14 @@ public class AttributeServiceImpl implements AttributeService {
 
     @Override
     @Transactional
+    public void deleteAttribute(Long id) {
+        Attribute attribute = getDeletedAttributeById(id);
+        attributeRepository.delete(attribute);
+        log.info("Permanently deleted attribute with id: {}", id);
+    }
+
+    @Override
+    @Transactional
     public void restoreAttribute(Long id) {
         Attribute attribute = getDeletedAttributeById(id);
         if (attribute.getDeletedAt() == null) {
@@ -126,13 +135,18 @@ public class AttributeServiceImpl implements AttributeService {
         }
 
         switch (action) {
-            case "DELETE" -> {
+            case "SOFT_DELETE" -> {
                 attributeRepository.softDeleteByIds(LocalDateTime.now(), attributeIds);
-                log.info("Bulk delete attributes ids: {}", attributeIds);
+                log.info("Bulk soft-delete attributes ids: {}", attributeIds);
             }
             case "RESTORE" -> {
                 attributeRepository.restoreDeletedByIds(attributeIds);
                 log.info("Bulk restore attributes ids: {}", attributeIds);
+            }
+            case "DELETE" -> {
+                Set<Attribute> attributes = attributeRepository.findAllDeletedByIds(attributeIds);
+                attributeRepository.deleteAll(attributes);
+                log.info("Bulk permanently delete attributes ids: {}", attributeIds);
             }
             default -> throw new AppException(ErrorCode.ATTRIBUTE_INVALID_BULK_ACTION);
         }
@@ -152,10 +166,19 @@ public class AttributeServiceImpl implements AttributeService {
                 SortUtils.parseSort(request.sort()));
 
         Specification<Attribute> spec = AttributeSpecification.buildSpecification(request, isDeleted);
-        Page<Attribute> page = attributeRepository.findAll(spec, pageable);
+        Page<AttributeProjection> page = attributeRepository.findBy(spec,
+                q -> q.as(AttributeProjection.class).page(pageable));
 
         List<AttributeResponse> content = page.getContent().stream()
-                .map(attributeMapper::toAttributeResponse)
+                .map(proj -> AttributeResponse.builder()
+                        .id(proj.getId())
+                        .name(proj.getName())
+                        .createdAt(proj.getCreatedAt())
+                        .createdBy(proj.getCreatedByFullName())
+                        .updatedAt(proj.getUpdatedAt())
+                        .updatedBy(proj.getUpdatedByFullName())
+                        .deletedAt(proj.getDeletedAt())
+                        .build())
                 .collect(Collectors.toList());
 
         Page<AttributeResponse> responsePage = new PageImpl<>(content, pageable, page.getTotalElements());

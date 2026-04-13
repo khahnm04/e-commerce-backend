@@ -25,8 +25,7 @@ public class AdminProductController {
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
 	public ApiResponse<ProductResponse> createProduct(
-			@Valid @RequestBody ProductRequest request
-    ) {
+			@Valid @RequestBody ProductRequest request) {
 		return ApiResponse.<ProductResponse>builder()
 				.data(productService.createProduct(request))
 				.message("Product created successfully")
@@ -36,8 +35,7 @@ public class AdminProductController {
 	@GetMapping("/{identifier}")
 	public ApiResponse<ProductResponse> getProductDetail(
 			@PathVariable String identifier,
-			@RequestParam(defaultValue = "false") boolean deleted
-    ) {
+			@RequestParam(defaultValue = "false") boolean deleted) {
 		return ApiResponse.<ProductResponse>builder()
 				.data(productService.getProductDetail(identifier, deleted))
 				.message("Get product detail successfully")
@@ -46,8 +44,7 @@ public class AdminProductController {
 
 	@GetMapping
 	public ApiResponse<List<ProductResponse>> getAllProducts(
-			@Valid @ModelAttribute ProductFilterRequest filter
-    ) {
+			@Valid @ModelAttribute ProductFilterRequest filter) {
 		PageResponse<ProductResponse> pageResponse = productService.getAllProducts(filter);
 		return ApiResponse.<List<ProductResponse>>builder()
 				.data(pageResponse.data())
@@ -58,8 +55,7 @@ public class AdminProductController {
 
 	@GetMapping("/deleted")
 	public ApiResponse<List<ProductResponse>> getAllDeletedProducts(
-			@Valid @ModelAttribute ProductFilterRequest filter
-    ) {
+			@Valid @ModelAttribute ProductFilterRequest filter) {
 		PageResponse<ProductResponse> pageResponse = productService.getAllDeletedProducts(filter);
 		return ApiResponse.<List<ProductResponse>>builder()
 				.data(pageResponse.data())
@@ -71,28 +67,34 @@ public class AdminProductController {
 	@PutMapping("/{id}")
 	public ApiResponse<ProductResponse> updateProduct(
 			@PathVariable Long id,
-			@Valid @RequestBody ProductRequest request
-    ) {
+			@Valid @RequestBody ProductRequest request) {
 		return ApiResponse.<ProductResponse>builder()
 				.data(productService.updateProduct(id, request))
 				.message("Product updated successfully")
 				.build();
 	}
 
-	@DeleteMapping("/{id}")
+	@PatchMapping("/{id}/soft-delete")
 	public ApiResponse<Void> softDeleteProduct(
-			@PathVariable Long id
-    ) {
+			@PathVariable Long id) {
 		productService.softDeleteProduct(id);
 		return ApiResponse.<Void>builder()
 				.message("Product soft deleted successfully")
 				.build();
 	}
 
+	@DeleteMapping("/{id}")
+	public ApiResponse<Void> deleteProduct(
+			@PathVariable Long id) {
+		productService.deleteProduct(id);
+		return ApiResponse.<Void>builder()
+				.message("Product deleted successfully")
+				.build();
+	}
+
 	@PatchMapping("/{id}/restore")
 	public ApiResponse<Void> restoreProduct(
-			@PathVariable Long id
-    ) {
+			@PathVariable Long id) {
 		productService.restoreProduct(id);
 		return ApiResponse.<Void>builder()
 				.message("Product restored successfully")
@@ -101,8 +103,7 @@ public class AdminProductController {
 
 	@PatchMapping("/bulk")
 	public ApiResponse<Void> handleBulkAction(
-			@RequestBody BulkActionRequest request
-    ) {
+			@RequestBody BulkActionRequest request) {
 		productService.handleBulkAction(request);
 		return ApiResponse.<Void>builder()
 				.message("Bulk action executed successfully")

@@ -24,6 +24,8 @@ public interface EmployeeService {
 
     void softDeleteEmployee(Long id);
 
+    void deleteEmployee(Long id);
+
     void restoreEmployee(Long id);
 
     void handleBulkAction(BulkActionRequest request);

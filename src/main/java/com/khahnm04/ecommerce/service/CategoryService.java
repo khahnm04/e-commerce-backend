@@ -23,6 +23,8 @@ public interface CategoryService {
 
     void softDeleteCategory(Long id);
 
+    void deleteCategory(Long id);
+
     void restoreCategory(Long id);
 
     void handleBulkAction(BulkActionRequest request);

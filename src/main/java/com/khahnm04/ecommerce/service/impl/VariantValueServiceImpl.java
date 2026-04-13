@@ -1,6 +1,7 @@
 package com.khahnm04.ecommerce.service.impl;
 
 import com.khahnm04.ecommerce.common.util.SortUtils;
+import com.khahnm04.ecommerce.dto.projection.VariantValueProjection;
 import com.khahnm04.ecommerce.dto.request.BulkActionRequest;
 import com.khahnm04.ecommerce.dto.request.filter.VariantValueFilterRequest;
 import com.khahnm04.ecommerce.dto.request.VariantValueRequest;
@@ -11,6 +12,7 @@ import com.khahnm04.ecommerce.entity.VariantValue;
 import com.khahnm04.ecommerce.exception.AppException;
 import com.khahnm04.ecommerce.exception.ErrorCode;
 import com.khahnm04.ecommerce.mapper.VariantValueMapper;
+import com.khahnm04.ecommerce.repository.ProductVariantValueRepository;
 import com.khahnm04.ecommerce.repository.VariantRepository;
 import com.khahnm04.ecommerce.repository.VariantValueRepository;
 import com.khahnm04.ecommerce.service.VariantValueService;
@@ -35,6 +37,7 @@ import java.util.stream.Collectors;
 public class VariantValueServiceImpl implements VariantValueService {
 
     private final VariantValueRepository variantValueRepository;
+    private final ProductVariantValueRepository productVariantValueRepository;
     private final VariantRepository variantRepository;
     private final VariantValueMapper variantValueMapper;
 
@@ -112,6 +115,17 @@ public class VariantValueServiceImpl implements VariantValueService {
 
     @Override
     @Transactional
+    public void deleteVariantValue(Long id) {
+        VariantValue variantValue = getDeletedVariantValueById(id);
+        if (productVariantValueRepository.existsByVariantValueId(id)) {
+            throw new AppException(ErrorCode.VARIANT_VALUE_HAS_PRODUCT_VARIANTS);
+        }
+        variantValueRepository.delete(variantValue);
+        log.info("Permanently deleted variant value with id: {}", id);
+    }
+
+    @Override
+    @Transactional
     public void restoreVariantValue(Long id) {
         VariantValue variantValue = getDeletedVariantValueById(id);
         variantValue.setDeletedAt(null);
@@ -130,9 +144,19 @@ public class VariantValueServiceImpl implements VariantValueService {
         }
 
         switch (action) {
-            case "DELETE" -> {
+            case "SOFT_DELETE" -> {
                 variantValueRepository.softDeleteByIds(LocalDateTime.now(), variantValueIds);
-                log.info("Bulk delete variant values ids: {}", variantValueIds);
+                log.info("Bulk soft-delete variant values ids: {}", variantValueIds);
+            }
+            case "DELETE" -> {
+                for (Long id : variantValueIds) {
+                    if (productVariantValueRepository.existsByVariantValueId(id)) {
+                        throw new AppException(ErrorCode.VARIANT_VALUE_HAS_PRODUCT_VARIANTS);
+                    }
+                }
+                List<VariantValue> variantValues = variantValueRepository.findAllDeletedByIds(variantValueIds);
+                variantValueRepository.deleteAll(variantValues);
+                log.info("Bulk permanently delete variant values ids: {}", variantValueIds);
             }
             case "RESTORE" -> {
                 variantValueRepository.restoreDeletedByIds(variantValueIds);
@@ -156,10 +180,20 @@ public class VariantValueServiceImpl implements VariantValueService {
                 SortUtils.parseSort(request.sort()));
 
         Specification<VariantValue> spec = VariantValueSpecification.buildSpecification(request, isDeleted);
-        Page<VariantValue> page = variantValueRepository.findAll(spec, pageable);
+        Page<VariantValueProjection> page = variantValueRepository.findBy(spec,
+                q -> q.as(VariantValueProjection.class).page(pageable));
 
         List<VariantValueResponse> content = page.getContent().stream()
-                .map(variantValueMapper::toVariantValueResponse)
+                .map(proj -> VariantValueResponse.builder()
+                        .id(proj.getId())
+                        .variant(proj.getVariantName())
+                        .value(proj.getValue())
+                        .createdAt(proj.getCreatedAt())
+                        .createdBy(proj.getCreatedByFullName())
+                        .updatedAt(proj.getUpdatedAt())
+                        .updatedBy(proj.getUpdatedByFullName())
+                        .deletedAt(proj.getDeletedAt())
+                        .build())
                 .collect(Collectors.toList());
 
         Page<VariantValueResponse> responsePage = new PageImpl<>(content, pageable, page.getTotalElements());

@@ -27,19 +27,18 @@ public class Category extends BaseEntity<Long> {
     @Column(name = "thumbnail")
     private String thumbnail;
 
+    @Column(name = "icon")
+    private String icon;
+
+    @Column(name = "is_featured")
+    private Boolean isFeatured;
+
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
     @Column(name = "position")
     @Builder.Default
     private Integer position = 0;
-
-    @Column(name = "path")
-    private String path;
-
-    @Column(name = "level")
-    @Builder.Default
-    private Integer level = 0;
 
     @Builder.Default
     @Column(name = "status")

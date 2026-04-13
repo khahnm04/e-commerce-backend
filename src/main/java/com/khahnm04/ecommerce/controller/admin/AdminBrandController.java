@@ -1,6 +1,5 @@
 package com.khahnm04.ecommerce.controller.admin;
 
-
 import com.khahnm04.ecommerce.dto.request.BulkActionRequest;
 import com.khahnm04.ecommerce.dto.request.filter.BrandFilterRequest;
 import com.khahnm04.ecommerce.dto.request.BrandRequest;
@@ -25,9 +24,8 @@ public class AdminBrandController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ApiResponse<BrandResponse> createBrand (
-            @Valid @RequestBody BrandRequest request
-    ) {
+    public ApiResponse<BrandResponse> createBrand(
+            @Valid @RequestBody BrandRequest request) {
         return ApiResponse.<BrandResponse>builder()
                 .data(brandService.createBrand(request))
                 .message("Brand created successfully")
@@ -35,10 +33,9 @@ public class AdminBrandController {
     }
 
     @GetMapping("/{identifier}")
-    public ApiResponse<BrandResponse> getBrandDetail (
+    public ApiResponse<BrandResponse> getBrandDetail(
             @PathVariable String identifier,
-            @RequestParam(defaultValue = "false") boolean deleted
-    ) {
+            @RequestParam(defaultValue = "false") boolean deleted) {
         return ApiResponse.<BrandResponse>builder()
                 .data(brandService.getBrandDetail(identifier, deleted))
                 .message("Get brand detail successfully")
@@ -46,9 +43,8 @@ public class AdminBrandController {
     }
 
     @GetMapping
-    public ApiResponse<List<BrandResponse>> getAllBrands (
-            @Valid @ModelAttribute BrandFilterRequest filter
-    ) {
+    public ApiResponse<List<BrandResponse>> getAllBrands(
+            @Valid @ModelAttribute BrandFilterRequest filter) {
         PageResponse<BrandResponse> pageResponse = brandService.getAllBrands(filter);
         return ApiResponse.<List<BrandResponse>>builder()
                 .data(pageResponse.data())
@@ -58,9 +54,8 @@ public class AdminBrandController {
     }
 
     @GetMapping("/deleted")
-    public ApiResponse<List<BrandResponse>> getAllDeletedBrands (
-            @Valid @ModelAttribute BrandFilterRequest filter
-    ) {
+    public ApiResponse<List<BrandResponse>> getAllDeletedBrands(
+            @Valid @ModelAttribute BrandFilterRequest filter) {
         PageResponse<BrandResponse> pageResponse = brandService.getAllDeletedBrands(filter);
         return ApiResponse.<List<BrandResponse>>builder()
                 .data(pageResponse.data())
@@ -70,30 +65,36 @@ public class AdminBrandController {
     }
 
     @PutMapping("/{id}")
-    public ApiResponse<BrandResponse> updateBrand (
+    public ApiResponse<BrandResponse> updateBrand(
             @PathVariable Long id,
-            @Valid @RequestBody BrandRequest request
-    ) {
+            @Valid @RequestBody BrandRequest request) {
         return ApiResponse.<BrandResponse>builder()
                 .data(brandService.updateBrand(id, request))
                 .message("Brand updated successfully")
                 .build();
     }
 
-    @DeleteMapping("/{id}")
-    public ApiResponse<Void> softDeleteBrand (
-            @PathVariable Long id
-    ) {
+    @PatchMapping("/{id}/soft-delete")
+    public ApiResponse<Void> softDeleteBrand(
+            @PathVariable Long id) {
         brandService.softDeleteBrand(id);
         return ApiResponse.<Void>builder()
                 .message("Brand soft deleted successfully")
                 .build();
     }
 
+    @DeleteMapping("/{id}")
+    public ApiResponse<Void> deleteBrand(
+            @PathVariable Long id) {
+        brandService.deleteBrand(id);
+        return ApiResponse.<Void>builder()
+                .message("Brand deleted successfully")
+                .build();
+    }
+
     @PatchMapping("/{id}/restore")
-    public ApiResponse<Void> restoreBrand (
-            @PathVariable Long id
-    ) {
+    public ApiResponse<Void> restoreBrand(
+            @PathVariable Long id) {
         brandService.restoreBrand(id);
         return ApiResponse.<Void>builder()
                 .message("Brand restored successfully")
@@ -101,9 +102,8 @@ public class AdminBrandController {
     }
 
     @PatchMapping("/bulk")
-    public ApiResponse<Void> handleBulkAction (
-            @RequestBody BulkActionRequest request
-    ) {
+    public ApiResponse<Void> handleBulkAction(
+            @RequestBody BulkActionRequest request) {
         brandService.handleBulkAction(request);
         return ApiResponse.<Void>builder()
                 .message("Bulk action executed successfully")

@@ -22,6 +22,9 @@ spring:
     hibernate:
       ddl-auto: none
     show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
   flyway:
     enabled: true
     baseline-on-migrate: true
@@ -35,6 +38,7 @@ spring:
     multipart:
       max-file-size: 30MB # Tối đa 1 file là 10MB
       max-request-size: 10MB  # Tổng cả request tối đa 50MB
+
 
 logging:
   level:
@@ -56,6 +60,5 @@ cloudinary:
 
 jwt:
   signerKey: "${SIGNER_KEY}"
-  access-token-expiration: 900        # 15 phút
-  refresh-token-expiration: 86400     # 1 ngày
-  refresh-token-remember-expiration: 2592000  # 30 ngày
+  token-expiration: 86400        # 1 ngày
+  token-remember-expiration: 2592000  # 30 ngày

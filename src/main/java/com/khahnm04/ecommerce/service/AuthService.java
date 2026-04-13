@@ -10,9 +10,7 @@ public interface AuthService {
 
     LoginResponse login(LoginRequest request, HttpServletResponse response);
 
-    void logout(String accessToken, String refreshToken, HttpServletResponse response);
-
-    void refreshToken(String token, HttpServletResponse response);
+    void logout(String token, HttpServletResponse response);
 
     void changePassword(Long userId, ChangePasswordRequest request);
 

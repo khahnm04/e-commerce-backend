@@ -25,7 +25,7 @@ public class JwtDecoderConfig implements JwtDecoder {
 
     @Override
     public Jwt decode(String token) throws JwtException {
-        jwtService.verifyAccessToken(token);
+        jwtService.validateToken(token);
 
         if (Objects.isNull(nimbusJwtDecoder)) {
             SecretKeySpec secretKeySpec = new SecretKeySpec(signerKey.getBytes(), "HS512");

@@ -14,6 +14,8 @@ import java.util.Set;
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecificationExecutor<Order> {
 
+    boolean existsByCustomerId(Long customerId);
+
     Optional<Order> findByCode(String code);
 
     Optional<Order> findByIdAndCustomerId(Long id, Long customerId);

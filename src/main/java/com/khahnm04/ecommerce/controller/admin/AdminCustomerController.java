@@ -22,10 +22,9 @@ public class AdminCustomerController {
 	private final CustomerService customerService;
 
 	@GetMapping("/{id}")
-	public ApiResponse<CustomerResponse> getCustomerDetail (
+	public ApiResponse<CustomerResponse> getCustomerDetail(
 			@PathVariable Long id,
-			@RequestParam(defaultValue = "false") boolean deleted
-    ) {
+			@RequestParam(defaultValue = "false") boolean deleted) {
 		return ApiResponse.<CustomerResponse>builder()
 				.data(customerService.getCustomerDetail(id, deleted))
 				.message("Get customer detail successfully")
@@ -33,9 +32,8 @@ public class AdminCustomerController {
 	}
 
 	@GetMapping
-	public ApiResponse<List<CustomerResponse>> getAllCustomers (
-			@Valid @ModelAttribute CustomerFilterRequest filter
-    ) {
+	public ApiResponse<List<CustomerResponse>> getAllCustomers(
+			@Valid @ModelAttribute CustomerFilterRequest filter) {
 		PageResponse<CustomerResponse> pageResponse = customerService.getAllCustomers(filter);
 		return ApiResponse.<List<CustomerResponse>>builder()
 				.data(pageResponse.data())
@@ -45,9 +43,8 @@ public class AdminCustomerController {
 	}
 
 	@GetMapping("/deleted")
-	public ApiResponse<List<CustomerResponse>> getAllDeletedCustomers (
-			@Valid @ModelAttribute CustomerFilterRequest filter
-    ) {
+	public ApiResponse<List<CustomerResponse>> getAllDeletedCustomers(
+			@Valid @ModelAttribute CustomerFilterRequest filter) {
 		PageResponse<CustomerResponse> pageResponse = customerService.getAllDeletedCustomers(filter);
 		return ApiResponse.<List<CustomerResponse>>builder()
 				.data(pageResponse.data())
@@ -57,30 +54,36 @@ public class AdminCustomerController {
 	}
 
 	@PutMapping("/{id}")
-	public ApiResponse<CustomerResponse> updateCustomer (
+	public ApiResponse<CustomerResponse> updateCustomer(
 			@PathVariable Long id,
-			@Valid @RequestBody CustomerUpdateRequest request
-    ) {
+			@Valid @RequestBody CustomerUpdateRequest request) {
 		return ApiResponse.<CustomerResponse>builder()
 				.data(customerService.updateCustomer(id, request))
 				.message("Customer updated successfully")
 				.build();
 	}
 
-	@DeleteMapping("/{id}")
-	public ApiResponse<Void> softDeleteCustomer (
-			@PathVariable Long id
-    ) {
+	@PatchMapping("/{id}/soft-delete")
+	public ApiResponse<Void> softDeleteCustomer(
+			@PathVariable Long id) {
 		customerService.softDeleteCustomer(id);
 		return ApiResponse.<Void>builder()
 				.message("Customer soft deleted successfully")
 				.build();
 	}
 
+	@DeleteMapping("/{id}")
+	public ApiResponse<Void> deleteCustomer(
+			@PathVariable Long id) {
+		customerService.deleteCustomer(id);
+		return ApiResponse.<Void>builder()
+				.message("Customer deleted successfully")
+				.build();
+	}
+
 	@PatchMapping("/{id}/restore")
-	public ApiResponse<Void> restoreCustomer (
-			@PathVariable Long id
-    ) {
+	public ApiResponse<Void> restoreCustomer(
+			@PathVariable Long id) {
 		customerService.restoreCustomer(id);
 		return ApiResponse.<Void>builder()
 				.message("Customer restored successfully")
@@ -88,9 +91,8 @@ public class AdminCustomerController {
 	}
 
 	@PatchMapping("/bulk")
-	public ApiResponse<Void> handleBulkAction (
-			@RequestBody BulkActionRequest request
-    ) {
+	public ApiResponse<Void> handleBulkAction(
+			@RequestBody BulkActionRequest request) {
 		customerService.handleBulkAction(request);
 		return ApiResponse.<Void>builder()
 				.message("Bulk action executed successfully")

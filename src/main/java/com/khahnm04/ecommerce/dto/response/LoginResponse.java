@@ -7,6 +7,8 @@ import java.io.Serializable;
 public record LoginResponse(
 
     Long id,
+    String email,
+    String phoneNumber,
     String fullName,
     String avatar
 

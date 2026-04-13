@@ -2,6 +2,7 @@ package com.khahnm04.ecommerce.service.impl;
 
 import com.khahnm04.ecommerce.common.enums.ProductVariantStatus;
 import com.khahnm04.ecommerce.common.util.SortUtils;
+import com.khahnm04.ecommerce.dto.projection.ProductVariantProjection;
 import com.khahnm04.ecommerce.dto.request.BulkActionRequest;
 import com.khahnm04.ecommerce.dto.request.filter.ProductVariantFilterRequest;
 import com.khahnm04.ecommerce.dto.request.ProductVariantRequest;
@@ -14,6 +15,7 @@ import com.khahnm04.ecommerce.entity.VariantValue;
 import com.khahnm04.ecommerce.exception.AppException;
 import com.khahnm04.ecommerce.exception.ErrorCode;
 import com.khahnm04.ecommerce.mapper.ProductVariantMapper;
+import com.khahnm04.ecommerce.repository.OrderDetailRepository;
 import com.khahnm04.ecommerce.repository.ProductVariantRepository;
 import com.khahnm04.ecommerce.repository.ProductVariantValueRepository;
 import com.khahnm04.ecommerce.repository.VariantValueRepository;
@@ -43,6 +45,7 @@ public class ProductVariantServiceImpl implements ProductVariantService {
     private final ProductVariantRepository productVariantRepository;
     private final ProductVariantValueRepository productVariantValueRepository;
     private final VariantValueRepository variantValueRepository;
+    private final OrderDetailRepository orderDetailRepository;
     private final ProductVariantMapper productVariantMapper;
     private final ProductService productService;
     private final InventoryService inventoryService;
@@ -169,6 +172,17 @@ public class ProductVariantServiceImpl implements ProductVariantService {
 
     @Override
     @Transactional
+    public void deleteProductVariant(Long id) {
+        ProductVariant productVariant = getDeletedProductVariantById(id);
+        if (orderDetailRepository.existsByProductVariantId(id)) {
+            throw new AppException(ErrorCode.PRODUCT_VARIANT_HAS_ORDERS);
+        }
+        productVariantRepository.delete(productVariant);
+        log.info("Permanently deleted product variant with id: {}", id);
+    }
+
+    @Override
+    @Transactional
     public void restoreProductVariant(Long id) {
         ProductVariant productVariant = getDeletedProductVariantById(id);
         if (productVariant.getDeletedAt() == null) {
@@ -196,9 +210,19 @@ public class ProductVariantServiceImpl implements ProductVariantService {
                 productVariantRepository.updateStatusByIds(status, productVariantIds);
                 log.info("Bulk update status {} product variants ids: {}", action, productVariantIds);
             }
-            case "DELETE" -> {
+            case "SOFT_DELETE" -> {
                 productVariantRepository.softDeleteByIds(LocalDateTime.now(), productVariantIds);
-                log.info("Bulk delete product variants ids: {}", productVariantIds);
+                log.info("Bulk soft-delete product variants ids: {}", productVariantIds);
+            }
+            case "DELETE" -> {
+                for (Long id : productVariantIds) {
+                    if (orderDetailRepository.existsByProductVariantId(id)) {
+                        throw new AppException(ErrorCode.PRODUCT_VARIANT_HAS_ORDERS);
+                    }
+                }
+                Set<ProductVariant> productVariants = productVariantRepository.findAllDeletedByIds(productVariantIds);
+                productVariantRepository.deleteAll(productVariants);
+                log.info("Bulk permanently delete product variants ids: {}", productVariantIds);
             }
             case "RESTORE" -> {
                 productVariantRepository.restoreDeletedByIds(productVariantIds);
@@ -294,10 +318,25 @@ public class ProductVariantServiceImpl implements ProductVariantService {
                 SortUtils.parseSort(request.sort()));
 
         Specification<ProductVariant> spec = ProductVariantSpecification.buildSpecification(request, isDeleted);
-        Page<ProductVariant> page = productVariantRepository.findAll(spec, pageable);
+        Page<ProductVariantProjection> page = productVariantRepository.findBy(spec,
+                q -> q.as(ProductVariantProjection.class).page(pageable));
 
         List<ProductVariantResponse> content = page.getContent().stream()
-                .map(productVariantMapper::toProductVariantResponse)
+                .map(proj -> ProductVariantResponse.builder()
+                        .id(proj.getId())
+                        .product(proj.getProductName())
+                        .sku(proj.getSku())
+                        .name(proj.getName())
+                        .price(proj.getPrice())
+                        .oldPrice(proj.getOldPrice())
+                        .image(proj.getImage())
+                        .status(proj.getStatus())
+                        .createdAt(proj.getCreatedAt())
+                        .createdBy(proj.getCreatedByFullName())
+                        .updatedAt(proj.getUpdatedAt())
+                        .updatedBy(proj.getUpdatedByFullName())
+                        .deletedAt(proj.getDeletedAt())
+                        .build())
                 .collect(Collectors.toList());
 
         if (!content.isEmpty()) {

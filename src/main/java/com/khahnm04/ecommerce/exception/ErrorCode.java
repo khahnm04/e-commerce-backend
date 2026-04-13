@@ -83,6 +83,7 @@ public enum ErrorCode {
     CUSTOMER_INVALID_BULK_ACTION(2151, "The requested bulk action is invalid", HttpStatus.BAD_REQUEST),
     CUSTOMER_NOT_FOUND(2152, "Customer not found", HttpStatus.NOT_FOUND),
     CUSTOMER_EXISTED(2153, "Customer already existed", HttpStatus.CONFLICT),
+    CUSTOMER_HAS_ORDERS(2154, "Customer has orders, cannot be permanently deleted", HttpStatus.BAD_REQUEST),
 
     ADDRESS_RECEIVER_NAME_REQUIRED(2200, "Receiver name cannot be blank", HttpStatus.BAD_REQUEST),
     ADDRESS_RECEIVER_PHONE_REQUIRED(2201, "Receiver phone cannot be blank", HttpStatus.BAD_REQUEST),
@@ -139,6 +140,7 @@ public enum ErrorCode {
     BRAND_SLUG_REQUIRED(4104, "Brand slug cannot be blank", HttpStatus.BAD_REQUEST),
     BRAND_NOT_FOUND(4150, "Brand not found", HttpStatus.NOT_FOUND),
     BRAND_EXISTED(4151, "Brand already existed", HttpStatus.CONFLICT),
+    BRAND_HAS_PRODUCTS(4153, "Brand has products, cannot be permanently deleted", HttpStatus.BAD_REQUEST),
     BRAND_BULK_ACTION_REQUIRED_IDS(4158, "At least one brand must be selected", HttpStatus.BAD_REQUEST),
     BRAND_INVALID_BULK_ACTION(4159, "The requested bulk action is invalid", HttpStatus.BAD_REQUEST),
 
@@ -169,6 +171,7 @@ public enum ErrorCode {
     PRODUCT_NOT_FOUND(4350, "Product not found", HttpStatus.NOT_FOUND),
     PRODUCT_EXISTED(4351, "Product already existed", HttpStatus.CONFLICT),
     PRODUCT_CODE_EXISTED(4352, "Product code already existed", HttpStatus.CONFLICT),
+    PRODUCT_HAS_VARIANTS(4353, "Product has variants, cannot be permanently deleted", HttpStatus.BAD_REQUEST),
     PRODUCT_BULK_ACTION_REQUIRED_IDS(4358, "At least one product must be selected", HttpStatus.BAD_REQUEST),
     PRODUCT_INVALID_BULK_ACTION(4359, "The requested bulk action is invalid", HttpStatus.BAD_REQUEST),
 
@@ -179,6 +182,7 @@ public enum ErrorCode {
     VARIANT_NOT_FOUND(4450, "Variant not found", HttpStatus.NOT_FOUND),
     VARIANT_EXISTED(4451, "Variant already existed", HttpStatus.CONFLICT),
     VARIANT_BULK_ACTION_REQUIRED_IDS(4458, "At least one variant must be selected", HttpStatus.BAD_REQUEST),
+    VARIANT_HAS_VALUES(4452, "Variant has values, cannot be permanently deleted", HttpStatus.BAD_REQUEST),
     VARIANT_INVALID_BULK_ACTION(4459, "The requested bulk action is invalid", HttpStatus.BAD_REQUEST),
 
     VARIANT_VALUE_SELECTION_REQUIRED(4500, "At least one variant value must be selected", HttpStatus.BAD_REQUEST),
@@ -188,6 +192,8 @@ public enum ErrorCode {
     VARIANT_VALUE_NOT_FOUND(4550, "Variant value not found", HttpStatus.NOT_FOUND),
     VARIANT_VALUE_EXISTED(4551, "Variant value already existed", HttpStatus.CONFLICT),
     VARIANT_VALUE_BULK_ACTION_REQUIRED_IDS(4558, "At least one variant value must be selected", HttpStatus.BAD_REQUEST),
+    VARIANT_VALUE_HAS_PRODUCT_VARIANTS(4552,
+            "Variant value is assigned to product variants, cannot be permanently deleted", HttpStatus.BAD_REQUEST),
     VARIANT_VALUE_INVALID_BULK_ACTION(4559, "The requested bulk action is invalid", HttpStatus.BAD_REQUEST),
 
     PRODUCT_VARIANT_SELECTION_REQUIRED(4600, "At least one product variant must be selected", HttpStatus.BAD_REQUEST),
@@ -199,6 +205,8 @@ public enum ErrorCode {
     PRODUCT_VARIANT_NOT_FOUND(4650, "Product variant not found", HttpStatus.NOT_FOUND),
     PRODUCT_VARIANT_EXISTED(4651, "Product variant SKU already existed", HttpStatus.CONFLICT),
     PRODUCT_VARIANT_BULK_ACTION_REQUIRED_IDS(4658, "At least one product variant must be selected",
+            HttpStatus.BAD_REQUEST),
+    PRODUCT_VARIANT_HAS_ORDERS(4652, "Product variant has orders, cannot be permanently deleted",
             HttpStatus.BAD_REQUEST),
     PRODUCT_VARIANT_INVALID_BULK_ACTION(4659, "The requested bulk action is invalid", HttpStatus.BAD_REQUEST),
 
@@ -300,6 +308,7 @@ public enum ErrorCode {
     COUPON_USAGE_LIMIT_REACHED(6153, "Coupon usage limit reached", HttpStatus.BAD_REQUEST),
     COUPON_MIN_ORDER_VALUE_NOT_MET(6154, "Minimum order value for this coupon not met", HttpStatus.BAD_REQUEST),
     COUPON_INVALID_BULK_ACTION(6159, "The requested bulk action is invalid", HttpStatus.BAD_REQUEST),
+    COUPON_HAS_USAGES(6155, "Coupon has been used, cannot be permanently deleted", HttpStatus.BAD_REQUEST),
 
     // Inventory (6200 - 6299)
     INVENTORY_NOT_FOUND(6250, "Inventory record not found", HttpStatus.NOT_FOUND),

@@ -13,6 +13,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+@ToString
 @Entity
 @Getter
 @Setter
@@ -37,6 +38,7 @@ public class User implements UserDetails {
     private String password;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ToString.Exclude
     private Set<UserProvider> userProviders;
 
     @Builder.Default
@@ -79,6 +81,7 @@ public class User implements UserDetails {
         inverseJoinColumns = @JoinColumn(name = "role_id")
     )
     @OrderBy("name ASC")
+    @ToString.Exclude
     private Set<Role> roles;
 
     @Override

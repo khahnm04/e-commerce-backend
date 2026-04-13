@@ -12,6 +12,7 @@ public interface CategoryMapper {
     Category toCategory(CategoryRequest request);
 
     @Mapping(target = "parentId", source = "parent.id")
+    @Mapping(target = "parentName", source = "parent.name")
     @Mapping(target = "createdBy", source = "createdBy.fullName")
     @Mapping(target = "updatedBy", source = "updatedBy.fullName")
     CategoryResponse toCategoryResponse(Category category);

@@ -23,6 +23,8 @@ public interface VariantValueService {
 
     void softDeleteVariantValue(Long id);
 
+    void deleteVariantValue(Long id);
+
     void restoreVariantValue(Long id);
 
     void handleBulkAction(BulkActionRequest request);

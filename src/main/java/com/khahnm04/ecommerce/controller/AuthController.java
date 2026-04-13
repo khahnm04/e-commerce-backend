@@ -34,24 +34,12 @@ public class AuthController {
 
     @PostMapping("/logout")
     ApiResponse<Void> logout(
-            @CookieValue(name = TokenConstants.ACCESS_TOKEN) String accessToken,
-            @CookieValue(name = TokenConstants.REFRESH_TOKEN) String refreshToken,
+            @CookieValue(name = TokenConstants.TOKEN) String token,
             HttpServletResponse response
     ) {
-        authService.logout(accessToken, refreshToken, response);
+        authService.logout(token, response);
         return ApiResponse.<Void>builder()
                 .message("Logout successfully")
-                .build();
-    }
-
-    @PostMapping("/refresh")
-    ApiResponse<Void> refresh(
-            @CookieValue(name = TokenConstants.REFRESH_TOKEN) String token,
-            HttpServletResponse response
-    ) {
-        authService.refreshToken(token, response);
-        return ApiResponse.<Void>builder()
-                .message("Refresh token successfully")
                 .build();
     }
 
@@ -69,10 +57,10 @@ public class AuthController {
 
     @PostMapping("/introspect")
     ApiResponse<IntrospectResponse> introspect(
-            @CookieValue(name = TokenConstants.ACCESS_TOKEN) String accessToken
+            @CookieValue(name = TokenConstants.TOKEN) String token
     ) {
         return ApiResponse.<IntrospectResponse>builder()
-                .data(authService.introspect(accessToken))
+                .data(authService.introspect(token))
                 .build();
     }
 
