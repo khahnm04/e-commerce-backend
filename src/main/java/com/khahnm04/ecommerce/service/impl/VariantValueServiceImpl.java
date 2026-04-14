@@ -13,8 +13,8 @@ import com.khahnm04.ecommerce.exception.AppException;
 import com.khahnm04.ecommerce.exception.ErrorCode;
 import com.khahnm04.ecommerce.mapper.VariantValueMapper;
 import com.khahnm04.ecommerce.repository.ProductVariantValueRepository;
-import com.khahnm04.ecommerce.repository.VariantRepository;
 import com.khahnm04.ecommerce.repository.VariantValueRepository;
+import com.khahnm04.ecommerce.service.VariantService;
 import com.khahnm04.ecommerce.service.VariantValueService;
 import com.khahnm04.ecommerce.specification.VariantValueSpecification;
 import lombok.RequiredArgsConstructor;
@@ -38,18 +38,20 @@ public class VariantValueServiceImpl implements VariantValueService {
 
     private final VariantValueRepository variantValueRepository;
     private final ProductVariantValueRepository productVariantValueRepository;
-    private final VariantRepository variantRepository;
     private final VariantValueMapper variantValueMapper;
+    private final VariantService variantService;
 
     @Override
     @Transactional
     public VariantValueResponse createVariantValue(VariantValueRequest request) {
-        if (variantValueRepository.existsByVariantIdAndValue(request.variantId(), request.value())) {
+        if (variantValueRepository.existsByVariantIdAndValueAndDeletedAtIsNull(request.variantId(), request.value())) {
             throw new AppException(ErrorCode.VARIANT_VALUE_EXISTED);
         }
+        if (variantValueRepository.existsByVariantIdAndValueAndDeletedAtIsNotNull(request.variantId(), request.value())) {
+            throw new AppException(ErrorCode.VARIANT_VALUE_IN_TRASH);
+        }
 
-        Variant variant = variantRepository.findByIdAndDeletedAtIsNull(request.variantId())
-                .orElseThrow(() -> new AppException(ErrorCode.VARIANT_NOT_FOUND));
+        Variant variant = variantService.getVariantById(request.variantId());
 
         VariantValue variantValue = variantValueMapper.toVariantValue(request);
         variantValue.setVariant(variant);
@@ -93,8 +95,7 @@ public class VariantValueServiceImpl implements VariantValueService {
         }
 
         if (!variantValue.getVariant().getId().equals(request.variantId())) {
-            Variant variant = variantRepository.findByIdAndDeletedAtIsNull(request.variantId())
-                    .orElseThrow(() -> new AppException(ErrorCode.VARIANT_NOT_FOUND));
+            Variant variant = variantService.getVariantById(request.variantId());
             variantValue.setVariant(variant);
         }
 
@@ -108,6 +109,10 @@ public class VariantValueServiceImpl implements VariantValueService {
     @Transactional
     public void softDeleteVariantValue(Long id) {
         VariantValue variantValue = getVariantValueById(id);
+        if (variantValue.getDeletedAt() != null) {
+            log.warn("Variant Value with id {} is already soft deleted", id);
+            return;
+        }
         variantValue.setDeletedAt(LocalDateTime.now());
         variantValueRepository.save(variantValue);
         log.info("Soft-deleted variant value with id: {}", id);
@@ -117,6 +122,10 @@ public class VariantValueServiceImpl implements VariantValueService {
     @Transactional
     public void deleteVariantValue(Long id) {
         VariantValue variantValue = getDeletedVariantValueById(id);
+        if (variantValue.getDeletedAt() == null) {
+            log.warn("Variant Value with id {} is already deleted", id);
+            return;
+        }
         if (productVariantValueRepository.existsByVariantValueId(id)) {
             throw new AppException(ErrorCode.VARIANT_VALUE_HAS_PRODUCT_VARIANTS);
         }
@@ -128,6 +137,10 @@ public class VariantValueServiceImpl implements VariantValueService {
     @Transactional
     public void restoreVariantValue(Long id) {
         VariantValue variantValue = getDeletedVariantValueById(id);
+        if (variantValue.getDeletedAt() == null) {
+            log.warn("Variant Value with id {} is not in a deleted state", id);
+            return;
+        }
         variantValue.setDeletedAt(null);
         variantValueRepository.save(variantValue);
         log.info("Restored variant value with id: {}", id);
@@ -149,10 +162,8 @@ public class VariantValueServiceImpl implements VariantValueService {
                 log.info("Bulk soft-delete variant values ids: {}", variantValueIds);
             }
             case "DELETE" -> {
-                for (Long id : variantValueIds) {
-                    if (productVariantValueRepository.existsByVariantValueId(id)) {
-                        throw new AppException(ErrorCode.VARIANT_VALUE_HAS_PRODUCT_VARIANTS);
-                    }
+                if (productVariantValueRepository.existsByVariantValueIdIn(variantValueIds)) {
+                    throw new AppException(ErrorCode.VARIANT_VALUE_HAS_PRODUCT_VARIANTS);
                 }
                 List<VariantValue> variantValues = variantValueRepository.findAllDeletedByIds(variantValueIds);
                 variantValueRepository.deleteAll(variantValues);
@@ -174,19 +185,18 @@ public class VariantValueServiceImpl implements VariantValueService {
                 .orElseThrow(() -> new AppException(ErrorCode.VARIANT_VALUE_NOT_FOUND));
     }
 
-    private PageResponse<VariantValueResponse> getAllWithFilterAndSearch(VariantValueFilterRequest request,
-            boolean isDeleted) {
-        Pageable pageable = PageRequest.of(request.page() - 1, request.size(),
-                SortUtils.parseSort(request.sort()));
+    private PageResponse<VariantValueResponse> getAllWithFilterAndSearch(VariantValueFilterRequest request, boolean isDeleted) {
+        Pageable pageable = PageRequest.of(request.page() - 1, request.size(), SortUtils.parseSort(request.sort()));
 
         Specification<VariantValue> spec = VariantValueSpecification.buildSpecification(request, isDeleted);
-        Page<VariantValueProjection> page = variantValueRepository.findBy(spec,
-                q -> q.as(VariantValueProjection.class).page(pageable));
+        Page<VariantValueProjection> page = variantValueRepository
+                .findBy(spec, q -> q.as(VariantValueProjection.class).page(pageable));
 
         List<VariantValueResponse> content = page.getContent().stream()
                 .map(proj -> VariantValueResponse.builder()
                         .id(proj.getId())
                         .variant(proj.getVariantName())
+                        .variantId(proj.getVariantId())
                         .value(proj.getValue())
                         .createdAt(proj.getCreatedAt())
                         .createdBy(proj.getCreatedByFullName())

@@ -3,19 +3,23 @@ package com.khahnm04.ecommerce.dto.projection;
 import java.time.LocalDateTime;
 
 public interface VariantValueProjection {
-  Long getId();
 
-  String getVariantName();
+    Long getId();
 
-  String getValue();
+    String getVariantName();
 
-  LocalDateTime getCreatedAt();
+    Long getVariantId();
 
-  LocalDateTime getUpdatedAt();
+    String getValue();
 
-  LocalDateTime getDeletedAt();
+    LocalDateTime getCreatedAt();
 
-  String getCreatedByFullName();
+    LocalDateTime getUpdatedAt();
 
-  String getUpdatedByFullName();
+    LocalDateTime getDeletedAt();
+
+    String getCreatedByFullName();
+
+    String getUpdatedByFullName();
+
 }

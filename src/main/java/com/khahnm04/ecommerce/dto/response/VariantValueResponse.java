@@ -7,10 +7,11 @@ import java.time.LocalDateTime;
 
 @Builder(toBuilder = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public record VariantValueResponse (
+public record VariantValueResponse(
 
     Long id,
     String variant,
+    Long variantId,
     String value,
     LocalDateTime createdAt,
     String createdBy,

@@ -18,8 +18,9 @@ public record VariantValueFilterRequest (
     Integer size,
 
     String sort,
-    Long variantId,
     String keyword,
+    Long creatorId,
+    Long variantId,
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     LocalDate startDate,

@@ -96,24 +96,6 @@ public enum ErrorCode {
         ADDRESS_NOT_FOUND(2250, "Address not found", HttpStatus.NOT_FOUND),
 
         // =================================================================
-        // MODULE: BRANCH (Range: 3000 - 3999)
-        // =================================================================
-        BRANCH_SELECTION_REQUIRED(3001, "At least one branch must be selected", HttpStatus.BAD_REQUEST),
-        BRAND_STATUS_INVALID(2109, "Invalid brand status", HttpStatus.BAD_REQUEST),
-        BRANCH_ACTION_REQUIRED(3002, "Bulk action type cannot be blank", HttpStatus.BAD_REQUEST),
-        BRANCH_CODE_REQUIRED(3003, "Branch code cannot be blank", HttpStatus.BAD_REQUEST),
-        BRANCH_NAME_REQUIRED(3004, "Branch name cannot be blank", HttpStatus.BAD_REQUEST),
-        BRANCH_ADDRESS_DETAIL_REQUIRED(3005, "Address detail cannot be blank", HttpStatus.BAD_REQUEST),
-        BRANCH_DISTRICT_REQUIRED(3006, "District cannot be blank", HttpStatus.BAD_REQUEST),
-        BRANCH_CITY_REQUIRED(3007, "City cannot be blank", HttpStatus.BAD_REQUEST),
-        BRANCH_PHONE_REQUIRED(3008, "Phone number cannot be blank", HttpStatus.BAD_REQUEST),
-        BRANCH_PHONE_INVALID(3009, "Phone number is invalid", HttpStatus.BAD_REQUEST),
-        BRANCH_NOT_FOUND(3050, "Branch not found", HttpStatus.NOT_FOUND),
-        BRANCH_EXISTED(3051, "Branch already existed", HttpStatus.CONFLICT),
-        BRANCH_BULK_ACTION_REQUIRED_IDS(3052, "At least one branch must be selected", HttpStatus.BAD_REQUEST),
-        BRANCH_INVALID_BULK_ACTION(3053, "The requested bulk action is invalid", HttpStatus.BAD_REQUEST),
-
-        // =================================================================
         // MODULE: CATALOG (Range: 4000 - 4999)
         // =================================================================
         CATEGORY_SELECTION_REQUIRED(4000, "At least one category must be selected", HttpStatus.BAD_REQUEST),
@@ -152,8 +134,7 @@ public enum ErrorCode {
         ATTRIBUTE_NOT_FOUND(4250, "Attribute not found", HttpStatus.NOT_FOUND),
         ATTRIBUTE_BULK_ACTION_REQUIRED_IDS(4258, "At least one attribute must be selected", HttpStatus.BAD_REQUEST),
         ATTRIBUTE_INVALID_BULK_ACTION(4259, "The requested bulk action is invalid", HttpStatus.BAD_REQUEST),
-        ATTRIBUTE_HAS_PRODUCTS(4253, "Attribute is assigned to products, cannot be permanently deleted",
-                        HttpStatus.BAD_REQUEST),
+        ATTRIBUTE_HAS_PRODUCTS(4253, "Attribute is assigned to products, cannot be permanently deleted", HttpStatus.BAD_REQUEST),
 
         PRODUCT_SELECTION_REQUIRED(4300, "At least one product must be selected", HttpStatus.BAD_REQUEST),
         PRODUCT_ACTION_REQUIRED(4301, "Bulk action type cannot be blank", HttpStatus.BAD_REQUEST),
@@ -183,8 +164,8 @@ public enum ErrorCode {
         VARIANT_CODE_REQUIRED(4403, "Variant code cannot be blank", HttpStatus.BAD_REQUEST),
         VARIANT_NOT_FOUND(4450, "Variant not found", HttpStatus.NOT_FOUND),
         VARIANT_EXISTED(4451, "Variant already existed", HttpStatus.CONFLICT),
-        VARIANT_BULK_ACTION_REQUIRED_IDS(4458, "At least one variant must be selected", HttpStatus.BAD_REQUEST),
-        VARIANT_HAS_VALUES(4452, "Variant has values, cannot be permanently deleted", HttpStatus.BAD_REQUEST),
+        VARIANT_BULK_ACTION_REQUIRED_IDS(4452, "At least one variant must be selected", HttpStatus.BAD_REQUEST),
+        VARIANT_HAS_VALUES(4453, "Variant has values, cannot be permanently deleted", HttpStatus.BAD_REQUEST),
         VARIANT_INVALID_BULK_ACTION(4459, "The requested bulk action is invalid", HttpStatus.BAD_REQUEST),
 
         VARIANT_VALUE_SELECTION_REQUIRED(4500, "At least one variant value must be selected", HttpStatus.BAD_REQUEST),
@@ -193,15 +174,12 @@ public enum ErrorCode {
         VARIANT_VALUE_VARIANT_ID_REQUIRED(4503, "Variant ID cannot be blank", HttpStatus.BAD_REQUEST),
         VARIANT_VALUE_NOT_FOUND(4550, "Variant value not found", HttpStatus.NOT_FOUND),
         VARIANT_VALUE_EXISTED(4551, "Variant value already existed", HttpStatus.CONFLICT),
-        VARIANT_VALUE_BULK_ACTION_REQUIRED_IDS(4558, "At least one variant value must be selected",
-                        HttpStatus.BAD_REQUEST),
-        VARIANT_VALUE_HAS_PRODUCT_VARIANTS(4552,
-                        "Variant value is assigned to product variants, cannot be permanently deleted",
-                        HttpStatus.BAD_REQUEST),
+        VARIANT_VALUE_BULK_ACTION_REQUIRED_IDS(4558, "At least one variant value must be selected", HttpStatus.BAD_REQUEST),
+        VARIANT_VALUE_HAS_PRODUCT_VARIANTS(4552, "Variant value is assigned to product variants, cannot be permanently deleted", HttpStatus.BAD_REQUEST),
         VARIANT_VALUE_INVALID_BULK_ACTION(4559, "The requested bulk action is invalid", HttpStatus.BAD_REQUEST),
+        VARIANT_VALUE_IN_TRASH(4560, "Variant value already exists in the trash bin.", HttpStatus.BAD_REQUEST),
 
-        PRODUCT_VARIANT_SELECTION_REQUIRED(4600, "At least one product variant must be selected",
-                        HttpStatus.BAD_REQUEST),
+        PRODUCT_VARIANT_SELECTION_REQUIRED(4600, "At least one product variant must be selected", HttpStatus.BAD_REQUEST),
         PRODUCT_VARIANT_ACTION_REQUIRED(4601, "Bulk action type cannot be blank", HttpStatus.BAD_REQUEST),
         PRODUCT_VARIANT_NAME_REQUIRED(4602, "Product variant name cannot be blank", HttpStatus.BAD_REQUEST),
         PRODUCT_VARIANT_PRICE_REQUIRED(4603, "Product variant price is required", HttpStatus.BAD_REQUEST),
@@ -209,10 +187,8 @@ public enum ErrorCode {
         PRODUCT_VARIANT_STATUS_REQUIRED(4605, "Product variant status is required", HttpStatus.BAD_REQUEST),
         PRODUCT_VARIANT_NOT_FOUND(4650, "Product variant not found", HttpStatus.NOT_FOUND),
         PRODUCT_VARIANT_EXISTED(4651, "Product variant SKU already existed", HttpStatus.CONFLICT),
-        PRODUCT_VARIANT_BULK_ACTION_REQUIRED_IDS(4658, "At least one product variant must be selected",
-                        HttpStatus.BAD_REQUEST),
-        PRODUCT_VARIANT_HAS_ORDERS(4652, "Product variant has orders, cannot be permanently deleted",
-                        HttpStatus.BAD_REQUEST),
+        PRODUCT_VARIANT_BULK_ACTION_REQUIRED_IDS(4658, "At least one product variant must be selected", HttpStatus.BAD_REQUEST),
+        PRODUCT_VARIANT_HAS_ORDERS(4652, "Product variant has orders, cannot be permanently deleted", HttpStatus.BAD_REQUEST),
         PRODUCT_VARIANT_INVALID_BULK_ACTION(4659, "The requested bulk action is invalid", HttpStatus.BAD_REQUEST),
 
         // =================================================================

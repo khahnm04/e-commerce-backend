@@ -15,25 +15,25 @@ public interface ProductVariantValueRepository extends JpaRepository<ProductVari
 
     boolean existsByVariantValueId(Long variantValueId);
 
-    @Query("""
-                SELECT pvv
-                FROM ProductVariantValue pvv
-                JOIN FETCH pvv.variantValue vv
-                JOIN FETCH vv.variant v
-                WHERE pvv.productVariant.id = :productVariantId
-            """)
-    List<ProductVariantValue> findAllByProductVariantIdWithVariantValue(
-            @Param("productVariantId") Long productVariantId);
+    boolean existsByVariantValueIdIn(Set<Long> variantValueIds);
 
     @Query("""
-                SELECT pvv
-                FROM ProductVariantValue pvv
-                JOIN FETCH pvv.variantValue vv
-                JOIN FETCH vv.variant v
-                WHERE pvv.productVariant.id IN :productVariantIds
-            """)
-    List<ProductVariantValue> findAllByProductVariantIdInWithVariantValue(
-            @Param("productVariantIds") Set<Long> productVariantIds);
+        SELECT pvv
+        FROM ProductVariantValue pvv
+        JOIN FETCH pvv.variantValue vv
+        JOIN FETCH vv.variant v
+        WHERE pvv.productVariant.id = :productVariantId
+    """)
+    List<ProductVariantValue> findAllByProductVariantIdWithVariantValue(@Param("productVariantId") Long productVariantId);
+
+    @Query("""
+        SELECT pvv
+        FROM ProductVariantValue pvv
+        JOIN FETCH pvv.variantValue vv
+        JOIN FETCH vv.variant v
+        WHERE pvv.productVariant.id IN :productVariantIds
+    """)
+    List<ProductVariantValue> findAllByProductVariantIdInWithVariantValue(@Param("productVariantIds") Set<Long> productVariantIds);
 
     @Modifying
     @Transactional

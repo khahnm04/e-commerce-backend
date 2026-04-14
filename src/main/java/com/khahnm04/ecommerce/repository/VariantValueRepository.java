@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -18,23 +19,25 @@ public interface VariantValueRepository extends JpaRepository<VariantValue, Long
 
     boolean existsByVariantIdIn(Set<Long> variantIds);
 
-    Optional<VariantValue> findByIdAndDeletedAtIsNull(Long id);
+    boolean existsByVariantIdAndValueAndDeletedAtIsNull(Long variantId, String value);
 
-    @Query("SELECT vv FROM VariantValue vv WHERE vv.id = :id AND vv.deletedAt IS NOT NULL")
-    Optional<VariantValue> findByIdAndDeletedAtIsNotNull(Long id);
-
-    boolean existsByVariantIdAndValue(Long variantId, String value);
+    boolean existsByVariantIdAndValueAndDeletedAtIsNotNull(Long variantId, String value);
 
     boolean existsByVariantIdAndValueAndIdNot(Long variantId, String value, Long id);
 
+    Optional<VariantValue> findByIdAndDeletedAtIsNull(Long id);
+
+    Optional<VariantValue> findByIdAndDeletedAtIsNotNull(Long id);
+
     @Query("SELECT vv FROM VariantValue vv WHERE vv.id IN :ids AND vv.deletedAt IS NOT NULL")
-    List<VariantValue> findAllDeletedByIds(Set<Long> ids);
+    List<VariantValue> findAllDeletedByIds(@Param("ids") Set<Long> ids);
 
     @Modifying
-    @Query("UPDATE VariantValue vv SET vv.deletedAt = :deletedAt WHERE vv.id IN :ids")
-    void softDeleteByIds(LocalDateTime deletedAt, Set<Long> ids);
+    @Query("UPDATE VariantValue vv SET vv.deletedAt = :now WHERE vv.id IN :ids AND vv.deletedAt IS NULL")
+    void softDeleteByIds(@Param("now") LocalDateTime now, @Param("ids") Set<Long> ids);
 
     @Modifying
-    @Query("UPDATE VariantValue vv SET vv.deletedAt = NULL WHERE vv.id IN :ids")
-    void restoreDeletedByIds(Set<Long> ids);
+    @Query("UPDATE VariantValue vv SET vv.deletedAt = NULL WHERE vv.id IN :ids AND vv.deletedAt IS NOT NULL")
+    void restoreDeletedByIds(@Param("ids") Set<Long> ids);
+
 }

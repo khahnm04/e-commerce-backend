@@ -16,10 +16,16 @@ public class VariantValueSpecification {
             request = VariantValueFilterRequest.builder().build();
         }
 
+        Specification<VariantValue> dateSpec = BaseSpecification
+                .<VariantValue>withDateRange("createdAt", request.startDate(), request.endDate())
+                .or(BaseSpecification.withDateRange("updatedAt", request.startDate(), request.endDate()));
+
         return BaseSpecification.<VariantValue>withAuditingFetch()
                 .and(BaseSpecification.withDeletedStatus(isDeleted))
                 .and(BaseSpecification.withKeyword(request.keyword(), KEYWORD_FIELDS))
+                .and(BaseSpecification.equals("createdBy.id", request.creatorId()))
                 .and(BaseSpecification.equals("variant.id", request.variantId()))
-                .and(BaseSpecification.withDateRange("createdAt", request.startDate(), request.endDate()));
+                .and(dateSpec);
     }
+
 }

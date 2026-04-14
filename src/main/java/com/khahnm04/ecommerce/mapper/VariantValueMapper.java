@@ -12,6 +12,7 @@ public interface VariantValueMapper {
     VariantValue toVariantValue(VariantValueRequest request);
 
     @Mapping(target = "variant", source = "variant.name")
+    @Mapping(target = "variantId", source = "variant.id")
     @Mapping(target = "createdBy", source = "createdBy.fullName")
     @Mapping(target = "updatedBy", source = "updatedBy.fullName")
     VariantValueResponse toVariantValueResponse(VariantValue variantValue);
