@@ -44,7 +44,6 @@ public class VariantServiceImpl implements VariantService {
         if (variantRepository.existsByName(request.name())) {
             throw new AppException(ErrorCode.VARIANT_EXISTED);
         }
-
         Variant variant = variantMapper.toVariant(request);
         Variant savedVariant = variantRepository.save(variant);
         log.info("Created variant with id: {}", savedVariant.getId());
@@ -79,11 +78,9 @@ public class VariantServiceImpl implements VariantService {
     @Transactional
     public VariantResponse updateVariant(Long id, VariantRequest request) {
         Variant variant = getVariantById(id);
-
         if (variantRepository.existsByNameAndIdNot(request.name(), id)) {
             throw new AppException(ErrorCode.VARIANT_EXISTED);
         }
-
         variantMapper.updateVariant(variant, request);
         Variant savedVariant = variantRepository.save(variant);
         log.info("Updated variant with id: {}", savedVariant.getId());
@@ -94,6 +91,10 @@ public class VariantServiceImpl implements VariantService {
     @Transactional
     public void softDeleteVariant(Long id) {
         Variant variant = getVariantById(id);
+        if (variant.getDeletedAt() != null) {
+            log.warn("Variant with id {} is already soft deleted", id);
+            return;
+        }
         variant.setDeletedAt(LocalDateTime.now());
         variantRepository.save(variant);
         log.info("Soft-deleted variant with id: {}", id);
@@ -114,6 +115,10 @@ public class VariantServiceImpl implements VariantService {
     @Transactional
     public void restoreVariant(Long id) {
         Variant variant = getDeletedVariantById(id);
+        if (variant.getDeletedAt() == null) {
+            log.warn("Variant with id {} is not in a deleted state", id);
+            return;
+        }
         variant.setDeletedAt(null);
         variantRepository.save(variant);
         log.info("Restored variant with id: {}", id);
@@ -135,10 +140,8 @@ public class VariantServiceImpl implements VariantService {
                 log.info("Bulk soft-delete variants ids: {}", variantIds);
             }
             case "DELETE" -> {
-                for (Long id : variantIds) {
-                    if (variantValueRepository.existsByVariantId(id)) {
-                        throw new AppException(ErrorCode.VARIANT_HAS_VALUES);
-                    }
+                if (variantValueRepository.existsByVariantIdIn(variantIds)) {
+                    throw new AppException(ErrorCode.VARIANT_HAS_VALUES);
                 }
                 List<Variant> variants = variantRepository.findAllDeletedByIds(variantIds);
                 variantRepository.deleteAll(variants);
@@ -161,12 +164,11 @@ public class VariantServiceImpl implements VariantService {
     }
 
     private PageResponse<VariantResponse> getAllWithFilterAndSearch(VariantFilterRequest request, boolean isDeleted) {
-        Pageable pageable = PageRequest.of(request.page() - 1, request.size(),
-                SortUtils.parseSort(request.sort()));
+        Pageable pageable = PageRequest.of(request.page() - 1, request.size(), SortUtils.parseSort(request.sort()));
 
         Specification<Variant> spec = VariantSpecification.buildSpecification(request, isDeleted);
-        Page<VariantProjection> page = variantRepository.findBy(spec,
-                q -> q.as(VariantProjection.class).page(pageable));
+        Page<VariantProjection> page = variantRepository
+                .findBy(spec, q -> q.as(VariantProjection.class).page(pageable));
 
         List<VariantResponse> content = page.getContent().stream()
                 .map(proj -> VariantResponse.builder()

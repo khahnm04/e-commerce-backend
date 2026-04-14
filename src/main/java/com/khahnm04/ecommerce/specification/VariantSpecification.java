@@ -6,19 +6,22 @@ import org.springframework.data.jpa.domain.Specification;
 
 public class VariantSpecification {
 
-    private static final String[] KEYWORD_FIELDS = {
-            "name"
-    };
+    private static final String[] KEYWORD_FIELDS = { "name" };
 
     public static Specification<Variant> buildSpecification(VariantFilterRequest request, boolean isDeleted) {
         if (request == null) {
             request = VariantFilterRequest.builder().build();
         }
 
+        Specification<Variant> dateSpec = BaseSpecification
+                .<Variant>withDateRange("createdAt", request.startDate(), request.endDate())
+                .or(BaseSpecification.withDateRange("updatedAt", request.startDate(), request.endDate()));
+
         return BaseSpecification.<Variant>withAuditingFetch()
                 .and(BaseSpecification.withDeletedStatus(isDeleted))
                 .and(BaseSpecification.withKeyword(request.keyword(), KEYWORD_FIELDS))
-                .and(BaseSpecification.withDateRange("createdAt", request.startDate(), request.endDate()));
+                .and(BaseSpecification.equals("createdBy.id", request.creatorId()))
+                .and(dateSpec);
     }
 
 }
