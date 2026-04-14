@@ -19,6 +19,7 @@ public record AttributeFilterRequest (
 
     String sort,
     String keyword,
+    Long creatorId,
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     LocalDate startDate,

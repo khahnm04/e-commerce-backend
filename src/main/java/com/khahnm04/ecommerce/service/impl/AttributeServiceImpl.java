@@ -12,6 +12,7 @@ import com.khahnm04.ecommerce.exception.AppException;
 import com.khahnm04.ecommerce.exception.ErrorCode;
 import com.khahnm04.ecommerce.mapper.AttributeMapper;
 import com.khahnm04.ecommerce.repository.AttributeRepository;
+import com.khahnm04.ecommerce.repository.ProductAttributeValueRepository;
 import com.khahnm04.ecommerce.service.AttributeService;
 import com.khahnm04.ecommerce.specification.AttributeSpecification;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +36,7 @@ import java.util.stream.Collectors;
 public class AttributeServiceImpl implements AttributeService {
 
     private final AttributeRepository attributeRepository;
+    private final ProductAttributeValueRepository productAttributeValueRepository;
     private final AttributeMapper attributeMapper;
 
     @Override
@@ -107,6 +109,9 @@ public class AttributeServiceImpl implements AttributeService {
     @Transactional
     public void deleteAttribute(Long id) {
         Attribute attribute = getDeletedAttributeById(id);
+        if (productAttributeValueRepository.existsByAttributeId(id)) {
+            throw new AppException(ErrorCode.ATTRIBUTE_HAS_PRODUCTS);
+        }
         attributeRepository.delete(attribute);
         log.info("Permanently deleted attribute with id: {}", id);
     }
@@ -144,6 +149,9 @@ public class AttributeServiceImpl implements AttributeService {
                 log.info("Bulk restore attributes ids: {}", attributeIds);
             }
             case "DELETE" -> {
+                if (productAttributeValueRepository.existsByAttributeIdIn(attributeIds)) {
+                    throw new AppException(ErrorCode.ATTRIBUTE_HAS_PRODUCTS);
+                }
                 Set<Attribute> attributes = attributeRepository.findAllDeletedByIds(attributeIds);
                 attributeRepository.deleteAll(attributes);
                 log.info("Bulk permanently delete attributes ids: {}", attributeIds);
@@ -162,12 +170,11 @@ public class AttributeServiceImpl implements AttributeService {
 
     private PageResponse<AttributeResponse> getAllWithFilterAndSearch(AttributeFilterRequest request,
             boolean isDeleted) {
-        Pageable pageable = PageRequest.of(request.page() - 1, request.size(),
-                SortUtils.parseSort(request.sort()));
+        Pageable pageable = PageRequest.of(request.page() - 1, request.size(), SortUtils.parseSort(request.sort()));
 
         Specification<Attribute> spec = AttributeSpecification.buildSpecification(request, isDeleted);
-        Page<AttributeProjection> page = attributeRepository.findBy(spec,
-                q -> q.as(AttributeProjection.class).page(pageable));
+        Page<AttributeProjection> page = attributeRepository
+                .findBy(spec, q -> q.as(AttributeProjection.class).page(pageable));
 
         List<AttributeResponse> content = page.getContent().stream()
                 .map(proj -> AttributeResponse.builder()

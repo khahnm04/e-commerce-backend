@@ -15,6 +15,10 @@ public interface ProductAttributeValueRepository extends JpaRepository<ProductAt
 
     List<ProductAttributeValue> findAllByProductId(Long productId);
 
+    boolean existsByAttributeId(Long attributeId);
+
+    boolean existsByAttributeIdIn(Set<Long> attributeIds);
+
     @Query("SELECT pav FROM ProductAttributeValue pav JOIN FETCH pav.attribute WHERE pav.product.id IN :productIds")
     List<ProductAttributeValue> findAllByProductIdInWithAttribute(@Param("productIds") List<Long> productIds);
 

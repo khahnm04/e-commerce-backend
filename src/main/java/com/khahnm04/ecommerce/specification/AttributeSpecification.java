@@ -13,10 +13,15 @@ public class AttributeSpecification {
             request = AttributeFilterRequest.builder().build();
         }
 
+        Specification<Attribute> dateSpec = BaseSpecification
+                .<Attribute>withDateRange("createdAt", request.startDate(), request.endDate())
+                .or(BaseSpecification.withDateRange("updatedAt", request.startDate(), request.endDate()));
+
         return BaseSpecification.<Attribute>withAuditingFetch()
                 .and(BaseSpecification.withDeletedStatus(isDeleted))
                 .and(BaseSpecification.withKeyword(request.keyword(), KEYWORD_FIELDS))
-                .and(BaseSpecification.withDateRange("createdAt", request.startDate(), request.endDate()));
+                .and(BaseSpecification.equals("createdBy.id", request.creatorId()))
+                .and(dateSpec);
     }
 
 }
