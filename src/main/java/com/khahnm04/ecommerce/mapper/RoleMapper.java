@@ -14,6 +14,7 @@ public interface RoleMapper {
     @Mapping(target = "permissions", ignore = true)
     @Mapping(target = "createdBy", source = "createdBy.fullName")
     @Mapping(target = "updatedBy", source = "updatedBy.fullName")
+    @Mapping(target = "deletedBy", source = "deletedBy.fullName")
     RoleResponse toRoleResponse(Role role);
 
     @Mapping(target = "permissions", ignore = true)

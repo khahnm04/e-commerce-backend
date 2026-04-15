@@ -2,16 +2,14 @@ package com.khahnm04.ecommerce.service.impl;
 
 import com.khahnm04.ecommerce.common.enums.ProductVariantStatus;
 import com.khahnm04.ecommerce.common.util.SortUtils;
+import com.khahnm04.ecommerce.config.AuditorAwareConfig;
 import com.khahnm04.ecommerce.dto.projection.ProductVariantProjection;
 import com.khahnm04.ecommerce.dto.request.BulkActionRequest;
 import com.khahnm04.ecommerce.dto.request.filter.ProductVariantFilterRequest;
 import com.khahnm04.ecommerce.dto.request.ProductVariantRequest;
 import com.khahnm04.ecommerce.dto.response.PageResponse;
 import com.khahnm04.ecommerce.dto.response.ProductVariantResponse;
-import com.khahnm04.ecommerce.entity.Product;
-import com.khahnm04.ecommerce.entity.ProductVariant;
-import com.khahnm04.ecommerce.entity.ProductVariantValue;
-import com.khahnm04.ecommerce.entity.VariantValue;
+import com.khahnm04.ecommerce.entity.*;
 import com.khahnm04.ecommerce.exception.AppException;
 import com.khahnm04.ecommerce.exception.ErrorCode;
 import com.khahnm04.ecommerce.mapper.ProductVariantMapper;
@@ -23,6 +21,7 @@ import com.khahnm04.ecommerce.service.InventoryService;
 import com.khahnm04.ecommerce.service.ProductService;
 import com.khahnm04.ecommerce.service.ProductVariantService;
 import com.khahnm04.ecommerce.specification.ProductVariantSpecification;
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -49,6 +48,8 @@ public class ProductVariantServiceImpl implements ProductVariantService {
     private final ProductVariantMapper productVariantMapper;
     private final ProductService productService;
     private final InventoryService inventoryService;
+    private final AuditorAwareConfig auditorAwareConfig;
+    private final EntityManager entityManager;
 
     @Override
     @Transactional
@@ -166,6 +167,7 @@ public class ProductVariantServiceImpl implements ProductVariantService {
             return;
         }
         productVariant.setDeletedAt(LocalDateTime.now());
+        productVariant.setDeletedBy(auditorAwareConfig.getCurrentAuditor().orElse(null));
         productVariantRepository.save(productVariant);
         log.info("Soft-deleted product variant with id: {}", id);
     }
@@ -174,6 +176,10 @@ public class ProductVariantServiceImpl implements ProductVariantService {
     @Transactional
     public void deleteProductVariant(Long id) {
         ProductVariant productVariant = getDeletedProductVariantById(id);
+        if (productVariant.getDeletedAt() == null) {
+            log.warn("Product variant with id {} is already deleted", id);
+            return;
+        }
         if (orderDetailRepository.existsByProductVariantId(id)) {
             throw new AppException(ErrorCode.PRODUCT_VARIANT_HAS_ORDERS);
         }
@@ -190,6 +196,7 @@ public class ProductVariantServiceImpl implements ProductVariantService {
             return;
         }
         productVariant.setDeletedAt(null);
+        productVariant.setDeletedBy(null);
         productVariantRepository.save(productVariant);
         log.info("Product variant restored with id {}", id);
     }
@@ -211,14 +218,15 @@ public class ProductVariantServiceImpl implements ProductVariantService {
                 log.info("Bulk update status {} product variants ids: {}", action, productVariantIds);
             }
             case "SOFT_DELETE" -> {
-                productVariantRepository.softDeleteByIds(LocalDateTime.now(), productVariantIds);
+                User currentAuditor = auditorAwareConfig.getCurrentAuditor()
+                        .map(user -> entityManager.getReference(User.class, user.getId()))
+                        .orElse(null);
+                productVariantRepository.softDeleteByIds(LocalDateTime.now(), currentAuditor, productVariantIds);
                 log.info("Bulk soft-delete product variants ids: {}", productVariantIds);
             }
             case "DELETE" -> {
-                for (Long id : productVariantIds) {
-                    if (orderDetailRepository.existsByProductVariantId(id)) {
-                        throw new AppException(ErrorCode.PRODUCT_VARIANT_HAS_ORDERS);
-                    }
+                if (orderDetailRepository.existsByProductVariantIdIn(productVariantIds)) {
+                    throw new AppException(ErrorCode.PRODUCT_VARIANT_HAS_ORDERS);
                 }
                 Set<ProductVariant> productVariants = productVariantRepository.findAllDeletedByIds(productVariantIds);
                 productVariantRepository.deleteAll(productVariants);
@@ -336,6 +344,7 @@ public class ProductVariantServiceImpl implements ProductVariantService {
                         .updatedAt(proj.getUpdatedAt())
                         .updatedBy(proj.getUpdatedByFullName())
                         .deletedAt(proj.getDeletedAt())
+                        .deletedBy(proj.getDeletedByFullName())
                         .build())
                 .collect(Collectors.toList());
 

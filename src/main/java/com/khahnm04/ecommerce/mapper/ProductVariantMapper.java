@@ -15,12 +15,13 @@ public interface ProductVariantMapper {
     @Mapping(target = "product", source = "product.name")
     @Mapping(target = "createdBy", source = "createdBy.fullName")
     @Mapping(target = "updatedBy", source = "updatedBy.fullName")
+    @Mapping(target = "deletedBy", source = "deletedBy.fullName")
     @Mapping(target = "variantValues", ignore = true)
     ProductVariantResponse toProductVariantResponse(ProductVariant productVariant);
 
-    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "product", ignore = true)
     @Mapping(target = "sku", ignore = true)
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateProductVariant(@MappingTarget ProductVariant productVariant, ProductVariantRequest request);
 
 }

@@ -15,7 +15,8 @@ public record VariantResponse(
     String createdBy,
     LocalDateTime updatedAt,
     String updatedBy,
-    LocalDateTime deletedAt
+    LocalDateTime deletedAt,
+    String deletedBy
 
 ) implements Serializable {
 }

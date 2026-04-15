@@ -1,8 +1,10 @@
 package com.khahnm04.ecommerce.repository;
 
 import com.khahnm04.ecommerce.common.enums.ProductVariantStatus;
+import com.khahnm04.ecommerce.entity.User;
 import com.khahnm04.ecommerce.entity.ProductVariant;
 import org.springframework.data.jpa.repository.*;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
@@ -14,6 +16,8 @@ public interface ProductVariantRepository
         extends JpaRepository<ProductVariant, Long>, JpaSpecificationExecutor<ProductVariant> {
 
     boolean existsByProductId(Long productId);
+
+    boolean existsByProductIdIn(Set<Long> productIds);
 
     boolean existsBySku(String sku);
 
@@ -36,12 +40,12 @@ public interface ProductVariantRepository
 
     @Modifying
     @Transactional
-    @Query("UPDATE ProductVariant pv SET pv.deletedAt = :now WHERE pv.id IN :ids AND pv.deletedAt IS NULL")
-    void softDeleteByIds(LocalDateTime now, Set<Long> ids);
+    @Query("UPDATE ProductVariant pv SET pv.deletedAt = :now, pv.deletedBy = :user WHERE pv.id IN :ids AND pv.deletedAt IS NULL")
+    void softDeleteByIds(@Param("now") LocalDateTime now, @Param("user") User user, @Param("ids") Set<Long> ids);
 
     @Modifying
     @Transactional
-    @Query("UPDATE ProductVariant pv SET pv.deletedAt = NULL WHERE pv.id IN :ids AND pv.deletedAt IS NOT NULL")
+    @Query("UPDATE ProductVariant pv SET pv.deletedAt = NULL, pv.deletedBy = NULL WHERE pv.id IN :ids AND pv.deletedAt IS NOT NULL")
     void restoreDeletedByIds(Set<Long> ids);
 
     @Modifying

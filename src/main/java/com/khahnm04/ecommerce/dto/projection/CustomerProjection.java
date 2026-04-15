@@ -6,31 +6,35 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public interface CustomerProjection {
-  Long getId();
 
-  Long getUserId();
+    Long getId();
 
-  String getFullName();
+    Long getUserId();
 
-  String getEmail();
+    String getFullName();
 
-  String getPhoneNumber();
+    String getEmail();
 
-  LocalDate getDateOfBirth();
+    String getPhoneNumber();
 
-  Gender getGender();
+    LocalDate getDateOfBirth();
 
-  String getAvatar();
+    Gender getGender();
 
-  UserStatus getUserStatus();
+    String getAvatar();
 
-  LocalDateTime getCreatedAt();
+    UserStatus getUserStatus();
 
-  LocalDateTime getUpdatedAt();
+    LocalDateTime getCreatedAt();
 
-  LocalDateTime getDeletedAt();
+    LocalDateTime getUpdatedAt();
 
-  String getCreatedByFullName();
+    LocalDateTime getDeletedAt();
 
-  String getUpdatedByFullName();
+    String getCreatedByFullName();
+
+    String getUpdatedByFullName();
+
+    String getDeletedByFullName();
+
 }

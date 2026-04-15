@@ -2,6 +2,7 @@ package com.khahnm04.ecommerce.repository;
 
 import com.khahnm04.ecommerce.common.enums.BrandStatus;
 import com.khahnm04.ecommerce.entity.Brand;
+import com.khahnm04.ecommerce.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
@@ -34,12 +35,12 @@ public interface BrandRepository extends JpaRepository<Brand, Long>, JpaSpecific
 
     @Modifying
     @Transactional
-    @Query("UPDATE Brand b SET b.deletedAt = :now WHERE b.id IN :ids AND b.deletedAt IS NULL")
-    void softDeleteByIds(LocalDateTime now, Set<Long> ids);
+    @Query("UPDATE Brand b SET b.deletedAt = :now, b.deletedBy = :user WHERE b.id IN :ids AND b.deletedAt IS NULL")
+    void softDeleteByIds(LocalDateTime now, User user, Set<Long> ids);
 
     @Modifying
     @Transactional
-    @Query("UPDATE Brand b SET b.deletedAt = NULL WHERE b.id IN :ids AND b.deletedAt IS NOT NULL")
+    @Query("UPDATE Brand b SET b.deletedAt = NULL, b.deletedBy = NULL WHERE b.id IN :ids AND b.deletedAt IS NOT NULL")
     void restoreDeletedByIds(Set<Long> ids);
 
     @Modifying

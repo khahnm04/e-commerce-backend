@@ -9,14 +9,17 @@ import com.khahnm04.ecommerce.dto.request.filter.CategoryFilterRequest;
 import com.khahnm04.ecommerce.dto.request.CategoryRequest;
 import com.khahnm04.ecommerce.dto.response.PageResponse;
 import com.khahnm04.ecommerce.dto.response.CategoryResponse;
+import com.khahnm04.ecommerce.entity.User;
 import com.khahnm04.ecommerce.entity.Category;
 import com.khahnm04.ecommerce.exception.AppException;
 import com.khahnm04.ecommerce.exception.ErrorCode;
 import com.khahnm04.ecommerce.mapper.CategoryMapper;
+import com.khahnm04.ecommerce.config.AuditorAwareConfig;
 import com.khahnm04.ecommerce.repository.CategoryRepository;
 import com.khahnm04.ecommerce.repository.ProductCategoryRepository;
 import com.khahnm04.ecommerce.service.CategoryService;
 import com.khahnm04.ecommerce.specification.CategorySpecification;
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -39,6 +42,8 @@ public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categoryRepository;
     private final ProductCategoryRepository productCategoryRepository;
     private final CategoryMapper categoryMapper;
+    private final AuditorAwareConfig auditorAwareConfig;
+    private final EntityManager entityManager;
 
     @Override
     @Transactional
@@ -147,6 +152,7 @@ public class CategoryServiceImpl implements CategoryService {
             return;
         }
         category.setDeletedAt(LocalDateTime.now());
+        category.setDeletedBy(auditorAwareConfig.getCurrentAuditor().orElse(null));
         categoryRepository.save(category);
         log.info("Soft-deleted category with id: {}", id);
     }
@@ -155,6 +161,10 @@ public class CategoryServiceImpl implements CategoryService {
     @Transactional
     public void deleteCategory(Long id) {
         Category category = getDeletedCategoryById(id);
+        if (category.getDeletedAt() == null) {
+            log.warn("Category with id {} is already deleted", id);
+            return;
+        }
         if (categoryRepository.existsByParentId(id)) {
             throw new AppException(ErrorCode.CATEGORY_HAS_CHILDREN);
         }
@@ -174,6 +184,7 @@ public class CategoryServiceImpl implements CategoryService {
             return;
         }
         category.setDeletedAt(null);
+        category.setDeletedBy(null);
         categoryRepository.save(category);
         log.info("Restored category with id {}", id);
     }
@@ -194,17 +205,18 @@ public class CategoryServiceImpl implements CategoryService {
                 log.info("Bulk update status {} categories ids: {}", action, categoryIds);
             }
             case "SOFT_DELETE" -> {
-                categoryRepository.softDeleteByIds(LocalDateTime.now(), categoryIds);
+                User currentAuditor = auditorAwareConfig.getCurrentAuditor()
+                        .map(user -> entityManager.getReference(User.class, user.getId()))
+                        .orElse(null);
+                categoryRepository.softDeleteByIds(LocalDateTime.now(), currentAuditor, categoryIds);
                 log.info("Bulk soft-delete categories ids: {}", categoryIds);
             }
             case "DELETE" -> {
-                for (Long id : categoryIds) {
-                    if (categoryRepository.existsByParentId(id)) {
-                        throw new AppException(ErrorCode.CATEGORY_HAS_CHILDREN);
-                    }
-                    if (productCategoryRepository.existsByCategoryId(id)) {
-                        throw new AppException(ErrorCode.CATEGORY_HAS_PRODUCTS);
-                    }
+                if (categoryRepository.existsByParentIdIn(categoryIds)) {
+                    throw new AppException(ErrorCode.CATEGORY_HAS_CHILDREN);
+                }
+                if (productCategoryRepository.existsByCategoryIdIn(categoryIds)) {
+                    throw new AppException(ErrorCode.CATEGORY_HAS_PRODUCTS);
                 }
                 Set<Category> categories = categoryRepository.findAllDeletedByIds(categoryIds);
                 categoryRepository.deleteAll(categories);
@@ -251,6 +263,7 @@ public class CategoryServiceImpl implements CategoryService {
                         .updatedAt(proj.getUpdatedAt())
                         .updatedBy(proj.getUpdatedByFullName())
                         .deletedAt(proj.getDeletedAt())
+                        .deletedBy(proj.getDeletedByFullName())
                         .build())
                 .collect(Collectors.toList());
 

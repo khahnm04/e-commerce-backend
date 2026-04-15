@@ -18,4 +18,6 @@ public interface VariantProjection {
 
     String getUpdatedByFullName();
 
+    String getDeletedByFullName();
+
 }

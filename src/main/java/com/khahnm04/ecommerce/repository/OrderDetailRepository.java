@@ -10,6 +10,8 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long> 
 
     boolean existsByProductVariantId(Long id);
 
+    boolean existsByProductVariantIdIn(java.util.Set<Long> ids);
+
     List<OrderDetail> findByOrderId(Long orderId);
 
     List<OrderDetail> findByOrderIdIn(List<Long> orderIds);

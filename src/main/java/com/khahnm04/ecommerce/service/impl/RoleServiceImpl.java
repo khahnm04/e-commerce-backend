@@ -1,5 +1,6 @@
 package com.khahnm04.ecommerce.service.impl;
 
+import com.khahnm04.ecommerce.config.AuditorAwareConfig;
 import com.khahnm04.ecommerce.dto.request.BulkActionRequest;
 import com.khahnm04.ecommerce.dto.response.PageResponse;
 import com.khahnm04.ecommerce.common.util.SortUtils;
@@ -9,6 +10,7 @@ import com.khahnm04.ecommerce.dto.projection.RoleProjection;
 import com.khahnm04.ecommerce.dto.response.RoleResponse;
 import com.khahnm04.ecommerce.entity.Permission;
 import com.khahnm04.ecommerce.entity.Role;
+import com.khahnm04.ecommerce.entity.User;
 import com.khahnm04.ecommerce.exception.AppException;
 import com.khahnm04.ecommerce.exception.ErrorCode;
 import com.khahnm04.ecommerce.mapper.RoleMapper;
@@ -17,6 +19,7 @@ import com.khahnm04.ecommerce.specification.RoleSpecification;
 import com.khahnm04.ecommerce.repository.PermissionRepository;
 import com.khahnm04.ecommerce.repository.RoleRepository;
 import com.khahnm04.ecommerce.service.RoleService;
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -39,6 +42,8 @@ public class RoleServiceImpl implements RoleService {
     private final UserRepository userRepository;
     private final PermissionRepository permissionRepository;
     private final RoleMapper roleMapper;
+    private final AuditorAwareConfig auditorAwareConfig;
+    private final EntityManager entityManager;
 
     @Override
     public RoleResponse createRole(RoleRequest request) {
@@ -97,6 +102,7 @@ public class RoleServiceImpl implements RoleService {
             return;
         }
         role.setDeletedAt(LocalDateTime.now());
+        role.setDeletedBy(auditorAwareConfig.getCurrentAuditor().orElse(null));
         roleRepository.save(role);
         log.info("Soft-deleted role with id: {}", id);
     }
@@ -105,6 +111,10 @@ public class RoleServiceImpl implements RoleService {
     @Transactional
     public void deleteRole(Long id) {
         Role role = getDeletedRoleById(id);
+        if (role.getDeletedAt() == null) {
+            log.warn("Role with id {} is already deleted", id);
+            return;
+        }
         if (userRepository.existsByRoles_Id(role.getId())) {
             throw new AppException(ErrorCode.ROLE_HAS_USERS);
         }
@@ -121,6 +131,7 @@ public class RoleServiceImpl implements RoleService {
             return;
         }
         role.setDeletedAt(null);
+        role.setDeletedBy(null);
         roleRepository.save(role);
         log.info("Role restored with id: {}", id);
     }
@@ -131,9 +142,16 @@ public class RoleServiceImpl implements RoleService {
         Set<Long> roleIds = request.ids();
         String action = request.action().toUpperCase();
 
+        if (roleIds == null || roleIds.isEmpty()) {
+            throw new AppException(ErrorCode.ROLE_INVALID_BULK_ACTION);
+        }
+
         switch (action) {
             case "SOFT_DELETE" -> {
-                roleRepository.softDeleteByIds(LocalDateTime.now(), roleIds);
+                User currentAuditor = auditorAwareConfig.getCurrentAuditor()
+                        .map(user -> entityManager.getReference(User.class, user.getId()))
+                        .orElse(null);
+                roleRepository.softDeleteByIds(LocalDateTime.now(), currentAuditor, roleIds);
                 log.info("Bulk soft-deleted roles with IDs: {}", roleIds);
             }
             case "RESTORE" -> {
@@ -148,7 +166,7 @@ public class RoleServiceImpl implements RoleService {
                 roleRepository.deleteAll(roles);
                 log.info("Bulk permanently deleted roles with IDs: {}", roleIds);
             }
-            default -> throw new AppException(ErrorCode.ROLE_NOT_FOUND);
+            default -> throw new AppException(ErrorCode.ROLE_INVALID_BULK_ACTION);
         }
     }
 
@@ -174,6 +192,7 @@ public class RoleServiceImpl implements RoleService {
                         .updatedAt(proj.getUpdatedAt())
                         .updatedBy(proj.getUpdatedByFullName())
                         .deletedAt(proj.getDeletedAt())
+                        .deletedBy(proj.getDeletedByFullName())
                         .build())
                 .collect(Collectors.toList());
 

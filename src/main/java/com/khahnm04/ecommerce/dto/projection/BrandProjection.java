@@ -27,4 +27,6 @@ public interface BrandProjection {
 
     String getUpdatedByFullName();
 
+    String getDeletedByFullName();
+
 }

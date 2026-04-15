@@ -26,11 +26,13 @@ public record ProductVariantResponse(
     String createdBy,
     LocalDateTime updatedAt,
     String updatedBy,
-    LocalDateTime deletedAt
+    LocalDateTime deletedAt,
+    String deletedBy
 
 ) implements Serializable {
 
-    @Builder
+    @Builder(toBuilder = true)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public record VariantValueInfo(
         Long id,
         String variant,

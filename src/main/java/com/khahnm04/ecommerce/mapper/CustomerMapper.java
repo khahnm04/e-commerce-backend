@@ -25,6 +25,7 @@ public interface CustomerMapper {
     @Mapping(target = "status", source = "user.status")
     @Mapping(target = "createdBy", source = "createdBy.fullName")
     @Mapping(target = "updatedBy", source = "updatedBy.fullName")
+    @Mapping(target = "deletedBy", source = "deletedBy.fullName")
     CustomerResponse toResponse(Customer customer);
 
     @Mapping(target = "user", ignore = true)

@@ -35,9 +35,9 @@ public abstract class BaseEntity<T> implements Serializable {
     @CreatedBy
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(
-            name = "created_by",
-            updatable = false,
-            foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT)
+        name = "created_by",
+        updatable = false,
+        foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT)
     )
     private User createdBy;
 
@@ -48,12 +48,19 @@ public abstract class BaseEntity<T> implements Serializable {
     @LastModifiedBy
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(
-            name = "updated_by",
-            foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT)
+        name = "updated_by",
+        foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT)
     )
     private User updatedBy;
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(
+        name = "deleted_by",
+        foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT)
+    )
+    private User deletedBy;
 
 }

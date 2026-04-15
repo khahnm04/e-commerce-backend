@@ -22,4 +22,6 @@ public interface VariantValueProjection {
 
     String getUpdatedByFullName();
 
+    String getDeletedByFullName();
+
 }

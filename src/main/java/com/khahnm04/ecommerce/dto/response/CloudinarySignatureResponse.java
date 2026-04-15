@@ -1,15 +1,18 @@
 package com.khahnm04.ecommerce.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
+import java.io.Serializable;
 
-@Builder
+@Builder(toBuilder = true)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public record CloudinarySignatureResponse(
 
-        String signature,
-        long timestamp,
-        String cloudName,
-        String apiKey,
-        String folder
+    String signature,
+    long timestamp,
+    String cloudName,
+    String apiKey,
+    String folder
 
-) {
+) implements Serializable {
 }

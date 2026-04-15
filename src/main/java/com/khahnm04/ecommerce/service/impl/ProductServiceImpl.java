@@ -3,6 +3,7 @@ package com.khahnm04.ecommerce.service.impl;
 import com.khahnm04.ecommerce.common.enums.ProductStatus;
 import com.khahnm04.ecommerce.common.util.SlugUtils;
 import com.khahnm04.ecommerce.common.util.SortUtils;
+import com.khahnm04.ecommerce.config.AuditorAwareConfig;
 import com.khahnm04.ecommerce.dto.projection.ProductProjection;
 import com.khahnm04.ecommerce.dto.request.BulkActionRequest;
 import com.khahnm04.ecommerce.dto.request.filter.ProductFilterRequest;
@@ -17,6 +18,7 @@ import com.khahnm04.ecommerce.repository.*;
 import com.khahnm04.ecommerce.service.BrandService;
 import com.khahnm04.ecommerce.service.ProductService;
 import com.khahnm04.ecommerce.specification.ProductSpecification;
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -45,6 +47,8 @@ public class ProductServiceImpl implements ProductService {
     private final CategoryRepository categoryRepository;
     private final BrandService brandService;
     private final ProductMapper productMapper;
+    private final AuditorAwareConfig auditorAwareConfig;
+    private final EntityManager entityManager;
 
     @Override
     @Transactional
@@ -180,6 +184,7 @@ public class ProductServiceImpl implements ProductService {
             return;
         }
         product.setDeletedAt(LocalDateTime.now());
+        product.setDeletedBy(auditorAwareConfig.getCurrentAuditor().orElse(null));
         productRepository.save(product);
         log.info("Soft-deleted product with id: {}", id);
     }
@@ -188,6 +193,10 @@ public class ProductServiceImpl implements ProductService {
     @Transactional
     public void deleteProduct(Long id) {
         Product product = getDeletedProductById(id);
+        if (product.getDeletedAt() == null) {
+            log.warn("Product with id {} is already deleted", id);
+            return;
+        }
         if (productVariantRepository.existsByProductId(id)) {
             throw new AppException(ErrorCode.PRODUCT_HAS_VARIANTS);
         }
@@ -213,6 +222,7 @@ public class ProductServiceImpl implements ProductService {
             throw new AppException(ErrorCode.PRODUCT_EXISTED);
         }
         product.setDeletedAt(null);
+        product.setDeletedBy(null);
         productRepository.save(product);
         log.info("Product restored with id {}", id);
     }
@@ -234,14 +244,15 @@ public class ProductServiceImpl implements ProductService {
                 log.info("Bulk update status {} products ids: {}", action, productIds);
             }
             case "SOFT_DELETE" -> {
-                productRepository.softDeleteByIds(LocalDateTime.now(), productIds);
+                User currentAuditor = auditorAwareConfig.getCurrentAuditor()
+                        .map(user -> entityManager.getReference(User.class, user.getId()))
+                        .orElse(null);
+                productRepository.softDeleteByIds(LocalDateTime.now(), currentAuditor, productIds);
                 log.info("Bulk soft-delete products ids: {}", productIds);
             }
             case "DELETE" -> {
-                for (Long id : productIds) {
-                    if (productVariantRepository.existsByProductId(id)) {
-                        throw new AppException(ErrorCode.PRODUCT_HAS_VARIANTS);
-                    }
+                if (productVariantRepository.existsByProductIdIn(productIds)) {
+                    throw new AppException(ErrorCode.PRODUCT_HAS_VARIANTS);
                 }
                 Set<Product> products = productRepository.findAllDeletedByIds(productIds);
                 productRepository.deleteAll(products);
@@ -291,6 +302,7 @@ public class ProductServiceImpl implements ProductService {
                         .updatedAt(proj.getUpdatedAt())
                         .updatedBy(proj.getUpdatedByFullName())
                         .deletedAt(proj.getDeletedAt())
+                        .deletedBy(proj.getDeletedByFullName())
                         .build())
                 .collect(Collectors.toList());
 

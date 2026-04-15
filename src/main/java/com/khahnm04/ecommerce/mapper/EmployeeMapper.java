@@ -26,6 +26,7 @@ public interface EmployeeMapper {
     @Mapping(target = "status", source = "user.status")
     @Mapping(target = "createdBy", source = "createdBy.fullName")
     @Mapping(target = "updatedBy", source = "updatedBy.fullName")
+    @Mapping(target = "deletedBy", source = "deletedBy.fullName")
     EmployeeResponse toResponse(Employee employee);
 
     @Mapping(target = "user", ignore = true)

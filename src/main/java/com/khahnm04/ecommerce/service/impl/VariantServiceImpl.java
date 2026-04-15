@@ -1,12 +1,14 @@
 package com.khahnm04.ecommerce.service.impl;
 
 import com.khahnm04.ecommerce.common.util.SortUtils;
+import com.khahnm04.ecommerce.config.AuditorAwareConfig;
 import com.khahnm04.ecommerce.dto.projection.VariantProjection;
 import com.khahnm04.ecommerce.dto.request.BulkActionRequest;
 import com.khahnm04.ecommerce.dto.request.filter.VariantFilterRequest;
 import com.khahnm04.ecommerce.dto.request.VariantRequest;
 import com.khahnm04.ecommerce.dto.response.PageResponse;
 import com.khahnm04.ecommerce.dto.response.VariantResponse;
+import com.khahnm04.ecommerce.entity.User;
 import com.khahnm04.ecommerce.entity.Variant;
 import com.khahnm04.ecommerce.exception.AppException;
 import com.khahnm04.ecommerce.exception.ErrorCode;
@@ -15,6 +17,7 @@ import com.khahnm04.ecommerce.repository.VariantRepository;
 import com.khahnm04.ecommerce.repository.VariantValueRepository;
 import com.khahnm04.ecommerce.service.VariantService;
 import com.khahnm04.ecommerce.specification.VariantSpecification;
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -37,6 +40,8 @@ public class VariantServiceImpl implements VariantService {
     private final VariantRepository variantRepository;
     private final VariantValueRepository variantValueRepository;
     private final VariantMapper variantMapper;
+    private final AuditorAwareConfig auditorAwareConfig;
+    private final EntityManager entityManager;
 
     @Override
     @Transactional
@@ -96,6 +101,7 @@ public class VariantServiceImpl implements VariantService {
             return;
         }
         variant.setDeletedAt(LocalDateTime.now());
+        variant.setDeletedBy(auditorAwareConfig.getCurrentAuditor().orElse(null));
         variantRepository.save(variant);
         log.info("Soft-deleted variant with id: {}", id);
     }
@@ -104,6 +110,10 @@ public class VariantServiceImpl implements VariantService {
     @Transactional
     public void deleteVariant(Long id) {
         Variant variant = getDeletedVariantById(id);
+        if (variant.getDeletedAt() == null) {
+            log.warn("Variant with id {} is already deleted", id);
+            return;
+        }
         if (variantValueRepository.existsByVariantId(id)) {
             throw new AppException(ErrorCode.VARIANT_HAS_VALUES);
         }
@@ -120,6 +130,7 @@ public class VariantServiceImpl implements VariantService {
             return;
         }
         variant.setDeletedAt(null);
+        variant.setDeletedBy(null);
         variantRepository.save(variant);
         log.info("Restored variant with id: {}", id);
     }
@@ -136,7 +147,10 @@ public class VariantServiceImpl implements VariantService {
 
         switch (action) {
             case "SOFT_DELETE" -> {
-                variantRepository.softDeleteByIds(LocalDateTime.now(), variantIds);
+                User currentAuditor = auditorAwareConfig.getCurrentAuditor()
+                        .map(user -> entityManager.getReference(User.class, user.getId()))
+                        .orElse(null);
+                variantRepository.softDeleteByIds(LocalDateTime.now(), currentAuditor, variantIds);
                 log.info("Bulk soft-delete variants ids: {}", variantIds);
             }
             case "DELETE" -> {
@@ -179,6 +193,7 @@ public class VariantServiceImpl implements VariantService {
                         .updatedAt(proj.getUpdatedAt())
                         .updatedBy(proj.getUpdatedByFullName())
                         .deletedAt(proj.getDeletedAt())
+                        .deletedBy(proj.getDeletedByFullName())
                         .build())
                 .collect(Collectors.toList());
 

@@ -1,9 +1,11 @@
 package com.khahnm04.ecommerce.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import java.io.Serializable;
 
-@Builder
+@Builder(toBuilder = true)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public record LoginResponse(
 
     Long id,

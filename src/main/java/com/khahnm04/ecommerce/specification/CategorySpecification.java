@@ -23,10 +23,10 @@ public class CategorySpecification {
         return BaseSpecification.<Category>withAuditingFetch()
                 .and(BaseSpecification.withDeletedStatus(isDeleted))
                 .and(BaseSpecification.withKeyword(request.keyword(), KEYWORD_FIELDS))
-                .and(dateSpec)
-                .and(BaseSpecification.equals("parent.id", request.parentId()))
                 .and(BaseSpecification.equals("createdBy.id", request.creatorId()))
-                .and(BaseSpecification.equals("status", request.status()));
+                .and(BaseSpecification.equals("status", request.status()))
+                .and(BaseSpecification.equals("parent.id", request.parentId()))
+                .and(dateSpec);
     }
 
 }

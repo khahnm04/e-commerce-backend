@@ -4,6 +4,7 @@ import com.khahnm04.ecommerce.common.enums.CategoryStatus;
 import java.time.LocalDateTime;
 
 public interface CategoryProjection {
+
     Long getId();
 
     String getName();
@@ -35,4 +36,7 @@ public interface CategoryProjection {
     String getCreatedByFullName();
 
     String getUpdatedByFullName();
+
+    String getDeletedByFullName();
+
 }

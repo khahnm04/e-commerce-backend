@@ -18,6 +18,7 @@ public interface ProductMapper {
     @Mapping(target = "brandName", source = "brand.name")
     @Mapping(target = "createdBy", source = "createdBy.fullName")
     @Mapping(target = "updatedBy", source = "updatedBy.fullName")
+    @Mapping(target = "deletedBy", source = "deletedBy.fullName")
     ProductResponse toProductResponse(Product product);
 
     @Mapping(target = "brand", ignore = true)

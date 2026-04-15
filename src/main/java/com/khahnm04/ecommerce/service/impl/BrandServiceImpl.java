@@ -3,6 +3,7 @@ package com.khahnm04.ecommerce.service.impl;
 import com.khahnm04.ecommerce.common.enums.BrandStatus;
 import com.khahnm04.ecommerce.common.util.SlugUtils;
 import com.khahnm04.ecommerce.common.util.SortUtils;
+import com.khahnm04.ecommerce.config.AuditorAwareConfig;
 import com.khahnm04.ecommerce.dto.projection.BrandProjection;
 import com.khahnm04.ecommerce.dto.request.BulkActionRequest;
 import com.khahnm04.ecommerce.dto.request.filter.BrandFilterRequest;
@@ -10,6 +11,7 @@ import com.khahnm04.ecommerce.dto.request.BrandRequest;
 import com.khahnm04.ecommerce.dto.response.PageResponse;
 import com.khahnm04.ecommerce.dto.response.BrandResponse;
 import com.khahnm04.ecommerce.entity.Brand;
+import com.khahnm04.ecommerce.entity.User;
 import com.khahnm04.ecommerce.exception.AppException;
 import com.khahnm04.ecommerce.exception.ErrorCode;
 import com.khahnm04.ecommerce.mapper.BrandMapper;
@@ -17,6 +19,7 @@ import com.khahnm04.ecommerce.repository.BrandRepository;
 import com.khahnm04.ecommerce.repository.ProductRepository;
 import com.khahnm04.ecommerce.service.BrandService;
 import com.khahnm04.ecommerce.specification.BrandSpecification;
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -40,6 +43,8 @@ public class BrandServiceImpl implements BrandService {
     private final BrandRepository brandRepository;
     private final ProductRepository productRepository;
     private final BrandMapper brandMapper;
+    private final AuditorAwareConfig auditorAwareConfig;
+    private final EntityManager entityManager;
 
     @Override
     @Transactional
@@ -128,6 +133,7 @@ public class BrandServiceImpl implements BrandService {
             return;
         }
         brand.setDeletedAt(LocalDateTime.now());
+        brand.setDeletedBy(auditorAwareConfig.getCurrentAuditor().orElse(null));
         brandRepository.save(brand);
         log.info("Soft-deleted brand with id: {}", id);
     }
@@ -136,6 +142,10 @@ public class BrandServiceImpl implements BrandService {
     @Transactional
     public void deleteBrand(Long id) {
         Brand brand = getDeletedBrandById(id);
+        if (brand.getDeletedAt() == null) {
+            log.warn("Brand with id {} is already deleted", id);
+            return;
+        }
         if (productRepository.existsByBrandId(id)) {
             throw new AppException(ErrorCode.BRAND_HAS_PRODUCTS);
         }
@@ -152,6 +162,7 @@ public class BrandServiceImpl implements BrandService {
             return;
         }
         brand.setDeletedAt(null);
+        brand.setDeletedBy(null);
         brandRepository.save(brand);
         log.info("Brand restored with id {}", id);
     }
@@ -172,14 +183,15 @@ public class BrandServiceImpl implements BrandService {
                 log.info("Bulk update status {} brands ids: {}", action, brandIds);
             }
             case "SOFT_DELETE" -> {
-                brandRepository.softDeleteByIds(LocalDateTime.now(), brandIds);
+                User currentAuditor = auditorAwareConfig.getCurrentAuditor()
+                        .map(user -> entityManager.getReference(User.class, user.getId()))
+                        .orElse(null);
+                brandRepository.softDeleteByIds(LocalDateTime.now(), currentAuditor, brandIds);
                 log.info("Bulk soft-delete brands ids: {}", brandIds);
             }
             case "DELETE" -> {
-                for (Long id : brandIds) {
-                    if (productRepository.existsByBrandId(id)) {
-                        throw new AppException(ErrorCode.BRAND_HAS_PRODUCTS);
-                    }
+                if (productRepository.existsByBrandIdIn(brandIds)) {
+                    throw new AppException(ErrorCode.BRAND_HAS_PRODUCTS);
                 }
                 Set<Brand> brands = brandRepository.findAllDeletedByIds(brandIds);
                 brandRepository.deleteAll(brands);
@@ -221,6 +233,7 @@ public class BrandServiceImpl implements BrandService {
                         .updatedAt(proj.getUpdatedAt())
                         .updatedBy(proj.getUpdatedByFullName())
                         .deletedAt(proj.getDeletedAt())
+                        .deletedBy(proj.getDeletedByFullName())
                         .build())
                 .collect(Collectors.toList());
 

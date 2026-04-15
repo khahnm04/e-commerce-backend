@@ -9,7 +9,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-@Builder
+@Builder(toBuilder = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record CouponResponse(
 
@@ -31,7 +31,8 @@ public record CouponResponse(
     String createdBy,
     LocalDateTime updatedAt,
     String updatedBy,
-    LocalDateTime deletedAt
+    LocalDateTime deletedAt,
+    String deletedBy
 
 ) implements Serializable {
 }

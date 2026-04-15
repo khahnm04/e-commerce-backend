@@ -1,5 +1,6 @@
 package com.khahnm04.ecommerce.service.impl;
 
+import com.khahnm04.ecommerce.config.AuditorAwareConfig;
 import com.khahnm04.ecommerce.dto.projection.EmployeeProjection;
 import com.khahnm04.ecommerce.dto.request.BulkActionRequest;
 import com.khahnm04.ecommerce.dto.response.PageResponse;
@@ -18,6 +19,7 @@ import com.khahnm04.ecommerce.specification.EmployeeSpecification;
 import com.khahnm04.ecommerce.mapper.EmployeeMapper;
 import com.khahnm04.ecommerce.repository.EmployeeRepository;
 import com.khahnm04.ecommerce.service.EmployeeService;
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -40,6 +42,8 @@ public class EmployeeServiceImpl implements EmployeeService {
     private final EmployeeRepository employeeRepository;
     private final EmployeeMapper employeeMapper;
     private final UserService userService;
+    private final AuditorAwareConfig auditorAwareConfig;
+    private final EntityManager entityManager;
 
     @Override
     @Transactional
@@ -58,7 +62,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         Employee savedEmployee = employeeRepository.save(newEmployee);
 
         log.info("Created new employee with code: {}", savedEmployee.getCode());
-        return this.buildUserResponse(savedEmployee);
+        return this.buildEmployeeResponse(savedEmployee);
     }
 
     @Override
@@ -84,7 +88,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                             .orElseThrow(() -> new AppException(ErrorCode.EMPLOYEE_NOT_FOUND));
         }
 
-        return this.buildUserResponse(employee);
+        return this.buildEmployeeResponse(employee);
     }
 
     @Override
@@ -113,7 +117,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         employeeRepository.save(employee);
 
         log.info("Updated employee with id: {}", id);
-        return this.buildUserResponse(employee);
+        return this.buildEmployeeResponse(employee);
     }
 
     @Override
@@ -125,6 +129,7 @@ public class EmployeeServiceImpl implements EmployeeService {
             return;
         }
         employee.setDeletedAt(LocalDateTime.now());
+        employee.setDeletedBy(auditorAwareConfig.getCurrentAuditor().orElse(null));
         employeeRepository.save(employee);
         log.info("Soft-deleted employee with id: {}", id);
     }
@@ -133,6 +138,10 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Transactional
     public void deleteEmployee(Long id) {
         Employee employee = getDeletedEmployeeById(id);
+        if (employee.getDeletedAt() == null) {
+            log.warn("Employee with id {} is already deleted", id);
+            return;
+        }
         employeeRepository.delete(employee);
         log.info("Permanently deleted employee with id: {}", id);
     }
@@ -146,6 +155,7 @@ public class EmployeeServiceImpl implements EmployeeService {
             return;
         }
         employee.setDeletedAt(null);
+        employee.setDeletedBy(null);
         employeeRepository.save(employee);
         log.info("Employee restored with id {}", id);
     }
@@ -171,7 +181,10 @@ public class EmployeeServiceImpl implements EmployeeService {
                 log.info("Bulk update status {} employees ids: {}", action, employeeIds);
             }
             case "SOFT_DELETE" -> {
-                employeeRepository.softDeleteByIds(LocalDateTime.now(), employeeIds);
+                User currentAuditor = auditorAwareConfig.getCurrentAuditor()
+                        .map(user -> entityManager.getReference(User.class, user.getId()))
+                        .orElse(null);
+                employeeRepository.softDeleteByIds(LocalDateTime.now(), currentAuditor, employeeIds);
                 log.info("Bulk soft-delete employees ids: {}", employeeIds);
             }
             case "DELETE" -> {
@@ -195,7 +208,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .orElseThrow(() -> new AppException(ErrorCode.EMPLOYEE_NOT_FOUND));
     }
 
-    private EmployeeResponse buildUserResponse(Employee employee) {
+    private EmployeeResponse buildEmployeeResponse(Employee employee) {
         EmployeeResponse employeeResponse = employeeMapper.toResponse(employee);
         Set<Role> roles = employee.getUser().getRoles();
         Set<String> roleNames = roles != null
@@ -231,6 +244,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                         .updatedAt(proj.getUpdatedAt())
                         .updatedBy(proj.getUpdatedByFullName())
                         .deletedAt(proj.getDeletedAt())
+                        .deletedBy(proj.getDeletedByFullName())
                         .build())
                 .collect(Collectors.toList());
 

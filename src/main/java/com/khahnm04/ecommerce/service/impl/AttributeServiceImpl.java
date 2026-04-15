@@ -1,6 +1,7 @@
 package com.khahnm04.ecommerce.service.impl;
 
 import com.khahnm04.ecommerce.common.util.SortUtils;
+import com.khahnm04.ecommerce.config.AuditorAwareConfig;
 import com.khahnm04.ecommerce.dto.projection.AttributeProjection;
 import com.khahnm04.ecommerce.dto.request.BulkActionRequest;
 import com.khahnm04.ecommerce.dto.request.filter.AttributeFilterRequest;
@@ -8,6 +9,7 @@ import com.khahnm04.ecommerce.dto.request.AttributeRequest;
 import com.khahnm04.ecommerce.dto.response.PageResponse;
 import com.khahnm04.ecommerce.dto.response.AttributeResponse;
 import com.khahnm04.ecommerce.entity.Attribute;
+import com.khahnm04.ecommerce.entity.User;
 import com.khahnm04.ecommerce.exception.AppException;
 import com.khahnm04.ecommerce.exception.ErrorCode;
 import com.khahnm04.ecommerce.mapper.AttributeMapper;
@@ -15,6 +17,7 @@ import com.khahnm04.ecommerce.repository.AttributeRepository;
 import com.khahnm04.ecommerce.repository.ProductAttributeValueRepository;
 import com.khahnm04.ecommerce.service.AttributeService;
 import com.khahnm04.ecommerce.specification.AttributeSpecification;
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -38,6 +41,8 @@ public class AttributeServiceImpl implements AttributeService {
     private final AttributeRepository attributeRepository;
     private final ProductAttributeValueRepository productAttributeValueRepository;
     private final AttributeMapper attributeMapper;
+    private final AuditorAwareConfig auditorAwareConfig;
+    private final EntityManager entityManager;
 
     @Override
     @Transactional
@@ -101,6 +106,7 @@ public class AttributeServiceImpl implements AttributeService {
             return;
         }
         attribute.setDeletedAt(LocalDateTime.now());
+        attribute.setDeletedBy(auditorAwareConfig.getCurrentAuditor().orElse(null));
         attributeRepository.save(attribute);
         log.info("Soft-deleted attribute with id: {}", id);
     }
@@ -109,6 +115,10 @@ public class AttributeServiceImpl implements AttributeService {
     @Transactional
     public void deleteAttribute(Long id) {
         Attribute attribute = getDeletedAttributeById(id);
+        if (attribute.getDeletedAt() == null) {
+            log.warn("Attribute with id {} is already deleted", id);
+            return;
+        }
         if (productAttributeValueRepository.existsByAttributeId(id)) {
             throw new AppException(ErrorCode.ATTRIBUTE_HAS_PRODUCTS);
         }
@@ -125,6 +135,7 @@ public class AttributeServiceImpl implements AttributeService {
             return;
         }
         attribute.setDeletedAt(null);
+        attribute.setDeletedBy(null);
         attributeRepository.save(attribute);
         log.info("Attribute restored with id {}", id);
     }
@@ -141,7 +152,10 @@ public class AttributeServiceImpl implements AttributeService {
 
         switch (action) {
             case "SOFT_DELETE" -> {
-                attributeRepository.softDeleteByIds(LocalDateTime.now(), attributeIds);
+                User currentAuditor = auditorAwareConfig.getCurrentAuditor()
+                        .map(user -> entityManager.getReference(User.class, user.getId()))
+                        .orElse(null);
+                attributeRepository.softDeleteByIds(LocalDateTime.now(), currentAuditor, attributeIds);
                 log.info("Bulk soft-delete attributes ids: {}", attributeIds);
             }
             case "RESTORE" -> {
@@ -185,6 +199,7 @@ public class AttributeServiceImpl implements AttributeService {
                         .updatedAt(proj.getUpdatedAt())
                         .updatedBy(proj.getUpdatedByFullName())
                         .deletedAt(proj.getDeletedAt())
+                        .deletedBy(proj.getDeletedByFullName())
                         .build())
                 .collect(Collectors.toList());
 

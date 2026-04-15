@@ -15,6 +15,7 @@ public interface VariantValueMapper {
     @Mapping(target = "variantId", source = "variant.id")
     @Mapping(target = "createdBy", source = "createdBy.fullName")
     @Mapping(target = "updatedBy", source = "updatedBy.fullName")
+    @Mapping(target = "deletedBy", source = "deletedBy.fullName")
     VariantValueResponse toVariantValueResponse(VariantValue variantValue);
 
     @Mapping(target = "variant", ignore = true)

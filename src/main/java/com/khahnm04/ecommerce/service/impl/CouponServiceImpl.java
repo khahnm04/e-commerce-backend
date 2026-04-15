@@ -2,6 +2,7 @@ package com.khahnm04.ecommerce.service.impl;
 
 import com.khahnm04.ecommerce.common.enums.CouponStatus;
 import com.khahnm04.ecommerce.common.util.SortUtils;
+import com.khahnm04.ecommerce.config.AuditorAwareConfig;
 import com.khahnm04.ecommerce.dto.projection.CouponProjection;
 import com.khahnm04.ecommerce.dto.request.BulkActionRequest;
 import com.khahnm04.ecommerce.dto.request.filter.CouponFilterRequest;
@@ -9,6 +10,7 @@ import com.khahnm04.ecommerce.dto.request.CouponRequest;
 import com.khahnm04.ecommerce.dto.response.PageResponse;
 import com.khahnm04.ecommerce.dto.response.CouponResponse;
 import com.khahnm04.ecommerce.entity.Coupon;
+import com.khahnm04.ecommerce.entity.User;
 import com.khahnm04.ecommerce.exception.AppException;
 import com.khahnm04.ecommerce.exception.ErrorCode;
 import com.khahnm04.ecommerce.mapper.CouponMapper;
@@ -16,6 +18,7 @@ import com.khahnm04.ecommerce.repository.CouponRepository;
 import com.khahnm04.ecommerce.repository.CouponUsageRepository;
 import com.khahnm04.ecommerce.service.CouponService;
 import com.khahnm04.ecommerce.specification.CouponSpecification;
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -38,6 +41,8 @@ public class CouponServiceImpl implements CouponService {
     private final CouponRepository couponRepository;
     private final CouponUsageRepository couponUsageRepository;
     private final CouponMapper couponMapper;
+    private final AuditorAwareConfig auditorAwareConfig;
+    private final EntityManager entityManager;
 
     @Override
     @Transactional
@@ -110,7 +115,12 @@ public class CouponServiceImpl implements CouponService {
     @Transactional
     public void softDeleteCoupon(Long id) {
         Coupon coupon = getCouponById(id);
+        if (coupon.getDeletedAt() != null) {
+            log.warn("Coupon with id {} is already soft deleted", id);
+            return;
+        }
         coupon.setDeletedAt(LocalDateTime.now());
+        coupon.setDeletedBy(auditorAwareConfig.getCurrentAuditor().orElse(null));
         couponRepository.save(coupon);
         log.info("Soft-deleted coupon with id: {}", id);
     }
@@ -119,6 +129,10 @@ public class CouponServiceImpl implements CouponService {
     @Transactional
     public void deleteCoupon(Long id) {
         Coupon coupon = getDeletedCouponById(id);
+        if (coupon.getDeletedAt() == null) {
+            log.warn("Coupon with id {} is already deleted", id);
+            return;
+        }
         if (couponUsageRepository.existsByCouponId(id)) {
             throw new AppException(ErrorCode.COUPON_HAS_USAGES);
         }
@@ -130,7 +144,12 @@ public class CouponServiceImpl implements CouponService {
     @Transactional
     public void restoreCoupon(Long id) {
         Coupon coupon = getDeletedCouponById(id);
+        if (coupon.getDeletedAt() == null) {
+            log.warn("Coupon with id {} is not in a deleted state", id);
+            return;
+        }
         coupon.setDeletedAt(null);
+        coupon.setDeletedBy(null);
         couponRepository.save(coupon);
         log.info("Restored coupon with id: {}", id);
     }
@@ -151,14 +170,15 @@ public class CouponServiceImpl implements CouponService {
                 couponRepository.updateStatusByIds(status, couponIds);
             }
             case "SOFT_DELETE" -> {
-                couponRepository.softDeleteByIds(LocalDateTime.now(), couponIds);
+                User currentAuditor = auditorAwareConfig.getCurrentAuditor()
+                        .map(user -> entityManager.getReference(User.class, user.getId()))
+                        .orElse(null);
+                couponRepository.softDeleteByIds(LocalDateTime.now(), currentAuditor, couponIds);
                 log.info("Bulk soft-delete coupons ids: {}", couponIds);
             }
             case "DELETE" -> {
-                for (Long id : couponIds) {
-                    if (couponUsageRepository.existsByCouponId(id)) {
-                        throw new AppException(ErrorCode.COUPON_HAS_USAGES);
-                    }
+                if (couponUsageRepository.existsByCouponIdIn(couponIds)) {
+                    throw new AppException(ErrorCode.COUPON_HAS_USAGES);
                 }
                 Set<Coupon> coupons = couponRepository.findAllDeletedByIds(couponIds);
                 couponRepository.deleteAll(coupons);
@@ -205,6 +225,7 @@ public class CouponServiceImpl implements CouponService {
                         .updatedAt(proj.getUpdatedAt())
                         .updatedBy(proj.getUpdatedByFullName())
                         .deletedAt(proj.getDeletedAt())
+                        .deletedBy(proj.getDeletedByFullName())
                         .build())
                 .collect(Collectors.toList());
 

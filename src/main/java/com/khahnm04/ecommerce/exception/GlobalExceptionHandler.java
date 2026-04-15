@@ -2,6 +2,7 @@ package com.khahnm04.ecommerce.exception;
 
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.khahnm04.ecommerce.dto.response.ErrorResponse;
+import com.khahnm04.ecommerce.dto.response.FieldErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -31,7 +32,8 @@ public class GlobalExceptionHandler {
 
     // Catch exception when Duplicate entry
     @ExceptionHandler(value = DataIntegrityViolationException.class)
-    ResponseEntity<ErrorResponse> handlingDataIntegrityViolationException(DataIntegrityViolationException exception, HttpServletRequest request) {
+    ResponseEntity<ErrorResponse> handlingDataIntegrityViolationException(DataIntegrityViolationException exception,
+            HttpServletRequest request) {
         ErrorCode errorCode = ErrorCode.DUPLICATE_ENTRY;
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .timestamp(LocalDateTime.now())
@@ -68,8 +70,9 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(errorCode.getStatusCode()).body(errorResponse);
     }
 
-    @ExceptionHandler(value = org.springframework.web.bind.MissingRequestCookieException.class)
-    ResponseEntity<ErrorResponse> handlingMissingRequestCookieException(MissingRequestCookieException exception, HttpServletRequest request) {
+    @ExceptionHandler(value = MissingRequestCookieException.class)
+    ResponseEntity<ErrorResponse> handlingMissingRequestCookieException(MissingRequestCookieException exception,
+            HttpServletRequest request) {
         ErrorCode errorCode = ErrorCode.UNAUTHENTICATED;
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .timestamp(LocalDateTime.now())
@@ -82,7 +85,8 @@ public class GlobalExceptionHandler {
 
     // Catch exception when Access Denied
     @ExceptionHandler(value = AccessDeniedException.class)
-    ResponseEntity<ErrorResponse> handlingAccessDeniedException(AccessDeniedException exception, HttpServletRequest request) {
+    ResponseEntity<ErrorResponse> handlingAccessDeniedException(AccessDeniedException exception,
+            HttpServletRequest request) {
         ErrorCode errorCode = ErrorCode.UNAUTHORIZED;
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .timestamp(LocalDateTime.now())
@@ -91,30 +95,6 @@ public class GlobalExceptionHandler {
                 .path(request.getRequestURI())
                 .build();
         return ResponseEntity.status(errorCode.getStatusCode()).body(errorResponse);
-    }
-
-    @ExceptionHandler(value = ServiceValidationException.class)
-    ResponseEntity<ErrorResponse> handlingServiceValidationException(ServiceValidationException exception, HttpServletRequest request) {
-
-        List<ErrorResponse.FieldErrorResponse> errors = exception.getErrors().entrySet()
-                .stream()
-                .map(entry -> ErrorResponse.FieldErrorResponse.builder()
-                        .field(entry.getKey())
-                        .message(entry.getValue())
-                        .build())
-                .toList();
-
-        ErrorCode errorCode = ErrorCode.VALIDATION_EXCEPTION;
-        ErrorResponse errorResponse = ErrorResponse.builder()
-                .timestamp(LocalDateTime.now())
-                .success(false)
-                .code(errorCode.getCode())
-                .message(errorCode.getMessage())
-                .path(request.getRequestURI())
-                .errors(errors)
-                .build();
-
-        return ResponseEntity.badRequest().body(errorResponse);
     }
 
     // Catch exception when enum invalid
@@ -144,7 +124,7 @@ public class GlobalExceptionHandler {
     ResponseEntity<ErrorResponse> handlingValidation(MethodArgumentNotValidException exception,
             HttpServletRequest request) {
 
-        List<ErrorResponse.FieldErrorResponse> errors = exception.getBindingResult().getFieldErrors()
+        List<FieldErrorResponse> errors = exception.getBindingResult().getFieldErrors()
                 .stream()
                 .map(fieldError -> {
                     String enumKey = fieldError.getDefaultMessage();
@@ -157,7 +137,7 @@ public class GlobalExceptionHandler {
 
                     String message = resolveMessage(errorCode, fieldError, enumKey);
 
-                    return ErrorResponse.FieldErrorResponse.builder()
+                    return FieldErrorResponse.builder()
                             .field(fieldError.getField())
                             .code(errorCode != null ? errorCode.getCode() : ErrorCode.VALIDATION_EXCEPTION.getCode())
                             .message(message)
@@ -180,7 +160,6 @@ public class GlobalExceptionHandler {
         if (errorCode == null) {
             return fallbackMessage;
         }
-
         String message = resolveErrorCodeMessage(errorCode);
         try {
             ConstraintViolation<?> constraintViolation = fieldError.unwrap(ConstraintViolation.class);

@@ -3,6 +3,7 @@ package com.khahnm04.ecommerce.dto.projection;
 import java.time.LocalDateTime;
 
 public interface RoleProjection {
+
     Long getId();
 
     String getCode();
@@ -20,4 +21,7 @@ public interface RoleProjection {
     String getUpdatedByFullName();
 
     LocalDateTime getDeletedAt();
+
+    String getDeletedByFullName();
+
 }

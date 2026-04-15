@@ -1,12 +1,14 @@
 package com.khahnm04.ecommerce.service.impl;
 
 import com.khahnm04.ecommerce.common.util.SortUtils;
+import com.khahnm04.ecommerce.config.AuditorAwareConfig;
 import com.khahnm04.ecommerce.dto.projection.VariantValueProjection;
 import com.khahnm04.ecommerce.dto.request.BulkActionRequest;
 import com.khahnm04.ecommerce.dto.request.filter.VariantValueFilterRequest;
 import com.khahnm04.ecommerce.dto.request.VariantValueRequest;
 import com.khahnm04.ecommerce.dto.response.PageResponse;
 import com.khahnm04.ecommerce.dto.response.VariantValueResponse;
+import com.khahnm04.ecommerce.entity.User;
 import com.khahnm04.ecommerce.entity.Variant;
 import com.khahnm04.ecommerce.entity.VariantValue;
 import com.khahnm04.ecommerce.exception.AppException;
@@ -17,6 +19,7 @@ import com.khahnm04.ecommerce.repository.VariantValueRepository;
 import com.khahnm04.ecommerce.service.VariantService;
 import com.khahnm04.ecommerce.service.VariantValueService;
 import com.khahnm04.ecommerce.specification.VariantValueSpecification;
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -40,6 +43,8 @@ public class VariantValueServiceImpl implements VariantValueService {
     private final ProductVariantValueRepository productVariantValueRepository;
     private final VariantValueMapper variantValueMapper;
     private final VariantService variantService;
+    private final AuditorAwareConfig auditorAwareConfig;
+    private final EntityManager entityManager;
 
     @Override
     @Transactional
@@ -47,7 +52,8 @@ public class VariantValueServiceImpl implements VariantValueService {
         if (variantValueRepository.existsByVariantIdAndValueAndDeletedAtIsNull(request.variantId(), request.value())) {
             throw new AppException(ErrorCode.VARIANT_VALUE_EXISTED);
         }
-        if (variantValueRepository.existsByVariantIdAndValueAndDeletedAtIsNotNull(request.variantId(), request.value())) {
+        if (variantValueRepository.existsByVariantIdAndValueAndDeletedAtIsNotNull(request.variantId(),
+                request.value())) {
             throw new AppException(ErrorCode.VARIANT_VALUE_IN_TRASH);
         }
 
@@ -114,6 +120,7 @@ public class VariantValueServiceImpl implements VariantValueService {
             return;
         }
         variantValue.setDeletedAt(LocalDateTime.now());
+        variantValue.setDeletedBy(auditorAwareConfig.getCurrentAuditor().orElse(null));
         variantValueRepository.save(variantValue);
         log.info("Soft-deleted variant value with id: {}", id);
     }
@@ -142,6 +149,7 @@ public class VariantValueServiceImpl implements VariantValueService {
             return;
         }
         variantValue.setDeletedAt(null);
+        variantValue.setDeletedBy(null);
         variantValueRepository.save(variantValue);
         log.info("Restored variant value with id: {}", id);
     }
@@ -158,7 +166,10 @@ public class VariantValueServiceImpl implements VariantValueService {
 
         switch (action) {
             case "SOFT_DELETE" -> {
-                variantValueRepository.softDeleteByIds(LocalDateTime.now(), variantValueIds);
+                User currentAuditor = auditorAwareConfig.getCurrentAuditor()
+                        .map(user -> entityManager.getReference(User.class, user.getId()))
+                        .orElse(null);
+                variantValueRepository.softDeleteByIds(LocalDateTime.now(), currentAuditor, variantValueIds);
                 log.info("Bulk soft-delete variant values ids: {}", variantValueIds);
             }
             case "DELETE" -> {
@@ -185,7 +196,8 @@ public class VariantValueServiceImpl implements VariantValueService {
                 .orElseThrow(() -> new AppException(ErrorCode.VARIANT_VALUE_NOT_FOUND));
     }
 
-    private PageResponse<VariantValueResponse> getAllWithFilterAndSearch(VariantValueFilterRequest request, boolean isDeleted) {
+    private PageResponse<VariantValueResponse> getAllWithFilterAndSearch(VariantValueFilterRequest request,
+            boolean isDeleted) {
         Pageable pageable = PageRequest.of(request.page() - 1, request.size(), SortUtils.parseSort(request.sort()));
 
         Specification<VariantValue> spec = VariantValueSpecification.buildSpecification(request, isDeleted);
@@ -203,6 +215,7 @@ public class VariantValueServiceImpl implements VariantValueService {
                         .updatedAt(proj.getUpdatedAt())
                         .updatedBy(proj.getUpdatedByFullName())
                         .deletedAt(proj.getDeletedAt())
+                        .deletedBy(proj.getDeletedByFullName())
                         .build())
                 .collect(Collectors.toList());
 

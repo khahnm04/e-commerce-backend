@@ -32,11 +32,13 @@ public record ProductResponse(
     String createdBy,
     LocalDateTime updatedAt,
     String updatedBy,
-    LocalDateTime deletedAt
+    LocalDateTime deletedAt,
+    String deletedBy
 
 ) implements Serializable {
 
-    @Builder
+    @Builder(toBuilder = true)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public record ProductCategoryResponse(
         Long productCategoryId,
         Long categoryId,
@@ -44,7 +46,8 @@ public record ProductResponse(
     ) implements Serializable {
     }
 
-    @Builder
+    @Builder(toBuilder = true)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public record ProductAttributeValueResponse(
         Long productAttributeValueId,
         Long attributeId,
@@ -53,7 +56,8 @@ public record ProductResponse(
     ) implements Serializable {
     }
 
-    @Builder
+    @Builder(toBuilder = true)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public record ProductImageResponse(
         Long productImageId,
         String image,

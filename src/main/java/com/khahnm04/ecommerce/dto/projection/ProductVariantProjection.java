@@ -5,29 +5,33 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 public interface ProductVariantProjection {
-  Long getId();
 
-  String getProductName();
+    Long getId();
 
-  String getSku();
+    String getProductName();
 
-  String getName();
+    String getSku();
 
-  BigDecimal getPrice();
+    String getName();
 
-  BigDecimal getOldPrice();
+    BigDecimal getPrice();
 
-  String getImage();
+    BigDecimal getOldPrice();
 
-  ProductVariantStatus getStatus();
+    String getImage();
 
-  LocalDateTime getCreatedAt();
+    ProductVariantStatus getStatus();
 
-  LocalDateTime getUpdatedAt();
+    LocalDateTime getCreatedAt();
 
-  LocalDateTime getDeletedAt();
+    LocalDateTime getUpdatedAt();
 
-  String getCreatedByFullName();
+    LocalDateTime getDeletedAt();
 
-  String getUpdatedByFullName();
+    String getCreatedByFullName();
+
+    String getUpdatedByFullName();
+
+    String getDeletedByFullName();
+
 }

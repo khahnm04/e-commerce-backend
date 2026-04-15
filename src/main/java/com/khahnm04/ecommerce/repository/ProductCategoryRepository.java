@@ -15,6 +15,8 @@ public interface ProductCategoryRepository extends JpaRepository<ProductCategory
 
     boolean existsByCategoryId(Long categoryId);
 
+    boolean existsByCategoryIdIn(Set<Long> categoryIds);
+
     @Query("SELECT pc.category.id FROM ProductCategory pc WHERE pc.product.id = :productId")
     Set<Long> findCategoryIdsByProductId(@Param("productId") Long productId);
 

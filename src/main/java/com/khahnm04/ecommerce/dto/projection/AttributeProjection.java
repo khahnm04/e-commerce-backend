@@ -18,4 +18,6 @@ public interface AttributeProjection {
 
     String getUpdatedByFullName();
 
+    String getDeletedByFullName();
+
 }

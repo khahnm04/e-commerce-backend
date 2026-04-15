@@ -7,41 +7,45 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 public interface CouponProjection {
-  Long getId();
 
-  String getCode();
+    Long getId();
 
-  String getName();
+    String getCode();
 
-  String getDescription();
+    String getName();
 
-  CouponDiscountType getTypeDiscount();
+    String getDescription();
 
-  BigDecimal getValue();
+    CouponDiscountType getTypeDiscount();
 
-  BigDecimal getMinOrderValue();
+    BigDecimal getValue();
 
-  BigDecimal getMaxDiscountValue();
+    BigDecimal getMinOrderValue();
 
-  Integer getUsageLimit();
+    BigDecimal getMaxDiscountValue();
 
-  Integer getUsedCount();
+    Integer getUsageLimit();
 
-  LocalDateTime getStartDate();
+    Integer getUsedCount();
 
-  LocalDateTime getEndDate();
+    LocalDateTime getStartDate();
 
-  CouponDisplayType getTypeDisplay();
+    LocalDateTime getEndDate();
 
-  CouponStatus getStatus();
+    CouponDisplayType getTypeDisplay();
 
-  LocalDateTime getCreatedAt();
+    CouponStatus getStatus();
 
-  LocalDateTime getUpdatedAt();
+    LocalDateTime getCreatedAt();
 
-  LocalDateTime getDeletedAt();
+    LocalDateTime getUpdatedAt();
 
-  String getCreatedByFullName();
+    LocalDateTime getDeletedAt();
 
-  String getUpdatedByFullName();
+    String getCreatedByFullName();
+
+    String getUpdatedByFullName();
+
+    String getDeletedByFullName();
+
 }

@@ -1,9 +1,11 @@
 package com.khahnm04.ecommerce.repository;
 
+import com.khahnm04.ecommerce.entity.User;
 import com.khahnm04.ecommerce.entity.Role;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -28,11 +30,13 @@ public interface RoleRepository extends JpaRepository<Role, Long>, JpaSpecificat
     List<Role> findAllDeletedByIds(@Param("ids") Set<Long> ids);
 
     @Modifying
-    @Query("UPDATE Role r SET r.deletedAt = :now WHERE r.id IN :ids")
-    void softDeleteByIds(@Param("now") LocalDateTime now, @Param("ids") Set<Long> ids);
+    @Transactional
+    @Query("UPDATE Role r SET r.deletedAt = :now, r.deletedBy = :user WHERE r.id IN :ids AND r.deletedAt IS NULL")
+    void softDeleteByIds(@Param("now") LocalDateTime now, @Param("user") User user, @Param("ids") Set<Long> ids);
 
     @Modifying
-    @Query("UPDATE Role r SET r.deletedAt = NULL WHERE r.id IN :ids")
+    @Transactional
+    @Query("UPDATE Role r SET r.deletedAt = NULL, r.deletedBy = NULL WHERE r.id IN :ids AND r.deletedAt IS NOT NULL")
     void restoreByIds(@Param("ids") Set<Long> ids);
 
 }

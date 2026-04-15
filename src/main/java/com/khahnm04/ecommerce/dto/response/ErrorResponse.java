@@ -6,7 +6,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Builder
+@Builder(toBuilder = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record ErrorResponse(
 
@@ -18,21 +18,11 @@ public record ErrorResponse(
     String method,
     List<FieldErrorResponse> errors
 
-) {
+) implements Serializable {
 
     public ErrorResponse {
         if (timestamp == null) timestamp = LocalDateTime.now();
         if (success == null) success = false;
-    }
-
-    @Builder
-    public record FieldErrorResponse(
-
-        String field,
-        Integer code,
-        String message
-
-    ) implements Serializable {
     }
 
 }

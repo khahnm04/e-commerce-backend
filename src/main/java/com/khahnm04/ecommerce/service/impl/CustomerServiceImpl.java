@@ -1,5 +1,6 @@
 package com.khahnm04.ecommerce.service.impl;
 
+import com.khahnm04.ecommerce.config.AuditorAwareConfig;
 import com.khahnm04.ecommerce.dto.response.PageResponse;
 import com.khahnm04.ecommerce.dto.projection.CustomerProjection;
 import com.khahnm04.ecommerce.dto.request.BulkActionRequest;
@@ -9,6 +10,7 @@ import com.khahnm04.ecommerce.dto.request.CustomerUpdateRequest;
 import com.khahnm04.ecommerce.exception.AppException;
 import com.khahnm04.ecommerce.exception.ErrorCode;
 import com.khahnm04.ecommerce.entity.User;
+import com.khahnm04.ecommerce.common.enums.UserStatus;
 import com.khahnm04.ecommerce.service.UserService;
 import com.khahnm04.ecommerce.dto.response.CustomerResponse;
 import com.khahnm04.ecommerce.entity.Customer;
@@ -17,6 +19,7 @@ import com.khahnm04.ecommerce.mapper.CustomerMapper;
 import com.khahnm04.ecommerce.repository.CustomerRepository;
 import com.khahnm04.ecommerce.repository.OrderRepository;
 import com.khahnm04.ecommerce.service.CustomerService;
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -41,6 +44,8 @@ public class CustomerServiceImpl implements CustomerService {
     private final OrderRepository orderRepository;
     private final CustomerMapper customerMapper;
     private final UserService userService;
+    private final AuditorAwareConfig auditorAwareConfig;
+    private final EntityManager entityManager;
 
     @Override
     @Transactional
@@ -106,6 +111,7 @@ public class CustomerServiceImpl implements CustomerService {
             return;
         }
         customer.setDeletedAt(LocalDateTime.now());
+        customer.setDeletedBy(auditorAwareConfig.getCurrentAuditor().orElse(null));
         customerRepository.save(customer);
         log.info("Soft-deleted customer with id: {}", id);
     }
@@ -114,6 +120,10 @@ public class CustomerServiceImpl implements CustomerService {
     @Transactional
     public void deleteCustomer(Long id) {
         Customer customer = getDeletedCustomerById(id);
+        if (customer.getDeletedAt() == null) {
+            log.warn("Customer with id {} is already deleted", id);
+            return;
+        }
         if (orderRepository.existsByCustomerId(id)) {
             throw new AppException(ErrorCode.CUSTOMER_HAS_ORDERS);
         }
@@ -130,6 +140,7 @@ public class CustomerServiceImpl implements CustomerService {
             return;
         }
         customer.setDeletedAt(null);
+        customer.setDeletedBy(null);
         customerRepository.save(customer);
         log.info("Customer restored with id {}", id);
     }
@@ -146,18 +157,23 @@ public class CustomerServiceImpl implements CustomerService {
 
         switch (action) {
             case "ACTIVE", "INACTIVE", "BANNED", "LOCKED" -> {
-                // userService.bulkUpdateStatus(existingUserIds, UserStatus.valueOf(action));
+                Set<Long> existingUserIds = customerRepository.findAllById(customerIds)
+                        .stream()
+                        .map(customer -> customer.getUser().getId())
+                        .collect(Collectors.toSet());
+                userService.bulkUpdateStatus(existingUserIds, UserStatus.valueOf(action));
                 log.info("Bulk update status {} customers ids: {}", action, customerIds);
             }
             case "SOFT_DELETE" -> {
-                customerRepository.softDeleteByIds(LocalDateTime.now(), customerIds);
+                User currentAuditor = auditorAwareConfig.getCurrentAuditor()
+                        .map(user -> entityManager.getReference(User.class, user.getId()))
+                        .orElse(null);
+                customerRepository.softDeleteByIds(LocalDateTime.now(), currentAuditor, customerIds);
                 log.info("Bulk soft-delete customers ids: {}", customerIds);
             }
             case "DELETE" -> {
-                for (Long id : customerIds) {
-                    if (orderRepository.existsByCustomerId(id)) {
-                        throw new AppException(ErrorCode.CUSTOMER_HAS_ORDERS);
-                    }
+                if (orderRepository.existsByCustomerIdIn(customerIds)) {
+                    throw new AppException(ErrorCode.CUSTOMER_HAS_ORDERS);
                 }
                 Set<Customer> customers = customerRepository.findAllDeletedByIds(customerIds);
                 customerRepository.deleteAll(customers);
@@ -204,6 +220,7 @@ public class CustomerServiceImpl implements CustomerService {
                         .updatedAt(proj.getUpdatedAt())
                         .updatedBy(proj.getUpdatedByFullName())
                         .deletedAt(proj.getDeletedAt())
+                        .deletedBy(proj.getDeletedByFullName())
                         .build())
                 .collect(Collectors.toList());
 

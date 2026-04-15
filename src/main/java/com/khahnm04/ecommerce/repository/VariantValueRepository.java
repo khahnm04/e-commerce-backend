@@ -1,5 +1,6 @@
 package com.khahnm04.ecommerce.repository;
 
+import com.khahnm04.ecommerce.entity.User;
 import com.khahnm04.ecommerce.entity.VariantValue;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -7,13 +8,15 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
 @Repository
-public interface VariantValueRepository extends JpaRepository<VariantValue, Long>, JpaSpecificationExecutor<VariantValue> {
+public interface VariantValueRepository
+        extends JpaRepository<VariantValue, Long>, JpaSpecificationExecutor<VariantValue> {
 
     boolean existsByVariantId(Long variantId);
 
@@ -33,11 +36,13 @@ public interface VariantValueRepository extends JpaRepository<VariantValue, Long
     List<VariantValue> findAllDeletedByIds(@Param("ids") Set<Long> ids);
 
     @Modifying
-    @Query("UPDATE VariantValue vv SET vv.deletedAt = :now WHERE vv.id IN :ids AND vv.deletedAt IS NULL")
-    void softDeleteByIds(@Param("now") LocalDateTime now, @Param("ids") Set<Long> ids);
+    @Transactional
+    @Query("UPDATE VariantValue vv SET vv.deletedAt = :now, vv.deletedBy = :user WHERE vv.id IN :ids AND vv.deletedAt IS NULL")
+    void softDeleteByIds(@Param("now") LocalDateTime now, @Param("user") User user, @Param("ids") Set<Long> ids);
 
     @Modifying
-    @Query("UPDATE VariantValue vv SET vv.deletedAt = NULL WHERE vv.id IN :ids AND vv.deletedAt IS NOT NULL")
+    @Transactional
+    @Query("UPDATE VariantValue vv SET vv.deletedAt = NULL, vv.deletedBy = NULL WHERE vv.id IN :ids AND vv.deletedAt IS NOT NULL")
     void restoreDeletedByIds(@Param("ids") Set<Long> ids);
 
 }

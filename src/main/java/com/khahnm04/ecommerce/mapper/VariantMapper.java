@@ -12,6 +12,7 @@ public interface VariantMapper {
 
     @Mapping(target = "createdBy", source = "createdBy.fullName")
     @Mapping(target = "updatedBy", source = "updatedBy.fullName")
+    @Mapping(target = "deletedBy", source = "deletedBy.fullName")
     VariantResponse toVariantResponse(Variant variant);
 
     void updateVariant(@MappingTarget Variant variant, VariantRequest request);

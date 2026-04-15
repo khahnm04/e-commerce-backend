@@ -1,6 +1,7 @@
 package com.khahnm04.ecommerce.repository;
 
 import com.khahnm04.ecommerce.common.enums.CouponStatus;
+import com.khahnm04.ecommerce.entity.User;
 import com.khahnm04.ecommerce.entity.Coupon;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -28,12 +29,12 @@ public interface CouponRepository extends JpaRepository<Coupon, Long>, JpaSpecif
 
     @Modifying
     @Transactional
-    @Query("UPDATE Coupon c SET c.deletedAt = :now WHERE c.id IN :ids AND c.deletedAt IS NULL")
-    void softDeleteByIds(@Param("now") LocalDateTime now, @Param("ids") Set<Long> ids);
+    @Query("UPDATE Coupon c SET c.deletedAt = :now, c.deletedBy = :user WHERE c.id IN :ids AND c.deletedAt IS NULL")
+    void softDeleteByIds(@Param("now") LocalDateTime now, @Param("user") User user, @Param("ids") Set<Long> ids);
 
     @Modifying
     @Transactional
-    @Query("UPDATE Coupon c SET c.deletedAt = NULL WHERE c.id IN :ids AND c.deletedAt IS NOT NULL")
+    @Query("UPDATE Coupon c SET c.deletedAt = NULL, c.deletedBy = NULL WHERE c.id IN :ids AND c.deletedAt IS NOT NULL")
     void restoreDeletedByIds(@Param("ids") Set<Long> ids);
 
     @Modifying

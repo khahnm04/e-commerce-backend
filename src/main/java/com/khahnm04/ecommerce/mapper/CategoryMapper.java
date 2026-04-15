@@ -15,6 +15,7 @@ public interface CategoryMapper {
     @Mapping(target = "parentName", source = "parent.name")
     @Mapping(target = "createdBy", source = "createdBy.fullName")
     @Mapping(target = "updatedBy", source = "updatedBy.fullName")
+    @Mapping(target = "deletedBy", source = "deletedBy.fullName")
     CategoryResponse toCategoryResponse(Category category);
 
     @Mapping(target = "parent", ignore = true)

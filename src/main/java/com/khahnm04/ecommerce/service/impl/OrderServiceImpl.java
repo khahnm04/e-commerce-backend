@@ -1,5 +1,6 @@
 package com.khahnm04.ecommerce.service.impl;
 
+import com.khahnm04.ecommerce.config.AuditorAwareConfig;
 import com.khahnm04.ecommerce.common.enums.CouponDiscountType;
 import com.khahnm04.ecommerce.common.enums.OrderStatus;
 import com.khahnm04.ecommerce.common.enums.PaymentStatus;
@@ -11,29 +12,15 @@ import com.khahnm04.ecommerce.dto.projection.OrderProjection;
 import com.khahnm04.ecommerce.dto.response.PageResponse;
 import com.khahnm04.ecommerce.dto.response.OrderItemResponse;
 import com.khahnm04.ecommerce.dto.response.OrderResponse;
-import com.khahnm04.ecommerce.entity.Coupon;
-import com.khahnm04.ecommerce.entity.CouponUsage;
-import com.khahnm04.ecommerce.entity.Order;
-import com.khahnm04.ecommerce.entity.OrderDetail;
-import com.khahnm04.ecommerce.entity.Payment;
-import com.khahnm04.ecommerce.entity.ProductVariant;
-import com.khahnm04.ecommerce.entity.Customer;
+import com.khahnm04.ecommerce.entity.*;
 import com.khahnm04.ecommerce.exception.AppException;
 import com.khahnm04.ecommerce.exception.ErrorCode;
 import com.khahnm04.ecommerce.mapper.OrderMapper;
-import com.khahnm04.ecommerce.repository.CartItemRepository;
-import com.khahnm04.ecommerce.repository.CartRepository;
-import com.khahnm04.ecommerce.repository.CouponRepository;
-import com.khahnm04.ecommerce.repository.CouponUsageRepository;
-import com.khahnm04.ecommerce.repository.InventoryRepository;
-import com.khahnm04.ecommerce.repository.OrderDetailRepository;
-import com.khahnm04.ecommerce.repository.OrderRepository;
-import com.khahnm04.ecommerce.repository.PaymentRepository;
-import com.khahnm04.ecommerce.repository.ProductVariantRepository;
-import com.khahnm04.ecommerce.repository.CustomerRepository;
+import com.khahnm04.ecommerce.repository.*;
 import com.khahnm04.ecommerce.service.OrderService;
 import com.khahnm04.ecommerce.specification.CustomerOrderSpecification;
 import com.khahnm04.ecommerce.specification.OrderSpecification;
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -69,6 +56,8 @@ public class OrderServiceImpl implements OrderService {
     private final CartRepository cartRepository;
     private final CartItemRepository cartItemRepository;
     private final OrderMapper orderMapper;
+    private final AuditorAwareConfig auditorAwareConfig;
+    private final EntityManager entityManager;
 
     @Override
     @Transactional
@@ -260,17 +249,12 @@ public class OrderServiceImpl implements OrderService {
             throw new AppException(ErrorCode.ORDER_SELECTION_REQUIRED);
         }
 
-        Set<Order> existingOrders = new HashSet<>(
-                action.equals("RESTORE")
-                        ? orderRepository.findAllDeletedByIds(orderIds)
-                        : orderRepository.findAllById(orderIds));
-
-        if (orderIds.size() != existingOrders.size()) {
-            throw new AppException(ErrorCode.ORDER_NOT_FOUND);
-        }
-
         switch (action) {
             case "PENDING", "CONFIRMED", "SHIPPING", "COMPLETED", "CANCELLED", "RETURNED" -> {
+                Set<Order> existingOrders = new HashSet<>(orderRepository.findAllById(orderIds));
+                if (orderIds.size() != existingOrders.size()) {
+                    throw new AppException(ErrorCode.ORDER_NOT_FOUND);
+                }
                 OrderStatus nextStatus = OrderStatus.valueOf(action);
                 existingOrders.forEach(order -> {
                     validateStatusTransition(order.getStatus(), nextStatus);
@@ -282,7 +266,10 @@ public class OrderServiceImpl implements OrderService {
                 orderRepository.saveAll(existingOrders);
             }
             case "DELETE" -> {
-                orderRepository.softDeleteByIds(LocalDateTime.now(), orderIds);
+                User currentAuditor = auditorAwareConfig.getCurrentAuditor()
+                        .map(user -> entityManager.getReference(User.class, user.getId()))
+                        .orElse(null);
+                orderRepository.softDeleteByIds(LocalDateTime.now(), currentAuditor, orderIds);
             }
             case "RESTORE" -> {
                 orderRepository.restoreDeletedByIds(orderIds);
