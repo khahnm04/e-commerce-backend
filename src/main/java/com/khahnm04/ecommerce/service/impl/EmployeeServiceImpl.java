@@ -19,7 +19,6 @@ import com.khahnm04.ecommerce.specification.EmployeeSpecification;
 import com.khahnm04.ecommerce.mapper.EmployeeMapper;
 import com.khahnm04.ecommerce.repository.EmployeeRepository;
 import com.khahnm04.ecommerce.service.EmployeeService;
-import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -43,7 +42,6 @@ public class EmployeeServiceImpl implements EmployeeService {
     private final EmployeeMapper employeeMapper;
     private final UserService userService;
     private final AuditorAwareConfig auditorAwareConfig;
-    private final EntityManager entityManager;
 
     @Override
     @Transactional
@@ -181,9 +179,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                 log.info("Bulk update status {} employees ids: {}", action, employeeIds);
             }
             case "SOFT_DELETE" -> {
-                User currentAuditor = auditorAwareConfig.getCurrentAuditor()
-                        .map(user -> entityManager.getReference(User.class, user.getId()))
-                        .orElse(null);
+                User currentAuditor = auditorAwareConfig.getCurrentAuditorReference();
                 employeeRepository.softDeleteByIds(LocalDateTime.now(), currentAuditor, employeeIds);
                 log.info("Bulk soft-delete employees ids: {}", employeeIds);
             }

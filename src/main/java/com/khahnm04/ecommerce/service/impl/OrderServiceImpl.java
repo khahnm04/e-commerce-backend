@@ -20,7 +20,6 @@ import com.khahnm04.ecommerce.repository.*;
 import com.khahnm04.ecommerce.service.OrderService;
 import com.khahnm04.ecommerce.specification.CustomerOrderSpecification;
 import com.khahnm04.ecommerce.specification.OrderSpecification;
-import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -57,7 +56,6 @@ public class OrderServiceImpl implements OrderService {
     private final CartItemRepository cartItemRepository;
     private final OrderMapper orderMapper;
     private final AuditorAwareConfig auditorAwareConfig;
-    private final EntityManager entityManager;
 
     @Override
     @Transactional
@@ -266,9 +264,7 @@ public class OrderServiceImpl implements OrderService {
                 orderRepository.saveAll(existingOrders);
             }
             case "DELETE" -> {
-                User currentAuditor = auditorAwareConfig.getCurrentAuditor()
-                        .map(user -> entityManager.getReference(User.class, user.getId()))
-                        .orElse(null);
+                User currentAuditor = auditorAwareConfig.getCurrentAuditorReference();
                 orderRepository.softDeleteByIds(LocalDateTime.now(), currentAuditor, orderIds);
             }
             case "RESTORE" -> {

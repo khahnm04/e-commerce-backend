@@ -19,7 +19,6 @@ import com.khahnm04.ecommerce.repository.VariantValueRepository;
 import com.khahnm04.ecommerce.service.VariantService;
 import com.khahnm04.ecommerce.service.VariantValueService;
 import com.khahnm04.ecommerce.specification.VariantValueSpecification;
-import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -44,7 +43,6 @@ public class VariantValueServiceImpl implements VariantValueService {
     private final VariantValueMapper variantValueMapper;
     private final VariantService variantService;
     private final AuditorAwareConfig auditorAwareConfig;
-    private final EntityManager entityManager;
 
     @Override
     @Transactional
@@ -166,9 +164,7 @@ public class VariantValueServiceImpl implements VariantValueService {
 
         switch (action) {
             case "SOFT_DELETE" -> {
-                User currentAuditor = auditorAwareConfig.getCurrentAuditor()
-                        .map(user -> entityManager.getReference(User.class, user.getId()))
-                        .orElse(null);
+                User currentAuditor = auditorAwareConfig.getCurrentAuditorReference();
                 variantValueRepository.softDeleteByIds(LocalDateTime.now(), currentAuditor, variantValueIds);
                 log.info("Bulk soft-delete variant values ids: {}", variantValueIds);
             }

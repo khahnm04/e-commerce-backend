@@ -19,7 +19,6 @@ import com.khahnm04.ecommerce.repository.CategoryRepository;
 import com.khahnm04.ecommerce.repository.ProductCategoryRepository;
 import com.khahnm04.ecommerce.service.CategoryService;
 import com.khahnm04.ecommerce.specification.CategorySpecification;
-import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -43,7 +42,6 @@ public class CategoryServiceImpl implements CategoryService {
     private final ProductCategoryRepository productCategoryRepository;
     private final CategoryMapper categoryMapper;
     private final AuditorAwareConfig auditorAwareConfig;
-    private final EntityManager entityManager;
 
     @Override
     @Transactional
@@ -205,9 +203,7 @@ public class CategoryServiceImpl implements CategoryService {
                 log.info("Bulk update status {} categories ids: {}", action, categoryIds);
             }
             case "SOFT_DELETE" -> {
-                User currentAuditor = auditorAwareConfig.getCurrentAuditor()
-                        .map(user -> entityManager.getReference(User.class, user.getId()))
-                        .orElse(null);
+                User currentAuditor = auditorAwareConfig.getCurrentAuditorReference();
                 categoryRepository.softDeleteByIds(LocalDateTime.now(), currentAuditor, categoryIds);
                 log.info("Bulk soft-delete categories ids: {}", categoryIds);
             }

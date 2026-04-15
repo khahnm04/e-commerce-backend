@@ -20,9 +20,9 @@ public interface CategoryRepository extends JpaRepository<Category, Long>, JpaSp
 
     boolean existsByParentIdIn(Set<Long> parentIds);
 
-    boolean existsBySlug(String slug);
-
     boolean existsByName(String name);
+
+    boolean existsBySlug(String slug);
 
     boolean existsByNameAndIdNot(String name, Long id);
 
@@ -36,6 +36,10 @@ public interface CategoryRepository extends JpaRepository<Category, Long>, JpaSp
 
     Optional<Category> findByIdAndDeletedAtIsNotNull(Long id);
 
+    @Modifying
+    @Query("UPDATE Category c SET c.status = :status WHERE c.id IN :ids AND c.deletedAt IS NULL")
+    void updateStatusByIds(@Param("status") CategoryStatus status, @Param("ids") Set<Long> ids);
+
     @Query("SELECT c FROM Category c WHERE c.id IN :ids AND c.deletedAt IS NOT NULL")
     Set<Category> findAllDeletedByIds(@Param("ids") Set<Long> ids);
 
@@ -46,9 +50,5 @@ public interface CategoryRepository extends JpaRepository<Category, Long>, JpaSp
     @Modifying
     @Query("UPDATE Category c SET c.deletedAt = NULL, c.deletedBy = NULL WHERE c.id IN :ids AND c.deletedAt IS NOT NULL")
     void restoreDeletedByIds(@Param("ids") Set<Long> ids);
-
-    @Modifying
-    @Query("UPDATE Category c SET c.status = :status WHERE c.id IN :ids AND c.deletedAt IS NULL")
-    void updateStatusByIds(@Param("status") CategoryStatus status, @Param("ids") Set<Long> ids);
 
 }

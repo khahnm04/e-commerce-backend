@@ -19,7 +19,6 @@ import com.khahnm04.ecommerce.repository.BrandRepository;
 import com.khahnm04.ecommerce.repository.ProductRepository;
 import com.khahnm04.ecommerce.service.BrandService;
 import com.khahnm04.ecommerce.specification.BrandSpecification;
-import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -44,7 +43,6 @@ public class BrandServiceImpl implements BrandService {
     private final ProductRepository productRepository;
     private final BrandMapper brandMapper;
     private final AuditorAwareConfig auditorAwareConfig;
-    private final EntityManager entityManager;
 
     @Override
     @Transactional
@@ -183,9 +181,7 @@ public class BrandServiceImpl implements BrandService {
                 log.info("Bulk update status {} brands ids: {}", action, brandIds);
             }
             case "SOFT_DELETE" -> {
-                User currentAuditor = auditorAwareConfig.getCurrentAuditor()
-                        .map(user -> entityManager.getReference(User.class, user.getId()))
-                        .orElse(null);
+                User currentAuditor = auditorAwareConfig.getCurrentAuditorReference();
                 brandRepository.softDeleteByIds(LocalDateTime.now(), currentAuditor, brandIds);
                 log.info("Bulk soft-delete brands ids: {}", brandIds);
             }

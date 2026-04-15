@@ -19,7 +19,6 @@ import com.khahnm04.ecommerce.mapper.CustomerMapper;
 import com.khahnm04.ecommerce.repository.CustomerRepository;
 import com.khahnm04.ecommerce.repository.OrderRepository;
 import com.khahnm04.ecommerce.service.CustomerService;
-import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -45,7 +44,6 @@ public class CustomerServiceImpl implements CustomerService {
     private final CustomerMapper customerMapper;
     private final UserService userService;
     private final AuditorAwareConfig auditorAwareConfig;
-    private final EntityManager entityManager;
 
     @Override
     @Transactional
@@ -165,9 +163,7 @@ public class CustomerServiceImpl implements CustomerService {
                 log.info("Bulk update status {} customers ids: {}", action, customerIds);
             }
             case "SOFT_DELETE" -> {
-                User currentAuditor = auditorAwareConfig.getCurrentAuditor()
-                        .map(user -> entityManager.getReference(User.class, user.getId()))
-                        .orElse(null);
+                User currentAuditor = auditorAwareConfig.getCurrentAuditorReference();
                 customerRepository.softDeleteByIds(LocalDateTime.now(), currentAuditor, customerIds);
                 log.info("Bulk soft-delete customers ids: {}", customerIds);
             }

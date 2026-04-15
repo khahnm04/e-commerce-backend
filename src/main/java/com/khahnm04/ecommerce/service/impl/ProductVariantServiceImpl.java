@@ -19,9 +19,8 @@ import com.khahnm04.ecommerce.repository.ProductVariantValueRepository;
 import com.khahnm04.ecommerce.repository.VariantValueRepository;
 import com.khahnm04.ecommerce.service.InventoryService;
 import com.khahnm04.ecommerce.service.ProductService;
-import com.khahnm04.ecommerce.service.ProductVariantService;
 import com.khahnm04.ecommerce.specification.ProductVariantSpecification;
-import jakarta.persistence.EntityManager;
+import com.khahnm04.ecommerce.service.ProductVariantService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -49,7 +48,6 @@ public class ProductVariantServiceImpl implements ProductVariantService {
     private final ProductService productService;
     private final InventoryService inventoryService;
     private final AuditorAwareConfig auditorAwareConfig;
-    private final EntityManager entityManager;
 
     @Override
     @Transactional
@@ -218,9 +216,7 @@ public class ProductVariantServiceImpl implements ProductVariantService {
                 log.info("Bulk update status {} product variants ids: {}", action, productVariantIds);
             }
             case "SOFT_DELETE" -> {
-                User currentAuditor = auditorAwareConfig.getCurrentAuditor()
-                        .map(user -> entityManager.getReference(User.class, user.getId()))
-                        .orElse(null);
+                User currentAuditor = auditorAwareConfig.getCurrentAuditorReference();
                 productVariantRepository.softDeleteByIds(LocalDateTime.now(), currentAuditor, productVariantIds);
                 log.info("Bulk soft-delete product variants ids: {}", productVariantIds);
             }

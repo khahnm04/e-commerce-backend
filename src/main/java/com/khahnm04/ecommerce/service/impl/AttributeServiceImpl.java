@@ -17,7 +17,6 @@ import com.khahnm04.ecommerce.repository.AttributeRepository;
 import com.khahnm04.ecommerce.repository.ProductAttributeValueRepository;
 import com.khahnm04.ecommerce.service.AttributeService;
 import com.khahnm04.ecommerce.specification.AttributeSpecification;
-import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -42,7 +41,6 @@ public class AttributeServiceImpl implements AttributeService {
     private final ProductAttributeValueRepository productAttributeValueRepository;
     private final AttributeMapper attributeMapper;
     private final AuditorAwareConfig auditorAwareConfig;
-    private final EntityManager entityManager;
 
     @Override
     @Transactional
@@ -152,9 +150,7 @@ public class AttributeServiceImpl implements AttributeService {
 
         switch (action) {
             case "SOFT_DELETE" -> {
-                User currentAuditor = auditorAwareConfig.getCurrentAuditor()
-                        .map(user -> entityManager.getReference(User.class, user.getId()))
-                        .orElse(null);
+                User currentAuditor = auditorAwareConfig.getCurrentAuditorReference();
                 attributeRepository.softDeleteByIds(LocalDateTime.now(), currentAuditor, attributeIds);
                 log.info("Bulk soft-delete attributes ids: {}", attributeIds);
             }

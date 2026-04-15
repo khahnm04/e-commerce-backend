@@ -19,7 +19,6 @@ import com.khahnm04.ecommerce.specification.RoleSpecification;
 import com.khahnm04.ecommerce.repository.PermissionRepository;
 import com.khahnm04.ecommerce.repository.RoleRepository;
 import com.khahnm04.ecommerce.service.RoleService;
-import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -43,7 +42,6 @@ public class RoleServiceImpl implements RoleService {
     private final PermissionRepository permissionRepository;
     private final RoleMapper roleMapper;
     private final AuditorAwareConfig auditorAwareConfig;
-    private final EntityManager entityManager;
 
     @Override
     public RoleResponse createRole(RoleRequest request) {
@@ -148,11 +146,9 @@ public class RoleServiceImpl implements RoleService {
 
         switch (action) {
             case "SOFT_DELETE" -> {
-                User currentAuditor = auditorAwareConfig.getCurrentAuditor()
-                        .map(user -> entityManager.getReference(User.class, user.getId()))
-                        .orElse(null);
+                User currentAuditor = auditorAwareConfig.getCurrentAuditorReference();
                 roleRepository.softDeleteByIds(LocalDateTime.now(), currentAuditor, roleIds);
-                log.info("Bulk soft-deleted roles with IDs: {}", roleIds);
+                log.info("Bulk soft-delete roles ids: {}", roleIds);
             }
             case "RESTORE" -> {
                 roleRepository.restoreByIds(roleIds);

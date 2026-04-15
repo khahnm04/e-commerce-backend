@@ -18,7 +18,6 @@ import com.khahnm04.ecommerce.repository.CouponRepository;
 import com.khahnm04.ecommerce.repository.CouponUsageRepository;
 import com.khahnm04.ecommerce.service.CouponService;
 import com.khahnm04.ecommerce.specification.CouponSpecification;
-import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -42,7 +41,6 @@ public class CouponServiceImpl implements CouponService {
     private final CouponUsageRepository couponUsageRepository;
     private final CouponMapper couponMapper;
     private final AuditorAwareConfig auditorAwareConfig;
-    private final EntityManager entityManager;
 
     @Override
     @Transactional
@@ -170,9 +168,7 @@ public class CouponServiceImpl implements CouponService {
                 couponRepository.updateStatusByIds(status, couponIds);
             }
             case "SOFT_DELETE" -> {
-                User currentAuditor = auditorAwareConfig.getCurrentAuditor()
-                        .map(user -> entityManager.getReference(User.class, user.getId()))
-                        .orElse(null);
+                User currentAuditor = auditorAwareConfig.getCurrentAuditorReference();
                 couponRepository.softDeleteByIds(LocalDateTime.now(), currentAuditor, couponIds);
                 log.info("Bulk soft-delete coupons ids: {}", couponIds);
             }

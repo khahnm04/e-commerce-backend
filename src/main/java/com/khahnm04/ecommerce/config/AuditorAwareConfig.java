@@ -56,4 +56,8 @@ public class AuditorAwareConfig implements AuditorAware<User> {
         }
     }
 
+    public User getCurrentAuditorReference() {
+        return getCurrentAuditor().orElse(null);
+    }
+
 }
