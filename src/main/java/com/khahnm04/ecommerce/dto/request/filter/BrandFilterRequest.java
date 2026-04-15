@@ -20,8 +20,8 @@ public record BrandFilterRequest(
 
     String sort,
     String keyword,
-    BrandStatus status,
     Long creatorId,
+    BrandStatus status,
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     LocalDate startDate,
@@ -30,9 +30,11 @@ public record BrandFilterRequest(
     LocalDate endDate
 
 ) implements Serializable {
+
     public BrandFilterRequest {
         if (page == null) page = 1;
         if (size == null) size = 10;
         if (sort == null) sort = "createdAt,desc";
     }
+
 }

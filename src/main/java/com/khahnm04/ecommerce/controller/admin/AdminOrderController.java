@@ -22,7 +22,8 @@ public class AdminOrderController {
 
     @GetMapping
     public ApiResponse<List<OrderResponse>> getAllOrders(
-            @Valid @ModelAttribute OrderFilterRequest filter) {
+            @Valid @ModelAttribute OrderFilterRequest filter
+    ) {
         log.info("Admin fetching all orders with filter: {}", filter);
         PageResponse<OrderResponse> pageResponse = orderService.findAll(filter);
         return ApiResponse.<List<OrderResponse>>builder()
@@ -34,7 +35,8 @@ public class AdminOrderController {
 
     @GetMapping("/{id}")
     public ApiResponse<OrderResponse> getOrderDetail(
-            @PathVariable Long id) {
+            @PathVariable Long id
+    ) {
         log.info("Admin fetching order detail: {}", id);
         return ApiResponse.<OrderResponse>builder()
                 .data(orderService.getById(id))
@@ -44,7 +46,8 @@ public class AdminOrderController {
 
     @PatchMapping("/bulk")
     public ApiResponse<Void> handleBulkAction(
-            @Valid @RequestBody BulkActionRequest request) {
+            @Valid @RequestBody BulkActionRequest request
+    ) {
         orderService.handleBulkAction(request);
         return ApiResponse.<Void>builder()
                 .message("Bulk action executed successfully")

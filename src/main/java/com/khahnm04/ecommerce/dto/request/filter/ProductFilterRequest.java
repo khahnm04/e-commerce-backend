@@ -19,10 +19,11 @@ public record ProductFilterRequest (
     Integer size,
 
     String sort,
+    String keyword,
+    Long creatorId,
     ProductStatus status,
     Long brandId,
     Long categoryId,
-    String keyword,
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     LocalDate startDate,
@@ -31,9 +32,11 @@ public record ProductFilterRequest (
     LocalDate endDate
 
 ) implements Serializable {
+
     public ProductFilterRequest {
         if (page == null) page = 1;
         if (size == null) size = 10;
         if (sort == null) sort = "createdAt,desc";
     }
+
 }

@@ -16,8 +16,10 @@ public record ApiResponse<T>(
     T data
 
 ) implements Serializable {
+
     public ApiResponse {
         if (timestamp == null) timestamp = LocalDateTime.now();
         if (success == null) success = true;
     }
+
 }

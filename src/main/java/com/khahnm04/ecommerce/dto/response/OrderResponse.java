@@ -20,7 +20,6 @@ public record OrderResponse(
     BigDecimal total,
     OrderStatus status,
     PaymentMethod paymentMethod,
-    // Shipping info
     String shippingName,
     String shippingPhone,
     String shippingProvince,
@@ -30,7 +29,6 @@ public record OrderResponse(
     String note,
     String customer,
     Integer totalQuantity,
-    // Items detail
     List<OrderItemResponse> items,
     String paymentUrl,
     LocalDateTime estimatedDeliveryDate,

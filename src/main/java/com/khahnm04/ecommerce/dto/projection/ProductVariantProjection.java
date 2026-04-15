@@ -7,31 +7,18 @@ import java.time.LocalDateTime;
 public interface ProductVariantProjection {
 
     Long getId();
-
     String getProductName();
-
     String getSku();
-
     String getName();
-
     BigDecimal getPrice();
-
     BigDecimal getOldPrice();
-
     String getImage();
-
     ProductVariantStatus getStatus();
-
     LocalDateTime getCreatedAt();
-
     LocalDateTime getUpdatedAt();
-
     LocalDateTime getDeletedAt();
-
     String getCreatedByFullName();
-
     String getUpdatedByFullName();
-
     String getDeletedByFullName();
 
 }

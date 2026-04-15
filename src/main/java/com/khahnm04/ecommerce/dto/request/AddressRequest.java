@@ -9,23 +9,30 @@ import java.io.Serializable;
 @Builder
 public record AddressRequest(
 
-    @NotBlank(message = "ADDRESS_RECEIVER_NAME_REQUIRED") String receiverName,
+    @NotBlank(message = "ADDRESS_RECEIVER_NAME_REQUIRED")
+    String receiverName,
 
-    @NotBlank(message = "ADDRESS_RECEIVER_PHONE_REQUIRED") @ValidPhoneNumber String receiverPhone,
+    @NotBlank(message = "ADDRESS_RECEIVER_PHONE_REQUIRED")
+    @ValidPhoneNumber
+    String receiverPhone,
 
     String provinceCode,
 
-    @NotBlank(message = "ADDRESS_PROVINCE_NAME_REQUIRED") String provinceName,
+    @NotBlank(message = "ADDRESS_PROVINCE_NAME_REQUIRED")
+    String provinceName,
 
     String districtCode,
 
-    @NotBlank(message = "ADDRESS_DISTRICT_NAME_REQUIRED") String districtName,
+    @NotBlank(message = "ADDRESS_DISTRICT_NAME_REQUIRED")
+    String districtName,
 
     String wardCode,
 
-    @NotBlank(message = "ADDRESS_WARD_NAME_REQUIRED") String wardName,
+    @NotBlank(message = "ADDRESS_WARD_NAME_REQUIRED")
+    String wardName,
 
-    @NotBlank(message = "ADDRESS_DETAIL_REQUIRED") String detailAddress,
+    @NotBlank(message = "ADDRESS_DETAIL_REQUIRED")
+    String detailAddress,
 
     AddressType addressType,
     String addressName,
@@ -33,9 +40,8 @@ public record AddressRequest(
 
 ) implements Serializable {
 
-  public AddressRequest {
-    if (isDefault == null)
-      isDefault = false;
-  }
+    public AddressRequest {
+        if (isDefault == null) isDefault = false;
+    }
 
 }

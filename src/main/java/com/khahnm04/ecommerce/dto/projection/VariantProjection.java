@@ -5,19 +5,12 @@ import java.time.LocalDateTime;
 public interface VariantProjection {
 
     Long getId();
-
     String getName();
-
     LocalDateTime getCreatedAt();
-
     LocalDateTime getUpdatedAt();
-
     LocalDateTime getDeletedAt();
-
     String getCreatedByFullName();
-
     String getUpdatedByFullName();
-
     String getDeletedByFullName();
 
 }

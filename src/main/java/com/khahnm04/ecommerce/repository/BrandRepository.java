@@ -9,7 +9,6 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.Set;
@@ -21,6 +20,10 @@ public interface BrandRepository extends JpaRepository<Brand, Long>, JpaSpecific
 
     boolean existsByName(String name);
 
+    boolean existsByNameAndIdNot(String name, Long id);
+
+    boolean existsBySlugAndIdNot(String slug, Long id);
+
     Optional<Brand> findBySlugAndDeletedAtIsNull(String slug);
 
     Optional<Brand> findBySlugAndDeletedAtIsNotNull(String slug);
@@ -29,26 +32,19 @@ public interface BrandRepository extends JpaRepository<Brand, Long>, JpaSpecific
 
     Optional<Brand> findByIdAndDeletedAtIsNotNull(Long id);
 
-    boolean existsByNameAndIdNot(String name, Long id);
-
-    boolean existsBySlugAndIdNot(String slug, Long id);
-
     @Modifying
-    @Transactional
-    @Query("UPDATE Brand b SET b.deletedAt = :now, b.deletedBy = :user WHERE b.id IN :ids AND b.deletedAt IS NULL")
-    void softDeleteByIds(LocalDateTime now, User user, Set<Long> ids);
-
-    @Modifying
-    @Transactional
-    @Query("UPDATE Brand b SET b.deletedAt = NULL, b.deletedBy = NULL WHERE b.id IN :ids AND b.deletedAt IS NOT NULL")
-    void restoreDeletedByIds(Set<Long> ids);
-
-    @Modifying
-    @Transactional
     @Query("UPDATE Brand b SET b.status = :status WHERE b.id IN :ids AND b.deletedAt IS NULL")
     void updateStatusByIds(@Param("status") BrandStatus status, @Param("ids") Set<Long> ids);
 
     @Query("SELECT b FROM Brand b WHERE b.id IN :ids AND b.deletedAt IS NOT NULL")
-    Set<Brand> findAllDeletedByIds(Set<Long> ids);
+    Set<Brand> findAllDeletedByIds(@Param("ids") Set<Long> ids);
+
+    @Modifying
+    @Query("UPDATE Brand b SET b.deletedAt = :now, b.deletedBy = :user WHERE b.id IN :ids AND b.deletedAt IS NULL")
+    void softDeleteByIds(@Param("now") LocalDateTime now, @Param("user") User user, @Param("ids") Set<Long> ids);
+
+    @Modifying
+    @Query("UPDATE Brand b SET b.deletedAt = NULL, b.deletedBy = NULL WHERE b.id IN :ids AND b.deletedAt IS NOT NULL")
+    void restoreDeletedByIds(@Param("ids") Set<Long> ids);
 
 }

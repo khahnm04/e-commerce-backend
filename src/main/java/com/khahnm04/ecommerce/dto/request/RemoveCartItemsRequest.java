@@ -7,5 +7,9 @@ import java.util.Set;
 
 @Builder
 public record RemoveCartItemsRequest(
-        @NotEmpty(message = "CART_ITEM_NOT_FOUND") Set<Long> itemIds) implements Serializable {
+
+    @NotEmpty(message = "CART_ITEM_NOT_FOUND")
+    Set<Long> itemIds
+
+) implements Serializable {
 }

@@ -8,37 +8,21 @@ import java.time.LocalDateTime;
 public interface EmployeeProjection {
 
     Long getId();
-
     String getCode();
-
     String getJobTitle();
-
     LocalDateTime getCreatedAt();
-
     LocalDateTime getUpdatedAt();
-
     LocalDateTime getDeletedAt();
-
     Long getUserId();
-
     String getUserEmail();
-
     String getUserPhoneNumber();
-
     LocalDate getUserDateOfBirth();
-
     String getUserFullName();
-
     String getUserAvatar();
-
     Gender getUserGender();
-
     UserStatus getUserStatus();
-
     String getCreatedByFullName();
-
     String getUpdatedByFullName();
-
     String getDeletedByFullName();
 
 }

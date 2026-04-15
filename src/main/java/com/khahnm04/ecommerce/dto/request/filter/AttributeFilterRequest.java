@@ -28,9 +28,11 @@ public record AttributeFilterRequest (
     LocalDate endDate
 
 ) implements Serializable {
+
     public AttributeFilterRequest {
         if (page == null) page = 1;
         if (size == null) size = 10;
         if (sort == null) sort = "createdAt,desc";
     }
+
 }

@@ -32,8 +32,7 @@ public class GlobalExceptionHandler {
 
     // Catch exception when Duplicate entry
     @ExceptionHandler(value = DataIntegrityViolationException.class)
-    ResponseEntity<ErrorResponse> handlingDataIntegrityViolationException(DataIntegrityViolationException exception,
-            HttpServletRequest request) {
+    ResponseEntity<ErrorResponse> handlingDataIntegrityViolationException(DataIntegrityViolationException exception, HttpServletRequest request) {
         ErrorCode errorCode = ErrorCode.DUPLICATE_ENTRY;
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .timestamp(LocalDateTime.now())
@@ -71,8 +70,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(value = MissingRequestCookieException.class)
-    ResponseEntity<ErrorResponse> handlingMissingRequestCookieException(MissingRequestCookieException exception,
-            HttpServletRequest request) {
+    ResponseEntity<ErrorResponse> handlingMissingRequestCookieException(MissingRequestCookieException exception, HttpServletRequest request) {
         ErrorCode errorCode = ErrorCode.UNAUTHENTICATED;
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .timestamp(LocalDateTime.now())
@@ -85,8 +83,7 @@ public class GlobalExceptionHandler {
 
     // Catch exception when Access Denied
     @ExceptionHandler(value = AccessDeniedException.class)
-    ResponseEntity<ErrorResponse> handlingAccessDeniedException(AccessDeniedException exception,
-            HttpServletRequest request) {
+    ResponseEntity<ErrorResponse> handlingAccessDeniedException(AccessDeniedException exception, HttpServletRequest request) {
         ErrorCode errorCode = ErrorCode.UNAUTHORIZED;
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .timestamp(LocalDateTime.now())
@@ -99,8 +96,7 @@ public class GlobalExceptionHandler {
 
     // Catch exception when enum invalid
     @ExceptionHandler(value = HttpMessageNotReadableException.class)
-    ResponseEntity<ErrorResponse> handlingHttpMessageNotReadableException(HttpMessageNotReadableException exception,
-            HttpServletRequest request) {
+    ResponseEntity<ErrorResponse> handlingHttpMessageNotReadableException(HttpMessageNotReadableException exception, HttpServletRequest request) {
         String message = "Invalid JSON format";
         if (exception.getCause() instanceof InvalidFormatException ife) {
             if (ife.getTargetType() != null && ife.getTargetType().isEnum()) {
@@ -121,8 +117,7 @@ public class GlobalExceptionHandler {
 
     // Catch exception when Validation
     @ExceptionHandler(value = MethodArgumentNotValidException.class)
-    ResponseEntity<ErrorResponse> handlingValidation(MethodArgumentNotValidException exception,
-            HttpServletRequest request) {
+    ResponseEntity<ErrorResponse> handlingValidation(MethodArgumentNotValidException exception, HttpServletRequest request) {
 
         List<FieldErrorResponse> errors = exception.getBindingResult().getFieldErrors()
                 .stream()

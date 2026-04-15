@@ -19,8 +19,9 @@ public record OrderFilterRequest(
     Integer size,
 
     String sort,
-    OrderStatus status,
     String keyword,
+    Long creatorId,
+    OrderStatus status,
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     LocalDate startDate,
@@ -29,9 +30,11 @@ public record OrderFilterRequest(
     LocalDate endDate
 
 ) implements Serializable {
+
     public OrderFilterRequest {
         if (page == null) page = 1;
         if (size == null) size = 10;
         if (sort == null) sort = "createdAt,desc";
     }
+
 }

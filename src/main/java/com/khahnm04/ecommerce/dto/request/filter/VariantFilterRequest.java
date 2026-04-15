@@ -28,9 +28,11 @@ public record VariantFilterRequest(
     LocalDate endDate
 
 ) implements Serializable {
+
     public VariantFilterRequest {
         if (page == null) page = 1;
         if (size == null) size = 10;
         if (sort == null) sort = "createdAt,desc";
     }
+
 }

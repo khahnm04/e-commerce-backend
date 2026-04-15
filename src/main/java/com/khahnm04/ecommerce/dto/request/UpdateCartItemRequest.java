@@ -7,6 +7,10 @@ import java.io.Serializable;
 
 @Builder
 public record UpdateCartItemRequest(
-        @NotNull(message = "CART_ITEM_QUANTITY_REQUIRED") @Min(value = 1, message = "CART_ITEM_QUANTITY_MIN") Integer quantity)
-        implements Serializable {
+
+    @NotNull(message = "CART_ITEM_QUANTITY_REQUIRED")
+    @Min(value = 1, message = "CART_ITEM_QUANTITY_MIN")
+    Integer quantity
+
+) implements Serializable {
 }

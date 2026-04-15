@@ -3,6 +3,8 @@ package com.khahnm04.ecommerce.dto.request.filter;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.Builder;
+import org.springframework.format.annotation.DateTimeFormat;
+
 import java.io.Serializable;
 import java.time.LocalDate;
 
@@ -19,7 +21,11 @@ public record RoleFilterRequest(
     String sort,
     String keyword,
     Long creatorId,
+
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     LocalDate startDate,
+
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     LocalDate endDate
 
 ) implements Serializable {

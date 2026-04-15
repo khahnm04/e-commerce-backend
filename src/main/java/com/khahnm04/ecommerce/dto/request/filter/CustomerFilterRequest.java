@@ -20,9 +20,10 @@ public record CustomerFilterRequest(
     Integer size,
 
     String sort,
+    String keyword,
+    Long creatorId,
     UserStatus status,
     Gender gender,
-    String keyword,
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     LocalDate startDate,

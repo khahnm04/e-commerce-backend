@@ -22,9 +22,10 @@ public record CouponFilterRequest(
 
     String sort,
     String keyword,
+    Long creatorId,
+    CouponStatus status,
     CouponDiscountType typeDiscount,
     CouponDisplayType typeDisplay,
-    CouponStatus status,
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     LocalDate startDate,
@@ -33,9 +34,11 @@ public record CouponFilterRequest(
     LocalDate endDate
 
 ) implements Serializable {
+
     public CouponFilterRequest {
         if (page == null) page = 1;
         if (size == null) size = 10;
         if (sort == null) sort = "createdAt,desc";
     }
+
 }

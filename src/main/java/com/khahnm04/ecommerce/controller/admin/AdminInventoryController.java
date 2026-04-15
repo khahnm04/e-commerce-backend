@@ -23,7 +23,6 @@ public class AdminInventoryController {
     ) {
         int quantity = request.quantity();
         inventoryRepository.addQuantity(variantId, quantity);
-
         log.info("Stock updated for variant ID {}: added {}", variantId, quantity);
         return ApiResponse.<Void>builder()
                 .message("Stock updated successfully")
