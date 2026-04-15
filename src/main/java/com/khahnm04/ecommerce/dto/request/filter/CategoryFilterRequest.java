@@ -20,8 +20,8 @@ public record CategoryFilterRequest(
 
     String sort,
     String keyword,
-    CategoryStatus status,
     Long creatorId,
+    CategoryStatus status,
     Long parentId,
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")
