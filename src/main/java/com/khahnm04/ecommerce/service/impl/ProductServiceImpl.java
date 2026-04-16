@@ -198,6 +198,11 @@ public class ProductServiceImpl implements ProductService {
         if (productVariantRepository.existsByProductId(id)) {
             throw new AppException(ErrorCode.PRODUCT_HAS_VARIANTS);
         }
+
+        productCategoryRepository.deleteAllByProductId(id);
+        productAttributeValueRepository.deleteAllByProductId(id);
+        productImageRepository.deleteAllByProductId(id);
+
         productRepository.delete(product);
         log.info("Permanently deleted product with id: {}", id);
     }

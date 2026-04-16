@@ -26,6 +26,7 @@ public class ProductSpecification {
                 .and(BaseSpecification.withKeyword(request.keyword(), KEYWORD_FIELDS))
                 .and(BaseSpecification.equals("status", request.status()))
                 .and(BaseSpecification.equals("brand.id", request.brandId()))
+                .and(BaseSpecification.equals("createdBy.id", request.creatorId()))
                 .and(withCategory(request.categoryId()))
                 .and(BaseSpecification.withDateRange("createdAt", request.startDate(), request.endDate()));
     }
@@ -50,9 +51,8 @@ public class ProductSpecification {
             Root<ProductCategory> pcRoot = subquery.from(ProductCategory.class);
             subquery.select(cb.literal(1))
                     .where(
-                        cb.equal(pcRoot.get("product").get("id"), root.get("id")),
-                        cb.equal(pcRoot.get("category").get("id"), categoryId)
-                    );
+                            cb.equal(pcRoot.get("product").get("id"), root.get("id")),
+                            cb.equal(pcRoot.get("category").get("id"), categoryId));
             return cb.exists(subquery);
         };
     }
