@@ -28,4 +28,14 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long> {
 
     List<Inventory> findAllByProductVariantIdIn(Collection<Long> productVariantIds);
 
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM Inventory i WHERE i.productVariant.id = :productVariantId")
+    void deleteByProductVariantId(@Param("productVariantId") Long productVariantId);
+
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM Inventory i WHERE i.productVariant.id IN :productVariantIds")
+    void deleteByProductVariantIdIn(@Param("productVariantIds") Collection<Long> productVariantIds);
+
 }

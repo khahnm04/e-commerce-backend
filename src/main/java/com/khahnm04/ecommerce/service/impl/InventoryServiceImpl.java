@@ -82,4 +82,20 @@ public class InventoryServiceImpl implements InventoryService {
                         inv -> inv.getQuantity() != null ? inv.getQuantity() : 0));
     }
 
+    @Override
+    @Transactional
+    public void deleteInventoryByVariantId(Long productVariantId) {
+        inventoryRepository.deleteByProductVariantId(productVariantId);
+        log.info("Deleted inventory for product variant ID: {}", productVariantId);
+    }
+
+    @Override
+    @Transactional
+    public void deleteInventoryByVariantIds(Collection<Long> productVariantIds) {
+        if (productVariantIds != null && !productVariantIds.isEmpty()) {
+            inventoryRepository.deleteByProductVariantIdIn(productVariantIds);
+            log.info("Deleted inventories for product variant IDs: {}", productVariantIds);
+        }
+    }
+
 }

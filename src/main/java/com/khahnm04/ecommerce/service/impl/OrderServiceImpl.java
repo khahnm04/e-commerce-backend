@@ -18,6 +18,7 @@ import com.khahnm04.ecommerce.exception.ErrorCode;
 import com.khahnm04.ecommerce.mapper.OrderMapper;
 import com.khahnm04.ecommerce.repository.*;
 import com.khahnm04.ecommerce.service.OrderService;
+import com.khahnm04.ecommerce.service.PdfService;
 import com.khahnm04.ecommerce.specification.CustomerOrderSpecification;
 import com.khahnm04.ecommerce.specification.OrderSpecification;
 import lombok.RequiredArgsConstructor;
@@ -56,6 +57,7 @@ public class OrderServiceImpl implements OrderService {
     private final CartItemRepository cartItemRepository;
     private final OrderMapper orderMapper;
     private final AuditorAwareConfig auditorAwareConfig;
+    private final PdfService pdfService;
 
     @Override
     @Transactional
@@ -153,27 +155,9 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public PageResponse<OrderResponse> findAll(OrderFilterRequest filter) {
-        Pageable pageable = PageRequest.of(filter.page() - 1, filter.size(),
-                OrderSpecification.getSort(filter.sort()));
+        Pageable pageable = PageRequest.of(filter.page() - 1, filter.size(), OrderSpecification.getSort(filter.sort()));
         Specification<Order> spec = OrderSpecification.buildSpecification(filter);
-
-        Page<OrderProjection> orders = orderRepository.findBy(spec, q -> q.as(OrderProjection.class).page(pageable));
-
-        if (orders.isEmpty()) {
-            return PageResponse.fromPage(Page.empty(pageable));
-        }
-
-        List<Long> orderIds = orders.getContent().stream().map(OrderProjection::getId).toList();
-        List<Payment> allPayments = paymentRepository.findByOrderIdIn(orderIds);
-
-        Map<Long, Payment> paymentsMap = allPayments.stream()
-                .collect(Collectors.toMap(p -> p.getOrder().getId(), p -> p));
-
-        Page<OrderResponse> responsePage = orders.map(proj -> {
-            Payment payment = paymentsMap.get(proj.getId());
-            return mapProjectionToResponse(proj, payment);
-        });
-        return PageResponse.fromPage(responsePage);
+        return getAllWithFilterAndSearch(spec, pageable);
     }
 
     @Override
@@ -182,11 +166,14 @@ public class OrderServiceImpl implements OrderService {
         if (sortStr == null || sortStr.equals("createdAt,desc")) {
             sortStr = "createdAt,desc";
         }
-
         Pageable pageable = PageRequest.of(filter.page() - 1, filter.size(), OrderSpecification.getSort(sortStr));
         Specification<Order> spec = CustomerOrderSpecification.buildSpecification(customerId, filter);
+        return getAllWithFilterAndSearch(spec, pageable);
+    }
 
-        Page<OrderProjection> orders = orderRepository.findBy(spec, q -> q.as(OrderProjection.class).page(pageable));
+    private PageResponse<OrderResponse> getAllWithFilterAndSearch(Specification<Order> spec, Pageable pageable) {
+        Page<OrderProjection> orders = orderRepository
+                .findBy(spec, q -> q.as(OrderProjection.class).page(pageable));
 
         if (orders.isEmpty()) {
             return PageResponse.fromPage(Page.empty(pageable));
@@ -194,6 +181,7 @@ public class OrderServiceImpl implements OrderService {
 
         List<Long> orderIds = orders.getContent().stream().map(OrderProjection::getId).toList();
         List<Payment> allPayments = paymentRepository.findByOrderIdIn(orderIds);
+
         Map<Long, Payment> paymentsMap = allPayments.stream()
                 .collect(Collectors.toMap(p -> p.getOrder().getId(), p -> p));
 
@@ -218,23 +206,6 @@ public class OrderServiceImpl implements OrderService {
                 .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
 
         return mapToOrderResponse(order);
-    }
-
-    @Override
-    @Transactional
-    public OrderResponse updateStatus(Long id, OrderStatus status) {
-        Order order = orderRepository.findById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
-
-        validateStatusTransition(order.getStatus(), status);
-
-        order.setStatus(status);
-        if (status == OrderStatus.COMPLETED) {
-            order.setActualDeliveryDate(LocalDateTime.now());
-        }
-
-        Order savedOrder = orderRepository.save(order);
-        return mapToOrderResponse(savedOrder);
     }
 
     @Override
@@ -274,6 +245,22 @@ public class OrderServiceImpl implements OrderService {
         }
     }
 
+    @Override
+    public byte[] generateOrderInvoice(Long id) {
+        OrderResponse orderResponse = getById(id);
+
+        Map<String, Object> data = Map.of(
+                "order", orderResponse,
+                "printAt", LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm - dd/MM/yyyy")));
+
+        byte[] pdf = pdfService.generatePdfFromTemplate("orders/invoice", data);
+
+        log.info("Invoice generated for order ID: {} by {}", id,
+                auditorAwareConfig.getCurrentAuditorReference().getUsername());
+
+        return pdf;
+    }
+
     private OrderResponse mapToOrderResponse(Order order) {
         List<OrderDetail> details = orderDetailRepository.findByOrderId(order.getId());
         Payment payment = paymentRepository.findByOrderId(order.getId()).orElse(null);
@@ -296,7 +283,6 @@ public class OrderServiceImpl implements OrderService {
                 .shippingAddressDetail(proj.getShippingAddressDetail())
                 .note(proj.getNote())
                 .customer(proj.getCustomerFullName())
-                .paymentUrl(proj.getPaymentUrl())
                 .estimatedDeliveryDate(proj.getExpectedDeliveryDate())
                 .createdAt(proj.getCreatedAt())
                 .paymentMethod(payment != null ? payment.getPaymentMethod() : null)

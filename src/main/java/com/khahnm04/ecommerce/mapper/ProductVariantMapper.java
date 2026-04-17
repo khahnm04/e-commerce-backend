@@ -13,6 +13,7 @@ public interface ProductVariantMapper {
     ProductVariant toProductVariant(ProductVariantRequest request);
 
     @Mapping(target = "product", source = "product.name")
+    @Mapping(target = "productId", source = "product.id")
     @Mapping(target = "createdBy", source = "createdBy.fullName")
     @Mapping(target = "updatedBy", source = "updatedBy.fullName")
     @Mapping(target = "deletedBy", source = "deletedBy.fullName")

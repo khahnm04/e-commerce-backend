@@ -1,7 +1,7 @@
 package com.khahnm04.ecommerce.dto.projection;
 
 import com.khahnm04.ecommerce.common.enums.OrderStatus;
-
+import org.springframework.beans.factory.annotation.Value;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -20,8 +20,10 @@ public interface OrderProjection {
     String getShippingWard();
     String getShippingAddressDetail();
     String getNote();
+
+    @Value("#{target.customer.user.fullName}")
     String getCustomerFullName();
-    String getPaymentUrl();
+
     LocalDateTime getExpectedDeliveryDate();
     LocalDateTime getCreatedAt();
 

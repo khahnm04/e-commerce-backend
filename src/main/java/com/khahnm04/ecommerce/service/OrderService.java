@@ -1,6 +1,5 @@
 package com.khahnm04.ecommerce.service;
 
-import com.khahnm04.ecommerce.common.enums.OrderStatus;
 import com.khahnm04.ecommerce.dto.request.BulkActionRequest;
 import com.khahnm04.ecommerce.dto.request.OrderCreationRequest;
 import com.khahnm04.ecommerce.dto.request.filter.OrderFilterRequest;
@@ -19,8 +18,8 @@ public interface OrderService {
 
     OrderResponse getByCustomerIdAndId(Long customerId, Long orderId);
 
-    OrderResponse updateStatus(Long id, OrderStatus status);
-
     void handleBulkAction(BulkActionRequest request);
+
+    byte[] generateOrderInvoice(Long id);
 
 }

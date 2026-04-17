@@ -13,7 +13,7 @@ public class ProductVariantSpecification {
     };
 
     public static Specification<ProductVariant> buildSpecification(ProductVariantFilterRequest request,
-                                                                   boolean isDeleted) {
+            boolean isDeleted) {
         if (request == null) {
             request = ProductVariantFilterRequest.builder().build();
         }
@@ -21,6 +21,7 @@ public class ProductVariantSpecification {
                 .and(BaseSpecification.withDeletedStatus(isDeleted))
                 .and(BaseSpecification.withKeyword(request.keyword(), KEYWORD_FIELDS))
                 .and(BaseSpecification.equals("product.id", request.productId()))
+                .and(BaseSpecification.equals("createdBy.id", request.creatorId()))
                 .and(BaseSpecification.withDateRange("createdAt", request.startDate(), request.endDate()));
     }
 

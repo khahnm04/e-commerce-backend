@@ -13,6 +13,7 @@ import java.util.List;
 public record ProductVariantResponse(
 
     Long id,
+    Long productId,
     String product,
     String sku,
     String name,

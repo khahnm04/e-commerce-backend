@@ -18,26 +18,33 @@ public interface ProductVariantValueRepository extends JpaRepository<ProductVari
     boolean existsByVariantValueIdIn(Set<Long> variantValueIds);
 
     @Query("""
-        SELECT pvv
-        FROM ProductVariantValue pvv
-        JOIN FETCH pvv.variantValue vv
-        JOIN FETCH vv.variant v
-        WHERE pvv.productVariant.id = :productVariantId
-    """)
-    List<ProductVariantValue> findAllByProductVariantIdWithVariantValue(@Param("productVariantId") Long productVariantId);
+                SELECT pvv
+                FROM ProductVariantValue pvv
+                JOIN FETCH pvv.variantValue vv
+                JOIN FETCH vv.variant v
+                WHERE pvv.productVariant.id = :productVariantId
+            """)
+    List<ProductVariantValue> findAllByProductVariantIdWithVariantValue(
+            @Param("productVariantId") Long productVariantId);
 
     @Query("""
-        SELECT pvv
-        FROM ProductVariantValue pvv
-        JOIN FETCH pvv.variantValue vv
-        JOIN FETCH vv.variant v
-        WHERE pvv.productVariant.id IN :productVariantIds
-    """)
-    List<ProductVariantValue> findAllByProductVariantIdInWithVariantValue(@Param("productVariantIds") Set<Long> productVariantIds);
+                SELECT pvv
+                FROM ProductVariantValue pvv
+                JOIN FETCH pvv.variantValue vv
+                JOIN FETCH vv.variant v
+                WHERE pvv.productVariant.id IN :productVariantIds
+            """)
+    List<ProductVariantValue> findAllByProductVariantIdInWithVariantValue(
+            @Param("productVariantIds") Set<Long> productVariantIds);
 
     @Modifying
     @Transactional
     @Query("DELETE FROM ProductVariantValue pvv WHERE pvv.productVariant.id = :productVariantId")
     void deleteAllByProductVariantId(@Param("productVariantId") Long productVariantId);
+
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM ProductVariantValue pvv WHERE pvv.productVariant.id IN :productVariantIds")
+    void deleteAllByProductVariantIdIn(@Param("productVariantIds") Set<Long> productVariantIds);
 
 }

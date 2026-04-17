@@ -16,4 +16,8 @@ public interface InventoryService {
 
     Map<Long, Integer> getQuantitiesByVariantIds(Collection<Long> productVariantIds);
 
+    void deleteInventoryByVariantId(Long productVariantId);
+
+    void deleteInventoryByVariantIds(Collection<Long> productVariantIds);
+
 }

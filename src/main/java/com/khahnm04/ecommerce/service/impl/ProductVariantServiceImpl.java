@@ -52,6 +52,9 @@ public class ProductVariantServiceImpl implements ProductVariantService {
     @Override
     @Transactional
     public ProductVariantResponse createProductVariant(ProductVariantRequest request) {
+        if (request.productId() == null) {
+            throw new AppException(ErrorCode.PRODUCT_VARIANT_PRODUCT_ID_REQUIRED);
+        }
         Product product = productService.getProductById(request.productId());
 
         String sku;
@@ -181,6 +184,8 @@ public class ProductVariantServiceImpl implements ProductVariantService {
         if (orderDetailRepository.existsByProductVariantId(id)) {
             throw new AppException(ErrorCode.PRODUCT_VARIANT_HAS_ORDERS);
         }
+        productVariantValueRepository.deleteAllByProductVariantId(id);
+        inventoryService.deleteInventoryByVariantId(id);
         productVariantRepository.delete(productVariant);
         log.info("Permanently deleted product variant with id: {}", id);
     }
@@ -224,6 +229,8 @@ public class ProductVariantServiceImpl implements ProductVariantService {
                 if (orderDetailRepository.existsByProductVariantIdIn(productVariantIds)) {
                     throw new AppException(ErrorCode.PRODUCT_VARIANT_HAS_ORDERS);
                 }
+                productVariantValueRepository.deleteAllByProductVariantIdIn(productVariantIds);
+                inventoryService.deleteInventoryByVariantIds(productVariantIds);
                 Set<ProductVariant> productVariants = productVariantRepository.findAllDeletedByIds(productVariantIds);
                 productVariantRepository.deleteAll(productVariants);
                 log.info("Bulk permanently delete product variants ids: {}", productVariantIds);

@@ -11,7 +11,6 @@ import java.util.Set;
 @Builder
 public record ProductVariantRequest(
 
-    @NotNull(message = "PRODUCT_VARIANT_PRODUCT_ID_REQUIRED")
     Long productId,
 
     String sku,

@@ -9,6 +9,9 @@ import com.khahnm04.ecommerce.service.OrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
@@ -52,6 +55,18 @@ public class AdminOrderController {
         return ApiResponse.<Void>builder()
                 .message("Bulk action executed successfully")
                 .build();
+    }
+
+    @GetMapping("/{id}/print")
+    public ResponseEntity<byte[]> printOrder(
+            @PathVariable Long id
+    ) {
+        log.info("Admin printing invoice for order: {}", id);
+        byte[] pdf = orderService.generateOrderInvoice(id);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_PDF_VALUE)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"invoice-" + id + ".pdf\"")
+                .body(pdf);
     }
 
 }
