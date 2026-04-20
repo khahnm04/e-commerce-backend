@@ -3,6 +3,7 @@ package com.khahnm04.ecommerce.controller;
 import com.khahnm04.ecommerce.common.constant.TokenConstants;
 import com.khahnm04.ecommerce.dto.request.ChangePasswordRequest;
 import com.khahnm04.ecommerce.dto.request.LoginRequest;
+import com.khahnm04.ecommerce.dto.request.ResetPasswordRequest;
 import com.khahnm04.ecommerce.dto.response.IntrospectResponse;
 import com.khahnm04.ecommerce.dto.response.LoginResponse;
 import com.khahnm04.ecommerce.service.AuthService;
@@ -10,9 +11,10 @@ import com.khahnm04.ecommerce.dto.response.ApiResponse;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.oauth2.jwt.Jwt;
 
 @RestController
 @RequestMapping("${api.prefix}/auth")
@@ -52,6 +54,30 @@ public class AuthController {
         authService.changePassword(userId, request);
         return ApiResponse.<Void>builder()
                 .message("Change password successfully")
+                .build();
+    }
+
+    @PostMapping("/reset-password")
+    ApiResponse<Void> resetPassword(
+            @AuthenticationPrincipal Jwt jwt,
+            @Valid @RequestBody ResetPasswordRequest request
+    ) {
+        Long userId = jwt.getClaim("userId");
+        authService.resetPassword(userId, request);
+        return ApiResponse.<Void>builder()
+                .message("Reset password successfully")
+                .build();
+    }
+
+    @PostMapping("/users/{userId}/reset-password")
+//    @PreAuthorize("hasRole('ADMIN')")
+    ApiResponse<Void> resetPasswordForUser(
+            @PathVariable Long userId,
+            @Valid @RequestBody ResetPasswordRequest request
+    ) {
+        authService.resetPassword(userId, request);
+        return ApiResponse.<Void>builder()
+                .message("User password reset successfully")
                 .build();
     }
 

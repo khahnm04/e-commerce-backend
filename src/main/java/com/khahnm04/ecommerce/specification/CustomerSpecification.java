@@ -16,13 +16,16 @@ public class CustomerSpecification {
     };
 
     public static Sort getSort(String sort) {
-        if (sort != null) {
-            sort = sort.replace("fullName", "user.fullName")
-                    .replace("email", "user.email")
-                    .replace("phoneNumber", "user.phoneNumber")
-                    .replace("status", "user.status");
+        if (sort == null || sort.trim().isEmpty()) {
+            return Sort.by(Sort.Direction.DESC, "createdAt");
         }
-        return SortUtils.parseSort(sort);
+
+        String actualSort = sort.replace("fullName", "user.fullName")
+                .replace("email", "user.email")
+                .replace("phoneNumber", "user.phoneNumber")
+                .replace("status", "user.status");
+
+        return SortUtils.parseSort(actualSort);
     }
 
     public static Specification<Customer> buildSpecification(CustomerFilterRequest request, boolean isDeleted) {
@@ -30,12 +33,18 @@ public class CustomerSpecification {
             request = CustomerFilterRequest.builder().build();
         }
 
+        Specification<Customer> dateSpec = BaseSpecification
+                .<Customer>withDateRange("createdAt", request.startDate(), request.endDate())
+                .or(BaseSpecification.withDateRange("updatedAt", request.startDate(), request.endDate()));
+
         return BaseSpecification.<Customer>withFetch(JoinType.INNER, "user")
                 .and(BaseSpecification.withAuditingFetch())
                 .and(BaseSpecification.withDeletedStatus(isDeleted))
                 .and(BaseSpecification.withKeyword(request.keyword(), KEYWORD_FIELDS))
-                .and(BaseSpecification.withDateRange("createdAt", request.startDate(), request.endDate()))
+                .and(BaseSpecification.equals("createdBy.id", request.creatorId()))
                 .and(BaseSpecification.equals("user.status", request.status()))
-                .and(BaseSpecification.equals("user.gender", request.gender()));
+                .and(BaseSpecification.equals("user.gender", request.gender()))
+                .and(dateSpec);
     }
+
 }

@@ -12,22 +12,23 @@ import java.time.LocalDateTime;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record CustomerResponse(
 
-    Long id,
-    Long userId,
-    String fullName,
-    String email,
-    String phoneNumber,
-    LocalDate dateOfBirth,
-    Gender gender,
-    String avatar,
-    UserStatus status,
-    Integer addressCount,
-    LocalDateTime createdAt,
-    String createdBy,
-    LocalDateTime updatedAt,
-    String updatedBy,
-    LocalDateTime deletedAt,
-    String deletedBy
+        Long id,
+        Long userId,
+        String fullName,
+        String email,
+        String phoneNumber,
+        LocalDate dateOfBirth,
+        Gender gender,
+        String avatar,
+        UserStatus status,
+        LocalDateTime lastLoginAt,
+        Integer addressCount,
+        LocalDateTime createdAt,
+        String createdBy,
+        LocalDateTime updatedAt,
+        String updatedBy,
+        LocalDateTime deletedAt,
+        String deletedBy
 
 ) implements Serializable {
 }

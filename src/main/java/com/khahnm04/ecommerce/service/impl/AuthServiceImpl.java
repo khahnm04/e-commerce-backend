@@ -6,6 +6,7 @@ import com.khahnm04.ecommerce.common.constant.TokenConstants;
 import com.khahnm04.ecommerce.security.CookieProperties;
 import com.khahnm04.ecommerce.dto.request.ChangePasswordRequest;
 import com.khahnm04.ecommerce.dto.request.LoginRequest;
+import com.khahnm04.ecommerce.dto.request.ResetPasswordRequest;
 import com.khahnm04.ecommerce.dto.response.LoginResponse;
 import com.khahnm04.ecommerce.dto.response.IntrospectResponse;
 import com.khahnm04.ecommerce.dto.response.TokenPayload;
@@ -117,6 +118,21 @@ public class AuthServiceImpl implements AuthService {
         user.setPassword(passwordEncoder.encode(request.newPassword()));
         userRepository.save(user);
         log.info("Changed password for user with id: {}", userId);
+    }
+
+    @Override
+    @Transactional
+    public void resetPassword(Long userId, ResetPasswordRequest request) {
+        if (!request.newPassword().equals(request.confirmNewPassword())) {
+            throw new AppException(ErrorCode.PASSWORD_CONFIRMATION_MISMATCH);
+        }
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+        user.setPassword(passwordEncoder.encode(request.newPassword()));
+        userRepository.save(user);
+        log.info("Reset password for user with id: {}", userId);
     }
 
     @Override

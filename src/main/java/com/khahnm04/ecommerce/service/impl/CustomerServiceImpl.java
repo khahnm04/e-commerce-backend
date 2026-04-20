@@ -196,8 +196,8 @@ public class CustomerServiceImpl implements CustomerService {
                 CustomerSpecification.getSort(request.sort()));
 
         Specification<Customer> spec = CustomerSpecification.buildSpecification(request, isDeleted);
-        Page<CustomerProjection> page = customerRepository.findBy(spec,
-                q -> q.as(CustomerProjection.class).page(pageable));
+        Page<CustomerProjection> page = customerRepository
+                .findBy(spec, q -> q.as(CustomerProjection.class).page(pageable));
 
         List<CustomerResponse> content = page.getContent().stream()
                 .map(proj -> CustomerResponse.builder()
@@ -210,7 +210,7 @@ public class CustomerServiceImpl implements CustomerService {
                         .gender(proj.getGender())
                         .avatar(proj.getAvatar())
                         .status(proj.getUserStatus())
-                        .addressCount(0)
+                        .lastLoginAt(proj.getLastLoginAt())
                         .createdAt(proj.getCreatedAt())
                         .createdBy(proj.getCreatedByFullName())
                         .updatedAt(proj.getUpdatedAt())

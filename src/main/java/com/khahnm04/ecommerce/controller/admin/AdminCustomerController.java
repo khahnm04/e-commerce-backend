@@ -1,5 +1,6 @@
 package com.khahnm04.ecommerce.controller.admin;
 
+import com.khahnm04.ecommerce.dto.request.CustomerCreationRequest;
 import com.khahnm04.ecommerce.dto.response.ApiResponse;
 import com.khahnm04.ecommerce.dto.request.BulkActionRequest;
 import com.khahnm04.ecommerce.dto.response.PageResponse;
@@ -19,92 +20,102 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AdminCustomerController {
 
-	private final CustomerService customerService;
+    private final CustomerService customerService;
 
-	@GetMapping("/{id}")
-	public ApiResponse<CustomerResponse> getCustomerDetail(
-			@PathVariable Long id,
-			@RequestParam(defaultValue = "false") boolean deleted
+    @GetMapping("/{id}")
+    public ApiResponse<CustomerResponse> getCustomerDetail(
+            @PathVariable Long id,
+            @RequestParam(defaultValue = "false") boolean deleted
     ) {
-		return ApiResponse.<CustomerResponse>builder()
-				.data(customerService.getCustomerDetail(id, deleted))
-				.message("Get customer detail successfully")
-				.build();
-	}
+        return ApiResponse.<CustomerResponse>builder()
+                .data(customerService.getCustomerDetail(id, deleted))
+                .message("Get customer detail successfully")
+                .build();
+    }
 
-	@GetMapping
-	public ApiResponse<List<CustomerResponse>> getAllCustomers(
-			@Valid @ModelAttribute CustomerFilterRequest filter
+    @PostMapping
+    public ApiResponse<CustomerResponse> createCustomer(
+            @Valid @RequestBody CustomerCreationRequest request
     ) {
-		PageResponse<CustomerResponse> pageResponse = customerService.getAllCustomers(filter);
-		return ApiResponse.<List<CustomerResponse>>builder()
-				.data(pageResponse.data())
-				.meta(pageResponse.meta())
-				.message("Get all customers successfully")
-				.build();
-	}
+        return ApiResponse.<CustomerResponse>builder()
+                .data(customerService.createCustomer(request))
+                .message("Customer created successfully")
+                .build();
+    }
 
-	@GetMapping("/deleted")
-	public ApiResponse<List<CustomerResponse>> getAllDeletedCustomers(
-			@Valid @ModelAttribute CustomerFilterRequest filter
+    @GetMapping
+    public ApiResponse<List<CustomerResponse>> getAllCustomers(
+            @Valid @ModelAttribute CustomerFilterRequest filter
     ) {
-		PageResponse<CustomerResponse> pageResponse = customerService.getAllDeletedCustomers(filter);
-		return ApiResponse.<List<CustomerResponse>>builder()
-				.data(pageResponse.data())
-				.meta(pageResponse.meta())
-				.message("Get deleted customers successfully")
-				.build();
-	}
+        PageResponse<CustomerResponse> pageResponse = customerService.getAllCustomers(filter);
+        return ApiResponse.<List<CustomerResponse>>builder()
+                .data(pageResponse.data())
+                .meta(pageResponse.meta())
+                .message("Get all customers successfully")
+                .build();
+    }
 
-	@PutMapping("/{id}")
-	public ApiResponse<CustomerResponse> updateCustomer(
-			@PathVariable Long id,
-			@Valid @RequestBody CustomerUpdateRequest request
+    @GetMapping("/deleted")
+    public ApiResponse<List<CustomerResponse>> getAllDeletedCustomers(
+            @Valid @ModelAttribute CustomerFilterRequest filter
     ) {
-		return ApiResponse.<CustomerResponse>builder()
-				.data(customerService.updateCustomer(id, request))
-				.message("Customer updated successfully")
-				.build();
-	}
+        PageResponse<CustomerResponse> pageResponse = customerService.getAllDeletedCustomers(filter);
+        return ApiResponse.<List<CustomerResponse>>builder()
+                .data(pageResponse.data())
+                .meta(pageResponse.meta())
+                .message("Get deleted customers successfully")
+                .build();
+    }
 
-	@PatchMapping("/{id}/soft-delete")
-	public ApiResponse<Void> softDeleteCustomer(
-			@PathVariable Long id
+    @PutMapping("/{id}")
+    public ApiResponse<CustomerResponse> updateCustomer(
+            @PathVariable Long id,
+            @Valid @RequestBody CustomerUpdateRequest request
     ) {
-		customerService.softDeleteCustomer(id);
-		return ApiResponse.<Void>builder()
-				.message("Customer soft deleted successfully")
-				.build();
-	}
+        return ApiResponse.<CustomerResponse>builder()
+                .data(customerService.updateCustomer(id, request))
+                .message("Customer updated successfully")
+                .build();
+    }
 
-	@DeleteMapping("/{id}")
-	public ApiResponse<Void> deleteCustomer(
-			@PathVariable Long id
+    @PatchMapping("/{id}/soft-delete")
+    public ApiResponse<Void> softDeleteCustomer(
+            @PathVariable Long id
     ) {
-		customerService.deleteCustomer(id);
-		return ApiResponse.<Void>builder()
-				.message("Customer deleted successfully")
-				.build();
-	}
+        customerService.softDeleteCustomer(id);
+        return ApiResponse.<Void>builder()
+                .message("Customer soft deleted successfully")
+                .build();
+    }
 
-	@PatchMapping("/{id}/restore")
-	public ApiResponse<Void> restoreCustomer(
-			@PathVariable Long id
+    @DeleteMapping("/{id}")
+    public ApiResponse<Void> deleteCustomer(
+            @PathVariable Long id
     ) {
-		customerService.restoreCustomer(id);
-		return ApiResponse.<Void>builder()
-				.message("Customer restored successfully")
-				.build();
-	}
+        customerService.deleteCustomer(id);
+        return ApiResponse.<Void>builder()
+                .message("Customer deleted successfully")
+                .build();
+    }
 
-	@PatchMapping("/bulk")
-	public ApiResponse<Void> handleBulkAction(
-			@RequestBody BulkActionRequest request
+    @PatchMapping("/{id}/restore")
+    public ApiResponse<Void> restoreCustomer(
+            @PathVariable Long id
     ) {
-		customerService.handleBulkAction(request);
-		return ApiResponse.<Void>builder()
-				.message("Bulk action executed successfully")
-				.build();
-	}
+        customerService.restoreCustomer(id);
+        return ApiResponse.<Void>builder()
+                .message("Customer restored successfully")
+                .build();
+    }
+
+    @PatchMapping("/bulk")
+    public ApiResponse<Void> handleBulkAction(
+            @RequestBody BulkActionRequest request
+    ) {
+        customerService.handleBulkAction(request);
+        return ApiResponse.<Void>builder()
+                .message("Bulk action executed successfully")
+                .build();
+    }
 
 }
