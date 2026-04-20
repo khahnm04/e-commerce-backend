@@ -31,7 +31,10 @@ public record OrderResponse(
     Integer totalQuantity,
     List<OrderItemResponse> items,
     String paymentUrl,
+    String paymentStatus,
     LocalDateTime estimatedDeliveryDate,
+    LocalDateTime expectedDeliveryDate,
+    LocalDateTime actualDeliveryDate,
     LocalDateTime createdAt
 
 ) implements Serializable {

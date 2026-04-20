@@ -15,6 +15,8 @@ public interface OrderMapper {
 
     @Mapping(target = "customer", source = "customer.user.fullName")
     @Mapping(target = "estimatedDeliveryDate", source = "expectedDeliveryDate")
+    @Mapping(target = "expectedDeliveryDate", source = "expectedDeliveryDate")
+    @Mapping(target = "actualDeliveryDate", source = "actualDeliveryDate")
     OrderResponse toOrderResponse(Order order);
 
     @Mapping(target = "productVariantId", source = "productVariant.id")

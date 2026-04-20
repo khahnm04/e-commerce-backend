@@ -286,6 +286,8 @@ public class OrderServiceImpl implements OrderService {
                 .estimatedDeliveryDate(proj.getExpectedDeliveryDate())
                 .createdAt(proj.getCreatedAt())
                 .paymentMethod(payment != null ? payment.getPaymentMethod() : null)
+                .paymentStatus(payment != null ? payment.getPaymentStatus().name() : null)
+                .expectedDeliveryDate(proj.getExpectedDeliveryDate())
                 .build();
     }
 
@@ -293,6 +295,7 @@ public class OrderServiceImpl implements OrderService {
         OrderResponse response = orderMapper.toOrderResponse(order)
                 .toBuilder()
                 .paymentMethod(payment != null ? payment.getPaymentMethod() : null)
+                .paymentStatus(payment != null ? payment.getPaymentStatus().name() : null)
                 .build();
         if (details != null) {
             List<OrderItemResponse> itemResponses = details.stream()
