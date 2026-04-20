@@ -407,6 +407,22 @@ CREATE TABLE banners (
     `deleted_by` BIGINT
 );
 
+CREATE TABLE news (
+    `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
+    `title` VARCHAR(255) NOT NULL COMMENT 'Tiêu đề bài viết',
+    `slug` VARCHAR(255) NOT NULL UNIQUE COMMENT 'URL thân thiện SEO',
+    `summary` VARCHAR(500) NOT NULL COMMENT 'Tóm tắt ngắn',
+    `content` LONGTEXT NOT NULL COMMENT 'Nội dung đầy đủ (rich text/HTML)',
+    `thumbnail` VARCHAR(500) NOT NULL COMMENT 'Ảnh đại diện',
+    `status` ENUM ('ACTIVE', 'INACTIVE') DEFAULT 'ACTIVE',
+    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+    `created_by` BIGINT,
+    `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    `updated_by` BIGINT,
+    `deleted_at` DATETIME,
+    `deleted_by` BIGINT
+);
+
 /* ====================== FOREIGN KEY ========================= */
 /* ====================== AUTH ========================= */
 ALTER TABLE `user_roles` ADD FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
