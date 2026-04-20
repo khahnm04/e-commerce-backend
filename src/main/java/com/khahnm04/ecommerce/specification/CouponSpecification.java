@@ -22,6 +22,7 @@ public class CouponSpecification {
                 .and(BaseSpecification.equals("typeDiscount", request.typeDiscount()))
                 .and(BaseSpecification.equals("typeDisplay", request.typeDisplay()))
                 .and(BaseSpecification.equals("status", request.status()))
+                .and(BaseSpecification.equals("createdBy.id", request.creatorId()))
                 .and(BaseSpecification.withDateRange("createdAt", request.startDate(), request.endDate()));
     }
 

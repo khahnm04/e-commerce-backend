@@ -338,6 +338,12 @@ public enum ErrorCode {
         NEWS_SELECTION_REQUIRED(8053, "At least one news must be selected", HttpStatus.BAD_REQUEST),
         NEWS_ACTION_REQUIRED(8054, "Bulk action is required", HttpStatus.BAD_REQUEST),
         NEWS_INVALID_BULK_ACTION(8055, "Invalid bulk action", HttpStatus.BAD_REQUEST),
+
+        BANNER_NOT_FOUND(8100, "Banner not found", HttpStatus.NOT_FOUND),
+        BANNER_SELECTION_REQUIRED(8101, "At least one banner must be selected", HttpStatus.BAD_REQUEST),
+        BANNER_ACTION_REQUIRED(8102, "Bulk action is required", HttpStatus.BAD_REQUEST),
+        BANNER_INVALID_BULK_ACTION(8103, "Invalid bulk action", HttpStatus.BAD_REQUEST),
+        BANNER_IMAGE_REQUIRED(8104, "Banner image is required", HttpStatus.BAD_REQUEST),
         ;
 
         private final Integer code;

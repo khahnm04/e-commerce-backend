@@ -387,7 +387,25 @@ CREATE TABLE `payments` (
     `deleted_at` DATETIME
 );
 
-
+CREATE TABLE banners (
+    `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
+    `image` VARCHAR(500) NOT NULL,
+    `position` ENUM('HOME_TOP', 'HOME_MIDDLE') NOT NULL DEFAULT 'HOME_TOP',
+    `sort_order` INT NOT NULL DEFAULT 0,
+    `label` VARCHAR(100)  NULL COMMENT 'VD: BST MỚI NHẤT 2026',
+    `heading` VARCHAR(255) NULL COMMENT 'Tiêu đề lớn chính',
+    `description` VARCHAR(500) NULL COMMENT 'Mô tả phụ, VD: Giảm đến 45%',
+    `cta_text` VARCHAR(100) NULL COMMENT 'Text nút bấm, VD: Khám phá',
+    `cta_url` VARCHAR(500) NULL COMMENT 'Link nút bấm (có thể trùng link_url)',
+    `countdown_end` DATETIME NULL,
+    `status` ENUM ('ACTIVE', 'INACTIVE') DEFAULT 'ACTIVE',
+    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+    `created_by` BIGINT,
+    `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    `updated_by` BIGINT,
+    `deleted_at` DATETIME,
+    `deleted_by` BIGINT
+);
 
 /* ====================== FOREIGN KEY ========================= */
 /* ====================== AUTH ========================= */
