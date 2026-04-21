@@ -352,6 +352,16 @@ public enum ErrorCode {
         CONTACT_SELECTION_REQUIRED(8201, "At least one contact must be selected", HttpStatus.BAD_REQUEST),
         CONTACT_ACTION_REQUIRED(8202, "Bulk action is required", HttpStatus.BAD_REQUEST),
         CONTACT_INVALID_BULK_ACTION(8203, "Invalid bulk action", HttpStatus.BAD_REQUEST),
+
+        // =================================================================
+        // MODULE: SETTING WEBSITE (Range: 8300 - 8399)
+        // =================================================================
+        SETTING_WEBSITE_NAME_REQUIRED(8300, "Website name cannot be blank", HttpStatus.BAD_REQUEST),
+        SETTING_PHONE_NUMBER_REQUIRED(8301, "Phone number cannot be blank", HttpStatus.BAD_REQUEST),
+        SETTING_EMAIL_REQUIRED(8302, "Email cannot be blank", HttpStatus.BAD_REQUEST),
+        SETTING_ADDRESS_REQUIRED(8303, "Address cannot be blank", HttpStatus.BAD_REQUEST),
+        SETTING_LOGO_REQUIRED(8304, "Logo cannot be blank", HttpStatus.BAD_REQUEST),
+        SETTING_FAVICON_REQUIRED(8305, "Favicon cannot be blank", HttpStatus.BAD_REQUEST),
         ;
 
         private final Integer code;

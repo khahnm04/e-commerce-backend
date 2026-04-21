@@ -434,6 +434,18 @@ CREATE TABLE contacts (
     `deleted_by` BIGINT
 );
 
+CREATE TABLE setting_websites (
+    `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
+    `website_name` VARCHAR(255),
+    `phone_number` VARCHAR(20),
+    `email` VARCHAR(255),
+    `address` VARCHAR(500),
+    `logo` VARCHAR(500),
+    `favicon` VARCHAR(500),
+    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
 /* ====================== FOREIGN KEY ========================= */
 /* ====================== AUTH ========================= */
 ALTER TABLE `user_roles` ADD FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
