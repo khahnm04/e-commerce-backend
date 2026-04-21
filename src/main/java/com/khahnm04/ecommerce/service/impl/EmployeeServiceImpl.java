@@ -222,6 +222,12 @@ public class EmployeeServiceImpl implements EmployeeService {
         Page<EmployeeProjection> employeePage = employeeRepository
                 .findBy(spec, q -> q.as(EmployeeProjection.class).page(pageable));
 
+        Set<Long> userIds = employeePage.getContent().stream()
+                .map(EmployeeProjection::getUserId)
+                .collect(Collectors.toSet());
+
+        Map<Long, Set<String>> userRolesMap = userService.getRoleNamesByUserIds(userIds);
+
         List<EmployeeResponse> content = employeePage.getContent().stream()
                 .map(proj -> EmployeeResponse.builder()
                         .id(proj.getId())
@@ -235,6 +241,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                         .gender(proj.getUserGender())
                         .avatar(proj.getUserAvatar())
                         .status(proj.getUserStatus())
+                        .roles(userRolesMap.get(proj.getUserId()))
                         .createdAt(proj.getCreatedAt())
                         .createdBy(proj.getCreatedByFullName())
                         .updatedAt(proj.getUpdatedAt())

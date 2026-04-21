@@ -32,12 +32,26 @@ public class EmployeeSpecification {
             request = EmployeeFilterRequest.builder().build();
         }
 
-        return BaseSpecification.<Employee>withFetch(JoinType.INNER, "user")
+        Specification<Employee> spec = BaseSpecification.<Employee>withFetch(JoinType.INNER, "user")
                 .and(BaseSpecification.withAuditingFetch())
                 .and(BaseSpecification.withDeletedStatus(isDeleted))
                 .and(BaseSpecification.withKeyword(request.keyword(), KEYWORD_FIELDS))
                 .and(BaseSpecification.withDateRange("createdAt", request.startDate(), request.endDate()))
                 .and(BaseSpecification.equals("user.status", request.status()));
+
+        if (request.roleId() != null) {
+            spec = spec.and(withRoleId(request.roleId()));
+        }
+
+        return spec;
+    }
+
+    private static Specification<Employee> withRoleId(Long roleId) {
+        return (root, query, cb) -> {
+            var userJoin = root.join("user", JoinType.INNER);
+            var rolesJoin = userJoin.join("roles", JoinType.INNER);
+            return cb.equal(rolesJoin.get("id"), roleId);
+        };
     }
 
 }

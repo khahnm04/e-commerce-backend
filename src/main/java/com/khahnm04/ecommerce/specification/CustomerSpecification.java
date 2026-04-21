@@ -23,7 +23,8 @@ public class CustomerSpecification {
         String actualSort = sort.replace("fullName", "user.fullName")
                 .replace("email", "user.email")
                 .replace("phoneNumber", "user.phoneNumber")
-                .replace("status", "user.status");
+                .replace("status", "user.status")
+                .replace("lastLoginAt", "user.lastLoginAt");
 
         return SortUtils.parseSort(actualSort);
     }

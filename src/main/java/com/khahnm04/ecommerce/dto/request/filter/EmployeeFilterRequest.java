@@ -12,31 +12,30 @@ import java.time.LocalDate;
 @Builder
 public record EmployeeFilterRequest(
 
-    @Min(value = 1, message = "LIST_PAGE_MIN")
-    Integer page,
+        @Min(value = 1, message = "LIST_PAGE_MIN") Integer page,
 
-    @Min(value = 1, message = "LIST_SIZE_MIN")
-    @Max(value = 100, message = "LIST_SIZE_MAX")
-    Integer size,
+        @Min(value = 1, message = "LIST_SIZE_MIN") @Max(value = 100, message = "LIST_SIZE_MAX") Integer size,
 
-    String sort,
-    String keyword,
-    Long creatorId,
-    UserStatus status,
-    Gender gender,
+        String sort,
+        String keyword,
+        Long creatorId,
+        Long roleId,
+        UserStatus status,
+        Gender gender,
 
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
-    LocalDate startDate,
+        @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
 
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
-    LocalDate endDate
+        @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate
 
 ) implements Serializable {
 
     public EmployeeFilterRequest {
-        if (page == null) page = 1;
-        if (size == null) size = 10;
-        if (sort == null) sort = "createdAt,desc";
+        if (page == null)
+            page = 1;
+        if (size == null)
+            size = 10;
+        if (sort == null)
+            sort = "createdAt,desc";
     }
 
 }
