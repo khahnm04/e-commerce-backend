@@ -423,6 +423,17 @@ CREATE TABLE news (
     `deleted_by` BIGINT
 );
 
+CREATE TABLE contacts (
+    `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
+    `email` VARCHAR(255) NOT NULL UNIQUE,
+    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+    `created_by` BIGINT,
+    `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    `updated_by` BIGINT,
+    `deleted_at` DATETIME,
+    `deleted_by` BIGINT
+);
+
 /* ====================== FOREIGN KEY ========================= */
 /* ====================== AUTH ========================= */
 ALTER TABLE `user_roles` ADD FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);

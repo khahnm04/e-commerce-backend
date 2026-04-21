@@ -42,6 +42,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class OrderServiceImpl implements OrderService {
 
@@ -180,14 +181,37 @@ public class OrderServiceImpl implements OrderService {
         }
 
         List<Long> orderIds = orders.getContent().stream().map(OrderProjection::getId).toList();
+        log.info("Fetching order details for order IDs: {}", orderIds);
+
         List<Payment> allPayments = paymentRepository.findByOrderIdIn(orderIds);
+        List<OrderDetail> allDetails = orderDetailRepository.findByOrderIdIn(orderIds);
+        log.info("Found {} order details and {} payments", allDetails.size(), allPayments.size());
 
         Map<Long, Payment> paymentsMap = allPayments.stream()
-                .collect(Collectors.toMap(p -> p.getOrder().getId(), p -> p));
+                .collect(Collectors.toMap(p -> p.getOrder().getId(), p -> p, (p1, p2) -> p1));
+
+        Map<Long, List<OrderDetail>> detailsMap = allDetails.stream()
+                .collect(Collectors.groupingBy(d -> d.getOrder().getId()));
 
         Page<OrderResponse> responsePage = orders.map(proj -> {
             Payment payment = paymentsMap.get(proj.getId());
-            return mapProjectionToResponse(proj, payment);
+            List<OrderDetail> details = detailsMap.getOrDefault(proj.getId(), new ArrayList<>());
+            log.debug("Mapping order {}: {} items found", proj.getId(), details.size());
+
+            OrderResponse response = mapProjectionToResponse(proj, payment);
+
+            List<OrderItemResponse> itemResponses = details.stream()
+                    .map(orderMapper::toOrderItemResponse)
+                    .toList();
+
+            int totalQuantity = details.stream()
+                    .mapToInt(detail -> detail.getQuantity() != null ? detail.getQuantity().intValue() : 0)
+                    .sum();
+
+            return response.toBuilder()
+                    .items(itemResponses)
+                    .totalQuantity(totalQuantity)
+                    .build();
         });
         return PageResponse.fromPage(responsePage);
     }

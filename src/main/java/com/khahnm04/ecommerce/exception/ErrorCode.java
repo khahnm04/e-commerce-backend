@@ -344,6 +344,14 @@ public enum ErrorCode {
         BANNER_ACTION_REQUIRED(8102, "Bulk action is required", HttpStatus.BAD_REQUEST),
         BANNER_INVALID_BULK_ACTION(8103, "Invalid bulk action", HttpStatus.BAD_REQUEST),
         BANNER_IMAGE_REQUIRED(8104, "Banner image is required", HttpStatus.BAD_REQUEST),
+
+        // =================================================================
+        // MODULE: CONTACT (Range: 8200 - 8299)
+        // =================================================================
+        CONTACT_NOT_FOUND(8200, "Contact not found", HttpStatus.NOT_FOUND),
+        CONTACT_SELECTION_REQUIRED(8201, "At least one contact must be selected", HttpStatus.BAD_REQUEST),
+        CONTACT_ACTION_REQUIRED(8202, "Bulk action is required", HttpStatus.BAD_REQUEST),
+        CONTACT_INVALID_BULK_ACTION(8203, "Invalid bulk action", HttpStatus.BAD_REQUEST),
         ;
 
         private final Integer code;
