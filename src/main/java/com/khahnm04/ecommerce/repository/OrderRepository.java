@@ -1,5 +1,6 @@
 package com.khahnm04.ecommerce.repository;
 
+import com.khahnm04.ecommerce.common.enums.OrderStatus;
 import com.khahnm04.ecommerce.entity.User;
 import com.khahnm04.ecommerce.entity.Order;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -9,6 +10,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.Set;
@@ -36,5 +38,10 @@ public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecific
     @Transactional
     @Query("UPDATE Order o SET o.deletedAt = NULL, o.deletedBy = NULL WHERE o.id IN :ids AND o.deletedAt IS NOT NULL")
     void restoreDeletedByIds(@Param("ids") Set<Long> ids);
+
+    Long countByDeletedAtIsNull();
+
+    @Query("SELECT COALESCE(SUM(o.total), 0) FROM Order o WHERE o.status = :status AND o.deletedAt IS NULL")
+    BigDecimal sumTotalRevenue(@Param("status") OrderStatus status);
 
 }

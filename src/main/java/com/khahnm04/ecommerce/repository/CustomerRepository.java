@@ -31,4 +31,6 @@ public interface CustomerRepository extends JpaRepository<Customer, Long>, JpaSp
     @Query("UPDATE Customer c SET c.deletedAt = NULL, c.deletedBy = NULL WHERE c.id IN :ids AND c.deletedAt IS NOT NULL")
     void restoreDeletedByIds(@Param("ids") Set<Long> ids);
 
+    Long countByDeletedAtIsNull();
+
 }
