@@ -12,7 +12,8 @@ public record LoginResponse(
     String email,
     String phoneNumber,
     String fullName,
-    String avatar
+    String avatar,
+    String jobTitle
 
 ) implements Serializable {
 }

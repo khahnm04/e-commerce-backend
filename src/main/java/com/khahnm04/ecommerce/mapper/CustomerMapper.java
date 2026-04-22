@@ -1,9 +1,6 @@
 package com.khahnm04.ecommerce.mapper;
 
-import com.khahnm04.ecommerce.dto.request.UserCreationRequest;
-import com.khahnm04.ecommerce.dto.request.UserUpdateRequest;
-import com.khahnm04.ecommerce.dto.request.CustomerCreationRequest;
-import com.khahnm04.ecommerce.dto.request.CustomerUpdateRequest;
+import com.khahnm04.ecommerce.dto.request.*;
 import com.khahnm04.ecommerce.dto.response.CustomerResponse;
 import com.khahnm04.ecommerce.entity.Customer;
 import org.mapstruct.*;
@@ -37,5 +34,11 @@ public interface CustomerMapper {
 
     @Mapping(target = "roles", ignore = true)
     UserUpdateRequest toUserUpdateRequest(CustomerUpdateRequest request);
+
+    UserUpdateRequest toUserUpdateRequest(CustomerProfileUpdateRequest request);
+
+    @Mapping(target = "user", ignore = true)
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    void updateCustomer(@MappingTarget Customer customer, CustomerProfileUpdateRequest request);
 
 }

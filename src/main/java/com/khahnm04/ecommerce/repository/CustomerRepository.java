@@ -18,7 +18,7 @@ public interface CustomerRepository extends JpaRepository<Customer, Long>, JpaSp
     @EntityGraph(attributePaths = { "user" })
     Optional<Customer> findByIdAndDeletedAtIsNotNull(Long id);
 
-    Optional<Customer> findByUser_PhoneNumber(String phoneNumber);
+    Optional<Customer> findByUserId(Long userId);
 
     @Query("SELECT c FROM Customer c WHERE c.id IN :ids AND c.deletedAt IS NOT NULL")
     Set<Customer> findAllDeletedByIds(@Param("ids") Set<Long> ids);

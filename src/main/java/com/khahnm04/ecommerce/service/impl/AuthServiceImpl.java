@@ -1,6 +1,8 @@
 package com.khahnm04.ecommerce.service.impl;
 
+import com.khahnm04.ecommerce.entity.Employee;
 import com.khahnm04.ecommerce.entity.User;
+import com.khahnm04.ecommerce.repository.EmployeeRepository;
 import com.khahnm04.ecommerce.repository.UserRepository;
 import com.khahnm04.ecommerce.common.constant.TokenConstants;
 import com.khahnm04.ecommerce.security.CookieProperties;
@@ -41,6 +43,7 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final EmployeeRepository employeeRepository;
     private final CookieProperties cookieProperties;
     private final JwtProperties jwtProperties;
     private final PasswordEncoder passwordEncoder;
@@ -67,12 +70,18 @@ public class AuthServiceImpl implements AuthService {
         userRepository.save(user);
 
         log.info("User with id = {} has been authenticated", user.getId());
+
+        String jobTitle = employeeRepository.findByUserId(user.getId())
+                .map(Employee::getJobTitle)
+                .orElse(null);
+
         return LoginResponse.builder()
                 .id(user.getId())
                 .email(user.getEmail())
                 .phoneNumber(user.getPhoneNumber())
                 .fullName(user.getFullName())
                 .avatar(user.getAvatar())
+                .jobTitle(jobTitle)
                 .build();
     }
 

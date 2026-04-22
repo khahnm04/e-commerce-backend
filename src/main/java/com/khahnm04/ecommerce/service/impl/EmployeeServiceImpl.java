@@ -3,6 +3,7 @@ package com.khahnm04.ecommerce.service.impl;
 import com.khahnm04.ecommerce.config.AuditorAwareConfig;
 import com.khahnm04.ecommerce.dto.projection.EmployeeProjection;
 import com.khahnm04.ecommerce.dto.request.BulkActionRequest;
+import com.khahnm04.ecommerce.dto.request.EmployeeProfileUpdateRequest;
 import com.khahnm04.ecommerce.dto.response.PageResponse;
 import com.khahnm04.ecommerce.dto.request.EmployeeCreationRequest;
 import com.khahnm04.ecommerce.dto.request.filter.EmployeeFilterRequest;
@@ -42,6 +43,17 @@ public class EmployeeServiceImpl implements EmployeeService {
     private final EmployeeMapper employeeMapper;
     private final UserService userService;
     private final AuditorAwareConfig auditorAwareConfig;
+
+    @Override
+    public EmployeeResponse getProfile() {
+        User currentUser = auditorAwareConfig.getCurrentAuditor()
+                .orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED));
+
+        Employee employee = employeeRepository.findByUserId(currentUser.getId())
+                .orElseThrow(() -> new AppException(ErrorCode.EMPLOYEE_NOT_FOUND));
+
+        return this.buildEmployeeResponse(employee);
+    }
 
     @Override
     @Transactional
@@ -115,6 +127,24 @@ public class EmployeeServiceImpl implements EmployeeService {
         employeeRepository.save(employee);
 
         log.info("Updated employee with id: {}", id);
+        return this.buildEmployeeResponse(employee);
+    }
+
+    @Override
+    @Transactional
+    public EmployeeResponse updateProfile(EmployeeProfileUpdateRequest request) {
+        User currentUser = auditorAwareConfig.getCurrentAuditor()
+                .orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED));
+
+        Employee employee = employeeRepository.findByUserId(currentUser.getId())
+                .orElseThrow(() -> new AppException(ErrorCode.EMPLOYEE_NOT_FOUND));
+
+        userService.updateUser(employee.getUser().getId(), employeeMapper.toUserUpdateRequest(request));
+
+        employeeMapper.updateEmployee(employee, request);
+        employeeRepository.save(employee);
+
+        log.info("Updated profile for employee with id: {}", employee.getId());
         return this.buildEmployeeResponse(employee);
     }
 

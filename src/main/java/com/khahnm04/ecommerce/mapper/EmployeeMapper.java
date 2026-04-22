@@ -1,9 +1,6 @@
 package com.khahnm04.ecommerce.mapper;
 
-import com.khahnm04.ecommerce.dto.request.UserCreationRequest;
-import com.khahnm04.ecommerce.dto.request.UserUpdateRequest;
-import com.khahnm04.ecommerce.dto.request.EmployeeCreationRequest;
-import com.khahnm04.ecommerce.dto.request.EmployeeUpdateRequest;
+import com.khahnm04.ecommerce.dto.request.*;
 import com.khahnm04.ecommerce.dto.response.EmployeeResponse;
 import com.khahnm04.ecommerce.entity.Employee;
 import org.mapstruct.*;
@@ -41,5 +38,11 @@ public interface EmployeeMapper {
     UserCreationRequest toUserCreationRequest(EmployeeCreationRequest request);
 
     UserUpdateRequest toUserUpdateRequest(EmployeeUpdateRequest request);
+
+    UserUpdateRequest toUserUpdateRequest(EmployeeProfileUpdateRequest request);
+
+    @Mapping(target = "user", ignore = true)
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    void updateEmployee(@MappingTarget Employee employee, EmployeeProfileUpdateRequest request);
 
 }

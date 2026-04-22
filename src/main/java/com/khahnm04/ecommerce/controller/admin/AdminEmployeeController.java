@@ -1,6 +1,7 @@
 package com.khahnm04.ecommerce.controller.admin;
 
 import com.khahnm04.ecommerce.dto.request.BulkActionRequest;
+import com.khahnm04.ecommerce.dto.request.EmployeeProfileUpdateRequest;
 import com.khahnm04.ecommerce.dto.response.ApiResponse;
 import com.khahnm04.ecommerce.dto.response.PageResponse;
 import com.khahnm04.ecommerce.dto.request.EmployeeCreationRequest;
@@ -31,6 +32,24 @@ public class AdminEmployeeController {
         return ApiResponse.<EmployeeResponse>builder()
                 .data(employeeService.createEmployee(request))
                 .message("Employee created successfully")
+                .build();
+    }
+
+    @GetMapping("/me")
+    public ApiResponse<EmployeeResponse> getProfile() {
+        return ApiResponse.<EmployeeResponse>builder()
+                .data(employeeService.getProfile())
+                .message("Get employee profile successfully")
+                .build();
+    }
+
+    @PutMapping("/me")
+    public ApiResponse<EmployeeResponse> updateProfile(
+            @Valid @RequestBody EmployeeProfileUpdateRequest request
+    ) {
+        return ApiResponse.<EmployeeResponse>builder()
+                .data(employeeService.updateProfile(request))
+                .message("Profile updated successfully")
                 .build();
     }
 

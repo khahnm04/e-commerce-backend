@@ -1,5 +1,6 @@
 package com.khahnm04.ecommerce.service;
 
+import com.khahnm04.ecommerce.dto.request.CustomerProfileUpdateRequest;
 import com.khahnm04.ecommerce.dto.response.PageResponse;
 import com.khahnm04.ecommerce.dto.request.BulkActionRequest;
 import com.khahnm04.ecommerce.dto.request.CustomerCreationRequest;
@@ -9,6 +10,8 @@ import com.khahnm04.ecommerce.dto.response.CustomerResponse;
 import com.khahnm04.ecommerce.entity.Customer;
 
 public interface CustomerService {
+
+    CustomerResponse getProfile();
 
     CustomerResponse createCustomer(CustomerCreationRequest request);
 
@@ -21,6 +24,8 @@ public interface CustomerService {
     PageResponse<CustomerResponse> getAllDeletedCustomers(CustomerFilterRequest filter);
 
     CustomerResponse updateCustomer(Long id, CustomerUpdateRequest request);
+
+    CustomerResponse updateProfile(CustomerProfileUpdateRequest request);
 
     void softDeleteCustomer(Long id);
 

@@ -1,6 +1,7 @@
 package com.khahnm04.ecommerce.service.impl;
 
 import com.khahnm04.ecommerce.config.AuditorAwareConfig;
+import com.khahnm04.ecommerce.dto.request.CustomerProfileUpdateRequest;
 import com.khahnm04.ecommerce.dto.response.PageResponse;
 import com.khahnm04.ecommerce.dto.projection.CustomerProjection;
 import com.khahnm04.ecommerce.dto.request.BulkActionRequest;
@@ -44,6 +45,17 @@ public class CustomerServiceImpl implements CustomerService {
     private final CustomerMapper customerMapper;
     private final UserService userService;
     private final AuditorAwareConfig auditorAwareConfig;
+
+    @Override
+    public CustomerResponse getProfile() {
+        User currentUser = auditorAwareConfig.getCurrentAuditor()
+                .orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED));
+
+        Customer customer = customerRepository.findByUserId(currentUser.getId())
+                .orElseThrow(() -> new AppException(ErrorCode.CUSTOMER_NOT_FOUND));
+
+        return customerMapper.toResponse(customer);
+    }
 
     @Override
     @Transactional
@@ -97,6 +109,24 @@ public class CustomerServiceImpl implements CustomerService {
         customerRepository.save(customer);
 
         log.info("Updated customer with id: {}", id);
+        return customerMapper.toResponse(customer);
+    }
+
+    @Override
+    @Transactional
+    public CustomerResponse updateProfile(CustomerProfileUpdateRequest request) {
+        User currentUser = auditorAwareConfig.getCurrentAuditor()
+                .orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED));
+
+        Customer customer = customerRepository.findByUserId(currentUser.getId())
+                .orElseThrow(() -> new AppException(ErrorCode.CUSTOMER_NOT_FOUND));
+
+        userService.updateUser(customer.getUser().getId(), customerMapper.toUserUpdateRequest(request));
+
+        customerMapper.updateCustomer(customer, request);
+        customerRepository.save(customer);
+
+        log.info("Updated profile for customer with id: {}", customer.getId());
         return customerMapper.toResponse(customer);
     }
 
