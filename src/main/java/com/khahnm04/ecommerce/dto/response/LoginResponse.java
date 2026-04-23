@@ -13,7 +13,8 @@ public record LoginResponse(
     String phoneNumber,
     String fullName,
     String avatar,
-    String jobTitle
+    String jobTitle,
+    String token
 
 ) implements Serializable {
 }

@@ -1,17 +1,18 @@
 package com.khahnm04.ecommerce.dto.response;
 
-import lombok.*;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.Builder;
+import java.io.Serializable;
 import java.math.BigDecimal;
 
-@Getter
-@Setter
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class DashboardSummaryResponse {
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public record DashboardSummaryResponse (
 
-    private long totalCustomers;
-    private long totalOrders;
-    private BigDecimal totalRevenue;
+    long totalCustomers,
+    long totalOrders,
+    BigDecimal totalRevenue
 
+) implements Serializable {
 }
+

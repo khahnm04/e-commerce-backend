@@ -33,6 +33,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import java.text.ParseException;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -82,6 +83,7 @@ public class AuthServiceImpl implements AuthService {
                 .fullName(user.getFullName())
                 .avatar(user.getAvatar())
                 .jobTitle(jobTitle)
+                .token(token.token())
                 .build();
     }
 
