@@ -13,6 +13,7 @@ public interface EmployeeMapper {
     Employee toEmployee(EmployeeCreationRequest request);
 
     @Mapping(target = "roles", ignore = true)
+    @Mapping(target = "permissions", ignore = true)
     @Mapping(target = "userId", source = "user.id")
     @Mapping(target = "email", source = "user.email")
     @Mapping(target = "phoneNumber", source = "user.phoneNumber")

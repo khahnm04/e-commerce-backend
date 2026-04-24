@@ -25,6 +25,7 @@ public record EmployeeResponse(
     String avatar,
     UserStatus status,
     Set<String> roles,
+    Set<String> permissions,
     LocalDateTime createdAt,
     String createdBy,
     LocalDateTime updatedAt,

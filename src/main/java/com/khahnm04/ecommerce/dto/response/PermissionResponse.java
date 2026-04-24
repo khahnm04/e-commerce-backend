@@ -12,7 +12,6 @@ public record PermissionResponse(
     Long id,
     String code,
     String name,
-    String subModule,
     String module,
     String description,
     LocalDateTime createdAt

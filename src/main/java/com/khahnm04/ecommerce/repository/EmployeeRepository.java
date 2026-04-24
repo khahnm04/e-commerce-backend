@@ -42,6 +42,7 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long>, JpaSp
     @Query("UPDATE Employee e SET e.deletedAt = NULL, e.deletedBy = NULL WHERE e.id IN :ids AND e.deletedAt IS NOT NULL")
     void restoreDeletedByIds(@Param("ids") Set<Long> ids);
 
-    Optional<Employee> findByUserId(Long userId);
+    @Query("SELECT e FROM Employee e LEFT JOIN FETCH e.user u LEFT JOIN FETCH u.roles r LEFT JOIN FETCH r.permissions WHERE u.id = :userId")
+    Optional<Employee> findByUserId(@Param("userId") Long userId);
 
 }

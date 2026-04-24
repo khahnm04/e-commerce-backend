@@ -49,7 +49,6 @@ CREATE TABLE `permissions` (
     `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
     `code` VARCHAR(50) UNIQUE NOT NULL,
     `name` VARCHAR(255) NOT NULL,
-    `sub_module` VARCHAR(255),
     `module` VARCHAR(255),
     `description` TEXT,
     `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP

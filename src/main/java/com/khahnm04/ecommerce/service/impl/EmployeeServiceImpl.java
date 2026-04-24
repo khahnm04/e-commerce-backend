@@ -240,7 +240,13 @@ public class EmployeeServiceImpl implements EmployeeService {
         Set<String> roleNames = roles != null
                 ? roles.stream().map(Role::getName).collect(Collectors.toSet())
                 : Set.of();
-        return employeeResponse.toBuilder().roles(roleNames).build();
+        Set<String> permissionCodes = roles != null
+                ? roles.stream()
+                    .flatMap(role -> role.getPermissions().stream())
+                    .map(permission -> permission.getCode())
+                    .collect(Collectors.toSet())
+                : Set.of();
+        return employeeResponse.toBuilder().roles(roleNames).permissions(permissionCodes).build();
     }
 
     private PageResponse<EmployeeResponse> getAllWithFilterAndSearch(EmployeeFilterRequest request, boolean isDeleted) {
