@@ -6,15 +6,19 @@ import com.khahnm04.ecommerce.dto.request.LoginRequest;
 import com.khahnm04.ecommerce.dto.request.ResetPasswordRequest;
 import com.khahnm04.ecommerce.dto.response.IntrospectResponse;
 import com.khahnm04.ecommerce.dto.response.LoginResponse;
+import com.khahnm04.ecommerce.dto.request.RegisterRequest;
+import com.khahnm04.ecommerce.dto.response.RegisterResponse;
 import com.khahnm04.ecommerce.service.AuthService;
 import com.khahnm04.ecommerce.dto.response.ApiResponse;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.oauth2.jwt.Jwt;
 
+@Slf4j
 @RestController
 @RequestMapping("${api.prefix}/auth")
 @RequiredArgsConstructor
@@ -30,6 +34,16 @@ public class AuthController {
         return ApiResponse.<LoginResponse>builder()
                 .data(authService.login(request, response))
                 .message("Login successfully")
+                .build();
+    }
+
+    @PostMapping("/register")
+    ApiResponse<RegisterResponse> register(
+            @Valid @RequestBody RegisterRequest request
+    ) {
+        return ApiResponse.<RegisterResponse>builder()
+                .data(authService.register(request))
+                .message("Register successfully")
                 .build();
     }
 

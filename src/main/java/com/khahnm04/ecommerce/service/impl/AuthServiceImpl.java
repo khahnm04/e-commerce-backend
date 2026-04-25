@@ -1,5 +1,7 @@
 package com.khahnm04.ecommerce.service.impl;
 
+import com.khahnm04.ecommerce.common.enums.UserStatus;
+import com.khahnm04.ecommerce.dto.response.IntrospectResponse;
 import com.khahnm04.ecommerce.entity.Employee;
 import com.khahnm04.ecommerce.entity.User;
 import com.khahnm04.ecommerce.repository.EmployeeRepository;
@@ -10,14 +12,17 @@ import com.khahnm04.ecommerce.dto.request.ChangePasswordRequest;
 import com.khahnm04.ecommerce.dto.request.LoginRequest;
 import com.khahnm04.ecommerce.dto.request.ResetPasswordRequest;
 import com.khahnm04.ecommerce.dto.response.LoginResponse;
-import com.khahnm04.ecommerce.dto.response.IntrospectResponse;
+import com.khahnm04.ecommerce.dto.request.RegisterRequest;
+import com.khahnm04.ecommerce.dto.response.RegisterResponse;
 import com.khahnm04.ecommerce.dto.response.TokenPayload;
+import com.khahnm04.ecommerce.dto.request.CustomerCreationRequest;
 import com.khahnm04.ecommerce.entity.RedisToken;
 import com.khahnm04.ecommerce.exception.AppException;
 import com.khahnm04.ecommerce.exception.ErrorCode;
 import com.khahnm04.ecommerce.repository.RedisTokenRepository;
 import com.khahnm04.ecommerce.security.JwtProperties;
 import com.khahnm04.ecommerce.service.AuthService;
+import com.khahnm04.ecommerce.service.CustomerService;
 import com.khahnm04.ecommerce.service.JwtService;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -33,7 +38,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import java.text.ParseException;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Slf4j
 @Service
@@ -45,6 +49,7 @@ public class AuthServiceImpl implements AuthService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final EmployeeRepository employeeRepository;
+    private final CustomerService customerService;
     private final CookieProperties cookieProperties;
     private final JwtProperties jwtProperties;
     private final PasswordEncoder passwordEncoder;
@@ -84,6 +89,28 @@ public class AuthServiceImpl implements AuthService {
                 .avatar(user.getAvatar())
                 .jobTitle(jobTitle)
                 .token(token.token())
+                .build();
+    }
+
+    @Override
+    public RegisterResponse register(RegisterRequest request) {
+        CustomerCreationRequest customerRequest = CustomerCreationRequest.builder()
+                .fullName(request.fullName())
+                .phoneNumber(request.phoneNumber())
+                .email(request.email())
+                .password(request.password())
+                .confirmPassword(request.confirmPassword())
+                .dateOfBirth(request.dateOfBirth())
+                .status(UserStatus.ACTIVE)
+                .build();
+
+        customerService.createCustomer(customerRequest);
+
+        return RegisterResponse.builder()
+                .fullName(request.fullName())
+                .dateOfBirth(request.dateOfBirth())
+                .email(request.email())
+                .phoneNumber(request.phoneNumber())
                 .build();
     }
 
