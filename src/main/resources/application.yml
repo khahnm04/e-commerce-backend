@@ -38,7 +38,16 @@ spring:
     multipart:
       max-file-size: 30MB # Tối đa 1 file là 10MB
       max-request-size: 10MB  # Tổng cả request tối đa 50MB
-
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            scope:
+              - email
+              - profile
 
 logging:
   level:

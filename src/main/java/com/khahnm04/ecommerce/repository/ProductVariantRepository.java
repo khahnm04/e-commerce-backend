@@ -1,7 +1,7 @@
 package com.khahnm04.ecommerce.repository;
 
 import com.khahnm04.ecommerce.common.enums.ProductVariantStatus;
-import com.khahnm04.ecommerce.entity.User;
+import com.khahnm04.ecommerce.entity.Employee;
 import com.khahnm04.ecommerce.entity.ProductVariant;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
@@ -40,8 +40,8 @@ public interface ProductVariantRepository
 
     @Modifying
     @Transactional
-    @Query("UPDATE ProductVariant pv SET pv.deletedAt = :now, pv.deletedBy = :user WHERE pv.id IN :ids AND pv.deletedAt IS NULL")
-    void softDeleteByIds(@Param("now") LocalDateTime now, @Param("user") User user, @Param("ids") Set<Long> ids);
+    @Query("UPDATE ProductVariant pv SET pv.deletedAt = :now, pv.deletedBy = :employee WHERE pv.id IN :ids AND pv.deletedAt IS NULL")
+    void softDeleteByIds(@Param("now") LocalDateTime now, @Param("employee") Employee employee, @Param("ids") Set<Long> ids);
 
     @Modifying
     @Transactional

@@ -2,7 +2,7 @@ package com.khahnm04.ecommerce.repository;
 
 import com.khahnm04.ecommerce.common.enums.NewsStatus;
 import com.khahnm04.ecommerce.entity.News;
-import com.khahnm04.ecommerce.entity.User;
+import com.khahnm04.ecommerce.entity.Employee;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
@@ -40,8 +40,8 @@ public interface NewsRepository extends JpaRepository<News, Long>, JpaSpecificat
     void updateStatusByIds(@Param("status") NewsStatus status, @Param("ids") Set<Long> ids);
 
     @Modifying
-    @Query("UPDATE News n SET n.deletedAt = :now, n.deletedBy = :user WHERE n.id IN :ids AND n.deletedAt IS NULL")
-    void softDeleteByIds(@Param("now") LocalDateTime now, @Param("user") User user, @Param("ids") Set<Long> ids);
+    @Query("UPDATE News n SET n.deletedAt = :now, n.deletedBy = :employee WHERE n.id IN :ids AND n.deletedAt IS NULL")
+    void softDeleteByIds(@Param("now") LocalDateTime now, @Param("employee") Employee employee, @Param("ids") Set<Long> ids);
 
     @Modifying
     @Query("UPDATE News n SET n.deletedAt = NULL, n.deletedBy = NULL WHERE n.id IN :ids AND n.deletedAt IS NOT NULL")

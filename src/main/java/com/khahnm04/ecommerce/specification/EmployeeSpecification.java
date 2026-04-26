@@ -12,32 +12,21 @@ public class EmployeeSpecification {
     private static final String[] KEYWORD_FIELDS = {
             "code",
             "jobTitle",
-            "user.fullName",
-            "user.email",
-            "user.phoneNumber"
+            "fullName",
+            "email",
+            "phoneNumber"
     };
-
-    public static Sort getSort(String sort) {
-        if (sort != null) {
-            sort = sort.replace("fullName", "user.fullName")
-                    .replace("email", "user.email")
-                    .replace("phoneNumber", "user.phoneNumber")
-                    .replace("status", "user.status");
-        }
-        return SortUtils.parseSort(sort);
-    }
 
     public static Specification<Employee> buildSpecification(EmployeeFilterRequest request, boolean isDeleted) {
         if (request == null) {
             request = EmployeeFilterRequest.builder().build();
         }
 
-        Specification<Employee> spec = BaseSpecification.<Employee>withFetch(JoinType.INNER, "user")
-                .and(BaseSpecification.withAuditingFetch())
+        Specification<Employee> spec = BaseSpecification.<Employee>withAuditingFetch()
                 .and(BaseSpecification.withDeletedStatus(isDeleted))
                 .and(BaseSpecification.withKeyword(request.keyword(), KEYWORD_FIELDS))
                 .and(BaseSpecification.withDateRange("createdAt", request.startDate(), request.endDate()))
-                .and(BaseSpecification.equals("user.status", request.status()));
+                .and(BaseSpecification.equals("status", request.status()));
 
         if (request.roleId() != null) {
             spec = spec.and(withRoleId(request.roleId()));
@@ -48,8 +37,7 @@ public class EmployeeSpecification {
 
     private static Specification<Employee> withRoleId(Long roleId) {
         return (root, query, cb) -> {
-            var userJoin = root.join("user", JoinType.INNER);
-            var rolesJoin = userJoin.join("roles", JoinType.INNER);
+            var rolesJoin = root.join("roles", JoinType.INNER);
             return cb.equal(rolesJoin.get("id"), roleId);
         };
     }

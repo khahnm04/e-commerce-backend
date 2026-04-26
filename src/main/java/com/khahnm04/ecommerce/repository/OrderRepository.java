@@ -1,7 +1,7 @@
 package com.khahnm04.ecommerce.repository;
 
 import com.khahnm04.ecommerce.common.enums.OrderStatus;
-import com.khahnm04.ecommerce.entity.User;
+import com.khahnm04.ecommerce.entity.Employee;
 import com.khahnm04.ecommerce.entity.Order;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -31,8 +31,8 @@ public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecific
 
     @Modifying
     @Transactional
-    @Query("UPDATE Order o SET o.deletedAt = :now, o.deletedBy = :user WHERE o.id IN :ids AND o.deletedAt IS NULL")
-    void softDeleteByIds(@Param("now") LocalDateTime now, @Param("user") User user, @Param("ids") Set<Long> ids);
+    @Query("UPDATE Order o SET o.deletedAt = :now, o.deletedBy = :employee WHERE o.id IN :ids AND o.deletedAt IS NULL")
+    void softDeleteByIds(@Param("now") LocalDateTime now, @Param("employee") Employee employee, @Param("ids") Set<Long> ids);
 
     @Modifying
     @Transactional

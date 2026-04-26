@@ -2,7 +2,7 @@ package com.khahnm04.ecommerce.dto.request;
 
 import com.khahnm04.ecommerce.common.validation.email.ValidEmail;
 import com.khahnm04.ecommerce.common.validation.phone.ValidPhoneNumber;
-import com.khahnm04.ecommerce.common.enums.UserStatus;
+import com.khahnm04.ecommerce.common.enums.EmployeeStatus;
 import com.khahnm04.ecommerce.common.enums.Gender;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -34,7 +34,7 @@ public record EmployeeCreationRequest(
     LocalDate dateOfBirth,
     String avatar,
     Gender gender,
-    UserStatus status,
+    EmployeeStatus status,
 
     @NotEmpty(message = "EMPLOYEE_ROLES_REQUIRED")
     Set<Long> roles

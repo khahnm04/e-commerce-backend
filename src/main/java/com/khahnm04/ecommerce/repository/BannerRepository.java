@@ -2,7 +2,7 @@ package com.khahnm04.ecommerce.repository;
 
 import com.khahnm04.ecommerce.common.enums.BannerStatus;
 import com.khahnm04.ecommerce.entity.Banner;
-import com.khahnm04.ecommerce.entity.User;
+import com.khahnm04.ecommerce.entity.Employee;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
@@ -28,8 +28,8 @@ public interface BannerRepository extends JpaRepository<Banner, Long>, JpaSpecif
     void updateStatusByIds(@Param("status") BannerStatus status, @Param("ids") Set<Long> ids);
 
     @Modifying
-    @Query("UPDATE Banner b SET b.deletedAt = :now, b.deletedBy = :user WHERE b.id IN :ids AND b.deletedAt IS NULL")
-    void softDeleteByIds(@Param("now") LocalDateTime now, @Param("user") User user, @Param("ids") Set<Long> ids);
+    @Query("UPDATE Banner b SET b.deletedAt = :now, b.deletedBy = :employee WHERE b.id IN :ids AND b.deletedAt IS NULL")
+    void softDeleteByIds(@Param("now") LocalDateTime now, @Param("employee") Employee employee, @Param("ids") Set<Long> ids);
 
     @Modifying
     @Query("UPDATE Banner b SET b.deletedAt = NULL, b.deletedBy = NULL WHERE b.id IN :ids AND b.deletedAt IS NOT NULL")

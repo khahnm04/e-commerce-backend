@@ -14,6 +14,7 @@ public record LoginResponse(
     String fullName,
     String avatar,
     String jobTitle,
+    String userType,
     String token
 
 ) implements Serializable {

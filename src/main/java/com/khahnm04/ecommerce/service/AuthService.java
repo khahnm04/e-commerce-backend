@@ -11,15 +11,21 @@ import jakarta.servlet.http.HttpServletResponse;
 
 public interface AuthService {
 
-    LoginResponse login(LoginRequest request, HttpServletResponse response);
+    LoginResponse loginEmployee(LoginRequest request, HttpServletResponse response);
+
+    LoginResponse loginCustomer(LoginRequest request, HttpServletResponse response);
 
     RegisterResponse register(RegisterRequest request);
 
     void logout(String token, HttpServletResponse response);
 
-    void changePassword(Long userId, ChangePasswordRequest request);
+    void changePasswordEmployee(Long employeeId, ChangePasswordRequest request);
 
-    void resetPassword(Long userId, ResetPasswordRequest request);
+    void changePasswordCustomer(Long customerId, ChangePasswordRequest request);
+
+    void resetPasswordEmployee(Long employeeId, ResetPasswordRequest request);
+
+    void resetPasswordCustomer(Long customerId, ResetPasswordRequest request);
 
     IntrospectResponse introspect(String token);
 

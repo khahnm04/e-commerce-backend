@@ -2,7 +2,7 @@ package com.khahnm04.ecommerce.dto.request;
 
 import com.khahnm04.ecommerce.common.validation.email.ValidEmail;
 import com.khahnm04.ecommerce.common.validation.phone.ValidPhoneNumber;
-import com.khahnm04.ecommerce.common.enums.UserStatus;
+import com.khahnm04.ecommerce.common.enums.CustomerStatus;
 import com.khahnm04.ecommerce.common.enums.Gender;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
@@ -28,7 +28,7 @@ public record CustomerCreationRequest(
     LocalDate dateOfBirth,
     String avatar,
     Gender gender,
-    UserStatus status
+    CustomerStatus status
 
 ) implements Serializable {
 }

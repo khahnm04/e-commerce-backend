@@ -1,7 +1,8 @@
 package com.khahnm04.ecommerce.security;
 
-import com.khahnm04.ecommerce.entity.User;
-import com.khahnm04.ecommerce.repository.UserRepository;
+import com.khahnm04.ecommerce.entity.Employee;
+import com.khahnm04.ecommerce.entity.Permission;
+import com.khahnm04.ecommerce.repository.EmployeeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -22,7 +23,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class SecurityPermissionService {
 
-    private final UserRepository userRepository;
+    private final EmployeeRepository employeeRepository;
 
     @Transactional(readOnly = true)
     public boolean hasPermission(String permissionCode) {
@@ -32,36 +33,41 @@ public class SecurityPermissionService {
             return false;
         }
 
-        Long userId = extractUserId(authentication);
-        if (userId == null) {
+        Long employeeId = extractEmployeeId(authentication);
+        if (employeeId == null) {
             return false;
         }
 
-        User user = userRepository.findByIdWithRolesAndPermissions(userId).orElse(null);
-        if (user == null || user.getRoles() == null) {
+        Employee employee = employeeRepository.findByIdWithRolesAndPermissions(employeeId).orElse(null);
+        if (employee == null || employee.getRoles() == null) {
             return false;
         }
 
-        Set<String> permissions = user.getRoles().stream()
+        Set<String> permissions = employee.getRoles().stream()
                 .flatMap(role -> role.getPermissions().stream())
-                .map(permission -> permission.getCode())
+                .map(Permission::getCode)
                 .collect(Collectors.toSet());
 
         return permissions.contains(permissionCode);
     }
 
-    private Long extractUserId(Authentication authentication) {
+    private Long extractEmployeeId(Authentication authentication) {
         Object principal = authentication.getPrincipal();
 
         if (principal instanceof Jwt jwt) {
+            String userType = jwt.getClaim("userType");
+            if (!"EMPLOYEE".equals(userType)) {
+                return null;
+            }
+
             Object userIdClaim = jwt.getClaim("userId");
             if (userIdClaim instanceof Number number) {
                 return number.longValue();
             } else if (userIdClaim instanceof String s) {
                 return Long.parseLong(s);
             }
-        } else if (principal instanceof User user) {
-            return user.getId();
+        } else if (principal instanceof Employee employee) {
+            return employee.getId();
         }
 
         return null;

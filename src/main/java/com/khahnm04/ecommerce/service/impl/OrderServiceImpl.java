@@ -259,7 +259,7 @@ public class OrderServiceImpl implements OrderService {
                 orderRepository.saveAll(existingOrders);
             }
             case "DELETE" -> {
-                User currentAuditor = auditorAwareConfig.getCurrentAuditorReference();
+                Employee currentAuditor = auditorAwareConfig.getCurrentAuditorReference();
                 orderRepository.softDeleteByIds(LocalDateTime.now(), currentAuditor, orderIds);
             }
             case "RESTORE" -> {

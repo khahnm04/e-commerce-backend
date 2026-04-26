@@ -1,7 +1,7 @@
 package com.khahnm04.ecommerce.repository;
 
 import com.khahnm04.ecommerce.common.enums.ProductStatus;
-import com.khahnm04.ecommerce.entity.User;
+import com.khahnm04.ecommerce.entity.Employee;
 import com.khahnm04.ecommerce.entity.Product;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -48,8 +48,8 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
 
     @Modifying
     @Transactional
-    @Query("UPDATE Product p SET p.deletedAt = :now, p.deletedBy = :user WHERE p.id IN :ids AND p.deletedAt IS NULL")
-    void softDeleteByIds(@Param("now") LocalDateTime now, @Param("user") User user, @Param("ids") Set<Long> ids);
+    @Query("UPDATE Product p SET p.deletedAt = :now, p.deletedBy = :employee WHERE p.id IN :ids AND p.deletedAt IS NULL")
+    void softDeleteByIds(@Param("now") LocalDateTime now, @Param("employee") Employee employee, @Param("ids") Set<Long> ids);
 
     @Query("SELECT p FROM Product p WHERE p.id IN :ids AND p.deletedAt IS NOT NULL")
     Set<Product> findAllDeletedByIds(Set<Long> ids);

@@ -13,7 +13,7 @@ public interface OrderMapper {
 
     Order toOrder(OrderCreationRequest request);
 
-    @Mapping(target = "customer", source = "customer.user.fullName")
+    @Mapping(target = "customer", source = "customer.fullName")
     @Mapping(target = "estimatedDeliveryDate", source = "expectedDeliveryDate")
     @Mapping(target = "expectedDeliveryDate", source = "expectedDeliveryDate")
     @Mapping(target = "actualDeliveryDate", source = "actualDeliveryDate")

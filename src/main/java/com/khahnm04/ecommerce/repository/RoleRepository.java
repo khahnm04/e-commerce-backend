@@ -1,6 +1,6 @@
 package com.khahnm04.ecommerce.repository;
 
-import com.khahnm04.ecommerce.entity.User;
+import com.khahnm04.ecommerce.entity.Employee;
 import com.khahnm04.ecommerce.entity.Role;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
@@ -15,6 +15,8 @@ import java.util.Set;
 public interface RoleRepository extends JpaRepository<Role, Long>, JpaSpecificationExecutor<Role> {
 
     boolean existsByCodeAndDeletedAtIsNull(String code);
+
+    Optional<Role> findByCode(String code);
 
     boolean existsByNameAndDeletedAtIsNull(String name);
 
@@ -31,8 +33,8 @@ public interface RoleRepository extends JpaRepository<Role, Long>, JpaSpecificat
 
     @Modifying
     @Transactional
-    @Query("UPDATE Role r SET r.deletedAt = :now, r.deletedBy = :user WHERE r.id IN :ids AND r.deletedAt IS NULL")
-    void softDeleteByIds(@Param("now") LocalDateTime now, @Param("user") User user, @Param("ids") Set<Long> ids);
+    @Query("UPDATE Role r SET r.deletedAt = :now, r.deletedBy = :employee WHERE r.id IN :ids AND r.deletedAt IS NULL")
+    void softDeleteByIds(@Param("now") LocalDateTime now, @Param("employee") Employee employee, @Param("ids") Set<Long> ids);
 
     @Modifying
     @Transactional

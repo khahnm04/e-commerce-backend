@@ -9,7 +9,7 @@ import com.khahnm04.ecommerce.dto.request.AttributeRequest;
 import com.khahnm04.ecommerce.dto.response.PageResponse;
 import com.khahnm04.ecommerce.dto.response.AttributeResponse;
 import com.khahnm04.ecommerce.entity.Attribute;
-import com.khahnm04.ecommerce.entity.User;
+import com.khahnm04.ecommerce.entity.Employee;
 import com.khahnm04.ecommerce.exception.AppException;
 import com.khahnm04.ecommerce.exception.ErrorCode;
 import com.khahnm04.ecommerce.mapper.AttributeMapper;
@@ -150,7 +150,7 @@ public class AttributeServiceImpl implements AttributeService {
 
         switch (action) {
             case "SOFT_DELETE" -> {
-                User currentAuditor = auditorAwareConfig.getCurrentAuditorReference();
+                Employee currentAuditor = auditorAwareConfig.getCurrentAuditorReference();
                 attributeRepository.softDeleteByIds(LocalDateTime.now(), currentAuditor, attributeIds);
                 log.info("Bulk soft-delete attributes ids: {}", attributeIds);
             }

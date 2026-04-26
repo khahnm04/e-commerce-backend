@@ -221,7 +221,7 @@ public class ProductVariantServiceImpl implements ProductVariantService {
                 log.info("Bulk update status {} product variants ids: {}", action, productVariantIds);
             }
             case "SOFT_DELETE" -> {
-                User currentAuditor = auditorAwareConfig.getCurrentAuditorReference();
+                Employee currentAuditor = auditorAwareConfig.getCurrentAuditorReference();
                 productVariantRepository.softDeleteByIds(LocalDateTime.now(), currentAuditor, productVariantIds);
                 log.info("Bulk soft-delete product variants ids: {}", productVariantIds);
             }

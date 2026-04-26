@@ -21,8 +21,8 @@ public class UserProvider {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @JoinColumn(name = "customer_id", nullable = false)
+    private Customer customer;
 
     @Column(name = "provider", nullable = false)
     @Enumerated(EnumType.STRING)

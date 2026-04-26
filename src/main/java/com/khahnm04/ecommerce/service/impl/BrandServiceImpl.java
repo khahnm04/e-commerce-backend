@@ -11,7 +11,7 @@ import com.khahnm04.ecommerce.dto.request.BrandRequest;
 import com.khahnm04.ecommerce.dto.response.PageResponse;
 import com.khahnm04.ecommerce.dto.response.BrandResponse;
 import com.khahnm04.ecommerce.entity.Brand;
-import com.khahnm04.ecommerce.entity.User;
+import com.khahnm04.ecommerce.entity.Employee;
 import com.khahnm04.ecommerce.exception.AppException;
 import com.khahnm04.ecommerce.exception.ErrorCode;
 import com.khahnm04.ecommerce.mapper.BrandMapper;
@@ -181,7 +181,7 @@ public class BrandServiceImpl implements BrandService {
                 log.info("Bulk update status {} brands ids: {}", action, brandIds);
             }
             case "SOFT_DELETE" -> {
-                User currentAuditor = auditorAwareConfig.getCurrentAuditorReference();
+                Employee currentAuditor = auditorAwareConfig.getCurrentAuditorReference();
                 brandRepository.softDeleteByIds(LocalDateTime.now(), currentAuditor, brandIds);
                 log.info("Bulk soft-delete brands ids: {}", brandIds);
             }

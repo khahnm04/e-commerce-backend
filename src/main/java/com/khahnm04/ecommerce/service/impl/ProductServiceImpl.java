@@ -247,7 +247,7 @@ public class ProductServiceImpl implements ProductService {
                 log.info("Bulk update status {} products ids: {}", action, productIds);
             }
             case "SOFT_DELETE" -> {
-                User currentAuditor = auditorAwareConfig.getCurrentAuditorReference();
+                Employee currentAuditor = auditorAwareConfig.getCurrentAuditorReference();
                 productRepository.softDeleteByIds(LocalDateTime.now(), currentAuditor, productIds);
                 log.info("Bulk soft-delete products ids: {}", productIds);
             }

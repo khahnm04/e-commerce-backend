@@ -10,7 +10,7 @@ import com.khahnm04.ecommerce.dto.request.CouponRequest;
 import com.khahnm04.ecommerce.dto.response.PageResponse;
 import com.khahnm04.ecommerce.dto.response.CouponResponse;
 import com.khahnm04.ecommerce.entity.Coupon;
-import com.khahnm04.ecommerce.entity.User;
+import com.khahnm04.ecommerce.entity.Employee;
 import com.khahnm04.ecommerce.exception.AppException;
 import com.khahnm04.ecommerce.exception.ErrorCode;
 import com.khahnm04.ecommerce.mapper.CouponMapper;
@@ -168,7 +168,7 @@ public class CouponServiceImpl implements CouponService {
                 couponRepository.updateStatusByIds(status, couponIds);
             }
             case "SOFT_DELETE" -> {
-                User currentAuditor = auditorAwareConfig.getCurrentAuditorReference();
+                Employee currentAuditor = auditorAwareConfig.getCurrentAuditorReference();
                 couponRepository.softDeleteByIds(LocalDateTime.now(), currentAuditor, couponIds);
                 log.info("Bulk soft-delete coupons ids: {}", couponIds);
             }

@@ -13,14 +13,14 @@ public class OrderSpecification {
             "code",
             "shippingName",
             "shippingPhone",
-            "customer.user.fullName",
-            "customer.user.email",
-            "customer.user.phoneNumber"
+            "customer.fullName",
+            "customer.email",
+            "customer.phoneNumber"
     };
 
     public static Sort getSort(String sort) {
         if (sort != null) {
-            sort = sort.replace("customer", "customer.user.fullName")
+            sort = sort.replace("customer", "customer.fullName")
                     .replace("totalAmount", "total");
         }
         return SortUtils.parseSort(sort);
@@ -32,12 +32,6 @@ public class OrderSpecification {
         }
 
         return BaseSpecification.<Order>withFetch(JoinType.LEFT, "customer")
-                .and((root, query, cb) -> {
-                    if (query != null && query.getResultType().equals(Order.class)) {
-                        root.fetch("customer", JoinType.LEFT).fetch("user", JoinType.LEFT);
-                    }
-                    return cb.conjunction();
-                })
                 .and(BaseSpecification.withKeyword(request.keyword(), KEYWORD_FIELDS))
                 .and(BaseSpecification.withDateRange("createdAt", request.startDate(), request.endDate()))
                 .and(BaseSpecification.equals("status", request.status()));

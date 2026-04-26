@@ -1,5 +1,7 @@
 package com.khahnm04.ecommerce.service.impl;
 
+import com.khahnm04.ecommerce.common.util.SecurityUtils;
+import com.khahnm04.ecommerce.common.util.SortUtils;
 import com.khahnm04.ecommerce.config.AuditorAwareConfig;
 import com.khahnm04.ecommerce.dto.projection.EmployeeProjection;
 import com.khahnm04.ecommerce.dto.request.BulkActionRequest;
@@ -8,17 +10,18 @@ import com.khahnm04.ecommerce.dto.response.PageResponse;
 import com.khahnm04.ecommerce.dto.request.EmployeeCreationRequest;
 import com.khahnm04.ecommerce.dto.request.filter.EmployeeFilterRequest;
 import com.khahnm04.ecommerce.dto.request.EmployeeUpdateRequest;
+import com.khahnm04.ecommerce.entity.Permission;
 import com.khahnm04.ecommerce.exception.AppException;
 import com.khahnm04.ecommerce.exception.ErrorCode;
 import com.khahnm04.ecommerce.entity.Role;
-import com.khahnm04.ecommerce.entity.User;
-import com.khahnm04.ecommerce.common.enums.UserStatus;
-import com.khahnm04.ecommerce.service.UserService;
-import com.khahnm04.ecommerce.dto.response.EmployeeResponse;
 import com.khahnm04.ecommerce.entity.Employee;
+import com.khahnm04.ecommerce.common.enums.EmployeeStatus;
+import com.khahnm04.ecommerce.common.enums.Gender;
+import com.khahnm04.ecommerce.dto.response.EmployeeResponse;
 import com.khahnm04.ecommerce.specification.EmployeeSpecification;
 import com.khahnm04.ecommerce.mapper.EmployeeMapper;
 import com.khahnm04.ecommerce.repository.EmployeeRepository;
+import com.khahnm04.ecommerce.repository.RoleRepository;
 import com.khahnm04.ecommerce.service.EmployeeService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +30,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -41,15 +45,15 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     private final EmployeeRepository employeeRepository;
     private final EmployeeMapper employeeMapper;
-    private final UserService userService;
+    private final RoleRepository roleRepository;
+    private final PasswordEncoder passwordEncoder;
     private final AuditorAwareConfig auditorAwareConfig;
 
     @Override
     public EmployeeResponse getProfile() {
-        User currentUser = auditorAwareConfig.getCurrentAuditor()
-                .orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED));
+        Long employeeId = SecurityUtils.getAuthenticatedUserId();
 
-        Employee employee = employeeRepository.findByUserId(currentUser.getId())
+        Employee employee = employeeRepository.findByIdWithRolesAndPermissions(employeeId)
                 .orElseThrow(() -> new AppException(ErrorCode.EMPLOYEE_NOT_FOUND));
 
         return this.buildEmployeeResponse(employee);
@@ -64,11 +68,19 @@ public class EmployeeServiceImpl implements EmployeeService {
         if (employeeRepository.existsByCode(request.code())) {
             throw new AppException(ErrorCode.EMPLOYEE_CODE_EXISTED);
         }
-
-        User user = userService.createUser(employeeMapper.toUserCreationRequest(request));
+        if (employeeRepository.existsByPhoneNumber(request.phoneNumber())) {
+            throw new AppException(ErrorCode.PHONE_NUMBER_EXISTED);
+        }
+        if (StringUtils.hasText(request.email()) && employeeRepository.existsByEmail(request.email())) {
+            throw new AppException(ErrorCode.EMAIL_EXISTED);
+        }
 
         Employee newEmployee = employeeMapper.toEmployee(request);
-        newEmployee.setUser(user);
+        newEmployee.setPassword(passwordEncoder.encode(request.password()));
+        newEmployee.setStatus(request.status() == null ? EmployeeStatus.ACTIVE : request.status());
+        newEmployee.setGender(request.gender() == null ? Gender.OTHER : request.gender());
+        assignRolesToEmployee(newEmployee, request.roles());
+
         Employee savedEmployee = employeeRepository.save(newEmployee);
 
         log.info("Created new employee with code: {}", savedEmployee.getCode());
@@ -120,10 +132,20 @@ public class EmployeeServiceImpl implements EmployeeService {
                 employeeRepository.existsByCodeAndIdNot(request.code(), employee.getId())) {
             throw new AppException(ErrorCode.EMPLOYEE_CODE_EXISTED);
         }
-
-        userService.updateUser(employee.getUser().getId(), employeeMapper.toUserUpdateRequest(request));
+        if (StringUtils.hasText(request.phoneNumber())
+                && employeeRepository.existsByPhoneNumberAndIdNot(request.phoneNumber(), id)) {
+            throw new AppException(ErrorCode.PHONE_NUMBER_EXISTED);
+        }
+        if (StringUtils.hasText(request.email()) &&
+                employeeRepository.existsByEmailAndIdNot(request.email(), id)) {
+            throw new AppException(ErrorCode.EMAIL_EXISTED);
+        }
 
         employeeMapper.updateEmployee(employee, request);
+
+        if (request.roles() != null) {
+            assignRolesToEmployee(employee, request.roles());
+        }
         employeeRepository.save(employee);
 
         log.info("Updated employee with id: {}", id);
@@ -133,15 +155,21 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     @Transactional
     public EmployeeResponse updateProfile(EmployeeProfileUpdateRequest request) {
-        User currentUser = auditorAwareConfig.getCurrentAuditor()
-                .orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED));
+        Long employeeId = SecurityUtils.getAuthenticatedUserId();
 
-        Employee employee = employeeRepository.findByUserId(currentUser.getId())
+        Employee employee = employeeRepository.findById(employeeId)
                 .orElseThrow(() -> new AppException(ErrorCode.EMPLOYEE_NOT_FOUND));
 
-        userService.updateUser(employee.getUser().getId(), employeeMapper.toUserUpdateRequest(request));
+        if (StringUtils.hasText(request.phoneNumber())
+            && employeeRepository.existsByPhoneNumberAndIdNot(request.phoneNumber(), employee.getId())) {
+            throw new AppException(ErrorCode.PHONE_NUMBER_EXISTED);
+        }
+        if (StringUtils.hasText(request.email()) &&
+            employeeRepository.existsByEmailAndIdNot(request.email(), employee.getId())) {
+            throw new AppException(ErrorCode.EMAIL_EXISTED);
+        }
 
-        employeeMapper.updateEmployee(employee, request);
+        employeeMapper.updateEmployeeProfile(employee, request);
         employeeRepository.save(employee);
 
         log.info("Updated profile for employee with id: {}", employee.getId());
@@ -151,7 +179,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     @Transactional
     public void softDeleteEmployee(Long id) {
-        Employee employee = this.getEmployeeById(id);
+        Employee employee = getEmployeeById(id);
         if (employee.getDeletedAt() != null) {
             log.warn("Employee with id {} is already soft deleted", id);
             return;
@@ -198,18 +226,13 @@ public class EmployeeServiceImpl implements EmployeeService {
             throw new AppException(ErrorCode.EMPLOYEE_BULK_ACTION_REQUIRED_IDS);
         }
 
-        Set<Long> existingUserIds = employeeRepository.findAllById(employeeIds)
-                .stream()
-                .map(employee -> employee.getUser().getId())
-                .collect(Collectors.toSet());
-
         switch (action) {
             case "ACTIVE", "INACTIVE", "BANNED", "LOCKED" -> {
-                userService.bulkUpdateStatus(existingUserIds, UserStatus.valueOf(action));
+                employeeRepository.updateStatusByIds(EmployeeStatus.valueOf(action), employeeIds);
                 log.info("Bulk update status {} employees ids: {}", action, employeeIds);
             }
             case "SOFT_DELETE" -> {
-                User currentAuditor = auditorAwareConfig.getCurrentAuditorReference();
+                Employee currentAuditor = auditorAwareConfig.getCurrentAuditorReference();
                 employeeRepository.softDeleteByIds(LocalDateTime.now(), currentAuditor, employeeIds);
                 log.info("Bulk soft-delete employees ids: {}", employeeIds);
             }
@@ -236,48 +259,60 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     private EmployeeResponse buildEmployeeResponse(Employee employee) {
         EmployeeResponse employeeResponse = employeeMapper.toResponse(employee);
-        Set<Role> roles = employee.getUser().getRoles();
+        Set<Role> roles = employee.getRoles();
         Set<String> roleNames = roles != null
                 ? roles.stream().map(Role::getName).collect(Collectors.toSet())
                 : Set.of();
         Set<String> permissionCodes = roles != null
                 ? roles.stream()
                     .flatMap(role -> role.getPermissions().stream())
-                    .map(permission -> permission.getCode())
+                    .map(Permission::getCode)
                     .collect(Collectors.toSet())
                 : Set.of();
         return employeeResponse.toBuilder().roles(roleNames).permissions(permissionCodes).build();
     }
 
+    private void assignRolesToEmployee(Employee employee, Set<Long> roleIds) {
+        if (roleIds == null || roleIds.isEmpty()) {
+            employee.setRoles(Collections.emptySet());
+            return;
+        }
+
+        Set<Role> roles = new HashSet<>(roleRepository.findAllById(roleIds));
+
+        if (roles.size() != roleIds.size()) {
+            throw new AppException(ErrorCode.ROLE_NOT_FOUND);
+        }
+        employee.setRoles(roles);
+    }
+
     private PageResponse<EmployeeResponse> getAllWithFilterAndSearch(EmployeeFilterRequest request, boolean isDeleted) {
-        Pageable pageable = PageRequest.of(request.page() - 1, request.size(),
-                EmployeeSpecification.getSort(request.sort()));
+        Pageable pageable = PageRequest.of(request.page() - 1, request.size(), SortUtils.parseSort(request.sort()));
 
         Specification<Employee> spec = EmployeeSpecification.buildSpecification(request, isDeleted);
 
         Page<EmployeeProjection> employeePage = employeeRepository
                 .findBy(spec, q -> q.as(EmployeeProjection.class).page(pageable));
 
-        Set<Long> userIds = employeePage.getContent().stream()
-                .map(EmployeeProjection::getUserId)
+        Set<Long> employeeIdsInPage = employeePage.getContent().stream()
+                .map(EmployeeProjection::getId)
                 .collect(Collectors.toSet());
 
-        Map<Long, Set<String>> userRolesMap = userService.getRoleNamesByUserIds(userIds);
+        Map<Long, Set<String>> employeeRolesMap = getRoleNamesByEmployeeIds(employeeIdsInPage);
 
         List<EmployeeResponse> content = employeePage.getContent().stream()
                 .map(proj -> EmployeeResponse.builder()
                         .id(proj.getId())
-                        .userId(proj.getUserId())
                         .code(proj.getCode())
-                        .fullName(proj.getUserFullName())
-                        .email(proj.getUserEmail())
-                        .phoneNumber(proj.getUserPhoneNumber())
+                        .fullName(proj.getFullName())
+                        .email(proj.getEmail())
+                        .phoneNumber(proj.getPhoneNumber())
                         .jobTitle(proj.getJobTitle())
-                        .dateOfBirth(proj.getUserDateOfBirth())
-                        .gender(proj.getUserGender())
-                        .avatar(proj.getUserAvatar())
-                        .status(proj.getUserStatus())
-                        .roles(userRolesMap.get(proj.getUserId()))
+                        .dateOfBirth(proj.getDateOfBirth())
+                        .gender(proj.getGender())
+                        .avatar(proj.getAvatar())
+                        .status(proj.getStatus())
+                        .roles(employeeRolesMap.get(proj.getId()))
                         .createdAt(proj.getCreatedAt())
                         .createdBy(proj.getCreatedByFullName())
                         .updatedAt(proj.getUpdatedAt())
@@ -289,6 +324,19 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         Page<EmployeeResponse> page = new PageImpl<>(content, pageable, employeePage.getTotalElements());
         return PageResponse.fromPage(page);
+    }
+
+    private Map<Long, Set<String>> getRoleNamesByEmployeeIds(Set<Long> employeeIds) {
+        if (employeeIds == null || employeeIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        return employeeRepository.findAllByIdInWithRoles(employeeIds)
+                .stream()
+                .collect(Collectors.toMap(
+                        Employee::getId,
+                        employee -> employee.getRoles() != null
+                                ? employee.getRoles().stream().map(Role::getName).collect(Collectors.toSet())
+                                : Set.of()));
     }
 
 }

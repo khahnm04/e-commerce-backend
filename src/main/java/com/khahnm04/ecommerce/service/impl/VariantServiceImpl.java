@@ -8,7 +8,7 @@ import com.khahnm04.ecommerce.dto.request.filter.VariantFilterRequest;
 import com.khahnm04.ecommerce.dto.request.VariantRequest;
 import com.khahnm04.ecommerce.dto.response.PageResponse;
 import com.khahnm04.ecommerce.dto.response.VariantResponse;
-import com.khahnm04.ecommerce.entity.User;
+import com.khahnm04.ecommerce.entity.Employee;
 import com.khahnm04.ecommerce.entity.Variant;
 import com.khahnm04.ecommerce.exception.AppException;
 import com.khahnm04.ecommerce.exception.ErrorCode;
@@ -145,7 +145,7 @@ public class VariantServiceImpl implements VariantService {
 
         switch (action) {
             case "SOFT_DELETE" -> {
-                User currentAuditor = auditorAwareConfig.getCurrentAuditorReference();
+                Employee currentAuditor = auditorAwareConfig.getCurrentAuditorReference();
                 variantRepository.softDeleteByIds(LocalDateTime.now(), currentAuditor, variantIds);
                 log.info("Bulk soft-delete variants ids: {}", variantIds);
             }

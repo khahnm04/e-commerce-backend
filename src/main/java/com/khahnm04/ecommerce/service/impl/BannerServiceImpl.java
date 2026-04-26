@@ -10,7 +10,7 @@ import com.khahnm04.ecommerce.dto.request.BannerRequest;
 import com.khahnm04.ecommerce.dto.response.PageResponse;
 import com.khahnm04.ecommerce.dto.response.BannerResponse;
 import com.khahnm04.ecommerce.entity.Banner;
-import com.khahnm04.ecommerce.entity.User;
+import com.khahnm04.ecommerce.entity.Employee;
 import com.khahnm04.ecommerce.exception.AppException;
 import com.khahnm04.ecommerce.exception.ErrorCode;
 import com.khahnm04.ecommerce.mapper.BannerMapper;
@@ -142,7 +142,7 @@ public class BannerServiceImpl implements BannerService {
                 log.info("Bulk update status {} banners ids: {}", action, bannerIds);
             }
             case "SOFT_DELETE" -> {
-                User currentAuditor = auditorAwareConfig.getCurrentAuditorReference();
+                Employee currentAuditor = auditorAwareConfig.getCurrentAuditorReference();
                 bannerRepository.softDeleteByIds(LocalDateTime.now(), currentAuditor, bannerIds);
                 log.info("Bulk soft-delete banners ids: {}", bannerIds);
             }

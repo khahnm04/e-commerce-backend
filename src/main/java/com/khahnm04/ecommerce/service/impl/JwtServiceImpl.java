@@ -1,6 +1,6 @@
 package com.khahnm04.ecommerce.service.impl;
 
-import com.khahnm04.ecommerce.entity.User;
+import com.khahnm04.ecommerce.common.enums.UserType;
 import com.khahnm04.ecommerce.dto.response.TokenPayload;
 import com.khahnm04.ecommerce.exception.AppException;
 import com.khahnm04.ecommerce.exception.ErrorCode;
@@ -15,13 +15,10 @@ import com.nimbusds.jwt.SignedJWT;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 import java.text.ParseException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
-import java.util.StringJoiner;
 import java.util.UUID;
 
 @Slf4j
@@ -42,10 +39,9 @@ public class JwtServiceImpl implements JwtService {
     }
 
     @Override
-    public TokenPayload generateToken(User user, boolean rememberMe) {
+    public TokenPayload generateToken(Long userId, String subject, String scope, UserType userType, boolean rememberMe) {
         JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
 
-        String subject = StringUtils.hasText(user.getPhoneNumber()) ? user.getPhoneNumber() : user.getEmail();
         Date issueTime = new Date();
         Date expiredTime = new Date(Instant.now()
                 .plus(rememberMe
@@ -59,8 +55,9 @@ public class JwtServiceImpl implements JwtService {
                 .issueTime(issueTime)
                 .expirationTime(expiredTime)
                 .jwtID(jwtId)
-                .claim("userId", user.getId())
-                .claim("scope", buildScope(user));
+                .claim("userId", userId)
+                .claim("userType", userType.name())
+                .claim("scope", scope);
 
         JWTClaimsSet jwtClaimsSet = claimsBuilder.build();
 
@@ -80,20 +77,6 @@ public class JwtServiceImpl implements JwtService {
                 .token(token)
                 .expiredTime(expiredTime)
                 .build();
-    }
-
-    private String buildScope(User user) {
-        StringJoiner scope = new StringJoiner(" ");
-        if (!CollectionUtils.isEmpty(user.getRoles())) {
-            user.getRoles().forEach(role -> {
-                scope.add("ROLE_" + role.getCode());
-                if (!CollectionUtils.isEmpty(role.getPermissions())) {
-                    role.getPermissions()
-                            .forEach(permission -> scope.add(permission.getCode()));
-                }
-            });
-        }
-        return scope.toString();
     }
 
     private SignedJWT verifyToken(String token) {

@@ -1,7 +1,7 @@
 package com.khahnm04.ecommerce.repository;
 
 import com.khahnm04.ecommerce.entity.Attribute;
-import com.khahnm04.ecommerce.entity.User;
+import com.khahnm04.ecommerce.entity.Employee;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
@@ -27,8 +27,8 @@ public interface AttributeRepository extends JpaRepository<Attribute, Long>, Jpa
     Set<Attribute> findAllDeletedByIds(@Param("ids") Set<Long> ids);
 
     @Modifying
-    @Query("UPDATE Attribute a SET a.deletedAt = :now, a.deletedBy = :user WHERE a.id IN :ids AND a.deletedAt IS NULL")
-    void softDeleteByIds(@Param("now") LocalDateTime now, @Param("user") User user, @Param("ids") Set<Long> ids);
+    @Query("UPDATE Attribute a SET a.deletedAt = :now, a.deletedBy = :employee WHERE a.id IN :ids AND a.deletedAt IS NULL")
+    void softDeleteByIds(@Param("now") LocalDateTime now, @Param("employee") Employee employee, @Param("ids") Set<Long> ids);
 
     @Modifying
     @Query("UPDATE Attribute a SET a.deletedAt = NULL, a.deletedBy = NULL WHERE a.id IN :ids AND a.deletedAt IS NOT NULL")

@@ -1,7 +1,7 @@
 package com.khahnm04.ecommerce.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.khahnm04.ecommerce.common.enums.UserStatus;
+import com.khahnm04.ecommerce.common.enums.EmployeeStatus;
 import com.khahnm04.ecommerce.common.enums.Gender;
 import lombok.Builder;
 import java.io.Serializable;
@@ -14,7 +14,6 @@ import java.util.Set;
 public record EmployeeResponse(
 
     Long id,
-    Long userId,
     String code,
     String fullName,
     String email,
@@ -23,7 +22,7 @@ public record EmployeeResponse(
     LocalDate dateOfBirth,
     Gender gender,
     String avatar,
-    UserStatus status,
+    EmployeeStatus status,
     Set<String> roles,
     Set<String> permissions,
     LocalDateTime createdAt,

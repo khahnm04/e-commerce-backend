@@ -1,7 +1,7 @@
 package com.khahnm04.ecommerce.dto.request.filter;
 
 import com.khahnm04.ecommerce.common.enums.Gender;
-import com.khahnm04.ecommerce.common.enums.UserStatus;
+import com.khahnm04.ecommerce.common.enums.CustomerStatus;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.Builder;
@@ -22,7 +22,7 @@ public record CustomerFilterRequest(
     String sort,
     String keyword,
     Long creatorId,
-    UserStatus status,
+    CustomerStatus status,
     Gender gender,
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")

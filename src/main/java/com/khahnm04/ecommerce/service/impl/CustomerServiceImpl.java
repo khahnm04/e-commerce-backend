@@ -1,5 +1,7 @@
 package com.khahnm04.ecommerce.service.impl;
 
+import com.khahnm04.ecommerce.common.util.SecurityUtils;
+import com.khahnm04.ecommerce.common.util.SortUtils;
 import com.khahnm04.ecommerce.config.AuditorAwareConfig;
 import com.khahnm04.ecommerce.dto.request.CustomerProfileUpdateRequest;
 import com.khahnm04.ecommerce.dto.response.PageResponse;
@@ -10,11 +12,11 @@ import com.khahnm04.ecommerce.dto.request.filter.CustomerFilterRequest;
 import com.khahnm04.ecommerce.dto.request.CustomerUpdateRequest;
 import com.khahnm04.ecommerce.exception.AppException;
 import com.khahnm04.ecommerce.exception.ErrorCode;
-import com.khahnm04.ecommerce.entity.User;
-import com.khahnm04.ecommerce.common.enums.UserStatus;
-import com.khahnm04.ecommerce.service.UserService;
-import com.khahnm04.ecommerce.dto.response.CustomerResponse;
+import com.khahnm04.ecommerce.entity.Employee;
 import com.khahnm04.ecommerce.entity.Customer;
+import com.khahnm04.ecommerce.common.enums.CustomerStatus;
+import com.khahnm04.ecommerce.common.enums.Gender;
+import com.khahnm04.ecommerce.dto.response.CustomerResponse;
 import com.khahnm04.ecommerce.specification.CustomerSpecification;
 import com.khahnm04.ecommerce.mapper.CustomerMapper;
 import com.khahnm04.ecommerce.repository.CustomerRepository;
@@ -27,8 +29,10 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
@@ -43,15 +47,14 @@ public class CustomerServiceImpl implements CustomerService {
     private final CustomerRepository customerRepository;
     private final OrderRepository orderRepository;
     private final CustomerMapper customerMapper;
-    private final UserService userService;
+    private final PasswordEncoder passwordEncoder;
     private final AuditorAwareConfig auditorAwareConfig;
 
     @Override
     public CustomerResponse getProfile() {
-        User currentUser = auditorAwareConfig.getCurrentAuditor()
-                .orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED));
+        Long customerId = SecurityUtils.getAuthenticatedUserId();
 
-        Customer customer = customerRepository.findByUserId(currentUser.getId())
+        Customer customer = customerRepository.findByIdAndDeletedAtIsNull(customerId)
                 .orElseThrow(() -> new AppException(ErrorCode.CUSTOMER_NOT_FOUND));
 
         return customerMapper.toResponse(customer);
@@ -63,11 +66,18 @@ public class CustomerServiceImpl implements CustomerService {
         if (!Objects.equals(request.password(), request.confirmPassword())) {
             throw new AppException(ErrorCode.PASSWORD_CONFIRMATION_MISMATCH);
         }
-
-        User user = userService.createUser(customerMapper.toUserCreationRequest(request));
+        if (customerRepository.existsByPhoneNumber(request.phoneNumber())) {
+            throw new AppException(ErrorCode.PHONE_NUMBER_EXISTED);
+        }
+        if (StringUtils.hasText(request.email()) && customerRepository.existsByEmail(request.email())) {
+            throw new AppException(ErrorCode.EMAIL_EXISTED);
+        }
 
         Customer newCustomer = customerMapper.toCustomer(request);
-        newCustomer.setUser(user);
+        newCustomer.setPassword(passwordEncoder.encode(request.password()));
+        newCustomer.setStatus(request.status() == null ? CustomerStatus.ACTIVE : request.status());
+        newCustomer.setGender(request.gender() == null ? Gender.OTHER : request.gender());
+
         Customer savedCustomer = customerRepository.save(newCustomer);
 
         log.info("Created new customer with id: {}", savedCustomer.getId());
@@ -103,7 +113,14 @@ public class CustomerServiceImpl implements CustomerService {
     public CustomerResponse updateCustomer(Long id, CustomerUpdateRequest request) {
         Customer customer = this.getCustomerById(id);
 
-        userService.updateUser(customer.getUser().getId(), customerMapper.toUserUpdateRequest(request));
+        if (StringUtils.hasText(request.phoneNumber())
+                && customerRepository.existsByPhoneNumberAndIdNot(request.phoneNumber(), id)) {
+            throw new AppException(ErrorCode.PHONE_NUMBER_EXISTED);
+        }
+        if (StringUtils.hasText(request.email()) &&
+                customerRepository.existsByEmailAndIdNot(request.email(), id)) {
+            throw new AppException(ErrorCode.EMAIL_EXISTED);
+        }
 
         customerMapper.updateCustomer(customer, request);
         customerRepository.save(customer);
@@ -115,15 +132,21 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     @Transactional
     public CustomerResponse updateProfile(CustomerProfileUpdateRequest request) {
-        User currentUser = auditorAwareConfig.getCurrentAuditor()
-                .orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED));
+        Long customerId = SecurityUtils.getAuthenticatedUserId();
 
-        Customer customer = customerRepository.findByUserId(currentUser.getId())
+        Customer customer = customerRepository.findByIdAndDeletedAtIsNull(customerId)
                 .orElseThrow(() -> new AppException(ErrorCode.CUSTOMER_NOT_FOUND));
 
-        userService.updateUser(customer.getUser().getId(), customerMapper.toUserUpdateRequest(request));
+        if (StringUtils.hasText(request.phoneNumber())
+                && customerRepository.existsByPhoneNumberAndIdNot(request.phoneNumber(), customer.getId())) {
+            throw new AppException(ErrorCode.PHONE_NUMBER_EXISTED);
+        }
+        if (StringUtils.hasText(request.email()) &&
+                customerRepository.existsByEmailAndIdNot(request.email(), customer.getId())) {
+            throw new AppException(ErrorCode.EMAIL_EXISTED);
+        }
 
-        customerMapper.updateCustomer(customer, request);
+        customerMapper.updateCustomerProfile(customer, request);
         customerRepository.save(customer);
 
         log.info("Updated profile for customer with id: {}", customer.getId());
@@ -185,15 +208,11 @@ public class CustomerServiceImpl implements CustomerService {
 
         switch (action) {
             case "ACTIVE", "INACTIVE", "BANNED", "LOCKED" -> {
-                Set<Long> existingUserIds = customerRepository.findAllById(customerIds)
-                        .stream()
-                        .map(customer -> customer.getUser().getId())
-                        .collect(Collectors.toSet());
-                userService.bulkUpdateStatus(existingUserIds, UserStatus.valueOf(action));
+                customerRepository.updateStatusByIds(CustomerStatus.valueOf(action), customerIds);
                 log.info("Bulk update status {} customers ids: {}", action, customerIds);
             }
             case "SOFT_DELETE" -> {
-                User currentAuditor = auditorAwareConfig.getCurrentAuditorReference();
+                Employee currentAuditor = auditorAwareConfig.getCurrentAuditorReference();
                 customerRepository.softDeleteByIds(LocalDateTime.now(), currentAuditor, customerIds);
                 log.info("Bulk soft-delete customers ids: {}", customerIds);
             }
@@ -222,8 +241,7 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     private PageResponse<CustomerResponse> getAllWithFilterAndSearch(CustomerFilterRequest request, boolean isDeleted) {
-        Pageable pageable = PageRequest.of(request.page() - 1, request.size(),
-                CustomerSpecification.getSort(request.sort()));
+        Pageable pageable = PageRequest.of(request.page() - 1, request.size(), SortUtils.parseSort(request.sort()));
 
         Specification<Customer> spec = CustomerSpecification.buildSpecification(request, isDeleted);
         Page<CustomerProjection> page = customerRepository
@@ -232,14 +250,13 @@ public class CustomerServiceImpl implements CustomerService {
         List<CustomerResponse> content = page.getContent().stream()
                 .map(proj -> CustomerResponse.builder()
                         .id(proj.getId())
-                        .userId(proj.getUserId())
                         .fullName(proj.getFullName())
                         .email(proj.getEmail())
                         .phoneNumber(proj.getPhoneNumber())
                         .dateOfBirth(proj.getDateOfBirth())
                         .gender(proj.getGender())
                         .avatar(proj.getAvatar())
-                        .status(proj.getUserStatus())
+                        .status(proj.getStatus())
                         .lastLoginAt(proj.getLastLoginAt())
                         .createdAt(proj.getCreatedAt())
                         .createdBy(proj.getCreatedByFullName())

@@ -11,7 +11,7 @@ import com.khahnm04.ecommerce.dto.request.NewsRequest;
 import com.khahnm04.ecommerce.dto.response.PageResponse;
 import com.khahnm04.ecommerce.dto.response.NewsResponse;
 import com.khahnm04.ecommerce.entity.News;
-import com.khahnm04.ecommerce.entity.User;
+import com.khahnm04.ecommerce.entity.Employee;
 import com.khahnm04.ecommerce.exception.AppException;
 import com.khahnm04.ecommerce.exception.ErrorCode;
 import com.khahnm04.ecommerce.mapper.NewsMapper;
@@ -183,7 +183,7 @@ public class NewsServiceImpl implements NewsService {
                 log.info("Bulk update status {} news ids: {}", action, newsIds);
             }
             case "SOFT_DELETE" -> {
-                User currentAuditor = auditorAwareConfig.getCurrentAuditorReference();
+                Employee currentAuditor = auditorAwareConfig.getCurrentAuditorReference();
                 newsRepository.softDeleteByIds(LocalDateTime.now(), currentAuditor, newsIds);
                 log.info("Bulk soft-delete news ids: {}", newsIds);
             }

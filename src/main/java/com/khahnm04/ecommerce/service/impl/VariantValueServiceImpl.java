@@ -8,7 +8,7 @@ import com.khahnm04.ecommerce.dto.request.filter.VariantValueFilterRequest;
 import com.khahnm04.ecommerce.dto.request.VariantValueRequest;
 import com.khahnm04.ecommerce.dto.response.PageResponse;
 import com.khahnm04.ecommerce.dto.response.VariantValueResponse;
-import com.khahnm04.ecommerce.entity.User;
+import com.khahnm04.ecommerce.entity.Employee;
 import com.khahnm04.ecommerce.entity.Variant;
 import com.khahnm04.ecommerce.entity.VariantValue;
 import com.khahnm04.ecommerce.exception.AppException;
@@ -164,7 +164,7 @@ public class VariantValueServiceImpl implements VariantValueService {
 
         switch (action) {
             case "SOFT_DELETE" -> {
-                User currentAuditor = auditorAwareConfig.getCurrentAuditorReference();
+                Employee currentAuditor = auditorAwareConfig.getCurrentAuditorReference();
                 variantValueRepository.softDeleteByIds(LocalDateTime.now(), currentAuditor, variantValueIds);
                 log.info("Bulk soft-delete variant values ids: {}", variantValueIds);
             }

@@ -39,7 +39,7 @@ public abstract class BaseEntity<T> implements Serializable {
         updatable = false,
         foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT)
     )
-    private User createdBy;
+    private Employee createdBy;
 
     @UpdateTimestamp
     @Column(name = "updated_at")
@@ -51,7 +51,7 @@ public abstract class BaseEntity<T> implements Serializable {
         name = "updated_by",
         foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT)
     )
-    private User updatedBy;
+    private Employee updatedBy;
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
@@ -61,6 +61,6 @@ public abstract class BaseEntity<T> implements Serializable {
         name = "deleted_by",
         foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT)
     )
-    private User deletedBy;
+    private Employee deletedBy;
 
 }

@@ -9,7 +9,7 @@ import com.khahnm04.ecommerce.dto.request.filter.CategoryFilterRequest;
 import com.khahnm04.ecommerce.dto.request.CategoryRequest;
 import com.khahnm04.ecommerce.dto.response.PageResponse;
 import com.khahnm04.ecommerce.dto.response.CategoryResponse;
-import com.khahnm04.ecommerce.entity.User;
+import com.khahnm04.ecommerce.entity.Employee;
 import com.khahnm04.ecommerce.entity.Category;
 import com.khahnm04.ecommerce.exception.AppException;
 import com.khahnm04.ecommerce.exception.ErrorCode;
@@ -203,7 +203,7 @@ public class CategoryServiceImpl implements CategoryService {
                 log.info("Bulk update status {} categories ids: {}", action, categoryIds);
             }
             case "SOFT_DELETE" -> {
-                User currentAuditor = auditorAwareConfig.getCurrentAuditorReference();
+                Employee currentAuditor = auditorAwareConfig.getCurrentAuditorReference();
                 categoryRepository.softDeleteByIds(LocalDateTime.now(), currentAuditor, categoryIds);
                 log.info("Bulk soft-delete categories ids: {}", categoryIds);
             }

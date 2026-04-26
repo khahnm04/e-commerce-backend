@@ -2,7 +2,7 @@ package com.khahnm04.ecommerce.repository;
 
 import com.khahnm04.ecommerce.common.enums.CategoryStatus;
 import com.khahnm04.ecommerce.entity.Category;
-import com.khahnm04.ecommerce.entity.User;
+import com.khahnm04.ecommerce.entity.Employee;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
@@ -44,8 +44,8 @@ public interface CategoryRepository extends JpaRepository<Category, Long>, JpaSp
     Set<Category> findAllDeletedByIds(@Param("ids") Set<Long> ids);
 
     @Modifying
-    @Query("UPDATE Category c SET c.deletedAt = :now, c.deletedBy = :user WHERE c.id IN :ids AND c.deletedAt IS NULL")
-    void softDeleteByIds(@Param("now") LocalDateTime now, @Param("user") User user, @Param("ids") Set<Long> ids);
+    @Query("UPDATE Category c SET c.deletedAt = :now, c.deletedBy = :employee WHERE c.id IN :ids AND c.deletedAt IS NULL")
+    void softDeleteByIds(@Param("now") LocalDateTime now, @Param("employee") Employee employee, @Param("ids") Set<Long> ids);
 
     @Modifying
     @Query("UPDATE Category c SET c.deletedAt = NULL, c.deletedBy = NULL WHERE c.id IN :ids AND c.deletedAt IS NOT NULL")

@@ -10,11 +10,11 @@ import com.khahnm04.ecommerce.dto.projection.RoleProjection;
 import com.khahnm04.ecommerce.dto.response.RoleResponse;
 import com.khahnm04.ecommerce.entity.Permission;
 import com.khahnm04.ecommerce.entity.Role;
-import com.khahnm04.ecommerce.entity.User;
+import com.khahnm04.ecommerce.entity.Employee;
 import com.khahnm04.ecommerce.exception.AppException;
 import com.khahnm04.ecommerce.exception.ErrorCode;
 import com.khahnm04.ecommerce.mapper.RoleMapper;
-import com.khahnm04.ecommerce.repository.UserRepository;
+import com.khahnm04.ecommerce.repository.EmployeeRepository;
 import com.khahnm04.ecommerce.specification.RoleSpecification;
 import com.khahnm04.ecommerce.repository.PermissionRepository;
 import com.khahnm04.ecommerce.repository.RoleRepository;
@@ -38,7 +38,7 @@ import java.util.stream.Collectors;
 public class RoleServiceImpl implements RoleService {
 
     private final RoleRepository roleRepository;
-    private final UserRepository userRepository;
+    private final EmployeeRepository employeeRepository;
     private final PermissionRepository permissionRepository;
     private final RoleMapper roleMapper;
     private final AuditorAwareConfig auditorAwareConfig;
@@ -113,7 +113,7 @@ public class RoleServiceImpl implements RoleService {
             log.warn("Role with id {} is already deleted", id);
             return;
         }
-        if (userRepository.existsByRoles_Id(role.getId())) {
+        if (employeeRepository.existsByRoles_Id(role.getId())) {
             throw new AppException(ErrorCode.ROLE_HAS_USERS);
         }
         roleRepository.delete(role);
@@ -146,7 +146,7 @@ public class RoleServiceImpl implements RoleService {
 
         switch (action) {
             case "SOFT_DELETE" -> {
-                User currentAuditor = auditorAwareConfig.getCurrentAuditorReference();
+                Employee currentAuditor = auditorAwareConfig.getCurrentAuditorReference();
                 roleRepository.softDeleteByIds(LocalDateTime.now(), currentAuditor, roleIds);
                 log.info("Bulk soft-delete roles ids: {}", roleIds);
             }
@@ -155,7 +155,7 @@ public class RoleServiceImpl implements RoleService {
                 log.info("Bulk restored roles with IDs: {}", roleIds);
             }
             case "DELETE" -> {
-                if (userRepository.existsByRoles_IdIn(roleIds)) {
+                if (employeeRepository.existsByRoles_IdIn(roleIds)) {
                     throw new AppException(ErrorCode.ROLE_HAS_USERS);
                 }
                 List<Role> roles = roleRepository.findAllDeletedByIds(roleIds);

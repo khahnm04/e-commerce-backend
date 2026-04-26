@@ -21,7 +21,7 @@ public interface OrderProjection {
     String getShippingAddressDetail();
     String getNote();
 
-    @Value("#{target.customer.user.fullName}")
+    @Value("#{target.customer.fullName}")
     String getCustomerFullName();
 
     LocalDateTime getExpectedDeliveryDate();
