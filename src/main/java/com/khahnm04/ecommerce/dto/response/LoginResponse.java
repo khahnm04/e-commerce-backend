@@ -15,7 +15,8 @@ public record LoginResponse(
     String avatar,
     String jobTitle,
     String userType,
-    String token
+    String token,
+    Boolean isEmailVerified
 
 ) implements Serializable {
 }

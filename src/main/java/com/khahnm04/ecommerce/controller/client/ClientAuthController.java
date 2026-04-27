@@ -4,6 +4,8 @@ import com.khahnm04.ecommerce.dto.request.ChangePasswordRequest;
 import com.khahnm04.ecommerce.dto.request.LoginRequest;
 import com.khahnm04.ecommerce.dto.request.RegisterRequest;
 import com.khahnm04.ecommerce.dto.request.ResetPasswordRequest;
+import com.khahnm04.ecommerce.dto.request.SendOtpRequest;
+import com.khahnm04.ecommerce.dto.request.VerifyOtpRequest;
 import com.khahnm04.ecommerce.dto.response.ApiResponse;
 import com.khahnm04.ecommerce.dto.response.IntrospectResponse;
 import com.khahnm04.ecommerce.dto.response.LoginResponse;
@@ -85,6 +87,26 @@ public class ClientAuthController {
         return ApiResponse.<IntrospectResponse>builder()
                 .data(authService.introspect(token))
                 .message("Introspect successfully")
+                .build();
+    }
+
+    @PostMapping("/send-otp")
+    public ApiResponse<Void> sendOtp(
+            @Valid @RequestBody SendOtpRequest request
+    ) {
+        authService.sendOtp(request);
+        return ApiResponse.<Void>builder()
+                .message("OTP sent successfully")
+                .build();
+    }
+
+    @PostMapping("/verify-otp")
+    public ApiResponse<Void> verifyOtp(
+            @Valid @RequestBody VerifyOtpRequest request
+    ) {
+        authService.verifyOtp(request);
+        return ApiResponse.<Void>builder()
+                .message("Email verified successfully")
                 .build();
     }
 

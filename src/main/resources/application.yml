@@ -71,3 +71,11 @@ jwt:
   signerKey: "${SIGNER_KEY}"
   token-expiration: 86400        # 1 ngày
   token-remember-expiration: 2592000  # 30 ngày
+
+notification:
+  email:
+    brevo-url: ${BREVO_URL}
+    brevo-apikey: ${BREVO_API_KEY}
+    sender-name: ${MAIL_SENDER_NAME:Entry Ecommerce}
+    sender-email: ${MAIL_SENDER_EMAIL:khanhnguyenminh1811@gmail.com}
+    otp-subject: ${MAIL_OTP_SUBJECT:Xác thực email - Entry Ecommerce}

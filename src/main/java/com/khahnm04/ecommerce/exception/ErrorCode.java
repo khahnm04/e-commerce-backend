@@ -28,6 +28,11 @@ public enum ErrorCode {
         REFRESH_TOKEN_FAILED(1002, "Refresh token failed", HttpStatus.UNAUTHORIZED),
         TOKEN_CREATION_FAILED(1003, "Token creation failed", HttpStatus.INTERNAL_SERVER_ERROR),
         LOGIN_IDENTIFIER_REQUIRED(1004, "Missing login identifier", HttpStatus.BAD_REQUEST),
+        OTP_EXPIRED(1005, "OTP has expired or was not generated", HttpStatus.BAD_REQUEST),
+        OTP_INVALID(1006, "Incorrect OTP code", HttpStatus.BAD_REQUEST),
+        OTP_MAX_ATTEMPTS(1007, "Too many failed OTP attempts", HttpStatus.TOO_MANY_REQUESTS),
+        EMAIL_ALREADY_VERIFIED(1008, "Email is already verified", HttpStatus.BAD_REQUEST),
+        EMAIL_REQUIRED_FOR_OTP(1009, "Email is required to send OTP", HttpStatus.BAD_REQUEST),
 
         ROLE_CODE_REQUIRED(1100, "Role code cannot be blank", HttpStatus.BAD_REQUEST),
         ROLE_NAME_REQUIRED(1101, "Role name cannot be blank", HttpStatus.BAD_REQUEST),
