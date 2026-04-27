@@ -17,7 +17,6 @@ public class SettingWebsiteController {
 
     private final SettingWebsiteService settingWebsiteService;
 
-    // 2. get all
     @GetMapping
     public ApiResponse<SettingWebsiteResponse> getSetting() {
         return ApiResponse.<SettingWebsiteResponse>builder()

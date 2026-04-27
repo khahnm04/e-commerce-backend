@@ -25,6 +25,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import com.khahnm04.ecommerce.security.oauth2.HttpCookieOAuth2AuthorizationRequestRepository;
 import com.khahnm04.ecommerce.security.oauth2.OAuth2AuthenticationSuccessHandler;
 import com.khahnm04.ecommerce.security.oauth2.OAuth2AuthenticationFailureHandler;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -47,10 +48,11 @@ public class SecurityConfig {
             "/api/v1/auth/client/forgot-password/verify-otp",
             "/api/v1/auth/client/forgot-password/reset",
             "/api/v1/customers"
-    };    
+    };
     
     private static final String[] CLIENT_PUBLIC_GET_ENDPOINTS = {
             "/api/v1/upload/signature",
+            "/api/v1/setting-websites",
             "/oauth2/**",
             "/login/oauth2/code/**"
     };
@@ -156,7 +158,11 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.addAllowedOrigin("http://localhost:3000");
+        configuration.setAllowedOrigins(List.of(
+                "http://localhost:3000",
+                "http://localhost:3001",
+                "http://localhost:3002"
+        ));
         configuration.addAllowedMethod("*");
         configuration.addAllowedHeader("*");
         configuration.setAllowCredentials(true);
