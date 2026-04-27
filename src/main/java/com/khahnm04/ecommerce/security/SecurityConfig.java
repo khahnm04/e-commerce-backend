@@ -44,6 +44,8 @@ public class SecurityConfig {
             "/api/v1/auth/client/introspect",
             "/api/v1/auth/client/send-otp",
             "/api/v1/auth/client/verify-otp",
+            "/api/v1/auth/client/forgot-password/verify-otp",
+            "/api/v1/auth/client/forgot-password/reset",
             "/api/v1/customers"
     };    
     

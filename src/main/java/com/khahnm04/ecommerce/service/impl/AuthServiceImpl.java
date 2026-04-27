@@ -1,29 +1,14 @@
 package com.khahnm04.ecommerce.service.impl;
 
 import com.khahnm04.ecommerce.common.enums.UserType;
-import com.khahnm04.ecommerce.dto.response.IntrospectResponse;
-import com.khahnm04.ecommerce.entity.Customer;
-import com.khahnm04.ecommerce.entity.Employee;
-import com.khahnm04.ecommerce.entity.OtpVerification;
-import com.khahnm04.ecommerce.repository.CustomerRepository;
-import com.khahnm04.ecommerce.repository.EmployeeRepository;
-import com.khahnm04.ecommerce.repository.OtpVerificationRepository;
+import com.khahnm04.ecommerce.dto.request.*;
+import com.khahnm04.ecommerce.dto.response.*;
+import com.khahnm04.ecommerce.entity.*;
+import com.khahnm04.ecommerce.repository.*;
 import com.khahnm04.ecommerce.common.constant.TokenConstants;
 import com.khahnm04.ecommerce.security.CookieProperties;
-import com.khahnm04.ecommerce.dto.request.ChangePasswordRequest;
-import com.khahnm04.ecommerce.dto.request.LoginRequest;
-import com.khahnm04.ecommerce.dto.request.ResetPasswordRequest;
-import com.khahnm04.ecommerce.dto.request.SendOtpRequest;
-import com.khahnm04.ecommerce.dto.request.VerifyOtpRequest;
-import com.khahnm04.ecommerce.dto.response.LoginResponse;
-import com.khahnm04.ecommerce.dto.request.RegisterRequest;
-import com.khahnm04.ecommerce.dto.response.RegisterResponse;
-import com.khahnm04.ecommerce.dto.response.TokenPayload;
-import com.khahnm04.ecommerce.dto.request.CustomerCreationRequest;
-import com.khahnm04.ecommerce.entity.RedisToken;
 import com.khahnm04.ecommerce.exception.AppException;
 import com.khahnm04.ecommerce.exception.ErrorCode;
-import com.khahnm04.ecommerce.repository.RedisTokenRepository;
 import com.khahnm04.ecommerce.security.JwtProperties;
 import com.khahnm04.ecommerce.service.AuthService;
 import com.khahnm04.ecommerce.service.CustomerService;
@@ -47,6 +32,7 @@ import java.security.SecureRandom;
 import java.text.ParseException;
 import java.time.LocalDateTime;
 import java.util.StringJoiner;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -55,6 +41,7 @@ public class AuthServiceImpl implements AuthService {
 
     private final RedisTokenRepository redisTokenRepository;
     private final OtpVerificationRepository otpVerificationRepository;
+    private final ForgotPasswordTokenRepository forgotPasswordTokenRepository;
     private final EmployeeRepository employeeRepository;
     private final CustomerRepository customerRepository;
     private final JwtService jwtService;
@@ -69,7 +56,6 @@ public class AuthServiceImpl implements AuthService {
 
     @Qualifier("clientAuthManager")
     private final AuthenticationManager clientAuthManager;
-
 
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
     private static final int OTP_MAX_ATTEMPTS = 5;
@@ -289,12 +275,8 @@ public class AuthServiceImpl implements AuthService {
     public void sendOtp(SendOtpRequest request) {
         String email = request.email();
 
-        Customer customer = customerRepository.findByEmail(email)
+        customerRepository.findByEmail(email)
                 .orElseThrow(() -> new AppException(ErrorCode.CUSTOMER_NOT_FOUND));
-
-        if (Boolean.TRUE.equals(customer.getIsEmailVerified())) {
-            throw new AppException(ErrorCode.EMAIL_ALREADY_VERIFIED);
-        }
 
         String otp = generateOtp();
 
@@ -314,8 +296,65 @@ public class AuthServiceImpl implements AuthService {
     @Transactional
     public void verifyOtp(VerifyOtpRequest request) {
         String email = request.email();
-        String otp = request.otp();
+        validateOtp(email, request.otp());
 
+        Customer customer = customerRepository.findByEmail(email)
+                .orElseThrow(() -> new AppException(ErrorCode.CUSTOMER_NOT_FOUND));
+        customer.setIsEmailVerified(true);
+        customerRepository.save(customer);
+
+        otpVerificationRepository.deleteById(email);
+        log.info("Email verified successfully for: {}", email);
+    }
+
+    @Override
+    @Transactional
+    public ResetTokenResponse forgotPasswordVerifyOtp(ForgotPasswordVerifyOtpRequest request) {
+        String email = request.email();
+        validateOtp(email, request.otp());
+
+        otpVerificationRepository.deleteById(email);
+
+        String resetToken = UUID.randomUUID().toString();
+        ForgotPasswordToken tokenEntity = ForgotPasswordToken.builder()
+                .email(email)
+                .token(resetToken)
+                .expirationTime(600L) // 10 minutes
+                .build();
+        forgotPasswordTokenRepository.save(tokenEntity);
+
+        log.info("Forgot Password OTP verified for email: {}", email);
+        return ResetTokenResponse.builder().resetToken(resetToken).build();
+    }
+
+    @Override
+    @Transactional
+    public void forgotPasswordReset(ForgotPasswordResetRequest request) {
+        if (!request.newPassword().equals(request.confirmPassword())) {
+            throw new AppException(ErrorCode.PASSWORD_CONFIRMATION_MISMATCH);
+        }
+
+        String email = request.email();
+        ForgotPasswordToken tokenEntity = forgotPasswordTokenRepository.findById(email)
+                .orElseThrow(() -> new AppException(ErrorCode.RESET_TOKEN_INVALID));
+        
+        if (!tokenEntity.getToken().equals(request.resetToken())) {
+            throw new AppException(ErrorCode.RESET_TOKEN_INVALID);
+        }
+
+        Customer customer = customerRepository.findByEmail(email)
+                .orElseThrow(() -> new AppException(ErrorCode.CUSTOMER_NOT_FOUND));
+
+        customer.setPassword(passwordEncoder.encode(request.newPassword()));
+        customerRepository.save(customer);
+        
+        forgotPasswordTokenRepository.deleteById(email);
+        log.info("Password successfully reset for customer: {}", email);
+    }
+
+    // ======================== Private methods ========================
+
+    private void validateOtp(String email, String otp) {
         OtpVerification otpVerification = otpVerificationRepository.findById(email)
                 .orElseThrow(() -> new AppException(ErrorCode.OTP_EXPIRED));
 
@@ -329,17 +368,7 @@ public class AuthServiceImpl implements AuthService {
             otpVerificationRepository.save(otpVerification);
             throw new AppException(ErrorCode.OTP_INVALID);
         }
-
-        Customer customer = customerRepository.findByEmail(email)
-                .orElseThrow(() -> new AppException(ErrorCode.CUSTOMER_NOT_FOUND));
-        customer.setIsEmailVerified(true);
-        customerRepository.save(customer);
-
-        otpVerificationRepository.deleteById(email);
-        log.info("Email verified successfully for: {}", email);
     }
-
-    // ======================== Private methods ========================
 
     private String generateOtp() {
         int otp = 100000 + SECURE_RANDOM.nextInt(900000);

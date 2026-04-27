@@ -6,7 +6,10 @@ import com.khahnm04.ecommerce.dto.request.RegisterRequest;
 import com.khahnm04.ecommerce.dto.request.ResetPasswordRequest;
 import com.khahnm04.ecommerce.dto.request.SendOtpRequest;
 import com.khahnm04.ecommerce.dto.request.VerifyOtpRequest;
+import com.khahnm04.ecommerce.dto.request.ForgotPasswordVerifyOtpRequest;
+import com.khahnm04.ecommerce.dto.request.ForgotPasswordResetRequest;
 import com.khahnm04.ecommerce.dto.response.ApiResponse;
+import com.khahnm04.ecommerce.dto.response.ResetTokenResponse;
 import com.khahnm04.ecommerce.dto.response.IntrospectResponse;
 import com.khahnm04.ecommerce.dto.response.LoginResponse;
 import com.khahnm04.ecommerce.dto.response.RegisterResponse;
@@ -107,6 +110,26 @@ public class ClientAuthController {
         authService.verifyOtp(request);
         return ApiResponse.<Void>builder()
                 .message("Email verified successfully")
+                .build();
+    }
+
+    @PostMapping("/forgot-password/verify-otp")
+    public ApiResponse<ResetTokenResponse> forgotPasswordVerifyOtp(
+            @Valid @RequestBody ForgotPasswordVerifyOtpRequest request
+    ) {
+        return ApiResponse.<ResetTokenResponse>builder()
+                .data(authService.forgotPasswordVerifyOtp(request))
+                .message("OTP verified successfully")
+                .build();
+    }
+
+    @PostMapping("/forgot-password/reset")
+    public ApiResponse<Void> forgotPasswordReset(
+            @Valid @RequestBody ForgotPasswordResetRequest request
+    ) {
+        authService.forgotPasswordReset(request);
+        return ApiResponse.<Void>builder()
+                .message("Password reset successfully")
                 .build();
     }
 

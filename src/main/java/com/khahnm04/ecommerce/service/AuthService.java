@@ -6,6 +6,9 @@ import com.khahnm04.ecommerce.dto.request.ResetPasswordRequest;
 import com.khahnm04.ecommerce.dto.request.RegisterRequest;
 import com.khahnm04.ecommerce.dto.request.SendOtpRequest;
 import com.khahnm04.ecommerce.dto.request.VerifyOtpRequest;
+import com.khahnm04.ecommerce.dto.request.ForgotPasswordVerifyOtpRequest;
+import com.khahnm04.ecommerce.dto.request.ForgotPasswordResetRequest;
+import com.khahnm04.ecommerce.dto.response.ResetTokenResponse;
 import com.khahnm04.ecommerce.dto.response.IntrospectResponse;
 import com.khahnm04.ecommerce.dto.response.LoginResponse;
 import com.khahnm04.ecommerce.dto.response.RegisterResponse;
@@ -34,5 +37,9 @@ public interface AuthService {
     void sendOtp(SendOtpRequest request);
 
     void verifyOtp(VerifyOtpRequest request);
+
+    ResetTokenResponse forgotPasswordVerifyOtp(ForgotPasswordVerifyOtpRequest request);
+
+    void forgotPasswordReset(ForgotPasswordResetRequest request);
 
 }
