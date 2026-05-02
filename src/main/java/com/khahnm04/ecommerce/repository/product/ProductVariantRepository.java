@@ -1,4 +1,4 @@
-package com.khahnm04.ecommerce.repository;
+package com.khahnm04.ecommerce.repository.product;
 
 import com.khahnm04.ecommerce.common.enums.ProductVariantStatus;
 import com.khahnm04.ecommerce.entity.Employee;
@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -22,6 +23,13 @@ public interface ProductVariantRepository
     boolean existsBySku(String sku);
 
     boolean existsBySkuAndIdNot(String sku, Long id);
+
+    List<ProductVariant> findAllByProductIdAndDeletedAtIsNull(Long productId);
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE ProductVariant pv SET pv.deletedAt = :now, pv.deletedBy = :employee WHERE pv.product.id = :productId AND pv.id NOT IN :ids AND pv.deletedAt IS NULL")
+    void softDeleteByProductIdAndIdNotIn(@Param("productId") Long productId, @Param("ids") Set<Long> ids, @Param("now") LocalDateTime now, @Param("employee") Employee employee);
 
     @EntityGraph(attributePaths = { "product" })
     Optional<ProductVariant> findByIdAndDeletedAtIsNull(Long id);

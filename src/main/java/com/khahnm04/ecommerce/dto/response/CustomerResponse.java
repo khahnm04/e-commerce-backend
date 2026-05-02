@@ -7,6 +7,7 @@ import lombok.Builder;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Builder(toBuilder = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -27,7 +28,8 @@ public record CustomerResponse(
         LocalDateTime updatedAt,
         String updatedBy,
         LocalDateTime deletedAt,
-        String deletedBy
+        String deletedBy,
+        List<String> providers
 
 ) implements Serializable {
 }

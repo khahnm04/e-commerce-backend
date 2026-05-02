@@ -1,4 +1,4 @@
-package com.khahnm04.ecommerce.repository;
+package com.khahnm04.ecommerce.repository.user;
 
 import com.khahnm04.ecommerce.entity.Customer;
 import com.khahnm04.ecommerce.entity.Employee;

@@ -25,7 +25,7 @@ public class AdminCategoryController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize("@Perm.hasPermission('category:create')")
+//    @PreAuthorize("@Perm.hasPermission('category:create')")
     public ApiResponse<CategoryResponse> createCategory(
             @Valid @RequestBody CategoryRequest request
     ) {
@@ -36,7 +36,7 @@ public class AdminCategoryController {
     }
 
     @GetMapping("/{identifier}")
-    @PreAuthorize("#deleted ? @Perm.hasPermission('category:delete') : @Perm.hasPermission('category:view')")
+//    @PreAuthorize("#deleted ? @Perm.hasPermission('category:delete') : @Perm.hasPermission('category:view')")
     public ApiResponse<CategoryResponse> getCategoryDetail(
             @PathVariable String identifier,
             @RequestParam(defaultValue = "false") boolean deleted
@@ -48,7 +48,7 @@ public class AdminCategoryController {
     }
 
     @GetMapping
-    @PreAuthorize("@Perm.hasPermission('category:view')")
+//    @PreAuthorize("@Perm.hasPermission('category:view')")
     public ApiResponse<List<CategoryResponse>> getAllCategories(
             @Valid @ModelAttribute CategoryFilterRequest filter
     ) {
@@ -61,7 +61,7 @@ public class AdminCategoryController {
     }
 
     @GetMapping("/deleted")
-    @PreAuthorize("@Perm.hasPermission('category:delete')")
+//    @PreAuthorize("@Perm.hasPermission('category:delete')")
     public ApiResponse<List<CategoryResponse>> getAllDeletedCategories(
             @Valid @ModelAttribute CategoryFilterRequest filter
     ) {
@@ -74,7 +74,7 @@ public class AdminCategoryController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("@Perm.hasPermission('category:update')")
+//    @PreAuthorize("@Perm.hasPermission('category:update')")
     public ApiResponse<CategoryResponse> updateCategory(
             @PathVariable Long id,
             @Valid @RequestBody CategoryRequest request
@@ -86,7 +86,7 @@ public class AdminCategoryController {
     }
 
     @PatchMapping("/{id}/soft-delete")
-    @PreAuthorize("@Perm.hasPermission('category:delete')")
+//    @PreAuthorize("@Perm.hasPermission('category:delete')")
     public ApiResponse<Void> softDeleteCategory(
             @PathVariable Long id
     ) {
@@ -97,7 +97,7 @@ public class AdminCategoryController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("@Perm.hasPermission('category:delete')")
+//    @PreAuthorize("@Perm.hasPermission('category:delete')")
     public ApiResponse<Void> deleteCategory(
             @PathVariable Long id
     ) {
@@ -108,8 +108,8 @@ public class AdminCategoryController {
     }
 
     @PatchMapping("/{id}/restore")
-    @PreAuthorize("@Perm.hasPermission('category:delete')")
-    public ApiResponse<Void> restoreCategory(   
+//    @PreAuthorize("@Perm.hasPermission('category:delete')")
+    public ApiResponse<Void> restoreCategory(
             @PathVariable Long id
     ) {
         categoryService.restoreCategory(id);
@@ -119,7 +119,7 @@ public class AdminCategoryController {
     }
 
     @PatchMapping("/bulk")
-    @PreAuthorize("@Perm.hasPermissionForBulkAction('category', #request.action())")
+//    @PreAuthorize("@Perm.hasPermissionForBulkAction('category', #request.action())")
     public ApiResponse<Void> handleBulkAction(
             @RequestBody BulkActionRequest request
     ) {

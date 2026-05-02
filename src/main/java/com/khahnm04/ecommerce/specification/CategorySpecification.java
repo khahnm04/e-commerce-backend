@@ -20,13 +20,21 @@ public class CategorySpecification {
                 .<Category>withDateRange("createdAt", request.startDate(), request.endDate())
                 .or(BaseSpecification.withDateRange("updatedAt", request.startDate(), request.endDate()));
 
-        return BaseSpecification.<Category>withAuditingFetch()
+        Specification<Category> spec = BaseSpecification.<Category>withAuditingFetch()
                 .and(BaseSpecification.withDeletedStatus(isDeleted))
                 .and(BaseSpecification.withKeyword(request.keyword(), KEYWORD_FIELDS))
                 .and(BaseSpecification.equals("createdBy.id", request.creatorId()))
                 .and(BaseSpecification.equals("status", request.status()))
                 .and(BaseSpecification.equals("parent.id", request.parentId()))
+                .and(BaseSpecification.equals("isFeatured", request.isFeatured()))
+                .and(BaseSpecification.equals("showInMenu", request.showInMenu()))
                 .and(dateSpec);
+
+        if (Boolean.TRUE.equals(request.isRoot())) {
+            spec = spec.and((root, query, cb) -> cb.isNull(root.get("parent")));
+        }
+
+        return spec;
     }
 
 }

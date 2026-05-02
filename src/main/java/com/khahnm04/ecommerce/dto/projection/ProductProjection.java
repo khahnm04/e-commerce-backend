@@ -19,6 +19,8 @@ public interface ProductProjection {
     String getDescription();
     String getShortDescription();
     ProductStatus getStatus();
+    Boolean getIsFeatured();
+    Boolean getIsTrending();
     LocalDateTime getCreatedAt();
     LocalDateTime getUpdatedAt();
     LocalDateTime getDeletedAt();

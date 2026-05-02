@@ -30,4 +30,7 @@ public interface CustomerProjection {
     @Value("#{target.deletedBy != null ? target.deletedBy.fullName : null}")
     String getDeletedByFullName();
 
+    @Value("#{target.userProviders != null ? target.userProviders.stream().map(p -> p.provider.name()).collect(java.util.stream.Collectors.toList()) : null}")
+    java.util.List<String> getProviders();
+
 }

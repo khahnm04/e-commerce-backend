@@ -2,7 +2,7 @@ package com.khahnm04.ecommerce.security;
 
 import com.khahnm04.ecommerce.entity.Employee;
 import com.khahnm04.ecommerce.entity.Permission;
-import com.khahnm04.ecommerce.repository.EmployeeRepository;
+import com.khahnm04.ecommerce.repository.user.EmployeeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;

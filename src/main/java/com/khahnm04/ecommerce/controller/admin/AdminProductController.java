@@ -33,29 +33,6 @@ public class AdminProductController {
 				.build();
 	}
 
-	@GetMapping("/{identifier}")
-	public ApiResponse<ProductResponse> getProductDetail(
-			@PathVariable String identifier,
-			@RequestParam(defaultValue = "false") boolean deleted
-    ) {
-		return ApiResponse.<ProductResponse>builder()
-				.data(productService.getProductDetail(identifier, deleted))
-				.message("Get product detail successfully")
-				.build();
-	}
-
-	@GetMapping
-	public ApiResponse<List<ProductResponse>> getAllProducts(
-			@Valid @ModelAttribute ProductFilterRequest filter
-    ) {
-		PageResponse<ProductResponse> pageResponse = productService.getAllProducts(filter);
-		return ApiResponse.<List<ProductResponse>>builder()
-				.data(pageResponse.data())
-				.meta(pageResponse.meta())
-				.message("Get all products successfully")
-				.build();
-	}
-
 	@GetMapping("/deleted")
 	public ApiResponse<List<ProductResponse>> getAllDeletedProducts(
 			@Valid @ModelAttribute ProductFilterRequest filter

@@ -44,18 +44,6 @@ public class AdminBannerController {
                 .build();
     }
 
-    @GetMapping
-    public ApiResponse<List<BannerResponse>> getAllBanners(
-            @Valid @ModelAttribute BannerFilterRequest filter
-    ) {
-        PageResponse<BannerResponse> pageResponse = bannerService.getAllBanners(filter);
-        return ApiResponse.<List<BannerResponse>>builder()
-                .data(pageResponse.data())
-                .meta(pageResponse.meta())
-                .message("Get all banners successfully")
-                .build();
-    }
-
     @GetMapping("/deleted")
     public ApiResponse<List<BannerResponse>> getAllDeletedBanners(
             @Valid @ModelAttribute BannerFilterRequest filter

@@ -7,7 +7,7 @@ import com.khahnm04.ecommerce.dto.response.AddressResponse;
 import com.khahnm04.ecommerce.entity.Address;
 import com.khahnm04.ecommerce.entity.Customer;
 import com.khahnm04.ecommerce.mapper.AddressMapper;
-import com.khahnm04.ecommerce.repository.AddressRepository;
+import com.khahnm04.ecommerce.repository.user.AddressRepository;
 import com.khahnm04.ecommerce.service.AddressService;
 import com.khahnm04.ecommerce.service.CustomerService;
 import lombok.RequiredArgsConstructor;
@@ -66,6 +66,19 @@ public class AddressServiceImpl implements AddressService {
     @Transactional
     public AddressResponse updateAddress(Long customerId, Long addressId, AddressRequest request) {
         Address address = this.getAddressById(customerId, addressId);
+
+        if (Boolean.TRUE.equals(request.isDefault())) {
+            addressRepository.findByCustomerIdAndIsDefaultTrue(customerId)
+                    .ifPresent(oldDefault -> {
+                        if (!oldDefault.getId().equals(addressId)) {
+                            oldDefault.setIsDefault(false);
+                            addressRepository.save(oldDefault);
+                        }
+                    });
+            address.setIsDefault(true);
+        } else if (Boolean.FALSE.equals(request.isDefault()) && Boolean.TRUE.equals(address.getIsDefault())) {
+            address.setIsDefault(false);
+        }
 
         addressMapper.updateAddress(address, request);
         Address updatedAddress = addressRepository.save(address);

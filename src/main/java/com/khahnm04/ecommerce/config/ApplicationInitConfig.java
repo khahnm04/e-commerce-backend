@@ -2,8 +2,8 @@ package com.khahnm04.ecommerce.config;
 
 import com.khahnm04.ecommerce.entity.Employee;
 import com.khahnm04.ecommerce.entity.Role;
-import com.khahnm04.ecommerce.repository.EmployeeRepository;
-import com.khahnm04.ecommerce.repository.RoleRepository;
+import com.khahnm04.ecommerce.repository.user.EmployeeRepository;
+import com.khahnm04.ecommerce.repository.user.RoleRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationRunner;

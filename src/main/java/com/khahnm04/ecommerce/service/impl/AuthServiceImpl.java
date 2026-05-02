@@ -4,8 +4,12 @@ import com.khahnm04.ecommerce.common.enums.UserType;
 import com.khahnm04.ecommerce.dto.request.*;
 import com.khahnm04.ecommerce.dto.response.*;
 import com.khahnm04.ecommerce.entity.*;
-import com.khahnm04.ecommerce.repository.*;
 import com.khahnm04.ecommerce.common.constant.TokenConstants;
+import com.khahnm04.ecommerce.repository.auth.ForgotPasswordTokenRepository;
+import com.khahnm04.ecommerce.repository.auth.OtpVerificationRepository;
+import com.khahnm04.ecommerce.repository.auth.RedisTokenRepository;
+import com.khahnm04.ecommerce.repository.user.CustomerRepository;
+import com.khahnm04.ecommerce.repository.user.EmployeeRepository;
 import com.khahnm04.ecommerce.security.CookieProperties;
 import com.khahnm04.ecommerce.exception.AppException;
 import com.khahnm04.ecommerce.exception.ErrorCode;
@@ -194,6 +198,10 @@ public class AuthServiceImpl implements AuthService {
             throw new AppException(ErrorCode.PASSWORD_NOT_MATCH);
         }
 
+        if (request.newPassword().equals(request.currentPassword())) {
+            throw new AppException(ErrorCode.NEW_PASSWORD_SAME_AS_OLD);
+        }
+
         if (passwordEncoder.matches(request.newPassword(), employee.getPassword())) {
             throw new AppException(ErrorCode.NEW_PASSWORD_SAME_AS_OLD);
         }
@@ -215,6 +223,10 @@ public class AuthServiceImpl implements AuthService {
 
         if (!passwordEncoder.matches(request.currentPassword(), customer.getPassword())) {
             throw new AppException(ErrorCode.PASSWORD_NOT_MATCH);
+        }
+
+        if (request.newPassword().equals(request.currentPassword())) {
+            throw new AppException(ErrorCode.NEW_PASSWORD_SAME_AS_OLD);
         }
 
         if (passwordEncoder.matches(request.newPassword(), customer.getPassword())) {

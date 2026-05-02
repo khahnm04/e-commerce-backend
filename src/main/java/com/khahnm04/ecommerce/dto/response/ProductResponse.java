@@ -25,9 +25,12 @@ public record ProductResponse(
     String description,
     String shortDescription,
     ProductStatus status,
+    Boolean isFeatured,
+    Boolean isTrending,
     List<ProductCategoryResponse> categories,
     List<ProductAttributeValueResponse> attributes,
     List<ProductImageResponse> images,
+    List<ProductVariantResponse> variants,
     LocalDateTime createdAt,
     String createdBy,
     LocalDateTime updatedAt,
@@ -62,6 +65,31 @@ public record ProductResponse(
         Long productImageId,
         String image,
         Integer position
+    ) implements Serializable {
+    }
+
+    @Builder(toBuilder = true)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public record ProductVariantResponse(
+        Long id,
+        String sku,
+        String name,
+        BigDecimal price,
+        BigDecimal oldPrice,
+        Integer quantity,
+        com.khahnm04.ecommerce.common.enums.ProductVariantStatus status,
+        String image,
+        List<VariantValueResponse> values
+    ) implements Serializable {
+    }
+
+    @Builder(toBuilder = true)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public record VariantValueResponse(
+        Long id,
+        Long variantId,
+        String variantName,
+        String value
     ) implements Serializable {
     }
 

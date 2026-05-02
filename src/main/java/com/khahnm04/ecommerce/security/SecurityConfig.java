@@ -54,7 +54,11 @@ public class SecurityConfig {
             "/api/v1/upload/signature",
             "/api/v1/setting-websites",
             "/oauth2/**",
-            "/login/oauth2/code/**"
+            "/login/oauth2/code/**",
+            "/api/v1/products/**",
+            "/api/v1/banners/**",
+            "/api/v1/categories/**",
+            "/api/v1/addresses/**",
     };
 
     private final JwtDecoderConfig jwtDecoderConfig;

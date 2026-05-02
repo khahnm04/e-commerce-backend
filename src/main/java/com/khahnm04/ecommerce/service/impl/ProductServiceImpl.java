@@ -15,7 +15,9 @@ import com.khahnm04.ecommerce.exception.AppException;
 import com.khahnm04.ecommerce.exception.ErrorCode;
 import com.khahnm04.ecommerce.mapper.ProductMapper;
 import com.khahnm04.ecommerce.repository.*;
+import com.khahnm04.ecommerce.repository.product.*;
 import com.khahnm04.ecommerce.service.BrandService;
+import com.khahnm04.ecommerce.service.InventoryService;
 import com.khahnm04.ecommerce.service.ProductService;
 import com.khahnm04.ecommerce.specification.ProductSpecification;
 import lombok.RequiredArgsConstructor;
@@ -44,7 +46,10 @@ public class ProductServiceImpl implements ProductService {
     private final ProductImageRepository productImageRepository;
     private final AttributeRepository attributeRepository;
     private final CategoryRepository categoryRepository;
+    private final VariantValueRepository variantValueRepository;
+    private final ProductVariantValueRepository productVariantValueRepository;
     private final BrandService brandService;
+    private final InventoryService inventoryService;
     private final ProductMapper productMapper;
     private final AuditorAwareConfig auditorAwareConfig;
 
@@ -70,6 +75,8 @@ public class ProductServiceImpl implements ProductService {
         product.setCode(code);
         product.setBrand(brandService.getBrandById(request.brandId()));
         product.setStatus(request.status() == null ? ProductStatus.ACTIVE : request.status());
+        product.setIsFeatured(request.isFeatured() != null && request.isFeatured());
+        product.setIsTrending(request.isTrending() != null && request.isTrending());
 
         Product savedProduct = productRepository.save(product);
 
@@ -81,6 +88,9 @@ public class ProductServiceImpl implements ProductService {
 
         // Save images
         saveProductImages(savedProduct, request.images());
+
+        // Save variants
+        saveProductVariants(savedProduct, request.variants());
 
         log.info("Created product with id: {}", savedProduct.getId());
         return buildProductDetailResponse(savedProduct);
@@ -152,6 +162,14 @@ public class ProductServiceImpl implements ProductService {
             product.setBrand(brandService.getBrandById(request.brandId()));
         }
 
+        if (request.isFeatured() != null) {
+            product.setIsFeatured(request.isFeatured());
+        }
+
+        if (request.isTrending() != null) {
+            product.setIsTrending(request.isTrending());
+        }
+
         Product savedProduct = productRepository.save(product);
 
         // Merge categories
@@ -167,6 +185,11 @@ public class ProductServiceImpl implements ProductService {
         // Merge images
         if (request.images() != null) {
             mergeProductImages(savedProduct, request.images());
+        }
+
+        // Merge variants
+        if (request.variants() != null) {
+            mergeProductVariants(savedProduct, request.variants());
         }
 
         log.info("Updated product with id: {}", savedProduct.getId());
@@ -298,6 +321,8 @@ public class ProductServiceImpl implements ProductService {
                         .description(proj.getDescription())
                         .shortDescription(proj.getShortDescription())
                         .status(proj.getStatus())
+                        .isFeatured(proj.getIsFeatured())
+                        .isTrending(proj.getIsTrending())
                         .createdAt(proj.getCreatedAt())
                         .createdBy(proj.getCreatedByFullName())
                         .updatedAt(proj.getUpdatedAt())
@@ -358,6 +383,7 @@ public class ProductServiceImpl implements ProductService {
                 .categories(categories)
                 .attributes(attributes)
                 .images(images)
+                .variants(loadProductVariants(product.getId()))
                 .build();
     }
 
@@ -553,6 +579,152 @@ public class ProductServiceImpl implements ProductService {
         if (!toInsert.isEmpty()) {
             saveProductImages(product, toInsert);
         }
+    }
+
+    private void saveProductVariants(Product product, List<ProductRequest.ProductVariantRequest> variantRequests) {
+        if (variantRequests == null || variantRequests.isEmpty()) {
+            return;
+        }
+
+        for (ProductRequest.ProductVariantRequest req : variantRequests) {
+            ProductVariant variant = ProductVariant.builder()
+                    .product(product)
+                    .sku(req.sku())
+                    .name(req.name())
+                    .price(req.price())
+                    .oldPrice(req.oldPrice())
+                    .image(req.image())
+                    .status(req.status() != null ? req.status() : com.khahnm04.ecommerce.common.enums.ProductVariantStatus.ACTIVE)
+                    .build();
+
+            ProductVariant savedVariant = productVariantRepository.save(variant);
+
+            // Initialize inventory
+            inventoryService.initializeStock(savedVariant, req.quantity() != null ? req.quantity() : 0);
+
+            // Save variant values
+            saveProductVariantValues(savedVariant, req.variantValueIds());
+        }
+    }
+
+    private void saveProductVariantValues(ProductVariant variant, List<Long> variantValueIds) {
+        if (variantValueIds == null || variantValueIds.isEmpty()) {
+            return;
+        }
+
+        List<VariantValue> values = variantValueRepository.findAllById(variantValueIds);
+        if (values.size() != variantValueIds.size()) {
+            throw new AppException(ErrorCode.VARIANT_VALUE_NOT_FOUND);
+        }
+
+        List<ProductVariantValue> productVariantValues = values.stream()
+                .map(vv -> ProductVariantValue.builder()
+                        .productVariant(variant)
+                        .variantValue(vv)
+                        .build())
+                .toList();
+
+        productVariantValueRepository.saveAll(productVariantValues);
+    }
+
+    private void mergeProductVariants(Product product, List<ProductRequest.ProductVariantRequest> incomingVariants) {
+        Long productId = product.getId();
+
+        if (incomingVariants == null || incomingVariants.isEmpty()) {
+            // Soft delete all variants
+            Set<Long> allIds = productVariantRepository.findAllByProductIdAndDeletedAtIsNull(productId)
+                    .stream().map(ProductVariant::getId).collect(Collectors.toSet());
+            if (!allIds.isEmpty()) {
+                productVariantRepository.softDeleteByIds(LocalDateTime.now(), auditorAwareConfig.getCurrentAuditorReference(), allIds);
+            }
+            return;
+        }
+
+        // Separate incoming into existing (has id) vs new (no id)
+        List<ProductRequest.ProductVariantRequest> toUpdate = incomingVariants.stream()
+                .filter(req -> req.id() != null)
+                .toList();
+
+        List<ProductRequest.ProductVariantRequest> toInsert = incomingVariants.stream()
+                .filter(req -> req.id() == null)
+                .toList();
+
+        // Collect IDs to keep
+        Set<Long> idsToKeep = toUpdate.stream()
+                .map(ProductRequest.ProductVariantRequest::id)
+                .collect(Collectors.toSet());
+
+        // Soft delete variants not in idsToKeep
+        productVariantRepository.softDeleteByProductIdAndIdNotIn(productId, idsToKeep, LocalDateTime.now(), auditorAwareConfig.getCurrentAuditorReference());
+
+        // Update existing records
+        if (!toUpdate.isEmpty()) {
+            Map<Long, ProductVariant> existingMap = productVariantRepository.findAllById(idsToKeep)
+                    .stream()
+                    .collect(Collectors.toMap(ProductVariant::getId, pv -> pv));
+
+            for (ProductRequest.ProductVariantRequest req : toUpdate) {
+                ProductVariant existing = existingMap.get(req.id());
+                if (existing != null) {
+                    existing.setSku(req.sku());
+                    existing.setName(req.name());
+                    existing.setPrice(req.price());
+                    existing.setOldPrice(req.oldPrice());
+                    existing.setImage(req.image());
+                    if (req.quantity() != null) {
+                        inventoryService.updateStock(existing.getId(), req.quantity());
+                    }
+                    if (req.status() != null) {
+                        existing.setStatus(req.status());
+                    }
+                    // Update variant values (re-create for simplicity or merge)
+                    productVariantValueRepository.deleteAllByProductVariantId(existing.getId());
+                    saveProductVariantValues(existing, req.variantValueIds());
+                }
+            }
+            productVariantRepository.saveAll(existingMap.values());
+        }
+
+        // Insert new records
+        if (!toInsert.isEmpty()) {
+            saveProductVariants(product, toInsert);
+        }
+    }
+
+    private List<ProductResponse.ProductVariantResponse> loadProductVariants(Long productId) {
+        List<ProductVariant> variants = productVariantRepository.findAllByProductIdAndDeletedAtIsNull(productId);
+        if (variants.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        Set<Long> variantIds = variants.stream().map(ProductVariant::getId).collect(Collectors.toSet());
+        Map<Long, List<ProductResponse.VariantValueResponse>> valuesMap = productVariantValueRepository
+                .findAllByProductVariantIdInWithVariantValue(variantIds)
+                .stream()
+                .collect(Collectors.groupingBy(
+                        pvv -> pvv.getProductVariant().getId(),
+                        Collectors.mapping(pvv -> ProductResponse.VariantValueResponse.builder()
+                                .id(pvv.getVariantValue().getId())
+                                .variantId(pvv.getVariantValue().getVariant().getId())
+                                .variantName(pvv.getVariantValue().getVariant().getName())
+                                .value(pvv.getVariantValue().getValue())
+                                .build(), Collectors.toList())));
+
+        Map<Long, Integer> quantityMap = inventoryService.getQuantitiesByVariantIds(variantIds);
+
+        return variants.stream()
+                .map(pv -> ProductResponse.ProductVariantResponse.builder()
+                        .id(pv.getId())
+                        .sku(pv.getSku())
+                        .name(pv.getName())
+                        .price(pv.getPrice())
+                        .oldPrice(pv.getOldPrice())
+                        .quantity(quantityMap.getOrDefault(pv.getId(), 0))
+                        .status(pv.getStatus())
+                        .image(pv.getImage())
+                        .values(valuesMap.getOrDefault(pv.getId(), Collections.emptyList()))
+                        .build())
+                .toList();
     }
 
 }

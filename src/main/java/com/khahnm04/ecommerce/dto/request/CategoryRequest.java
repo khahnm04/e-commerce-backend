@@ -16,6 +16,7 @@ public record CategoryRequest(
     String thumbnail,
     String icon,
     Boolean isFeatured,
+    Boolean showInMenu,
     Integer position,
     Long parentId,
     CategoryStatus status

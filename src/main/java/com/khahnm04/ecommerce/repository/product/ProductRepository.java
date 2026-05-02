@@ -1,4 +1,4 @@
-package com.khahnm04.ecommerce.repository;
+package com.khahnm04.ecommerce.repository.product;
 
 import com.khahnm04.ecommerce.common.enums.ProductStatus;
 import com.khahnm04.ecommerce.entity.Employee;

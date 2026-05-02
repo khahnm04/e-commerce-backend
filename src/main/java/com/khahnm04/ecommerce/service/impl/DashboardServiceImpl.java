@@ -2,7 +2,7 @@ package com.khahnm04.ecommerce.service.impl;
 
 import com.khahnm04.ecommerce.common.enums.OrderStatus;
 import com.khahnm04.ecommerce.dto.response.DashboardSummaryResponse;
-import com.khahnm04.ecommerce.repository.CustomerRepository;
+import com.khahnm04.ecommerce.repository.user.CustomerRepository;
 import com.khahnm04.ecommerce.repository.OrderRepository;
 import com.khahnm04.ecommerce.service.DashboardService;
 import lombok.RequiredArgsConstructor;

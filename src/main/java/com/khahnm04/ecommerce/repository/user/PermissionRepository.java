@@ -1,4 +1,4 @@
-package com.khahnm04.ecommerce.repository;
+package com.khahnm04.ecommerce.repository.user;
 
 import com.khahnm04.ecommerce.entity.Permission;
 import org.springframework.data.jpa.repository.JpaRepository;

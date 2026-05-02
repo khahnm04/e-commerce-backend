@@ -1,4 +1,4 @@
-package com.khahnm04.ecommerce.repository;
+package com.khahnm04.ecommerce.repository.auth;
 
 import com.khahnm04.ecommerce.entity.OtpVerification;
 import org.springframework.data.repository.CrudRepository;

@@ -1,5 +1,6 @@
 package com.khahnm04.ecommerce.controller.client;
 
+import com.khahnm04.ecommerce.common.util.SecurityUtils;
 import com.khahnm04.ecommerce.dto.request.OrderCreationRequest;
 import com.khahnm04.ecommerce.dto.request.filter.OrderFilterRequest;
 import com.khahnm04.ecommerce.dto.response.ApiResponse;
@@ -15,7 +16,7 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping("${api.prefix}/customers/{customerId}/orders")
+@RequestMapping("${api.prefix}/orders")
 @RequiredArgsConstructor
 public class OrderController {
 
@@ -24,9 +25,9 @@ public class OrderController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ApiResponse<OrderResponse> createOrder(
-            @PathVariable Long customerId,
             @Valid @RequestBody OrderCreationRequest request
     ) {
+        Long customerId = SecurityUtils.getAuthenticatedUserId();
         log.info("Creating order for customer: {}", customerId);
         return ApiResponse.<OrderResponse>builder()
                 .data(orderService.createOrder(customerId, request))
@@ -36,9 +37,9 @@ public class OrderController {
 
     @GetMapping
     public ApiResponse<List<OrderResponse>> getCustomerOrders(
-            @PathVariable Long customerId,
             @Valid @ModelAttribute OrderFilterRequest filter
     ) {
+        Long customerId = SecurityUtils.getAuthenticatedUserId();
         log.info("Fetching orders for customer: {}", customerId);
         PageResponse<OrderResponse> pageResponse = orderService.findAllByCustomerId(customerId, filter);
         return ApiResponse.<List<OrderResponse>>builder()
@@ -50,9 +51,9 @@ public class OrderController {
 
     @GetMapping("/{id}")
     public ApiResponse<OrderResponse> getCustomerOrderDetail(
-            @PathVariable Long customerId,
             @PathVariable Long id
     ) {
+        Long customerId = SecurityUtils.getAuthenticatedUserId();
         log.info("Fetching order detail {} for customer: {}", id, customerId);
         return ApiResponse.<OrderResponse>builder()
                 .data(orderService.getByCustomerIdAndId(customerId, id))

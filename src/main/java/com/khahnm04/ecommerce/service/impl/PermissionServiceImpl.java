@@ -2,7 +2,7 @@ package com.khahnm04.ecommerce.service.impl;
 
 import com.khahnm04.ecommerce.dto.response.PermissionResponse;
 import com.khahnm04.ecommerce.entity.Permission;
-import com.khahnm04.ecommerce.repository.PermissionRepository;
+import com.khahnm04.ecommerce.repository.user.PermissionRepository;
 import com.khahnm04.ecommerce.service.PermissionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

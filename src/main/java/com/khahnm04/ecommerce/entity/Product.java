@@ -53,4 +53,12 @@ public class Product extends BaseEntity<Long> {
     @Column(name = "status")
     private ProductStatus status = ProductStatus.ACTIVE;
 
+    @Builder.Default
+    @Column(name = "is_featured")
+    private Boolean isFeatured = false;
+
+    @Builder.Default
+    @Column(name = "is_trending")
+    private Boolean isTrending = false;
+
 }

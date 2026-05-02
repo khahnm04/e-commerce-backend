@@ -27,6 +27,8 @@ public class ProductSpecification {
                 .and(BaseSpecification.equals("status", request.status()))
                 .and(BaseSpecification.equals("brand.id", request.brandId()))
                 .and(BaseSpecification.equals("createdBy.id", request.creatorId()))
+                .and(BaseSpecification.equals("isFeatured", request.isFeatured()))
+                .and(BaseSpecification.equals("isTrending", request.isTrending()))
                 .and(withCategory(request.categoryId()))
                 .and(BaseSpecification.withDateRange("createdAt", request.startDate(), request.endDate()));
     }

@@ -16,7 +16,7 @@ import com.khahnm04.ecommerce.exception.AppException;
 import com.khahnm04.ecommerce.exception.ErrorCode;
 import com.khahnm04.ecommerce.mapper.BrandMapper;
 import com.khahnm04.ecommerce.repository.BrandRepository;
-import com.khahnm04.ecommerce.repository.ProductRepository;
+import com.khahnm04.ecommerce.repository.product.ProductRepository;
 import com.khahnm04.ecommerce.service.BrandService;
 import com.khahnm04.ecommerce.specification.BrandSpecification;
 import lombok.RequiredArgsConstructor;

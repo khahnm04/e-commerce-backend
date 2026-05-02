@@ -16,7 +16,7 @@ import com.khahnm04.ecommerce.exception.ErrorCode;
 import com.khahnm04.ecommerce.mapper.CategoryMapper;
 import com.khahnm04.ecommerce.config.AuditorAwareConfig;
 import com.khahnm04.ecommerce.repository.CategoryRepository;
-import com.khahnm04.ecommerce.repository.ProductCategoryRepository;
+import com.khahnm04.ecommerce.repository.product.ProductCategoryRepository;
 import com.khahnm04.ecommerce.service.CategoryService;
 import com.khahnm04.ecommerce.specification.CategorySpecification;
 import lombok.RequiredArgsConstructor;
@@ -251,6 +251,7 @@ public class CategoryServiceImpl implements CategoryService {
                         .position(proj.getPosition())
                         .icon(proj.getIcon())
                         .isFeatured(proj.getIsFeatured())
+                        .showInMenu(proj.getShowInMenu())
                         .status(proj.getStatus())
                         .parentId(proj.getParentId())
                         .parentName(proj.getParentName())

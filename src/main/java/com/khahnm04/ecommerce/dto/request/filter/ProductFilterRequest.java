@@ -24,6 +24,8 @@ public record ProductFilterRequest (
     ProductStatus status,
     Long brandId,
     Long categoryId,
+    Boolean isFeatured,
+    Boolean isTrending,
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     LocalDate startDate,

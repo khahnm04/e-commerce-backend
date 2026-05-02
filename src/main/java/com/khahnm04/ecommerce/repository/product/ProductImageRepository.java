@@ -1,4 +1,4 @@
-package com.khahnm04.ecommerce.repository;
+package com.khahnm04.ecommerce.repository.product;
 
 import com.khahnm04.ecommerce.entity.ProductImage;
 import org.springframework.data.jpa.repository.JpaRepository;

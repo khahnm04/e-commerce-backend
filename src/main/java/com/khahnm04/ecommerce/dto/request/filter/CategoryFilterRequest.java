@@ -23,6 +23,9 @@ public record CategoryFilterRequest(
     Long creatorId,
     CategoryStatus status,
     Long parentId,
+    Boolean isFeatured,
+    Boolean showInMenu,
+    Boolean isRoot,
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     LocalDate startDate,

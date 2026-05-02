@@ -8,7 +8,7 @@ import com.khahnm04.ecommerce.common.util.CookieUtils;
 import com.khahnm04.ecommerce.dto.response.TokenPayload;
 import com.khahnm04.ecommerce.entity.Customer;
 import com.khahnm04.ecommerce.entity.UserProvider;
-import com.khahnm04.ecommerce.repository.CustomerRepository;
+import com.khahnm04.ecommerce.repository.user.CustomerRepository;
 import com.khahnm04.ecommerce.security.CookieProperties;
 import com.khahnm04.ecommerce.security.JwtProperties;
 import com.khahnm04.ecommerce.service.JwtService;
@@ -59,35 +59,23 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     }
 
     protected String determineTargetUrl(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
-        Optional<String> redirectUri = CookieUtils.getCookie(request, HttpCookieOAuth2AuthorizationRequestRepository.REDIRECT_URI_PARAM_COOKIE_NAME)
-                .map(Cookie::getValue);
-
-        String targetUrl = redirectUri.orElse("http://localhost:3000/oauth2/redirect");
+        String targetUrl = CookieUtils.getCookie(request, HttpCookieOAuth2AuthorizationRequestRepository.REDIRECT_URI_PARAM_COOKIE_NAME)
+                .map(Cookie::getValue)
+                .orElse("http://localhost:3000/oauth2/redirect");
 
         OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
-        String email = oAuth2User.getAttribute("email");
-        String name = oAuth2User.getAttribute("name");
-        String avatar = oAuth2User.getAttribute("picture");
-        String providerId = oAuth2User.getAttribute("sub");
+        String registrationId = request.getRequestURI().contains("github") ? "github" : "google";
 
-        Customer customer = customerRepository.findByIdentifier(email)
-                .orElseGet(() -> registerNewCustomer(email, name, avatar, providerId));
+        OAuth2UserInfo userInfo = OAuth2UserInfo.from(registrationId, oAuth2User);
 
-        if (customer.getUserProviders() == null || customer.getUserProviders().stream().noneMatch(p -> p.getProvider().equals(AuthProvider.GOOGLE))) {
-            if (customer.getUserProviders() == null) {
-                customer.setUserProviders(new HashSet<>());
-            }
-            customer.getUserProviders().add(UserProvider.builder()
-                    .customer(customer)
-                    .provider(AuthProvider.GOOGLE)
-                    .providerId(providerId)
-                    .build());
-            customer = customerRepository.save(customer);
-        }
+        Customer customer = customerRepository.findByIdentifier(userInfo.resolvedEmail())
+                .orElseGet(() -> registerNewCustomer(userInfo));
+
+        linkProviderIfNeeded(customer, userInfo);
 
         TokenPayload token = jwtService.generateToken(
                 customer.getId(),
-                email,
+                userInfo.resolvedEmail(),
                 "ROLE_CUSTOMER",
                 UserType.CUSTOMER,
                 false
@@ -95,16 +83,67 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
         addTokenCookies(response, token.token(), false);
 
-        return UriComponentsBuilder.fromUriString(targetUrl)
-                .build().toUriString();
+        return UriComponentsBuilder.fromUriString(targetUrl).build().toUriString();
     }
 
-    private Customer registerNewCustomer(String email, String name, String avatar, String providerId) {
+    // ======================== OAuth2 User Info ========================
+
+    private record OAuth2UserInfo(AuthProvider provider, String email, String name, String avatar, String providerId) {
+
+        static OAuth2UserInfo from(String registrationId, OAuth2User oAuth2User) {
+            return switch (registrationId) {
+                case "github" -> new OAuth2UserInfo(
+                        AuthProvider.GITHUB,
+                        oAuth2User.getAttribute("email"),
+                        Optional.ofNullable((String) oAuth2User.getAttribute("name"))
+                                .filter(n -> !n.isBlank())
+                                .orElse(oAuth2User.getAttribute("login")),
+                        oAuth2User.getAttribute("avatar_url"),
+                        Optional.ofNullable(oAuth2User.getAttribute("id")).map(String::valueOf).orElse(null)
+                );
+                default -> new OAuth2UserInfo(
+                        AuthProvider.GOOGLE,
+                        oAuth2User.getAttribute("email"),
+                        oAuth2User.getAttribute("name"),
+                        oAuth2User.getAttribute("picture"),
+                        oAuth2User.getAttribute("sub")
+                );
+            };
+        }
+
+        String resolvedEmail() {
+            return (email != null && !email.isBlank())
+                    ? email
+                    : provider.name().toLowerCase() + "_" + providerId + "@placeholder.local";
+        }
+    }
+
+    // ======================== Private methods ========================
+
+    private void linkProviderIfNeeded(Customer customer, OAuth2UserInfo userInfo) {
+        boolean alreadyLinked = customer.getUserProviders() != null
+                && customer.getUserProviders().stream().anyMatch(p -> p.getProvider().equals(userInfo.provider()));
+
+        if (alreadyLinked) return;
+
+        if (customer.getUserProviders() == null) {
+            customer.setUserProviders(new HashSet<>());
+        }
+
+        customer.getUserProviders().add(UserProvider.builder()
+                .customer(customer)
+                .provider(userInfo.provider())
+                .providerId(userInfo.providerId())
+                .build());
+        customerRepository.save(customer);
+    }
+
+    private Customer registerNewCustomer(OAuth2UserInfo userInfo) {
         Customer customer = Customer.builder()
-                .email(email)
-                .fullName(name)
-                .avatar(avatar)
-                .phoneNumber("GG_" + UUID.randomUUID().toString().substring(0, 16))
+                .email(userInfo.resolvedEmail())
+                .fullName(userInfo.name())
+                .avatar(userInfo.avatar())
+                .phoneNumber(userInfo.provider().name() + "_" + UUID.randomUUID().toString().substring(0, 16))
                 .password(passwordEncoder.encode(UUID.randomUUID().toString()))
                 .status(CustomerStatus.ACTIVE)
                 .isEmailVerified(true)
@@ -113,8 +152,8 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
         customer.getUserProviders().add(UserProvider.builder()
                 .customer(customer)
-                .provider(AuthProvider.GOOGLE)
-                .providerId(providerId)
+                .provider(userInfo.provider())
+                .providerId(userInfo.providerId())
                 .build());
 
         return customerRepository.save(customer);

@@ -12,18 +12,19 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import com.khahnm04.ecommerce.common.util.SecurityUtils;
+
 @Slf4j
 @RestController
-@RequestMapping("${api.prefix}/customers/{customerId}/cart")
+@RequestMapping("${api.prefix}/cart")
 @RequiredArgsConstructor
 public class CartController {
 
     private final CartService cartService;
 
     @GetMapping
-    public ApiResponse<CartResponse> getCart(
-            @PathVariable Long customerId
-    ) {
+    public ApiResponse<CartResponse> getCart() {
+        Long customerId = SecurityUtils.getAuthenticatedUserId();
         return ApiResponse.<CartResponse>builder()
                 .data(cartService.getCart(customerId))
                 .message("Get cart successfully")
@@ -33,9 +34,9 @@ public class CartController {
     @PostMapping("/items")
     @ResponseStatus(HttpStatus.CREATED)
     public ApiResponse<CartResponse> addItem(
-            @PathVariable Long customerId,
             @Valid @RequestBody AddCartItemRequest request
     ) {
+        Long customerId = SecurityUtils.getAuthenticatedUserId();
         return ApiResponse.<CartResponse>builder()
                 .data(cartService.addItem(customerId, request))
                 .message("Item added to cart successfully")
@@ -44,10 +45,10 @@ public class CartController {
 
     @PutMapping("/items/{itemId}")
     public ApiResponse<CartResponse> updateItem(
-            @PathVariable Long customerId,
             @PathVariable Long itemId,
             @Valid @RequestBody UpdateCartItemRequest request
     ) {
+        Long customerId = SecurityUtils.getAuthenticatedUserId();
         return ApiResponse.<CartResponse>builder()
                 .data(cartService.updateItem(customerId, itemId, request))
                 .message("Cart item updated successfully")
@@ -56,9 +57,9 @@ public class CartController {
 
     @DeleteMapping("/items/{itemId}")
     public ApiResponse<Void> removeItem(
-            @PathVariable Long customerId,
             @PathVariable Long itemId
     ) {
+        Long customerId = SecurityUtils.getAuthenticatedUserId();
         cartService.removeItem(customerId, itemId);
         return ApiResponse.<Void>builder()
                 .message("Cart item removed successfully")
@@ -67,9 +68,9 @@ public class CartController {
 
     @DeleteMapping("/items")
     public ApiResponse<Void> removeItems(
-            @PathVariable Long customerId,
             @Valid @RequestBody RemoveCartItemsRequest request
     ) {
+        Long customerId = SecurityUtils.getAuthenticatedUserId();
         cartService.removeItems(customerId, request.itemIds());
         return ApiResponse.<Void>builder()
                 .message("Cart items removed successfully")
@@ -77,9 +78,8 @@ public class CartController {
     }
 
     @DeleteMapping
-    public ApiResponse<Void> clearCart(
-            @PathVariable Long customerId
-    ) {
+    public ApiResponse<Void> clearCart() {
+        Long customerId = SecurityUtils.getAuthenticatedUserId();
         cartService.clearCart(customerId);
         return ApiResponse.<Void>builder()
                 .message("Cart cleared successfully")

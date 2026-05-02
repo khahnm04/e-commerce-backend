@@ -19,7 +19,7 @@ import com.khahnm04.ecommerce.common.enums.Gender;
 import com.khahnm04.ecommerce.dto.response.CustomerResponse;
 import com.khahnm04.ecommerce.specification.CustomerSpecification;
 import com.khahnm04.ecommerce.mapper.CustomerMapper;
-import com.khahnm04.ecommerce.repository.CustomerRepository;
+import com.khahnm04.ecommerce.repository.user.CustomerRepository;
 import com.khahnm04.ecommerce.repository.OrderRepository;
 import com.khahnm04.ecommerce.service.CustomerService;
 import lombok.RequiredArgsConstructor;
@@ -57,7 +57,7 @@ public class CustomerServiceImpl implements CustomerService {
         Customer customer = customerRepository.findByIdAndDeletedAtIsNull(customerId)
                 .orElseThrow(() -> new AppException(ErrorCode.CUSTOMER_NOT_FOUND));
 
-        return customerMapper.toResponse(customer);
+        return mapToResponse(customer);
     }
 
     @Override
@@ -81,7 +81,7 @@ public class CustomerServiceImpl implements CustomerService {
         Customer savedCustomer = customerRepository.save(newCustomer);
 
         log.info("Created new customer with id: {}", savedCustomer.getId());
-        return customerMapper.toResponse(savedCustomer);
+        return mapToResponse(savedCustomer);
     }
 
     @Override
@@ -95,7 +95,7 @@ public class CustomerServiceImpl implements CustomerService {
         Customer customer = deleted
                 ? getDeletedCustomerById(id)
                 : getCustomerById(id);
-        return customerMapper.toResponse(customer);
+        return mapToResponse(customer);
     }
 
     @Override
@@ -126,7 +126,7 @@ public class CustomerServiceImpl implements CustomerService {
         customerRepository.save(customer);
 
         log.info("Updated customer with id: {}", id);
-        return customerMapper.toResponse(customer);
+        return mapToResponse(customer);
     }
 
     @Override
@@ -150,7 +150,7 @@ public class CustomerServiceImpl implements CustomerService {
         customerRepository.save(customer);
 
         log.info("Updated profile for customer with id: {}", customer.getId());
-        return customerMapper.toResponse(customer);
+        return mapToResponse(customer);
     }
 
     @Override
@@ -235,6 +235,17 @@ public class CustomerServiceImpl implements CustomerService {
 
     // ======================== Private methods ========================
 
+    private CustomerResponse mapToResponse(Customer customer) {
+        CustomerResponse response = customerMapper.toResponse(customer);
+        if (customer.getUserProviders() != null) {
+            List<String> providers = customer.getUserProviders().stream()
+                    .map(p -> p.getProvider().name())
+                    .collect(Collectors.toList());
+            return response.toBuilder().providers(providers).build();
+        }
+        return response;
+    }
+
     private Customer getDeletedCustomerById(Long id) {
         return customerRepository.findByIdAndDeletedAtIsNotNull(id)
                 .orElseThrow(() -> new AppException(ErrorCode.CUSTOMER_NOT_FOUND));
@@ -264,6 +275,7 @@ public class CustomerServiceImpl implements CustomerService {
                         .updatedBy(proj.getUpdatedByFullName())
                         .deletedAt(proj.getDeletedAt())
                         .deletedBy(proj.getDeletedByFullName())
+                        .providers(proj.getProviders())
                         .build())
                 .collect(Collectors.toList());
 

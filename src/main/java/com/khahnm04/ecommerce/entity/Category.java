@@ -33,6 +33,9 @@ public class Category extends BaseEntity<Long> {
     @Column(name = "is_featured")
     private Boolean isFeatured;
 
+    @Column(name = "show_in_menu")
+    private Boolean showInMenu;
+
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 

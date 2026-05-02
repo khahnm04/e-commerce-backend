@@ -35,6 +35,8 @@ public record ProductRequest(
     String description,
     String shortDescription,
     ProductStatus status,
+    Boolean isFeatured,
+    Boolean isTrending,
 
     @NotEmpty(message = "PRODUCT_CATEGORIES_REQUIRED")
     Set<Long> categories,
@@ -43,9 +45,34 @@ public record ProductRequest(
     List<ProductAttributeValueRequest> attributes,
 
     @NotEmpty(message = "PRODUCT_IMAGES_REQUIRED")
-    List<ProductImageRequest> images
+    List<ProductImageRequest> images,
+
+    List<ProductVariantRequest> variants
 
 ) implements Serializable {
+
+    @Builder
+    public record ProductVariantRequest(
+        Long id,
+
+        @NotBlank(message = "PRODUCT_VARIANT_SKU_REQUIRED")
+        String sku,
+
+        @NotBlank(message = "PRODUCT_VARIANT_NAME_REQUIRED")
+        String name,
+
+        @NotNull(message = "PRODUCT_VARIANT_PRICE_REQUIRED")
+        BigDecimal price,
+
+        BigDecimal oldPrice,
+        Integer quantity,
+        com.khahnm04.ecommerce.common.enums.ProductVariantStatus status,
+        String image,
+
+        @NotEmpty(message = "PRODUCT_VARIANT_VALUES_REQUIRED")
+        List<Long> variantValueIds
+    ) implements Serializable {
+    }
 
     @Builder
     public record ProductAttributeValueRequest(

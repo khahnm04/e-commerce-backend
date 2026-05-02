@@ -19,6 +19,7 @@ public record CategoryResponse(
     String thumbnail,
     String icon,
     Boolean isFeatured,
+    Boolean showInMenu,
     Integer position,
     CategoryStatus status,
     LocalDateTime createdAt,

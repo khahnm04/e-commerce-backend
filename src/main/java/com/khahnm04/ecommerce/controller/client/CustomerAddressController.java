@@ -1,5 +1,6 @@
 package com.khahnm04.ecommerce.controller.client;
 
+import com.khahnm04.ecommerce.common.util.SecurityUtils;
 import com.khahnm04.ecommerce.dto.response.ApiResponse;
 import com.khahnm04.ecommerce.dto.request.AddressRequest;
 import com.khahnm04.ecommerce.dto.response.AddressResponse;
@@ -13,7 +14,7 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping("${api.prefix}/customers/{customerId}/addresses")
+@RequestMapping("${api.prefix}/addresses")
 @RequiredArgsConstructor
 public class CustomerAddressController {
 
@@ -22,9 +23,9 @@ public class CustomerAddressController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ApiResponse<AddressResponse> createAddress(
-            @PathVariable Long customerId,
             @Valid @RequestBody AddressRequest request
     ) {
+        Long customerId = SecurityUtils.getAuthenticatedUserId();
         return ApiResponse.<AddressResponse>builder()
                 .data(addressService.createAddress(customerId, request))
                 .message("Address created successfully")
@@ -33,9 +34,9 @@ public class CustomerAddressController {
 
     @GetMapping("/{id}")
     public ApiResponse<AddressResponse> getAddressDetailById(
-        @PathVariable Long customerId,
         @PathVariable Long id
     ) {
+        Long customerId = SecurityUtils.getAuthenticatedUserId();
         return ApiResponse.<AddressResponse>builder()
             .data(addressService.getAddressDetailById(customerId, id))
             .message("Get address detail successfully")
@@ -44,8 +45,8 @@ public class CustomerAddressController {
 
     @GetMapping
     public ApiResponse<List<AddressResponse>> getAllAddressesByCustomerId(
-            @PathVariable Long customerId
     ) {
+        Long customerId = SecurityUtils.getAuthenticatedUserId();
         return ApiResponse.<List<AddressResponse>>builder()
                 .data(addressService.getAllAddressesByCustomerId(customerId))
                 .message("Get addresses successfully")
@@ -54,10 +55,10 @@ public class CustomerAddressController {
 
     @PutMapping("/{id}")
     public ApiResponse<AddressResponse> updateAddress(
-            @PathVariable Long customerId,
             @PathVariable Long id,
             @Valid @RequestBody AddressRequest request
     ) {
+        Long customerId = SecurityUtils.getAuthenticatedUserId();
         return ApiResponse.<AddressResponse>builder()
                 .data(addressService.updateAddress(customerId, id, request))
                 .message("Address updated successfully")
@@ -66,9 +67,9 @@ public class CustomerAddressController {
 
     @PatchMapping("/{id}/default")
     public ApiResponse<Void> setDefaultAddress(
-            @PathVariable Long customerId,
             @PathVariable Long id
     ) {
+        Long customerId = SecurityUtils.getAuthenticatedUserId();
         addressService.setDefaultAddress(customerId, id);
         return ApiResponse.<Void>builder()
                 .message("Address set as default successfully")
@@ -77,9 +78,9 @@ public class CustomerAddressController {
 
     @DeleteMapping("/{id}")
     public ApiResponse<Void> deleteAddress(
-            @PathVariable Long customerId,
             @PathVariable Long id
     ) {
+        Long customerId = SecurityUtils.getAuthenticatedUserId();
         addressService.deleteAddress(customerId, id);
         return ApiResponse.<Void>builder()
                 .message("Address deleted successfully")

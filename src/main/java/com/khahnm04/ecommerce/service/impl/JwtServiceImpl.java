@@ -4,7 +4,7 @@ import com.khahnm04.ecommerce.common.enums.UserType;
 import com.khahnm04.ecommerce.dto.response.TokenPayload;
 import com.khahnm04.ecommerce.exception.AppException;
 import com.khahnm04.ecommerce.exception.ErrorCode;
-import com.khahnm04.ecommerce.repository.RedisTokenRepository;
+import com.khahnm04.ecommerce.repository.auth.RedisTokenRepository;
 import com.khahnm04.ecommerce.security.JwtProperties;
 import com.khahnm04.ecommerce.service.JwtService;
 import com.nimbusds.jose.*;

@@ -12,6 +12,7 @@ public interface CategoryProjection {
     String getThumbnail();
     String getIcon();
     Boolean getIsFeatured();
+    Boolean getShowInMenu();
     Integer getPosition();
     CategoryStatus getStatus();
     Long getParentId();

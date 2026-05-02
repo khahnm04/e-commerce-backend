@@ -1,4 +1,4 @@
-package com.khahnm04.ecommerce.repository;
+package com.khahnm04.ecommerce.repository.user;
 
 import com.khahnm04.ecommerce.entity.Address;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -26,6 +26,8 @@ public interface AddressRepository extends JpaRepository<Address, Long> {
     @Transactional
     @Query("UPDATE Address a SET a.isDefault = false WHERE a.customer.id = :customerId")
     void clearDefaultAddressByCustomerId(Long customerId);
+    
+    Optional<Address> findByCustomerIdAndIsDefaultTrue(Long customerId);
 
     int countByCustomerId(Long customerId);
 
