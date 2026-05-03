@@ -4,6 +4,7 @@ import com.khahnm04.ecommerce.common.enums.CategoryStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import java.util.List;
 
 @Entity
 @Getter
@@ -17,6 +18,19 @@ public class Category extends BaseEntity<Long> {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id")
     private Category parent;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "brand_id")
+    private Brand brand;
+
+    @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL)
+    private List<Category> children;
+
+    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ProductCategory> productCategories;
+
+    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CategoryFilter> categoryFilters;
 
     @Column(name = "name", nullable = false, unique = true)
     private String name;

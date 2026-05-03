@@ -1,6 +1,7 @@
 package com.khahnm04.ecommerce.dto.request;
 
 import com.khahnm04.ecommerce.common.enums.ProductStatus;
+import com.khahnm04.ecommerce.common.enums.ProductVariantStatus;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -8,6 +9,7 @@ import lombok.Builder;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @Builder
@@ -41,60 +43,12 @@ public record ProductRequest(
     @NotEmpty(message = "PRODUCT_CATEGORIES_REQUIRED")
     Set<Long> categories,
 
-    @NotEmpty(message = "PRODUCT_ATTRIBUTES_REQUIRED")
-    List<ProductAttributeValueRequest> attributes,
+    List<Long> tags,
 
     @NotEmpty(message = "PRODUCT_IMAGES_REQUIRED")
     List<ProductImageRequest> images,
 
-    List<ProductVariantRequest> variants
+    List<ProductVariantRequest> productVariants
 
 ) implements Serializable {
-
-    @Builder
-    public record ProductVariantRequest(
-        Long id,
-
-        @NotBlank(message = "PRODUCT_VARIANT_SKU_REQUIRED")
-        String sku,
-
-        @NotBlank(message = "PRODUCT_VARIANT_NAME_REQUIRED")
-        String name,
-
-        @NotNull(message = "PRODUCT_VARIANT_PRICE_REQUIRED")
-        BigDecimal price,
-
-        BigDecimal oldPrice,
-        Integer quantity,
-        com.khahnm04.ecommerce.common.enums.ProductVariantStatus status,
-        String image,
-
-        @NotEmpty(message = "PRODUCT_VARIANT_VALUES_REQUIRED")
-        List<Long> variantValueIds
-    ) implements Serializable {
-    }
-
-    @Builder
-    public record ProductAttributeValueRequest(
-        Long productAttributeValueId,
-
-        @NotNull(message = "PRODUCT_ATTRIBUTE_ID_REQUIRED")
-        Long attributeId,
-
-        @NotBlank(message = "PRODUCT_ATTRIBUTE_VALUE_REQUIRED")
-        String value
-    ) implements Serializable {
-    }
-
-    @Builder
-    public record ProductImageRequest(
-        Long productImageId,
-
-        @NotBlank(message = "PRODUCT_IMAGE_URL_REQUIRED")
-        String image,
-
-        Integer position
-    ) implements Serializable {
-    }
-
 }

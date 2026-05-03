@@ -10,8 +10,8 @@ import java.time.LocalDateTime;
 public record VariantValueResponse(
 
     Long id,
-    String variant,
     Long variantId,
+    String variantName,
     String value,
     LocalDateTime createdAt,
     String createdBy,
@@ -19,6 +19,6 @@ public record VariantValueResponse(
     String updatedBy,
     LocalDateTime deletedAt,
     String deletedBy
-
+    
 ) implements Serializable {
 }

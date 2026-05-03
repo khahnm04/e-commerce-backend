@@ -4,6 +4,8 @@ import com.khahnm04.ecommerce.common.enums.ProductVariantStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import com.khahnm04.ecommerce.common.converter.JsonConverter;
+import java.util.Map;
 import java.math.BigDecimal;
 
 @Entity
@@ -33,6 +35,10 @@ public class ProductVariant extends BaseEntity<Long> {
 
     @Column(name = "image", length = 500)
     private String image;
+
+    @Convert(converter = JsonConverter.class)
+    @Column(name = "attributes", columnDefinition = "JSON", nullable = false)
+    private Map<String, Object> attributes;
 
     @Builder.Default
     @Enumerated(EnumType.STRING)

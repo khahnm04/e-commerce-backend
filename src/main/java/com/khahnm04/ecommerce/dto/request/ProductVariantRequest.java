@@ -2,17 +2,20 @@ package com.khahnm04.ecommerce.dto.request;
 
 import com.khahnm04.ecommerce.common.enums.ProductVariantStatus;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
+
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.util.Set;
+import java.util.List;
+import java.util.Map;
 
 @Builder
 public record ProductVariantRequest(
+    Long id,
 
-    Long productId,
-
+    @NotBlank(message = "PRODUCT_VARIANT_SKU_REQUIRED")
     String sku,
 
     @NotBlank(message = "PRODUCT_VARIANT_NAME_REQUIRED")
@@ -22,10 +25,12 @@ public record ProductVariantRequest(
     BigDecimal price,
 
     BigDecimal oldPrice,
-    String image,
+    Integer quantity,
     ProductVariantStatus status,
-    Set<Long> variantValues,
-    Integer quantity
+    String image,
+    Map<String, Object> attributes,
 
+    @NotEmpty(message = "PRODUCT_VARIANT_VALUES_REQUIRED")
+    List<Long> variantValueIds
 ) implements Serializable {
 }

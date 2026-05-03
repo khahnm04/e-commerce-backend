@@ -17,7 +17,7 @@ public interface ProductVariantMapper {
     @Mapping(target = "createdBy", source = "createdBy.fullName")
     @Mapping(target = "updatedBy", source = "updatedBy.fullName")
     @Mapping(target = "deletedBy", source = "deletedBy.fullName")
-    @Mapping(target = "variantValues", ignore = true)
+    @Mapping(target = "values", ignore = true)
     ProductVariantResponse toProductVariantResponse(ProductVariant productVariant);
 
     @Mapping(target = "product", ignore = true)

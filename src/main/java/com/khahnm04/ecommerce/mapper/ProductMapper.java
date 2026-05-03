@@ -9,11 +9,13 @@ import org.mapstruct.*;
 public interface ProductMapper {
 
     @Mapping(target = "brand", ignore = true)
+    @Mapping(target = "productVariants", ignore = true)
     Product toProduct(ProductRequest request);
 
     @Mapping(target = "images", ignore = true)
     @Mapping(target = "categories", ignore = true)
-    @Mapping(target = "attributes", ignore = true)
+    @Mapping(target = "tags", ignore = true)
+    @Mapping(target = "productVariants", ignore = true)
     @Mapping(target = "brandId", source = "brand.id")
     @Mapping(target = "brandName", source = "brand.name")
     @Mapping(target = "createdBy", source = "createdBy.fullName")
@@ -22,6 +24,7 @@ public interface ProductMapper {
     ProductResponse toProductResponse(Product product);
 
     @Mapping(target = "brand", ignore = true)
+    @Mapping(target = "productVariants", ignore = true)
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateProduct(@MappingTarget Product product, ProductRequest request);
 

@@ -2,10 +2,12 @@ package com.khahnm04.ecommerce.controller.admin;
 
 import com.khahnm04.ecommerce.dto.request.BulkActionRequest;
 import com.khahnm04.ecommerce.dto.request.filter.ProductFilterRequest;
+import com.khahnm04.ecommerce.dto.request.filter.ProductVariantFilterRequest;
 import com.khahnm04.ecommerce.dto.request.ProductRequest;
 import com.khahnm04.ecommerce.dto.response.ApiResponse;
 import com.khahnm04.ecommerce.dto.response.PageResponse;
 import com.khahnm04.ecommerce.dto.response.ProductResponse;
+import com.khahnm04.ecommerce.dto.response.ProductVariantResponse;
 import com.khahnm04.ecommerce.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -86,14 +88,58 @@ public class AdminProductController {
 				.build();
 	}
 
-	@PatchMapping("/bulk")
-	public ApiResponse<Void> handleBulkAction(
-			@RequestBody BulkActionRequest request
+    @PatchMapping("/bulk")
+    public ApiResponse<Void> handleBulkAction(
+            @RequestBody BulkActionRequest request
     ) {
-		productService.handleBulkAction(request);
-		return ApiResponse.<Void>builder()
-				.message("Bulk action executed successfully")
-				.build();
-	}
+        productService.handleBulkAction(request);
+        return ApiResponse.<Void>builder()
+                .message("Bulk action executed successfully")
+                .build();
+    }
+
+    @GetMapping("/variants")
+    public ApiResponse<List<ProductVariantResponse>> getAllProductVariants(
+            @Valid @ModelAttribute ProductVariantFilterRequest filter
+    ) {
+        PageResponse<ProductVariantResponse> pageResponse = productService.getAllProductVariants(filter);
+        return ApiResponse.<List<ProductVariantResponse>>builder()
+                .data(pageResponse.data())
+                .meta(pageResponse.meta())
+                .message("Get product variants successfully")
+                .build();
+    }
+
+    @GetMapping("/variants/deleted")
+    public ApiResponse<List<ProductVariantResponse>> getAllDeletedProductVariants(
+            @Valid @ModelAttribute ProductVariantFilterRequest filter
+    ) {
+        PageResponse<ProductVariantResponse> pageResponse = productService.getAllDeletedProductVariants(filter);
+        return ApiResponse.<List<ProductVariantResponse>>builder()
+                .data(pageResponse.data())
+                .meta(pageResponse.meta())
+                .message("Get deleted product variants successfully")
+                .build();
+    }
+
+    @PatchMapping("/variants/{id}/soft-delete")
+    public ApiResponse<Void> softDeleteProductVariant(
+            @PathVariable Long id
+    ) {
+        productService.softDeleteProductVariant(id);
+        return ApiResponse.<Void>builder()
+                .message("Product variant soft deleted successfully")
+                .build();
+    }
+
+    @PatchMapping("/variants/{id}/restore")
+    public ApiResponse<Void> restoreProductVariant(
+            @PathVariable Long id
+    ) {
+        productService.restoreProductVariant(id);
+        return ApiResponse.<Void>builder()
+                .message("Product variant restored successfully")
+                .build();
+    }
 
 }

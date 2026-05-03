@@ -10,6 +10,8 @@ public interface InventoryService {
 
     void initializeStock(ProductVariant productVariant, Integer initialQuantity);
 
+    void initializeStocks(Map<ProductVariant, Integer> variantQuantities);
+
     void updateStock(Long productVariantId, Integer quantity);
 
     Integer getQuantityByVariantId(Long productVariantId);

@@ -26,6 +26,8 @@ public interface ProductVariantRepository
 
     List<ProductVariant> findAllByProductIdAndDeletedAtIsNull(Long productId);
 
+    List<ProductVariant> findAllByProductIdInAndDeletedAtIsNull(java.util.Collection<Long> productIds);
+
     @Modifying
     @Transactional
     @Query("UPDATE ProductVariant pv SET pv.deletedAt = :now, pv.deletedBy = :employee WHERE pv.product.id = :productId AND pv.id NOT IN :ids AND pv.deletedAt IS NULL")

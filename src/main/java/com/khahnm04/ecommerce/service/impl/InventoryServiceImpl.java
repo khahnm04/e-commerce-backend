@@ -10,9 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -50,6 +48,33 @@ public class InventoryServiceImpl implements InventoryService {
         inventoryRepository.save(inventory);
         log.info("Initialized inventory for variant ID: {} with quantity: {}", productVariant.getId(),
                 inventory.getQuantity());
+    }
+
+    @Override
+    @Transactional
+    public void initializeStocks(Map<ProductVariant, Integer> variantQuantities) {
+        if (variantQuantities == null || variantQuantities.isEmpty()) {
+            return;
+        }
+
+        Set<Long> variantIds = variantQuantities.keySet().stream()
+                .map(ProductVariant::getId)
+                .collect(Collectors.toSet());
+        Set<Long> existingIds = inventoryRepository.findAllByProductVariantIdIn(variantIds)
+                .stream().map(inv -> inv.getProductVariant().getId()).collect(Collectors.toSet());
+
+        List<Inventory> inventories = variantQuantities.entrySet().stream()
+                .filter(entry -> !existingIds.contains(entry.getKey().getId()))
+                .map(entry -> Inventory.builder()
+                        .productVariant(entry.getKey())
+                        .quantity(entry.getValue() != null ? entry.getValue() : 0)
+                        .build())
+                .collect(Collectors.toList());
+
+        if (!inventories.isEmpty()) {
+            inventoryRepository.saveAll(inventories);
+            log.info("Initialized inventory for {} variants", inventories.size());
+        }
     }
 
     @Override

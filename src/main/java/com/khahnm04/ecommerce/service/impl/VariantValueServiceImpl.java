@@ -203,7 +203,7 @@ public class VariantValueServiceImpl implements VariantValueService {
         List<VariantValueResponse> content = page.getContent().stream()
                 .map(proj -> VariantValueResponse.builder()
                         .id(proj.getId())
-                        .variant(proj.getVariantName())
+                        .variantName(proj.getVariantName())
                         .variantId(proj.getVariantId())
                         .value(proj.getValue())
                         .createdAt(proj.getCreatedAt())

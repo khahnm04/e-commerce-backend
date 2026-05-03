@@ -152,6 +152,7 @@ CREATE TABLE `brands` (
 CREATE TABLE `categories` (
     `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
     `parent_id` BIGINT,
+    `brand_id` BIGINT,
     `name` VARCHAR(255) UNIQUE NOT NULL,
     `slug` VARCHAR(255) UNIQUE NOT NULL,
     `thumbnail` VARCHAR(255),
@@ -161,17 +162,6 @@ CREATE TABLE `categories` (
     `description` TEXT,
     `position` INT DEFAULT 0,
     `status` ENUM ('ACTIVE', 'INACTIVE') DEFAULT 'ACTIVE',
-    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
-    `created_by` BIGINT,
-    `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    `updated_by` BIGINT,
-    `deleted_at` DATETIME,
-    `deleted_by` BIGINT
-);
-
-CREATE TABLE `attributes` (
-    `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
-    `name` VARCHAR(255) NOT NULL,
     `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
     `created_by` BIGINT,
     `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -216,25 +206,79 @@ CREATE TABLE `product_categories` (
     UNIQUE (product_id, category_id)
 );
 
-CREATE TABLE `product_attribute_values` (
-    `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
-    `product_id` BIGINT NOT NULL,
-    `attribute_id` BIGINT NOT NULL,
-    `value` VARCHAR(255) NOT NULL,
-    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
-    `created_by` BIGINT,
-    `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    `updated_by` BIGINT,
-    `deleted_at` DATETIME,
-    `deleted_by` BIGINT,
-    UNIQUE (product_id, attribute_id)
-);
-
 CREATE TABLE `product_images` (
     `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
     `product_id` BIGINT NOT NULL,
     `image` TEXT NOT NULL,
     `position` INT,
+    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+    `created_by` BIGINT,
+    `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    `updated_by` BIGINT,
+    `deleted_at` DATETIME,
+    `deleted_by` BIGINT
+);
+
+CREATE TABLE `tags` (
+    `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
+    `tag_group_id` BIGINT NOT NULL, -- Khóa ngoại trỏ sang tag_groups
+    `name` VARCHAR(255) NOT NULL, -- VD: "144 Hz"
+    `slug` VARCHAR(255) UNIQUE NOT NULL,
+    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+    `created_by` BIGINT,
+    `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    `updated_by` BIGINT,
+    `deleted_at` DATETIME,
+    `deleted_by` BIGINT
+);
+
+CREATE TABLE `tag_groups` (
+    `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
+    `name` VARCHAR(255) NOT NULL, -- VD: "Tần số quét", "Nhu cầu"
+    `slug` VARCHAR(255) UNIQUE NOT NULL, -- VD: "tan-so-quet", "nhu-cau"
+    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+    `created_by` BIGINT,
+    `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    `updated_by` BIGINT,
+    `deleted_at` DATETIME,
+    `deleted_by` BIGINT
+);
+
+CREATE TABLE `product_tags` (
+    `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
+    `product_id` BIGINT NOT NULL,
+    `tag_id` BIGINT NOT NULL,
+    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+    `created_by` BIGINT,
+    `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    `updated_by` BIGINT,
+    `deleted_at` DATETIME,
+    `deleted_by` BIGINT
+);
+
+CREATE TABLE `category_filters` (
+    `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
+    `category_id` BIGINT NOT NULL,
+    `tag_group_id` BIGINT NOT NULL,
+    `sort_order` INT DEFAULT 0,
+    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+    `created_by` BIGINT,
+    `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    `updated_by` BIGINT,
+    `deleted_at` DATETIME,
+    `deleted_by` BIGINT
+);
+
+CREATE TABLE `product_variants` (
+    `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
+    `product_id` BIGINT NOT NULL,
+    `sku` VARCHAR(255) UNIQUE NOT NULL,
+    `name` VARCHAR(255) NOT NULL,
+    `price` DECIMAL(15, 2) NOT NULL,
+    `old_price` DECIMAL(15, 2),
+    `image` VARCHAR(500),
+    `attributes` JSON NOT NULL,
+    `status` ENUM('ACTIVE', 'INACTIVE', 'OUT_OF_STOCK') NOT NULL DEFAULT 'ACTIVE',
     `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
     `created_by` BIGINT,
     `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -265,23 +309,6 @@ CREATE TABLE `variant_values` (
     `deleted_at` DATETIME,
     `deleted_by` BIGINT,
     UNIQUE (`variant_id`, `value`)
-);
-
-CREATE TABLE `product_variants` (
-    `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
-    `product_id` BIGINT NOT NULL,
-    `sku` VARCHAR(255) UNIQUE NOT NULL,
-    `name` VARCHAR(255) NOT NULL,
-    `price` DECIMAL(15, 2) NOT NULL,
-    `old_price` DECIMAL(15, 2),
-    `image` VARCHAR(500),
-    `status` ENUM('ACTIVE', 'INACTIVE', 'OUT_OF_STOCK') NOT NULL DEFAULT 'ACTIVE',
-    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
-    `created_by` BIGINT,
-    `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    `updated_by` BIGINT,
-    `deleted_at` DATETIME,
-    `deleted_by` BIGINT
 );
 
 CREATE TABLE `product_variant_values` (
@@ -508,10 +535,13 @@ ALTER TABLE `addresses` ADD FOREIGN KEY (`customer_id`) REFERENCES `customers` (
 /* ====================== CATALOG ========================= */
 ALTER TABLE `categories` ADD FOREIGN KEY (`parent_id`) REFERENCES `categories` (`id`);
 ALTER TABLE `products` ADD FOREIGN KEY (`brand_id`) REFERENCES `brands` (`id`);
+ALTER TABLE `product_tags` ADD FOREIGN KEY (`product_id`) REFERENCES `products` (`id`);
+ALTER TABLE `product_tags` ADD FOREIGN KEY (`tag_id`) REFERENCES `tags` (`id`);
+ALTER TABLE `tags` ADD FOREIGN KEY (`tag_group_id`) REFERENCES `tag_groups` (`id`);
+ALTER TABLE `category_filters` ADD FOREIGN KEY (`category_id`) REFERENCES `categories` (`id`);
+ALTER TABLE `category_filters` ADD FOREIGN KEY (`tag_group_id`) REFERENCES `tag_groups` (`id`);
 ALTER TABLE `product_categories` ADD FOREIGN KEY (`product_id`) REFERENCES `products` (`id`);
 ALTER TABLE `product_categories` ADD FOREIGN KEY (`category_id`) REFERENCES `categories` (`id`);
-ALTER TABLE `product_attribute_values` ADD FOREIGN KEY (`product_id`) REFERENCES `products` (`id`);
-ALTER TABLE `product_attribute_values` ADD FOREIGN KEY (`attribute_id`) REFERENCES `attributes` (`id`);
 ALTER TABLE `product_images` ADD FOREIGN KEY (`product_id`) REFERENCES `products` (`id`);
 ALTER TABLE `variant_values` ADD FOREIGN KEY (`variant_id`) REFERENCES `variants` (`id`);
 ALTER TABLE `product_variants` ADD FOREIGN KEY (`product_id`) REFERENCES `products` (`id`);
