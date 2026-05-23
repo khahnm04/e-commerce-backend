@@ -1,6 +1,6 @@
 package com.khahnm04.ecommerce.dto.projection;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 public interface RoleProjection {
 
@@ -8,11 +8,11 @@ public interface RoleProjection {
     String getCode();
     String getName();
     String getDescription();
-    LocalDateTime getCreatedAt();
-    String getCreatedByFullName();
-    LocalDateTime getUpdatedAt();
-    String getUpdatedByFullName();
-    LocalDateTime getDeletedAt();
-    String getDeletedByFullName();
+    Instant getCreatedAt();
+    String getCreatedBy();
+    Instant getUpdatedAt();
+    String getUpdatedBy();
+    Instant getDeletedAt();
+    String getDeletedBy();
 
 }

@@ -9,10 +9,10 @@ import java.util.Set;
 @Builder
 public record BulkActionRequest(
 
-    @NotEmpty(message = "Item IDs are required")
+    @NotEmpty(message = "BULK_ACTION_IDS_REQUIRED")
     Set<Long> ids,
 
-    @NotBlank(message = "Action is required")
+    @NotBlank(message = "BULK_ACTION_REQUIRED")
     String action
 
 ) implements Serializable {

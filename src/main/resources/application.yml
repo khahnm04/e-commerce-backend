@@ -1,13 +1,8 @@
 server:
-  port: ${PORT:8080}
+  port: 8080
 
-app:
-  security:
-    cookie:
-      domain: ${COOKIE_DOMAIN:localhost}
-      secure: ${COOKIE_SECURE:false}
-      http-only: true
-      same-site: Lax
+api:
+  prefix: /api/v1 # http://localhost:8080/api/v1
 
 spring:
   config:
@@ -22,9 +17,6 @@ spring:
     hibernate:
       ddl-auto: none
     show-sql: true
-#    properties:
-#      hibernate:
-#        format_sql: true
   flyway:
     enabled: true
     baseline-on-migrate: true
@@ -32,56 +24,26 @@ spring:
     locations: classpath:db/migration
   data:
     redis:
-      host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT:6379}
-  servlet:
-    multipart:
-      max-file-size: 30MB # Tối đa 1 file là 10MB
-      max-request-size: 10MB  # Tổng cả request tối đa 50MB
-  security:
-    oauth2:
-      client:
-        registration:
-          google:
-            client-id: ${GOOGLE_CLIENT_ID}
-            client-secret: ${GOOGLE_CLIENT_SECRET}
-            scope:
-              - email
-              - profile
-          github:
-            client-id: ${GITHUB_CLIENT_ID}
-            client-secret: ${GITHUB_CLIENT_SECRET}
-            scope:
-              - user:email
-              - read:user
+      host: localhost
+      port: 6379
 
-logging:
-  level:
-    org:
-      hibernate:
-        SQL: DEBUG
-        type:
-          descriptor:
-            sql: TRACE
+springdoc:
+  swagger-ui:
+    tags-sorter: alpha
+    operations-sorter: method
 
-api:
-  prefix: /api/v1 # http://localhost:8080/api/v1
-
-# Cloudinary Configuration
-cloudinary:
-  cloud-name: "${CLOUD_NAME}"
-  api-key: "${API_KEY}"
-  api-secret: "${API_SECRET}"
+openapi:
+  service:
+    server-url: http://localhost:8080
+    server-description: Local
+    title: E-Commerce API Documentation
+    description: API documentation for E-Commerce platform
+    version: 1.0.0
+    contact:
+      name: Nguyen Minh Khanh
+      email: support@khahnm04.com
 
 jwt:
-  signerKey: "${SIGNER_KEY}"
-  token-expiration: 86400        # 1 ngày
-  token-remember-expiration: 2592000  # 30 ngày
-
-notification:
-  email:
-    brevo-url: ${BREVO_URL}
-    brevo-apikey: ${BREVO_API_KEY}
-    sender-name: ${MAIL_SENDER_NAME:Entry Ecommerce}
-    sender-email: ${MAIL_SENDER_EMAIL:khanhnguyenminh1811@gmail.com}
-    otp-subject: ${MAIL_OTP_SUBJECT:Xác thực email - Entry Ecommerce}
+  secret-key: ${SECRET_KEY}
+  access-token-expiration: 300
+  refresh-token-expiration: 2592000
