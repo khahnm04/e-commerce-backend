@@ -5,6 +5,7 @@ import com.khahnm04.ecommerce.dto.request.auth.LogoutRequest;
 import com.khahnm04.ecommerce.dto.request.auth.RefreshTokenRequest;
 import com.khahnm04.ecommerce.dto.request.auth.TokenRequest;
 import com.khahnm04.ecommerce.dto.response.auth.AdminLoginResponse;
+import com.khahnm04.ecommerce.dto.response.auth.IntrospectResponse;
 import com.khahnm04.ecommerce.dto.response.auth.RefreshTokenResponse;
 import com.khahnm04.ecommerce.dto.response.auth.TokenResponse;
 import com.khahnm04.ecommerce.dto.response.user.EmployeeResponse;
@@ -150,6 +151,20 @@ public class AdminAuthServiceImpl implements AdminAuthService {
         }
     }
 
+    @Override
+    public IntrospectResponse introspect(String token) {
+        try {
+            jwtService.verifyAccessToken(token);
+            return IntrospectResponse.builder()
+                .valid(true)
+                .build();
+        } catch (AppException e) {
+            return IntrospectResponse.builder()
+                .valid(false)
+                .build();
+        }
+    }
+
     private String buildScope(Employee employee) {
         List<Role> roles = employeeRoleRepository
             .findByEmployeeWithRole(employee)
@@ -161,8 +176,6 @@ public class AdminAuthServiceImpl implements AdminAuthService {
         }
         StringJoiner scope = new StringJoiner(" ");
         roles.forEach(role -> scope.add("ROLE_" + role.getCode()));
-        rolePermissionRepository.findByRoleInWithPermission(roles)
-            .forEach(rp -> scope.add(rp.getPermission().getCode()));
         return scope.toString();
     }
 

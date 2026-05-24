@@ -33,15 +33,15 @@ public class SecurityConfig {
 
     private static final String[] ADMIN_PUBLIC_POST_ENDPOINTS = {
         "/api/v1/admin/auth/login",
-        "/api/v1/admin/auth/refresh",
+        "/api/v1/admin/auth/refresh"
     };
 
     private static final String[] CLIENT_PUBLIC_POST_ENDPOINTS = {
-        "/api/v1/auth/client/login",
+        "/api/v1/auth/client/login"
     };
 
     private static final String[] CLIENT_PUBLIC_GET_ENDPOINTS = {
-        "/api/v1/upload/signature",
+        "/api/v1/upload/signature"
     };
 
     private final JwtDecoderConfig jwtDecoderConfig;

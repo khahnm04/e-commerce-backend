@@ -5,12 +5,15 @@ import com.khahnm04.ecommerce.dto.request.auth.LogoutRequest;
 import com.khahnm04.ecommerce.dto.request.auth.RefreshTokenRequest;
 import com.khahnm04.ecommerce.dto.response.ApiResponse;
 import com.khahnm04.ecommerce.dto.response.auth.AdminLoginResponse;
+import com.khahnm04.ecommerce.dto.response.auth.IntrospectResponse;
 import com.khahnm04.ecommerce.dto.response.auth.RefreshTokenResponse;
 import com.khahnm04.ecommerce.service.auth.AdminAuthService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -38,7 +41,7 @@ public class AdminAuthController {
 
     @PostMapping("/logout")
     public ApiResponse<Void> logout(
-        LogoutRequest request
+        @Valid @RequestBody LogoutRequest request
     ) {
         log.info("Employee logout");
         adminAuthService.logout(request);
@@ -55,6 +58,17 @@ public class AdminAuthController {
         return ApiResponse.<RefreshTokenResponse>builder()
             .data(adminAuthService.refreshToken(request))
             .message("Refresh token successfully")
+            .build();
+    }
+
+    @PostMapping("/introspect")
+    ApiResponse<IntrospectResponse> introspect(
+        @AuthenticationPrincipal Jwt jwt
+    ) {
+        log.info("Introspect access token");
+        String accessToken = jwt.getTokenValue();
+        return ApiResponse.<IntrospectResponse>builder()
+            .data(adminAuthService.introspect(accessToken))
             .build();
     }
 
