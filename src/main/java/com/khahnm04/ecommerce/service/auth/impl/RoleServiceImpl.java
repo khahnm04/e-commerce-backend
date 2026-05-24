@@ -4,7 +4,7 @@ import com.khahnm04.ecommerce.dto.request.BulkActionRequest;
 import com.khahnm04.ecommerce.dto.response.auth.PermissionResponse;
 import com.khahnm04.ecommerce.util.SecurityUtil;
 import com.khahnm04.ecommerce.util.SortUtil;
-import com.khahnm04.ecommerce.dto.filter.RoleFilterRequest;
+import com.khahnm04.ecommerce.dto.request.filter.RoleFilterRequest;
 import com.khahnm04.ecommerce.dto.projection.RoleProjection;
 import com.khahnm04.ecommerce.dto.request.auth.RoleRequest;
 import com.khahnm04.ecommerce.dto.response.auth.RoleResponse;

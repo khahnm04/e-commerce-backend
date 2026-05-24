@@ -1,6 +1,6 @@
 package com.khahnm04.ecommerce.service.user.impl;
 
-import com.khahnm04.ecommerce.dto.filter.EmployeeFilterRequest;
+import com.khahnm04.ecommerce.dto.request.filter.EmployeeFilterRequest;
 import com.khahnm04.ecommerce.dto.request.BulkActionRequest;
 import com.khahnm04.ecommerce.dto.request.user.EmployeeRequest;
 import com.khahnm04.ecommerce.dto.response.user.EmployeeResponse;
@@ -15,7 +15,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 
 @Slf4j(topic = "EMPLOYEE-SERVICE")

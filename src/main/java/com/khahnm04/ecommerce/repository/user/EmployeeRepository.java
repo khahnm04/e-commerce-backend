@@ -60,4 +60,15 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long>, JpaSp
     """)
     List<String> findPermissionCodesByEmail(@Param("email") String email);
 
+    @Query("""
+        SELECT COUNT(er) > 0
+        FROM EmployeeRole er
+        WHERE er.employee.email = :email
+        AND er.role.code = 'ADMIN'
+        AND er.employee.deletedAt IS NULL
+        AND er.deletedAt IS NULL
+    """)
+    boolean isSuperAdmin(@Param("email") String email);
+
+
 }

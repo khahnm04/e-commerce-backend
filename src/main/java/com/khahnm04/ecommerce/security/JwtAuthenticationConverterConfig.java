@@ -1,7 +1,9 @@
 package com.khahnm04.ecommerce.security;
 
+import com.khahnm04.ecommerce.repository.auth.PermissionRepository;
 import com.khahnm04.ecommerce.repository.user.EmployeeRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
@@ -15,13 +17,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+@Slf4j(topic = "JWT-AUTHENTICATION-CONVERTER-CONFIG")
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationConverterConfig implements Converter<Jwt, AbstractAuthenticationToken> {
 
     private final EmployeeRepository employeeRepository;
+    private final PermissionRepository permissionRepository;
 
-    // Tạo 1 lần duy nhất khi class được khởi tạo
     private final JwtGrantedAuthoritiesConverter defaultAuthoritiesConverter = createDefaultConverter();
     private static JwtGrantedAuthoritiesConverter createDefaultConverter() {
         JwtGrantedAuthoritiesConverter converter = new JwtGrantedAuthoritiesConverter();
@@ -31,19 +34,22 @@ public class JwtAuthenticationConverterConfig implements Converter<Jwt, Abstract
 
     @Override
     public AbstractAuthenticationToken convert(@NonNull Jwt jwt) {
-        // 1. Dùng lại object đã tạo sẵn ở trên
         Collection<GrantedAuthority> defaultAuthorities = defaultAuthoritiesConverter.convert(jwt);
 
-        // 2. Lấy email từ subject của JWT
         String email = jwt.getSubject();
+        List<String> permissions;
+        if (employeeRepository.isSuperAdmin(email)) {
+            permissions = permissionRepository.findAllPermissionCodes();
+            log.info("SUPER_ADMIN detected [{}], granted all {} permissions", email, permissions.size());
+        } else {
+            permissions = employeeRepository.findPermissionCodesByEmail(email);
+            log.info("Employee [{}] loaded {} permissions", email, permissions.size());
+        }
 
-        // 3. Query danh sách quyền (permissions) từ Database
-        List<String> permissions = employeeRepository.findPermissionCodesByEmail(email);
-
-        // 4. Gộp lại
         List<GrantedAuthority> combinedAuthorities = new ArrayList<>(defaultAuthorities);
         permissions.forEach(p -> combinedAuthorities.add(new SimpleGrantedAuthority(p)));
 
         return new JwtAuthenticationToken(jwt, combinedAuthorities);
     }
+
 }

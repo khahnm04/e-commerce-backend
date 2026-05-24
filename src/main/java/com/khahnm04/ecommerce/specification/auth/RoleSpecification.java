@@ -1,6 +1,6 @@
 package com.khahnm04.ecommerce.specification.auth;
 
-import com.khahnm04.ecommerce.dto.filter.RoleFilterRequest;
+import com.khahnm04.ecommerce.dto.request.filter.RoleFilterRequest;
 import com.khahnm04.ecommerce.entity.auth.Role;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;

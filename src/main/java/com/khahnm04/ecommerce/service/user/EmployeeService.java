@@ -1,6 +1,6 @@
 package com.khahnm04.ecommerce.service.user;
 
-import com.khahnm04.ecommerce.dto.filter.EmployeeFilterRequest;
+import com.khahnm04.ecommerce.dto.request.filter.EmployeeFilterRequest;
 import com.khahnm04.ecommerce.dto.request.BulkActionRequest;
 import com.khahnm04.ecommerce.dto.request.user.EmployeeRequest;
 import com.khahnm04.ecommerce.dto.response.user.EmployeeResponse;

@@ -1,4 +1,4 @@
-package com.khahnm04.ecommerce.dto.filter;
+package com.khahnm04.ecommerce.dto.request.filter;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;

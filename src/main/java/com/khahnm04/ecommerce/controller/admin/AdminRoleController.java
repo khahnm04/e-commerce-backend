@@ -1,6 +1,6 @@
 package com.khahnm04.ecommerce.controller.admin;
 
-import com.khahnm04.ecommerce.dto.filter.RoleFilterRequest;
+import com.khahnm04.ecommerce.dto.request.filter.RoleFilterRequest;
 import com.khahnm04.ecommerce.dto.request.BulkActionRequest;
 import com.khahnm04.ecommerce.dto.request.auth.RoleRequest;
 import com.khahnm04.ecommerce.dto.response.ApiResponse;
@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -39,6 +40,7 @@ public class AdminRoleController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Create role")
+    @PreAuthorize("hasAuthority('ROLE_CREATE')")
     ApiResponse<RoleResponse> createRole(
         @Valid @RequestBody RoleRequest request
     ) {
@@ -51,6 +53,7 @@ public class AdminRoleController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Get role detail by id")
+    @PreAuthorize("hasAuthority('ROLE_VIEW')")
     ApiResponse<RoleResponse> getRoleDetailById(
         @PathVariable Long id,
         @RequestParam(defaultValue = "false") boolean deleted
@@ -64,6 +67,7 @@ public class AdminRoleController {
 
     @GetMapping
     @Operation(summary = "Get all roles")
+    @PreAuthorize("hasAuthority('ROLE_VIEW')")
     PageResponse<RoleResponse> getAllRoles(
         @Valid @ModelAttribute RoleFilterRequest request
     ) {
@@ -78,6 +82,7 @@ public class AdminRoleController {
 
     @PutMapping("/{id}")
     @Operation(summary = "Update role")
+    @PreAuthorize("hasAuthority('ROLE_UPDATE')")
     ApiResponse<RoleResponse> updateRole(
         @PathVariable Long id,
         @Valid @RequestBody RoleRequest request
@@ -91,6 +96,7 @@ public class AdminRoleController {
 
     @PatchMapping("/{id}/soft-delete")
     @Operation(summary = "Soft delete role")
+    @PreAuthorize("hasAuthority('ROLE_DELETE')")
     ApiResponse<Void> softDeleteRole(
         @PathVariable Long id
     ) {
@@ -103,6 +109,7 @@ public class AdminRoleController {
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete role")
+    @PreAuthorize("hasAuthority('ROLE_DELETE')")
     ApiResponse<Void> deleteRole(
         @PathVariable Long id
     ) {
@@ -115,6 +122,7 @@ public class AdminRoleController {
 
     @PatchMapping("/{id}/restore")
     @Operation(summary = "Restore role")
+    @PreAuthorize("hasAuthority('ROLE_RESTORE')")
     ApiResponse<Void> restoreRole(
         @PathVariable Long id
     ) {
@@ -126,6 +134,7 @@ public class AdminRoleController {
     }
 
     @PatchMapping("/bulk")
+    @PreAuthorize("hasAnyAuthority('ROLE_DELETE', 'ROLE_RESTORE')")
     ApiResponse<Void> bulkAction(
         @RequestBody BulkActionRequest request
     ) {

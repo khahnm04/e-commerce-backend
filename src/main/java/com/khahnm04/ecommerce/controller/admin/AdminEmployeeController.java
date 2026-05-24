@@ -1,6 +1,6 @@
 package com.khahnm04.ecommerce.controller.admin;
 
-import com.khahnm04.ecommerce.dto.filter.EmployeeFilterRequest;
+import com.khahnm04.ecommerce.dto.request.filter.EmployeeFilterRequest;
 import com.khahnm04.ecommerce.dto.request.user.EmployeeRequest;
 import com.khahnm04.ecommerce.dto.response.ApiResponse;
 import com.khahnm04.ecommerce.dto.response.PageResponse;
@@ -14,7 +14,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @Slf4j(topic = "EMPLOYEE-CONTROLLER")
