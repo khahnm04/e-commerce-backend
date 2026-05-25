@@ -1,5 +1,6 @@
 package com.khahnm04.ecommerce.controller.admin;
 
+import com.khahnm04.ecommerce.config.Translator;
 import com.khahnm04.ecommerce.dto.response.ApiResponse;
 import com.khahnm04.ecommerce.dto.response.auth.PermissionResponse;
 import com.khahnm04.ecommerce.service.auth.PermissionService;
@@ -19,13 +20,14 @@ import java.util.List;
 public class AdminPermissionController {
 
     private final PermissionService permissionService;
+    private final Translator translator;
 
     @GetMapping
     ApiResponse<List<PermissionResponse>> getAllPermissions() {
         log.info("Get all permissions");
         return ApiResponse.<List<PermissionResponse>>builder()
                 .data(permissionService.getAllPermissions())
-                .message("Get all permissions successfully")
+                .message(translator.toLocale("PERMISSION_GET_ALL_SUCCESS"))
                 .build();
     }
 

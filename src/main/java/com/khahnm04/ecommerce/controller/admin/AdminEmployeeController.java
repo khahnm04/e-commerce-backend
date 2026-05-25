@@ -1,5 +1,7 @@
 package com.khahnm04.ecommerce.controller.admin;
 
+import com.khahnm04.ecommerce.config.Translator;
+import com.khahnm04.ecommerce.dto.request.BulkActionRequest;
 import com.khahnm04.ecommerce.dto.request.filter.EmployeeFilterRequest;
 import com.khahnm04.ecommerce.dto.request.user.EmployeeRequest;
 import com.khahnm04.ecommerce.dto.response.ApiResponse;
@@ -13,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
@@ -24,6 +27,7 @@ import java.util.List;
 public class AdminEmployeeController {
 
     private final EmployeeService employeeService;
+    private final Translator translator;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -34,12 +38,12 @@ public class AdminEmployeeController {
         log.info("Create employee");
         return ApiResponse.<EmployeeResponse>builder()
             .data(employeeService.createEmployee(request))
-            .message("Employee created successfully")
+            .message(translator.toLocale("EMPLOYEE_CREATED_SUCCESS"))
             .build();
     }
 
     @GetMapping("/{id}")
-    @Operation(summary = "Get employee detail by id")
+    @Operation(summary = "Get employee detail")
     ApiResponse<EmployeeResponse> getEmployeeDetailById(
         @PathVariable Long id,
         @RequestParam(defaultValue = "false") boolean deleted
@@ -47,7 +51,7 @@ public class AdminEmployeeController {
         log.info("Get employee detail by id");
         return ApiResponse.<EmployeeResponse>builder()
             .data(employeeService.getEmployeeDetailById(id, deleted))
-            .message("Get employee detail by id successfully")
+            .message(translator.toLocale("EMPLOYEE_GET_DETAIL_SUCCESS"))
             .build();
     }
 
@@ -61,7 +65,7 @@ public class AdminEmployeeController {
         return PageResponse.<EmployeeResponse>builder()
             .data(page.getContent())
             .meta(PageResponse.Meta.fromPage(page))
-            .message("Get all employees successfully")
+            .message(translator.toLocale("EMPLOYEE_GET_ALL_SUCCESS"))
             .build();
     }
 
@@ -74,7 +78,7 @@ public class AdminEmployeeController {
         log.info("Update employee");
         return ApiResponse.<EmployeeResponse>builder()
             .data(employeeService.updateEmployee(id, request))
-            .message("Employee updated successfully")
+            .message(translator.toLocale("EMPLOYEE_UPDATED_SUCCESS"))
             .build();
     }
 
@@ -86,7 +90,7 @@ public class AdminEmployeeController {
         log.info("Soft delete employee");
         employeeService.softDeleteEmployee(id);
         return ApiResponse.<Void>builder()
-            .message("Employee soft deleted successfully")
+            .message(translator.toLocale("EMPLOYEE_SOFT_DELETED_SUCCESS"))
             .build();
     }
 
@@ -98,7 +102,7 @@ public class AdminEmployeeController {
         log.info("Delete employee");
         employeeService.deleteEmployee(id);
         return ApiResponse.<Void>builder()
-            .message("Employee deleted successfully")
+            .message(translator.toLocale("EMPLOYEE_DELETED_SUCCESS"))
             .build();
     }
 
@@ -110,7 +114,7 @@ public class AdminEmployeeController {
         log.info("Restore employee");
         employeeService.restoreEmployee(id);
         return ApiResponse.<Void>builder()
-            .message("Employee restored successfully")
+            .message(translator.toLocale("EMPLOYEE_RESTORED_SUCCESS"))
             .build();
     }
 
@@ -120,7 +124,7 @@ public class AdminEmployeeController {
         log.info("Get my profile");
         return ApiResponse.<EmployeeResponse>builder()
             .data(employeeService.getMyProfile())
-            .message("get My Profile Employee successfully")
+            .message(translator.toLocale("EMPLOYEE_GET_MY_PROFILE_SUCCESS"))
             .build();
     }
 
@@ -130,7 +134,18 @@ public class AdminEmployeeController {
         log.info("Get my permissions");
         return ApiResponse.<List<String>>builder()
             .data(employeeService.getMyPermissions())
-            .message("Get My Permissions successfully")
+            .message(translator.toLocale("EMPLOYEE_GET_MY_PERMISSIONS_SUCCESS"))
+            .build();
+    }
+
+    @PatchMapping("/bulk")
+    @Operation(summary = "Bulk action employees")
+    ApiResponse<Void> bulkAction(
+        @RequestBody BulkActionRequest request
+    ) {
+        employeeService.bulkAction(request);
+        return ApiResponse.<Void>builder()
+            .message(translator.toLocale("EMPLOYEE_BULK_ACTION_SUCCESS"))
             .build();
     }
 

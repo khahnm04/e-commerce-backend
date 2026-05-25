@@ -1,4 +1,4 @@
-package com.khahnm04.ecommerce.entity.auth;
+package com.khahnm04.ecommerce.constant.auth;
 
 public enum AuthProvider {
     LOCAL,

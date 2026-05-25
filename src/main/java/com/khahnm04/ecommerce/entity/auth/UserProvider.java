@@ -1,5 +1,6 @@
 package com.khahnm04.ecommerce.entity.auth;
 
+import com.khahnm04.ecommerce.constant.auth.AuthProvider;
 import com.khahnm04.ecommerce.entity.BaseEntity;
 import com.khahnm04.ecommerce.entity.user.Customer;
 import jakarta.persistence.Entity;

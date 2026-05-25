@@ -1,4 +1,4 @@
-package com.khahnm04.ecommerce.entity.user;
+package com.khahnm04.ecommerce.constant.user;
 
 public enum Gender {
     MALE,

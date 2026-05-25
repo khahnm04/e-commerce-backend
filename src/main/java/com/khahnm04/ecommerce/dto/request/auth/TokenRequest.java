@@ -1,6 +1,6 @@
 package com.khahnm04.ecommerce.dto.request.auth;
 
-import com.khahnm04.ecommerce.entity.auth.UserType;
+import com.khahnm04.ecommerce.constant.auth.UserType;
 import java.io.Serializable;
 import lombok.Builder;
 

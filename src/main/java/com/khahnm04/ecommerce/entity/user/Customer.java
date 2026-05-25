@@ -1,5 +1,7 @@
 package com.khahnm04.ecommerce.entity.user;
 
+import com.khahnm04.ecommerce.constant.user.CustomerStatus;
+import com.khahnm04.ecommerce.constant.user.Gender;
 import com.khahnm04.ecommerce.entity.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

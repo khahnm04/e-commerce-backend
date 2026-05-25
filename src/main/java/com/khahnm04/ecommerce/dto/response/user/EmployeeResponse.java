@@ -1,8 +1,8 @@
 package com.khahnm04.ecommerce.dto.response.user;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.khahnm04.ecommerce.entity.user.EmployeeStatus;
-import com.khahnm04.ecommerce.entity.user.Gender;
+import com.khahnm04.ecommerce.constant.user.EmployeeStatus;
+import com.khahnm04.ecommerce.constant.user.Gender;
 import lombok.Builder;
 import java.io.Serializable;
 import java.time.Instant;

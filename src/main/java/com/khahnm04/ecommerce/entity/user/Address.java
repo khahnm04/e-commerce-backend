@@ -1,5 +1,6 @@
 package com.khahnm04.ecommerce.entity.user;
 
+import com.khahnm04.ecommerce.constant.user.AddressType;
 import com.khahnm04.ecommerce.entity.BaseEntity;
 import jakarta.persistence.Entity;
 import jakarta.persistence.ManyToOne;

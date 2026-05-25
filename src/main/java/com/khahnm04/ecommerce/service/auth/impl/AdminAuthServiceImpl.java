@@ -12,7 +12,7 @@ import com.khahnm04.ecommerce.dto.response.user.EmployeeResponse;
 import com.khahnm04.ecommerce.entity.auth.EmployeeRole;
 import com.khahnm04.ecommerce.entity.auth.RedisToken;
 import com.khahnm04.ecommerce.entity.auth.Role;
-import com.khahnm04.ecommerce.entity.auth.UserType;
+import com.khahnm04.ecommerce.constant.auth.UserType;
 import com.khahnm04.ecommerce.entity.user.Employee;
 import com.khahnm04.ecommerce.exception.AppException;
 import com.khahnm04.ecommerce.exception.ErrorCode;

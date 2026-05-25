@@ -1,7 +1,7 @@
 package com.khahnm04.ecommerce.dto.request.user;
 
-import com.khahnm04.ecommerce.entity.user.EmployeeStatus;
-import com.khahnm04.ecommerce.entity.user.Gender;
+import com.khahnm04.ecommerce.constant.user.EmployeeStatus;
+import com.khahnm04.ecommerce.constant.user.Gender;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
 import java.io.Serializable;

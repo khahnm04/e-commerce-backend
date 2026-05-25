@@ -31,6 +31,12 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
+    private final JwtDecoderConfig jwtDecoderConfig;
+    private final PasswordEncoder passwordEncoder;
+    private final EmployeeUserDetailsService employeeUserDetailsService;
+    private final CustomerUserDetailsService customerUserDetailsService;
+    private final JwtAuthenticationConverterConfig jwtAuthenticationConverterConfig;
+
     private static final String[] ADMIN_PUBLIC_POST_ENDPOINTS = {
         "/api/v1/admin/auth/login",
         "/api/v1/admin/auth/refresh"
@@ -43,12 +49,6 @@ public class SecurityConfig {
     private static final String[] CLIENT_PUBLIC_GET_ENDPOINTS = {
         "/api/v1/upload/signature"
     };
-
-    private final JwtDecoderConfig jwtDecoderConfig;
-    private final PasswordEncoder passwordEncoder;
-    private final EmployeeUserDetailsService employeeUserDetailsService;
-    private final CustomerUserDetailsService customerUserDetailsService;
-    private final JwtAuthenticationConverterConfig jwtAuthenticationConverterConfig;
 
     @Bean
     @Order(1)

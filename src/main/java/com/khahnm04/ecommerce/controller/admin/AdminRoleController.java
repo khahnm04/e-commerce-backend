@@ -1,5 +1,6 @@
 package com.khahnm04.ecommerce.controller.admin;
 
+import com.khahnm04.ecommerce.config.Translator;
 import com.khahnm04.ecommerce.dto.request.filter.RoleFilterRequest;
 import com.khahnm04.ecommerce.dto.request.BulkActionRequest;
 import com.khahnm04.ecommerce.dto.request.auth.RoleRequest;
@@ -36,6 +37,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 public class AdminRoleController {
 
     private final RoleService roleService;
+    private final Translator translator;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -47,12 +49,12 @@ public class AdminRoleController {
         log.info("Create role");
         return ApiResponse.<RoleResponse>builder()
             .data(roleService.createRole(request))
-            .message("Role created successfully")
+            .message(translator.toLocale("ROLE_CREATED_SUCCESS"))
             .build();
     }
 
     @GetMapping("/{id}")
-    @Operation(summary = "Get role detail by id")
+    @Operation(summary = "Get role detail")
     @PreAuthorize("hasAuthority('ROLE_VIEW')")
     ApiResponse<RoleResponse> getRoleDetailById(
         @PathVariable Long id,
@@ -61,7 +63,7 @@ public class AdminRoleController {
         log.info("Get role detail by id");
         return ApiResponse.<RoleResponse>builder()
             .data(roleService.getRoleDetailById(id, deleted))
-            .message("Get role detail by id successfully")
+            .message(translator.toLocale("ROLE_GET_DETAIL_SUCCESS"))
             .build();
     }
 
@@ -76,7 +78,7 @@ public class AdminRoleController {
         return PageResponse.<RoleResponse>builder()
             .data(page.getContent())
             .meta(PageResponse.Meta.fromPage(page))
-            .message("Get all roles successfully")
+            .message(translator.toLocale("ROLE_GET_ALL_SUCCESS"))
             .build();
     }
 
@@ -90,7 +92,7 @@ public class AdminRoleController {
         log.info("Update role");
         return ApiResponse.<RoleResponse>builder()
             .data(roleService.updateRole(id, request))
-            .message("Role updated successfully")
+            .message(translator.toLocale("ROLE_UPDATED_SUCCESS"))
             .build();
     }
 
@@ -103,7 +105,7 @@ public class AdminRoleController {
         log.info("Soft delete role");
         roleService.softDeleteRole(id);
         return ApiResponse.<Void>builder()
-            .message("Role soft deleted successfully")
+            .message(translator.toLocale("ROLE_SOFT_DELETED_SUCCESS"))
             .build();
     }
 
@@ -116,7 +118,7 @@ public class AdminRoleController {
         log.info("Delete role");
         roleService.deleteRole(id);
         return ApiResponse.<Void>builder()
-            .message("Role deleted successfully")
+            .message(translator.toLocale("ROLE_DELETED_SUCCESS"))
             .build();
     }
 
@@ -129,18 +131,19 @@ public class AdminRoleController {
         log.info("Restore role");
         roleService.restoreRole(id);
         return ApiResponse.<Void>builder()
-            .message("Role restored successfully")
+            .message(translator.toLocale("ROLE_RESTORED_SUCCESS"))
             .build();
     }
 
     @PatchMapping("/bulk")
+    @Operation(summary = "Bulk action roles")
     @PreAuthorize("hasAnyAuthority('ROLE_DELETE', 'ROLE_RESTORE')")
     ApiResponse<Void> bulkAction(
         @RequestBody BulkActionRequest request
     ) {
         roleService.bulkAction(request);
         return ApiResponse.<Void>builder()
-            .message("bulk action executed successfully")
+            .message(translator.toLocale("ROLE_BULK_ACTION_SUCCESS"))
             .build();
     }
 

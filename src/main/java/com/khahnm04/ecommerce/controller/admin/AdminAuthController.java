@@ -1,5 +1,6 @@
 package com.khahnm04.ecommerce.controller.admin;
 
+import com.khahnm04.ecommerce.config.Translator;
 import com.khahnm04.ecommerce.dto.request.auth.AdminLoginRequest;
 import com.khahnm04.ecommerce.dto.request.auth.LogoutRequest;
 import com.khahnm04.ecommerce.dto.request.auth.RefreshTokenRequest;
@@ -27,6 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AdminAuthController {
 
     private final AdminAuthService adminAuthService;
+    private final Translator translator;
 
     @PostMapping("/login")
     public ApiResponse<AdminLoginResponse> login(
@@ -35,7 +37,7 @@ public class AdminAuthController {
         log.info("Employee login");
         return ApiResponse.<AdminLoginResponse>builder()
             .data(adminAuthService.login(request))
-            .message("Login successfully")
+            .message(translator.toLocale("ADMIN_LOGIN_SUCCESS"))
             .build();
     }
 
@@ -46,7 +48,7 @@ public class AdminAuthController {
         log.info("Employee logout");
         adminAuthService.logout(request);
         return ApiResponse.<Void>builder()
-            .message("Logout successfully")
+            .message(translator.toLocale("ADMIN_LOGOUT_SUCCESS"))
             .build();
     }
 
@@ -57,7 +59,7 @@ public class AdminAuthController {
         log.info("Employee refresh token");
         return ApiResponse.<RefreshTokenResponse>builder()
             .data(adminAuthService.refreshToken(request))
-            .message("Refresh token successfully")
+            .message(translator.toLocale("ADMIN_REFRESH_TOKEN_SUCCESS"))
             .build();
     }
 
@@ -69,6 +71,7 @@ public class AdminAuthController {
         String accessToken = jwt.getTokenValue();
         return ApiResponse.<IntrospectResponse>builder()
             .data(adminAuthService.introspect(accessToken))
+            .message(translator.toLocale("ADMIN_INTROSPECT_SUCCESS"))
             .build();
     }
 

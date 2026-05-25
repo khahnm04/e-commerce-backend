@@ -12,6 +12,9 @@ public enum ErrorCode {
     BULK_ACTION_IDS_REQUIRED("Ids is required", HttpStatus.BAD_REQUEST),
     BULK_ACTION_REQUIRED("action is required", HttpStatus.BAD_REQUEST),
     INVALID_DATE_FORMAT("Invalid date format", HttpStatus.BAD_REQUEST),
+    ENUM_INVALID("Enum invalid", HttpStatus.BAD_REQUEST),
+    INVALID_REQUEST_BODY("Invalid request body", HttpStatus.BAD_REQUEST),
+    DUPLICATE_ENTRY("Duplicate entry", HttpStatus.BAD_REQUEST),
     LIST_PAGE_MIN("Page must be >= {value}", HttpStatus.BAD_REQUEST),
     LIST_SIZE_MIN("Size must be >= {value}", HttpStatus.BAD_REQUEST),
     LIST_SIZE_MAX("Size must be <= {value}", HttpStatus.BAD_REQUEST),
@@ -36,9 +39,14 @@ public enum ErrorCode {
     PERMISSION_REQUIRED("Permission cannot be blank", HttpStatus.BAD_REQUEST),
     PERMISSION_NOT_FOUND("Permission not found", HttpStatus.BAD_REQUEST),
 
-    CUSTOMER_NOT_FOUND("Customer not found", HttpStatus.NOT_FOUND),
-
+    EMPLOYEE_CODE_REQUIRED("Employee code is required", HttpStatus.BAD_REQUEST),
+    EMPLOYEE_FULL_NAME_REQUIRED("Employee full name is required", HttpStatus.BAD_REQUEST),
+    EMPLOYEE_JOB_TITLE_REQUIRED("Employee job title is required", HttpStatus.BAD_REQUEST),
+    EMPLOYEE_EMAIL_REQUIRED("Employee email is required", HttpStatus.BAD_REQUEST),
+    EMPLOYEE_PASSWORD_REQUIRED("Employee password is required", HttpStatus.BAD_REQUEST),
     EMPLOYEE_NOT_FOUND("Employee not found", HttpStatus.NOT_FOUND),
+
+    CUSTOMER_NOT_FOUND("Customer not found", HttpStatus.NOT_FOUND),
     ;
 
     private final String code;
