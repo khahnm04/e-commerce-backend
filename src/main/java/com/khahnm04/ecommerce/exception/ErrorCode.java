@@ -12,6 +12,9 @@ public enum ErrorCode {
     BULK_ACTION_IDS_REQUIRED("Ids is required", HttpStatus.BAD_REQUEST),
     BULK_ACTION_REQUIRED("action is required", HttpStatus.BAD_REQUEST),
     INVALID_DATE_FORMAT("Invalid date format", HttpStatus.BAD_REQUEST),
+    INVALID_EMAIL_FORMAT("Invalid email format", HttpStatus.BAD_REQUEST),
+    INVALID_PHONE_FORMAT("Invalid phone format", HttpStatus.BAD_REQUEST),
+    INVALID_PASSWORD_FORMAT("Invalid password format", HttpStatus.BAD_REQUEST),
     ENUM_INVALID("Enum invalid", HttpStatus.BAD_REQUEST),
     INVALID_REQUEST_BODY("Invalid request body", HttpStatus.BAD_REQUEST),
     DUPLICATE_ENTRY("Duplicate entry", HttpStatus.BAD_REQUEST),
@@ -21,6 +24,7 @@ public enum ErrorCode {
 
     UNAUTHENTICATED("Unauthenticated", HttpStatus.UNAUTHORIZED),
     FORBIDDEN("You do not have permission", HttpStatus.FORBIDDEN),
+    LOGIN_FAILED("Email hoặc mật khẩu không chính xác", HttpStatus.BAD_REQUEST),
     REFRESH_TOKEN_FAILED( "Refresh token failed", HttpStatus.UNAUTHORIZED),
     REFRESH_TOKEN_REQUIRED( "Refresh token  is required", HttpStatus.UNAUTHORIZED),
     TOKEN_CREATION_FAILED( "Token creation failed", HttpStatus.INTERNAL_SERVER_ERROR),
@@ -43,6 +47,7 @@ public enum ErrorCode {
     EMPLOYEE_FULL_NAME_REQUIRED("Employee full name is required", HttpStatus.BAD_REQUEST),
     EMPLOYEE_JOB_TITLE_REQUIRED("Employee job title is required", HttpStatus.BAD_REQUEST),
     EMPLOYEE_EMAIL_REQUIRED("Employee email is required", HttpStatus.BAD_REQUEST),
+    EMPLOYEE_PHONE_NUMBER_REQUIRED("Employee phone number is required", HttpStatus.BAD_REQUEST),
     EMPLOYEE_PASSWORD_REQUIRED("Employee password is required", HttpStatus.BAD_REQUEST),
     EMPLOYEE_NOT_FOUND("Employee not found", HttpStatus.NOT_FOUND),
 

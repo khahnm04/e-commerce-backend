@@ -2,6 +2,7 @@ package com.khahnm04.ecommerce.service.auth.impl;
 
 import com.khahnm04.ecommerce.dto.request.BulkActionRequest;
 import com.khahnm04.ecommerce.dto.response.auth.PermissionResponse;
+import com.khahnm04.ecommerce.util.PaginationUtil;
 import com.khahnm04.ecommerce.util.SecurityUtil;
 import com.khahnm04.ecommerce.util.SortUtil;
 import com.khahnm04.ecommerce.dto.request.filter.RoleFilterRequest;
@@ -229,12 +230,16 @@ public class RoleServiceImpl implements RoleService {
     }
 
     private Page<RoleResponse> getAllRolesWithFilterAndSearch(RoleFilterRequest request, Boolean isDeleted) {
-        Pageable pageable = PageRequest.of(request.page() - 1, request.size(), SortUtil.parseSort(request.sort()));
+        Pageable pageable = PaginationUtil.createPageable(
+            request.page(),
+            request.size(),
+            request.sort()
+        );
 
-        Specification<Role> filterWithFetch = RoleSpecification.buildQuery(request, isDeleted);
-
-        Page<RoleProjection> rolePage = roleRepository
-            .findBy(filterWithFetch, q -> q.as(RoleProjection.class).page(pageable));
+        Page<RoleProjection> rolePage = roleRepository.findBy(
+            RoleSpecification.buildQuery(request, isDeleted),
+            q -> q.as(RoleProjection.class).page(pageable)
+        );
 
         List<RoleResponse> content = rolePage.getContent().stream()
             .map(roleProjection -> RoleResponse.builder()

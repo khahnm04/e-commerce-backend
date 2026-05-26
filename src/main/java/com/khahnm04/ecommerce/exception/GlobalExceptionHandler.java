@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.security.core.AuthenticationException;
 import java.util.Map;
 import java.util.Objects;
 
@@ -59,6 +60,24 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(errorCode.getStatusCode()).body(errorResponse);
     }
 
+    @ExceptionHandler(value = AuthenticationException.class)
+    ResponseEntity<ErrorResponse> handleAuthenticationException(
+        AuthenticationException exception,
+        HttpServletRequest request
+    ) {
+        ErrorCode errorCode = ErrorCode.LOGIN_FAILED;
+        String message = resolveErrorCodeMessage(errorCode);
+        log.warn("Login failed at {}: {}", request.getRequestURI(), message, exception);
+
+        ErrorResponse errorResponse = ErrorResponse.builder()
+            .code(errorCode.getCode())
+            .message(message)
+            .path(request.getRequestURI())
+            .build();
+        return ResponseEntity.status(errorCode.getStatusCode()).body(errorResponse);
+    }
+
+    // Catch exception when validate
     @ExceptionHandler(MethodArgumentNotValidException.class)
     ResponseEntity<ErrorResponse> handleMethodArgumentNotValidException(
         MethodArgumentNotValidException exception,
@@ -84,7 +103,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(errorResponse);
     }
 
-    // Catch exception when Duplicate entry
+    // Catch exception when duplicate entry
     @ExceptionHandler(value = DataIntegrityViolationException.class)
     ResponseEntity<ErrorResponse> handlingDataIntegrityViolationException(
         DataIntegrityViolationException exception,

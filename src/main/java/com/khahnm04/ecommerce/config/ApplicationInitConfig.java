@@ -1,15 +1,10 @@
 package com.khahnm04.ecommerce.config;
 
 import com.khahnm04.ecommerce.entity.auth.EmployeeRole;
-import com.khahnm04.ecommerce.entity.auth.Permission;
-import com.khahnm04.ecommerce.entity.auth.Role;
-import com.khahnm04.ecommerce.entity.auth.RolePermission;
 import com.khahnm04.ecommerce.entity.user.Employee;
 import com.khahnm04.ecommerce.constant.user.EmployeeStatus;
 import com.khahnm04.ecommerce.constant.user.Gender;
 import com.khahnm04.ecommerce.repository.auth.EmployeeRoleRepository;
-import com.khahnm04.ecommerce.repository.auth.PermissionRepository;
-import com.khahnm04.ecommerce.repository.auth.RolePermissionRepository;
 import com.khahnm04.ecommerce.repository.auth.RoleRepository;
 import com.khahnm04.ecommerce.repository.user.EmployeeRepository;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +13,6 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
-import java.util.List;
 
 @Slf4j(topic = "APPLICATION-INIT")
 @Component
@@ -26,129 +20,54 @@ import java.util.List;
 public class ApplicationInitConfig implements ApplicationRunner {
 
     private final RoleRepository roleRepository;
-    private final PermissionRepository permissionRepository;
-    private final RolePermissionRepository rolePermissionRepository;
     private final EmployeeRepository employeeRepository;
     private final EmployeeRoleRepository employeeRoleRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Override
     public void run(ApplicationArguments args) {
+        log.info("Starting database initialization for STAFF employee...");
 
-        /*
-         * =========================
-         * 1. CREATE ADMIN ROLE
-         * =========================
-         */
-        Role existingRole = roleRepository.findByCodeAndIsDeletedFalse("ADMIN")
-            .orElse(null);
+        roleRepository.findByCodeAndIsDeletedFalse("STAFF").ifPresentOrElse(
+            staffRole -> {
+                // 1. Tìm hoặc tạo mới nhân viên Nguyễn Văn Nam
+                Employee staff = employeeRepository.findByEmailAndDeletedAtIsNull("namnv@gmail.com")
+                    .orElseGet(() -> {
+                        log.info("Creating new employee: Nguyen Van Nam (namnv@gmail.com)");
+                        return employeeRepository.save(
+                            Employee.builder()
+                                .code("EMP-STAFF-001")
+                                .fullName("Nguyễn Văn Nam")
+                                .jobTitle("Nhân viên")
+                                .email("namnv@gmail.com")
+                                .phoneNumber("0987654321")
+                                .password(passwordEncoder.encode("Staff@1234"))
+                                .gender(Gender.MALE)
+                                .status(EmployeeStatus.ACTIVE)
+                                .build()
+                        );
+                    });
 
-        if (existingRole != null) {
-            log.info("ADMIN role already exists. Skip initialization.");
-            return;
-        }
+                // 2. Gắn role STAFF cho nhân viên nếu chưa có
+                boolean existsStaffRole = employeeRoleRepository
+                    .existsByEmployeeIdAndRoleId(staff.getId(), staffRole.getId());
 
-        Role adminRole = roleRepository.save(
-            Role.builder()
-                .code("ADMIN")
-                .name("Quản trị viên")
-                .description("Quản trị toàn hệ thống")
-                .build()
+                if (!existsStaffRole) {
+                    employeeRoleRepository.save(
+                        EmployeeRole.builder()
+                            .employee(staff)
+                            .role(staffRole)
+                            .build()
+                    );
+                    log.info("Successfully assigned STAFF role to Nguyen Van Nam (namnv@gmail.com)");
+                } else {
+                    log.info("Employee Nguyen Van Nam already has STAFF role. Skipping mapping.");
+                }
+            },
+            () -> log.warn("Role 'STAFF' does not exist in the database. Cannot initialize Nguyen Van Nam.")
         );
 
-        /*
-         * =========================
-         * 2. CREATE PERMISSIONS
-         * =========================
-         */
-
-        List<Permission> defaultPermissions = List.of(
-            Permission.builder()
-                .code("ROLE_VIEW")
-                .name("View Role")
-                .module("ROLE")
-                .description("Xem danh sách role")
-                .build(),
-
-            Permission.builder()
-                .code("ROLE_CREATE")
-                .name("Create Role")
-                .module("ROLE")
-                .description("Tạo role mới")
-                .build(),
-
-            Permission.builder()
-                .code("ROLE_UPDATE")
-                .name("Update Role")
-                .module("ROLE")
-                .description("Cập nhật role")
-                .build(),
-
-            Permission.builder()
-                .code("ROLE_DELETE")
-                .name("Delete Role")
-                .module("ROLE")
-                .description("Xóa role")
-                .build()
-        );
-
-        for (Permission p : defaultPermissions) {
-            Permission permission = permissionRepository
-                .findByCodeAndDeletedAtIsNull(p.getCode())
-                .orElseGet(() -> permissionRepository.save(p));
-
-            boolean exists = rolePermissionRepository
-                .existsByRoleIdAndPermissionId(adminRole.getId(), permission.getId());
-
-            if (!exists) {
-                rolePermissionRepository.save(
-                    RolePermission.builder()
-                        .role(adminRole)
-                        .permission(permission)
-                        .build()
-                );
-            }
-        }
-
-        /*
-         * =========================
-         * 3. CREATE ADMIN EMPLOYEE
-         * =========================
-         */
-
-        Employee admin = employeeRepository.findByEmailAndDeletedAtIsNull("admin@gmail.com")
-            .orElseGet(() -> employeeRepository.save(
-                Employee.builder()
-                    .code("EMP-ADMIN-001")
-                    .fullName("Nguyễn Minh Khánh")
-                    .jobTitle("Quản trị viên")
-                    .email("admin@gmail.com")
-                    .phoneNumber("0387011685")
-                    .password(passwordEncoder.encode("Admin@1234"))
-                    .gender(Gender.OTHER)
-                    .status(EmployeeStatus.ACTIVE)
-                    .build()
-            ));
-
-        /*
-         * =========================
-         * 4. ASSIGN ROLE TO EMPLOYEE
-         * =========================
-         */
-
-        boolean existsEmployeeRole = employeeRoleRepository
-            .existsByEmployeeIdAndRoleId(admin.getId(), adminRole.getId());
-
-        if (!existsEmployeeRole) {
-            employeeRoleRepository.save(
-                EmployeeRole.builder()
-                    .employee(admin)
-                    .role(adminRole)
-                    .build()
-            );
-        }
-
-        log.info("Application initialized successfully");
+        log.info("Database initialization completed.");
     }
 
 }

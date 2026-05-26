@@ -124,7 +124,7 @@ public class AdminRoleController {
 
     @PatchMapping("/{id}/restore")
     @Operation(summary = "Restore role")
-    @PreAuthorize("hasAuthority('ROLE_RESTORE')")
+    @PreAuthorize("hasAuthority('ROLE_DELETE')")
     ApiResponse<Void> restoreRole(
         @PathVariable Long id
     ) {
@@ -137,7 +137,7 @@ public class AdminRoleController {
 
     @PatchMapping("/bulk")
     @Operation(summary = "Bulk action roles")
-    @PreAuthorize("hasAnyAuthority('ROLE_DELETE', 'ROLE_RESTORE')")
+    @PreAuthorize("hasAnyAuthority('ROLE_UPDATE', 'ROLE_DELETE')")
     ApiResponse<Void> bulkAction(
         @RequestBody BulkActionRequest request
     ) {

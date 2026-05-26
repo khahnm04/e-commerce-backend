@@ -39,7 +39,8 @@ public class SecurityConfig {
 
     private static final String[] ADMIN_PUBLIC_POST_ENDPOINTS = {
         "/api/v1/admin/auth/login",
-        "/api/v1/admin/auth/refresh"
+        "/api/v1/admin/auth/refresh",
+        "/api/v1/admin/auth/logout"
     };
 
     private static final String[] CLIENT_PUBLIC_POST_ENDPOINTS = {

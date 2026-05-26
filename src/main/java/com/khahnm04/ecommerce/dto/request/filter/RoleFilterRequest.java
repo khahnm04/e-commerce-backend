@@ -1,7 +1,5 @@
 package com.khahnm04.ecommerce.dto.request.filter;
 
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
 import lombok.Builder;
 import java.io.Serializable;
 import java.time.Instant;
@@ -9,13 +7,8 @@ import java.time.Instant;
 @Builder
 public record RoleFilterRequest(
 
-    @Min(value = 1, message = "LIST_PAGE_MIN")
     Integer page,
-
-    @Min(value = 1, message = "LIST_SIZE_MIN")
-    @Max(value = 100, message = "LIST_SIZE_MAX")
     Integer size,
-
     Boolean isDeleted,
     String sort,
     String keyword,
