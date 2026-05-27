@@ -58,11 +58,11 @@ public class AdminRoleController {
     @PreAuthorize("hasAuthority('ROLE_VIEW')")
     ApiResponse<RoleResponse> getRoleDetailById(
         @PathVariable Long id,
-        @RequestParam(defaultValue = "false") boolean deleted
+        @RequestParam(defaultValue = "false") boolean isDeleted
     ) {
-        log.info("Get role detail by id");
+        log.info("Get role detail");
         return ApiResponse.<RoleResponse>builder()
-            .data(roleService.getRoleDetailById(id, deleted))
+            .data(roleService.getRoleDetailById(id, isDeleted))
             .message(translator.toLocale("ROLE_GET_DETAIL_SUCCESS"))
             .build();
     }

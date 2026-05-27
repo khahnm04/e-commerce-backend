@@ -4,7 +4,6 @@ import com.khahnm04.ecommerce.dto.request.BulkActionRequest;
 import com.khahnm04.ecommerce.dto.response.auth.PermissionResponse;
 import com.khahnm04.ecommerce.util.PaginationUtil;
 import com.khahnm04.ecommerce.util.SecurityUtil;
-import com.khahnm04.ecommerce.util.SortUtil;
 import com.khahnm04.ecommerce.dto.request.filter.RoleFilterRequest;
 import com.khahnm04.ecommerce.dto.projection.RoleProjection;
 import com.khahnm04.ecommerce.dto.request.auth.RoleRequest;
@@ -25,9 +24,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
@@ -66,18 +63,6 @@ public class RoleServiceImpl implements RoleService {
 
         log.info("Role created: code={}, name={}", role.getCode(), role.getName());
         return response;
-    }
-
-    @Override
-    public Role getRoleById(Long id) {
-        return roleRepository.findByIdAndIsDeletedFalse(id)
-            .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
-    }
-
-    @Override
-    public Role getSoftDeletedRoleById(Long id) {
-        return roleRepository.findByIdAndIsDeletedTrue(id)
-            .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
     }
 
     @Override
@@ -175,6 +160,16 @@ public class RoleServiceImpl implements RoleService {
                 log.info("Bulk action delete roles ids: {}", roleIds);
             }
         }
+    }
+
+    private Role getRoleById(Long id) {
+        return roleRepository.findByIdAndIsDeletedFalse(id)
+            .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
+    }
+
+    private Role getSoftDeletedRoleById(Long id) {
+        return roleRepository.findByIdAndIsDeletedTrue(id)
+            .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
     }
 
     private List<Permission> assignPermissionsToRole(Role role, Set<Long> permissionIds) {

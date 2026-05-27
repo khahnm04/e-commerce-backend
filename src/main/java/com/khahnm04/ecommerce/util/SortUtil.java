@@ -19,5 +19,4 @@ public class SortUtil {
         return Sort.by(direction, property);
     }
 
-
 }
