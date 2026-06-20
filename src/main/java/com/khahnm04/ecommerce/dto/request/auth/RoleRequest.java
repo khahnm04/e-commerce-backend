@@ -15,11 +15,9 @@ public record RoleRequest(
     @NotBlank(message = "ROLE_NAME_REQUIRED")
     String name,
 
-    @NotBlank(message = "ROLE_DESCRIPTION_REQUIRED")
-    String description,
-
     @NotEmpty(message = "ROLE_PERMISSIONS_REQUIRED")
     Set<Long> permissions
 
 ) implements Serializable {
 }
+

@@ -1,38 +1,38 @@
 package com.khahnm04.ecommerce.exception;
 
-import com.fasterxml.jackson.databind.exc.InvalidFormatException;
+import com.khahnm04.ecommerce.config.Translator;
 import com.khahnm04.ecommerce.dto.response.ErrorResponse;
+import org.springframework.security.authorization.AuthorizationDeniedException;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.validation.FieldError;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.HttpMessageNotReadableException;
-import org.springframework.validation.FieldError;
-import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.context.MessageSource;
-import org.springframework.context.i18n.LocaleContextHolder;
-import org.springframework.security.core.AuthenticationException;
 import java.util.Map;
 import java.util.Objects;
 
-@Slf4j
+@Slf4j(topic = "GLOBAL-EXCEPTION-HANDLER")
 @RestControllerAdvice
 @RequiredArgsConstructor
 public class GlobalExceptionHandler {
 
-    private final MessageSource messageSource;
+    private final Translator translator;
 
     @ExceptionHandler(value = Exception.class)
     ResponseEntity<ErrorResponse> handleRuntimeException(
         Exception exception,
         HttpServletRequest request
     ) {
-        String message = resolveErrorCodeMessage(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        ErrorCode errorCode = ErrorCode.UNCATEGORIZED_EXCEPTION;
+        String message = translator.toLocale(errorCode.name(), errorCode.getMessage());
         log.warn("Uncategorized exception at {}: {}", request.getRequestURI(), message, exception);
 
         ErrorResponse errorResponse = ErrorResponse.builder()
@@ -49,8 +49,8 @@ public class GlobalExceptionHandler {
         HttpServletRequest request
     ) {
         ErrorCode errorCode = exception.getErrorCode();
-        String message = resolveErrorCodeMessage(errorCode);
-        log.warn("Uncategorized exception at {}: {}", request.getRequestURI(), message, exception);
+        String message = translator.toLocale(errorCode.name(), errorCode.getMessage());
+        log.warn("Uncategorized exception at {}: {} - [{}]", request.getRequestURI(), message, exception.getMessage());
 
         ErrorResponse errorResponse = ErrorResponse.builder()
             .code(errorCode.getCode())
@@ -60,14 +60,20 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(errorCode.getStatusCode()).body(errorResponse);
     }
 
-    @ExceptionHandler(value = AuthenticationException.class)
-    ResponseEntity<ErrorResponse> handleAuthenticationException(
-        AuthenticationException exception,
+    /*
+     * Catch exception when Access Denied
+     */
+    @ExceptionHandler({
+        AccessDeniedException.class,
+        AuthorizationDeniedException.class
+    })
+    ResponseEntity<ErrorResponse> handlingAccessDeniedException(
+        Exception exception,
         HttpServletRequest request
     ) {
-        ErrorCode errorCode = ErrorCode.LOGIN_FAILED;
-        String message = resolveErrorCodeMessage(errorCode);
-        log.warn("Login failed at {}: {}", request.getRequestURI(), message, exception);
+        ErrorCode errorCode = ErrorCode.FORBIDDEN;
+        String message = translator.toLocale(errorCode.name(), errorCode.getMessage());
+        log.warn("Access denied at {}: {} - [{}]", request.getRequestURI(), message, exception.getMessage());
 
         ErrorResponse errorResponse = ErrorResponse.builder()
             .code(errorCode.getCode())
@@ -77,7 +83,9 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(errorCode.getStatusCode()).body(errorResponse);
     }
 
-    // Catch exception when validate
+    /*
+     * Catch exception when validate
+     */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     ResponseEntity<ErrorResponse> handleMethodArgumentNotValidException(
         MethodArgumentNotValidException exception,
@@ -90,10 +98,11 @@ public class GlobalExceptionHandler {
         ConstraintViolation<?> constraintViolation = fieldError.unwrap(ConstraintViolation.class);
         Map<String, Object> attributes = constraintViolation.getConstraintDescriptor().getAttributes();
 
-        String translatedMessage = resolveErrorCodeMessage(errorCode);
+        String translatedMessage = translator.toLocale(errorCode.name(), errorCode.getMessage());
         String finalMessage = Objects.nonNull(attributes)
             ? mapAttribute(translatedMessage, attributes)
             : translatedMessage;
+        log.warn("Validation failed at {}: {} - [{}]", request.getRequestURI(), finalMessage, exception.getMessage());
 
         ErrorResponse errorResponse = ErrorResponse.builder()
             .code(errorCode.getCode())
@@ -103,15 +112,17 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(errorResponse);
     }
 
-    // Catch exception when duplicate entry
+    /*
+     * Catch exception when duplicate entry
+     */
     @ExceptionHandler(value = DataIntegrityViolationException.class)
     ResponseEntity<ErrorResponse> handlingDataIntegrityViolationException(
         DataIntegrityViolationException exception,
         HttpServletRequest request
     ) {
         ErrorCode errorCode = ErrorCode.DUPLICATE_ENTRY;
-        String message = resolveErrorCodeMessage(errorCode);
-        log.warn("Data integrity violation at {}: {}", request.getRequestURI(), message, exception);
+        String message = translator.toLocale(errorCode.name(), errorCode.getMessage());
+        log.warn("Data integrity violation at {}: {} - [{}]", request.getRequestURI(), message, exception.getMessage());
 
         ErrorResponse errorResponse = ErrorResponse.builder()
             .code(errorCode.getCode())
@@ -121,25 +132,17 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
     }
 
-    // Catch exception when request invalid
+    /*
+     * Catch exception when request invalid
+     */
     @ExceptionHandler(value = HttpMessageNotReadableException.class)
     ResponseEntity<ErrorResponse> handlingHttpMessageNotReadableException(
         HttpMessageNotReadableException exception,
         HttpServletRequest request
     ) {
-        ErrorCode errorCode;
-        Throwable cause = exception.getCause();
-        if (cause instanceof InvalidFormatException invalidFormat) {
-            if (invalidFormat.getTargetType() != null && invalidFormat.getTargetType().isEnum()) {
-                errorCode = ErrorCode.ENUM_INVALID;
-            } else {
-                errorCode = ErrorCode.INVALID_DATE_FORMAT;
-            }
-        } else {
-            errorCode = ErrorCode.INVALID_REQUEST_BODY;
-        }
-        String message = resolveErrorCodeMessage(errorCode);
-        log.warn("Invalid request body at {}: {}", request.getRequestURI(), exception.getMessage());
+        ErrorCode errorCode = ErrorCode.INVALID_INPUT;
+        String message = translator.toLocale(errorCode.name(), errorCode.getMessage());
+        log.warn("Invalid request body at {}: {} - [{}]", request.getRequestURI(), message, exception.getMessage());
 
         ErrorResponse errorResponse = ErrorResponse.builder()
             .code(errorCode.getCode())
@@ -166,15 +169,6 @@ public class GlobalExceptionHandler {
             }
         }
         return message;
-    }
-
-    private String resolveErrorCodeMessage(ErrorCode errorCode) {
-        return messageSource.getMessage(
-            errorCode.name(),
-            null,
-            errorCode.getMessage(),
-            LocaleContextHolder.getLocale()
-        );
     }
 
 }

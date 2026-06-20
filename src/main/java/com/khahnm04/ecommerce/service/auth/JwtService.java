@@ -10,8 +10,6 @@ public interface JwtService {
 
     TokenResponse generateRefreshToken(TokenRequest request);
 
-    SignedJWT verifyAccessToken(String token);
-
-    SignedJWT verifyRefreshToken(String token);
+    SignedJWT verifyToken(String token);
 
 }

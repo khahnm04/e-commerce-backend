@@ -1,29 +1,24 @@
 package com.khahnm04.ecommerce.security;
 
-import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Bean;
+import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Bean;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.ProviderManager;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
-import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
-import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import com.khahnm04.ecommerce.service.auth.CustomerUserDetailsService;
-import com.khahnm04.ecommerce.service.auth.EmployeeUserDetailsService;
+import lombok.RequiredArgsConstructor;
 import java.util.List;
+
+import static com.khahnm04.ecommerce.constant.SecurityConstant.*;
 
 @Configuration
 @EnableWebSecurity
@@ -32,33 +27,18 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtDecoderConfig jwtDecoderConfig;
-    private final PasswordEncoder passwordEncoder;
-    private final EmployeeUserDetailsService employeeUserDetailsService;
-    private final CustomerUserDetailsService customerUserDetailsService;
     private final JwtAuthenticationConverterConfig jwtAuthenticationConverterConfig;
-
-    private static final String[] ADMIN_PUBLIC_POST_ENDPOINTS = {
-        "/api/v1/admin/auth/login",
-        "/api/v1/admin/auth/refresh",
-        "/api/v1/admin/auth/logout"
-    };
-
-    private static final String[] CLIENT_PUBLIC_POST_ENDPOINTS = {
-        "/api/v1/auth/client/login"
-    };
-
-    private static final String[] CLIENT_PUBLIC_GET_ENDPOINTS = {
-        "/api/v1/upload/signature"
-    };
+    private final CookieBearerTokenResolver cookieBearerTokenResolver;
 
     @Bean
     @Order(1)
     public SecurityFilterChain adminFilterChain(HttpSecurity http) throws Exception {
         http
-            .securityMatcher("/api/v1/admin/**")
+            .securityMatcher("/api/v1/admin/**", "/api/v1/auth/admin/**")
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(
                 request -> request
+                    .requestMatchers(HttpMethod.GET, PUBLIC_GET_ENDPOINTS).permitAll()
                     .requestMatchers(HttpMethod.POST, ADMIN_PUBLIC_POST_ENDPOINTS).permitAll()
                     .anyRequest().authenticated())
             .oauth2ResourceServer(oauth2 ->
@@ -66,7 +46,8 @@ public class SecurityConfig {
                         .decoder(jwtDecoderConfig)
                         .jwtAuthenticationConverter(jwtAuthenticationConverterConfig))
                     .authenticationEntryPoint(new JwtAuthenticationEntryPoint())
-                    .accessDeniedHandler(new JwtAccessDeniedHandler()))
+                    .accessDeniedHandler(new JwtAccessDeniedHandler())
+                    .bearerTokenResolver(cookieBearerTokenResolver))
             .csrf(AbstractHttpConfigurer::disable)
             .cors(cors -> cors.configurationSource(corsConfigurationSource()));
         return http.build();
@@ -76,37 +57,22 @@ public class SecurityConfig {
     @Order(2)
     public SecurityFilterChain clientFilterChain(HttpSecurity http) throws Exception {
         http
-            .securityMatcher("/api/v1/**")
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(
                 request -> request
+                    .requestMatchers(HttpMethod.GET, PUBLIC_GET_ENDPOINTS).permitAll()
                     .requestMatchers(HttpMethod.POST, CLIENT_PUBLIC_POST_ENDPOINTS).permitAll()
-                    .requestMatchers(HttpMethod.GET, CLIENT_PUBLIC_GET_ENDPOINTS).permitAll()
                     .anyRequest().authenticated())
             .oauth2ResourceServer(oauth2 ->
                 oauth2.jwt(jwtConfigurer -> jwtConfigurer
                         .decoder(jwtDecoderConfig)
                         .jwtAuthenticationConverter(jwtAuthenticationConverter()))
                     .authenticationEntryPoint(new JwtAuthenticationEntryPoint())
-                    .accessDeniedHandler(new JwtAccessDeniedHandler()))
+                    .accessDeniedHandler(new JwtAccessDeniedHandler())
+                    .bearerTokenResolver(cookieBearerTokenResolver))
             .csrf(AbstractHttpConfigurer::disable)
             .cors(cors -> cors.configurationSource(corsConfigurationSource()));
         return http.build();
-    }
-
-    @Bean("adminAuthManager")
-    public AuthenticationManager adminAuthManager() {
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(employeeUserDetailsService);
-        provider.setPasswordEncoder(passwordEncoder);
-        return new ProviderManager(provider);
-    }
-
-    @Primary
-    @Bean("clientAuthManager")
-    public AuthenticationManager clientAuthManager() {
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(customerUserDetailsService);
-        provider.setPasswordEncoder(passwordEncoder);
-        return new ProviderManager(provider);
     }
 
     @Bean
@@ -123,8 +89,7 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of(
             "http://localhost:3000",
-            "http://localhost:3001",
-            "http://localhost:3002"
+            "http://localhost:3001"
         ));
         configuration.addAllowedMethod("*");
         configuration.addAllowedHeader("*");

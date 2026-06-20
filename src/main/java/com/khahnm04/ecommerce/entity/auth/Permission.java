@@ -1,34 +1,35 @@
 package com.khahnm04.ecommerce.entity.auth;
 
-import com.khahnm04.ecommerce.entity.BaseEntity;
+import jakarta.persistence.Id;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
 import lombok.Setter;
-import lombok.experimental.SuperBuilder;
 
 @Entity
 @Getter
 @Setter
-@SuperBuilder
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "permissions")
-public class Permission extends BaseEntity<Long> {
+public class Permission {
 
-    @Column(name = "code", unique = true, nullable = false, length = 50)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    private Long id;
+
+    @Column(name = "code")
     private String code;
 
-    @Column(name = "name", nullable = false)
+    @Column(name = "name")
     private String name;
-
-    @Column(name = "module")
-    private String module;
-
-    @Column(name = "description", columnDefinition = "TEXT", nullable = false)
-    private String description;
 
 }

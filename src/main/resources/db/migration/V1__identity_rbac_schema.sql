@@ -1,23 +1,14 @@
 CREATE TABLE `user_providers` (
     `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
-    `customer_id` BIGINT NOT NULL,
-    `provider` VARCHAR(50) NOT NULL DEFAULT 'LOCAL',
-    `provider_id` VARCHAR(255) NOT NULL,
-    `created_at` DATETIME(6) DEFAULT CURRENT_TIMESTAMP(6),
-    `created_by` VARCHAR(255),
-    `updated_at` DATETIME(6) DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
-    `updated_by` VARCHAR(255),
-    `deleted_at` DATETIME(6),
-    `deleted_by` VARCHAR(255),
-    `is_deleted` BOOLEAN NOT NULL DEFAULT FALSE,
-    UNIQUE (provider, provider_id, (IF(is_deleted = 0, 1, NULL)))
+    `account_user_id` BIGINT NOT NULL,
+    `provider` VARCHAR(50) NOT NULL,
+    `provider_id` VARCHAR(255) NOT NULL
 );
 
 CREATE TABLE `roles` (
     `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
     `code` VARCHAR(50) NOT NULL,
     `name` VARCHAR(255) NOT NULL,
-    `description` TEXT,
     `created_at` DATETIME(6) DEFAULT CURRENT_TIMESTAMP(6),
     `created_by` VARCHAR(255),
     `updated_at` DATETIME(6) DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
@@ -30,49 +21,23 @@ CREATE TABLE `roles` (
 
 CREATE TABLE `permissions` (
     `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
-    `code` VARCHAR(50) NOT NULL,
-    `name` VARCHAR(255) NOT NULL,
-    `module` VARCHAR(255),
-    `description` TEXT,
-    `created_at` DATETIME(6) DEFAULT CURRENT_TIMESTAMP(6),
-    `created_by` VARCHAR(255),
-    `updated_at` DATETIME(6) DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
-    `updated_by` VARCHAR(255),
-    `deleted_at` DATETIME(6),
-    `deleted_by` VARCHAR(255),
-    `is_deleted` BOOLEAN NOT NULL DEFAULT FALSE,
-    UNIQUE(code, (IF(is_deleted = 0, 1, NULL)))
+    `code` VARCHAR(50) UNIQUE NOT NULL,
+    `name` VARCHAR(255) NOT NULL
 );
 
-CREATE TABLE `employee_roles` (
+CREATE TABLE `account_admin_roles` (
     `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
-    `employee_id` BIGINT NOT NULL,
-    `role_id` BIGINT NOT NULL,
-    `created_at` DATETIME(6) DEFAULT CURRENT_TIMESTAMP(6),
-    `created_by` VARCHAR(255),
-    `updated_at` DATETIME(6) DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
-    `updated_by` VARCHAR(255),
-    `deleted_at` DATETIME(6),
-    `deleted_by` VARCHAR(255),
-    `is_deleted` BOOLEAN NOT NULL DEFAULT FALSE,
-    UNIQUE(employee_id, role_id, (IF(is_deleted = 0, 1, NULL)))
+    `account_admin_id` BIGINT NOT NULL,
+    `role_id` BIGINT NOT NULL
 );
 
 CREATE TABLE `role_permissions` (
     `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
     `role_id` BIGINT NOT NULL,
-    `permission_id` BIGINT NOT NULL,
-    `created_at` DATETIME(6) DEFAULT CURRENT_TIMESTAMP(6),
-    `created_by` VARCHAR(255),
-    `updated_at` DATETIME(6) DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
-    `updated_by` VARCHAR(255),
-    `deleted_at` DATETIME(6),
-    `deleted_by` VARCHAR(255),
-    `is_deleted` BOOLEAN NOT NULL DEFAULT FALSE,
-    UNIQUE(role_id, permission_id, (IF(is_deleted = 0, 1, NULL)))
+    `permission_id` BIGINT NOT NULL
 );
 
-CREATE TABLE `customers` (
+CREATE TABLE `account_users` (
     `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
     `email` VARCHAR(255) NOT NULL,
     `phone_number` VARCHAR(20) NOT NULL,
@@ -94,9 +59,8 @@ CREATE TABLE `customers` (
     UNIQUE(phone_number, (IF(is_deleted = 0, 1, NULL)))
 );
 
-CREATE TABLE `employees` (
+CREATE TABLE `account_admins` (
     `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
-    `code` VARCHAR(255) NOT NULL,
     `job_title` VARCHAR(255),
     `email` VARCHAR(255) NOT NULL,
     `phone_number` VARCHAR(20) NOT NULL,
@@ -114,14 +78,13 @@ CREATE TABLE `employees` (
     `deleted_at` DATETIME(6),
     `deleted_by` VARCHAR(255),
     `is_deleted` BOOLEAN NOT NULL DEFAULT FALSE,
-    UNIQUE(code, (IF(is_deleted = 0, 1, NULL))),
     UNIQUE(email, (IF(is_deleted = 0, 1, NULL))),
     UNIQUE(phone_number, (IF(is_deleted = 0, 1, NULL)))
 );
 
 CREATE TABLE `addresses` (
     `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
-    `customer_id` BIGINT NOT NULL,
+    `account_user_id` BIGINT NOT NULL,
     `receiver_name` VARCHAR(255) NOT NULL,
     `receiver_phone` VARCHAR(20) NOT NULL,
     `province_code` VARCHAR(50),
@@ -143,11 +106,10 @@ CREATE TABLE `addresses` (
     `is_deleted` BOOLEAN NOT NULL DEFAULT FALSE
 );
 
-
 /* ====================== FOREIGN KEY ========================= */
-ALTER TABLE `employee_roles` ADD CONSTRAINT `fk_employee_roles_employees` FOREIGN KEY (`employee_id`) REFERENCES `employees` (`id`) ON DELETE RESTRICT;
-ALTER TABLE `employee_roles` ADD CONSTRAINT `fk_employee_roles_roles` FOREIGN KEY (`role_id`) REFERENCES `roles` (`id`) ON DELETE RESTRICT;
+ALTER TABLE `account_admin_roles` ADD CONSTRAINT `fk_account_admin_roles_account_admins` FOREIGN KEY (`account_admin_id`) REFERENCES `account_admins` (`id`) ON DELETE RESTRICT;
+ALTER TABLE `account_admin_roles` ADD CONSTRAINT `fk_account_admin_roles_roles` FOREIGN KEY (`role_id`) REFERENCES `roles` (`id`) ON DELETE RESTRICT;
 ALTER TABLE `role_permissions` ADD CONSTRAINT `fk_role_permissions_roles` FOREIGN KEY (`role_id`) REFERENCES `roles` (`id`) ON DELETE RESTRICT;
 ALTER TABLE `role_permissions` ADD CONSTRAINT `fk_role_permissions_permissions` FOREIGN KEY (`permission_id`) REFERENCES `permissions` (`id`) ON DELETE RESTRICT;
-ALTER TABLE `user_providers` ADD CONSTRAINT `fk_user_providers_customers` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`) ON DELETE RESTRICT;
-ALTER TABLE `addresses` ADD CONSTRAINT `fk_addresses_customers` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`) ON DELETE RESTRICT;
+ALTER TABLE `user_providers` ADD CONSTRAINT `fk_user_providers_account_users` FOREIGN KEY (`account_user_id`) REFERENCES `account_users` (`id`) ON DELETE RESTRICT;
+ALTER TABLE `addresses` ADD CONSTRAINT `fk_addresses_account_users` FOREIGN KEY (`account_user_id`) REFERENCES `account_users` (`id`) ON DELETE RESTRICT;

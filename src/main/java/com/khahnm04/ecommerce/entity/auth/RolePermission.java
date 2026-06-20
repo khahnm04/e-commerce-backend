@@ -1,32 +1,35 @@
 package com.khahnm04.ecommerce.entity.auth;
 
-import com.khahnm04.ecommerce.entity.BaseEntity;
+import jakarta.persistence.Id;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
 import lombok.Setter;
-import lombok.experimental.SuperBuilder;
 
 @Entity
 @Getter
 @Setter
-@SuperBuilder
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "role_permissions")
-public class RolePermission extends BaseEntity<Long> {
+public class RolePermission {
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "role_id", nullable = false)
-    private Role role;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "permission_id", nullable = false)
-    private Permission permission;
+    @Column(name = "role_id")
+    private Long roleId;
+
+    @Column(name = "permission_id")
+    private Long permissionId;
 
 }

@@ -1,21 +1,13 @@
 package com.khahnm04.ecommerce.controller.admin;
 
 import com.khahnm04.ecommerce.config.Translator;
-import com.khahnm04.ecommerce.dto.request.filter.RoleFilterRequest;
-import com.khahnm04.ecommerce.dto.request.BulkActionRequest;
 import com.khahnm04.ecommerce.dto.request.auth.RoleRequest;
+import com.khahnm04.ecommerce.dto.request.auth.RoleFilterRequest;
+import com.khahnm04.ecommerce.dto.request.BulkActionRequest;
+import com.khahnm04.ecommerce.dto.response.auth.RoleResponse;
 import com.khahnm04.ecommerce.dto.response.ApiResponse;
 import com.khahnm04.ecommerce.dto.response.PageResponse;
-import com.khahnm04.ecommerce.dto.response.auth.RoleResponse;
 import com.khahnm04.ecommerce.service.auth.RoleService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -28,6 +20,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j(topic = "ROLE-CONTROLLER")
 @RestController

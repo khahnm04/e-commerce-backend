@@ -12,7 +12,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import java.io.IOException;
 
-@Slf4j
+@Slf4j(topic = "JWT-AUTHENTICATION-ENTRY-POINT")
 public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
     @Override
@@ -21,14 +21,12 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
         HttpServletResponse response,
         AuthenticationException authException
     ) throws IOException {
-
         log.warn("Unauthorized access attempt - URI: {}, Method: {}, Message: {}",
             request.getRequestURI(),
             request.getMethod(),
             authException.getMessage());
 
         ErrorCode errorCode = ErrorCode.UNAUTHENTICATED;
-
         response.setStatus(errorCode.getStatusCode().value());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 

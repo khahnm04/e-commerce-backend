@@ -1,34 +1,33 @@
 package com.khahnm04.ecommerce.specification.auth;
 
-import com.khahnm04.ecommerce.dto.request.filter.RoleFilterRequest;
+import com.khahnm04.ecommerce.dto.request.auth.RoleFilterRequest;
 import com.khahnm04.ecommerce.entity.auth.Role;
-import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
+import jakarta.persistence.criteria.Predicate;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
 public final class RoleSpecification {
 
-    private static final String FIELD_DELETED_AT = "deletedAt";
+    private static final String FIELD_IS_DELETED = "isDeleted";
     private static final String FIELD_CREATED_AT = "createdAt";
-    private static final String[] KEYWORD_FIELDS = {"code", "name", "description"};
+    private static final String[] KEYWORD_FIELDS = {"code", "name"};
 
     private RoleSpecification() {
         throw new UnsupportedOperationException("Utility class");
     }
 
     public static Specification<Role> buildQuery(RoleFilterRequest request, boolean isDeleted) {
-        return byDeletedStatus(isDeleted)
+        return byIsDeleted(isDeleted)
             .and(byKeyword(request.keyword()))
             .and(byStartDate(request.startDate()))
             .and(byEndDate(request.endDate()));
     }
 
-    private static Specification<Role> byDeletedStatus(boolean isDeleted) {
-        return (root, query, cb) -> isDeleted
-            ? cb.isNotNull(root.get(FIELD_DELETED_AT))
-            : cb.isNull(root.get(FIELD_DELETED_AT));
+    private static Specification<Role> byIsDeleted(boolean isDeleted) {
+        return (root, query, cb) ->
+            cb.equal(root.get(FIELD_IS_DELETED), isDeleted);
     }
 
     private static Specification<Role> byKeyword(String keyword) {

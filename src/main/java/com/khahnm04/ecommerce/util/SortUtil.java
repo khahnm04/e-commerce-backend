@@ -12,9 +12,10 @@ public class SortUtil {
         String[] parts = sort.trim().split(",");
         String property = parts[0].trim();
 
-        Sort.Direction direction = (parts.length > 1 && parts[1].equalsIgnoreCase("desc"))
-            ? Sort.Direction.DESC
-            : Sort.Direction.ASC;
+        Sort.Direction direction =
+            (parts.length > 1 && parts[1].equalsIgnoreCase("desc"))
+                ? Sort.Direction.DESC
+                : Sort.Direction.ASC;
 
         return Sort.by(direction, property);
     }

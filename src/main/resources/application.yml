@@ -10,7 +10,7 @@ spring:
   application:
     name: e-commerce
   datasource:
-    url: "jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:db_ecommerce}"
+    url: "jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:db_entry_ecommerce}"
     username: ${DB_USERNAME:root}
     password: ${DB_PASSWORD:root}
   jpa:
@@ -46,4 +46,10 @@ openapi:
 jwt:
   secret-key: ${SECRET_KEY}
   access-token-expiration: 300
-  refresh-token-expiration: 2592000
+  refresh-token-expiration: 86400
+  remember-me-expiration: 604800
+
+cloudinary:
+  cloud-name: "${CLOUD_NAME}"
+  api-key: "${API_KEY}"
+  api-secret: "${API_SECRET}"

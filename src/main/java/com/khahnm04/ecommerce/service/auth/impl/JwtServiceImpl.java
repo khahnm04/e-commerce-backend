@@ -4,30 +4,32 @@ import com.khahnm04.ecommerce.dto.request.auth.TokenRequest;
 import com.khahnm04.ecommerce.dto.response.auth.TokenResponse;
 import com.khahnm04.ecommerce.exception.AppException;
 import com.khahnm04.ecommerce.exception.ErrorCode;
-import com.khahnm04.ecommerce.repository.auth.RedisTokenRepository;
 import com.khahnm04.ecommerce.service.auth.JwtService;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
-import com.nimbusds.jose.*;
-import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
+import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
+import com.nimbusds.jose.*;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import lombok.experimental.NonFinal;
-import org.springframework.beans.factory.annotation.Value;
 import java.text.ParseException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.UUID;
+import static com.khahnm04.ecommerce.constant.TokenConstant.ACCESS_TOKEN;
+import static com.khahnm04.ecommerce.constant.TokenConstant.REFRESH_TOKEN;
 
-@Slf4j(topic = "AUTH-SERVICE")
+@Slf4j(topic = "JWT-SERVICE")
 @Service
 @RequiredArgsConstructor
 public class JwtServiceImpl implements JwtService {
 
-    private final RedisTokenRepository redisTokenRepository;
+    private final RedisTemplate<String, Object> redisTemplate;
 
     @NonFinal
     @Value("${jwt.secret-key}")
@@ -41,8 +43,9 @@ public class JwtServiceImpl implements JwtService {
     @Value("${jwt.refresh-token-expiration}")
     private Long refreshTokenExpiration;
 
-    public static final String ACCESS_TOKEN = "access_token";
-    public static final String REFRESH_TOKEN = "refresh_token";
+    @NonFinal
+    @Value("${jwt.remember-me-expiration}")
+    private Long rememberMeExpiration;
 
     @Override
     public TokenResponse generateAccessToken(TokenRequest request) {
@@ -55,67 +58,7 @@ public class JwtServiceImpl implements JwtService {
     }
 
     @Override
-    public SignedJWT verifyAccessToken(String token) {
-        SignedJWT signedJWT = verifyToken(token);
-        if (isExistTokenInRedis(signedJWT)) {
-            throw new AppException(ErrorCode.UNAUTHENTICATED);
-        }
-        return signedJWT;
-    }
-
-    @Override
-    public SignedJWT verifyRefreshToken(String token) {
-        SignedJWT signedJWT = verifyToken(token);
-        if (!isExistTokenInRedis(signedJWT)) {
-            throw new AppException(ErrorCode.REFRESH_TOKEN_FAILED);
-        }
-        return signedJWT;
-    }
-
-    private TokenResponse generateToken(TokenRequest request, String typeToken) {
-        JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
-
-        Date issueTime = new Date();
-        Date expiredTime = new Date(Instant.now()
-            .plus(typeToken.equalsIgnoreCase(ACCESS_TOKEN)
-                ? accessTokenExpiration
-                : refreshTokenExpiration, ChronoUnit.SECONDS)
-            .toEpochMilli());
-        String jwtId = UUID.randomUUID().toString();
-
-        JWTClaimsSet.Builder claimsBuilder = new JWTClaimsSet.Builder()
-            .subject(request.subject())
-            .issueTime(issueTime)
-            .expirationTime(expiredTime)
-            .jwtID(jwtId)
-            .claim("type", typeToken);
-
-        if (typeToken.equalsIgnoreCase(ACCESS_TOKEN)) {
-            claimsBuilder.claim("userId", request.userId());
-            claimsBuilder.claim("scope", request.scope());
-        }
-
-        JWTClaimsSet jwtClaimsSet = claimsBuilder.build();
-
-        Payload payload = new Payload(jwtClaimsSet.toJSONObject());
-        JWSObject jwsObject = new JWSObject(header, payload);
-
-        try {
-            jwsObject.sign(new MACSigner(signerKey.getBytes()));
-        } catch (JOSEException e) {
-            log.error("Cannot create token", e);
-            throw new AppException(ErrorCode.TOKEN_CREATION_FAILED);
-        }
-
-        String token = jwsObject.serialize();
-        return TokenResponse.builder()
-            .jwtId(jwtId)
-            .token(token)
-            .expiredTime(expiredTime)
-            .build();
-    }
-
-    private SignedJWT verifyToken(String token) {
+    public SignedJWT verifyToken(String token) {
         try {
             JWSVerifier verifier = new MACVerifier(signerKey.getBytes());
             SignedJWT signedJWT = SignedJWT.parse(token);
@@ -134,13 +77,51 @@ public class JwtServiceImpl implements JwtService {
         }
     }
 
-    private boolean isExistTokenInRedis(SignedJWT signedJWT) {
-        try {
-            String jwtId = signedJWT.getJWTClaimsSet().getJWTID();
-            return redisTokenRepository.existsById(jwtId);
-        } catch (ParseException e) {
-            throw new AppException(ErrorCode.UNAUTHENTICATED);
+    private TokenResponse generateToken(TokenRequest request, String typeToken) {
+        JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
+
+        long expiration = getExpiration(typeToken, request.rememberMe());
+        Date issueTime = new Date();
+        Date expiredTime = new Date(Instant.now()
+            .plus(expiration, ChronoUnit.SECONDS)
+            .toEpochMilli());
+        String jwtId = UUID.randomUUID().toString();
+
+        JWTClaimsSet.Builder claimsBuilder = new JWTClaimsSet.Builder()
+            .subject(request.subject())
+            .issueTime(issueTime)
+            .expirationTime(expiredTime)
+            .jwtID(jwtId);
+
+        if (typeToken.equalsIgnoreCase(ACCESS_TOKEN)) {
+            claimsBuilder.claim("userId", request.userId());
+            claimsBuilder.claim("scope", request.scope());
         }
+
+        JWTClaimsSet jwtClaimsSet = claimsBuilder.build();
+        Payload payload = new Payload(jwtClaimsSet.toJSONObject());
+        JWSObject jwsObject = new JWSObject(header, payload);
+
+        try {
+            jwsObject.sign(new MACSigner(signerKey.getBytes()));
+        } catch (JOSEException e) {
+            log.error("Cannot create token", e);
+            throw new AppException(ErrorCode.TOKEN_CREATION_FAILED);
+        }
+
+        String token = jwsObject.serialize();
+        return TokenResponse.builder()
+            .jwtId(jwtId)
+            .token(token)
+            .expiredTime(expiredTime)
+            .build();
+    }
+
+    private long getExpiration(String typeToken, boolean rememberMe) {
+        if (typeToken.equalsIgnoreCase(ACCESS_TOKEN)) {
+            return accessTokenExpiration;
+        }
+        return rememberMe ? rememberMeExpiration : refreshTokenExpiration;
     }
 
 }

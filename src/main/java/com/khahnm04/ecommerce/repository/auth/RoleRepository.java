@@ -14,11 +14,9 @@ import java.util.Set;
 public interface RoleRepository extends JpaRepository<Role, Long>, JpaSpecificationExecutor<Role> {
 
     boolean existsByCodeAndIsDeletedFalse(String code);
-
     boolean existsByCodeAndIdNotAndIsDeletedFalse(String code, Long id);
 
     Optional<Role> findByIdAndIsDeletedFalse(Long id);
-
     Optional<Role> findByIdAndIsDeletedTrue(Long id);
 
     @Modifying
@@ -30,7 +28,7 @@ public interface RoleRepository extends JpaRepository<Role, Long>, JpaSpecificat
         WHERE r.id IN :roleIds
         AND r.isDeleted = false
     """)
-    void softDeleteByIds(@Param("roleIds") Set<Long> roleIds,
+    void softDeleteAllByIds(@Param("roleIds") Set<Long> roleIds,
                          @Param("user") String user);
 
     @Modifying
@@ -42,7 +40,7 @@ public interface RoleRepository extends JpaRepository<Role, Long>, JpaSpecificat
         WHERE r.id IN :roleIds
         AND r.isDeleted = true
     """)
-    void restoreByIds(@Param("roleIds") Set<Long> roleIds);
+    void restoreAllByIds(@Param("roleIds") Set<Long> roleIds);
 
     @Modifying
     @Query("""
@@ -51,8 +49,5 @@ public interface RoleRepository extends JpaRepository<Role, Long>, JpaSpecificat
         AND r.isDeleted = true
     """)
     void deleteAllByIds(Set<Long> roleIds);
-
-    // Application Init
-    Optional<Role> findByCodeAndIsDeletedFalse(String code);
 
 }

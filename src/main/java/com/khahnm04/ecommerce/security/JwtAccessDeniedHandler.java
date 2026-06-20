@@ -12,7 +12,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import java.io.IOException;
 
-@Slf4j
+@Slf4j(topic = "JWT-ACCESS-DENIED-HANDLER")
 public class JwtAccessDeniedHandler implements AccessDeniedHandler {
 
     @Override
@@ -21,14 +21,12 @@ public class JwtAccessDeniedHandler implements AccessDeniedHandler {
         HttpServletResponse response,
         AccessDeniedException accessDeniedException
     ) throws IOException {
-
         log.warn("Access denied - URI: {}, Method: {}, Message: {}",
             request.getRequestURI(),
             request.getMethod(),
             accessDeniedException.getMessage());
 
         ErrorCode errorCode = ErrorCode.FORBIDDEN;
-
         response.setStatus(errorCode.getStatusCode().value());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 

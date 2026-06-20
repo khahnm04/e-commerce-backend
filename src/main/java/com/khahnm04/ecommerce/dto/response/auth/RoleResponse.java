@@ -13,14 +13,14 @@ public record RoleResponse(
     Long id,
     String code,
     String name,
-    String description,
     Set<PermissionResponse> permissions,
     Instant createdAt,
     String createdBy,
     Instant updatedAt,
     String updatedBy,
     Instant deletedAt,
-    String deletedBy
+    String deletedBy,
+    Boolean isDeleted
 
 ) implements Serializable {
 }

@@ -1,6 +1,6 @@
 package com.khahnm04.ecommerce.repository.auth;
 
-import com.khahnm04.ecommerce.entity.auth.Role;
+import com.khahnm04.ecommerce.entity.auth.Permission;
 import com.khahnm04.ecommerce.entity.auth.RolePermission;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -15,28 +15,32 @@ public interface RolePermissionRepository extends JpaRepository<RolePermission, 
 
     List<RolePermission> findByRoleId(Long id);
 
-    @Query("""
-        SELECT rp FROM RolePermission rp
-        JOIN FETCH rp.permission
-        WHERE rp.role IN :roles
-    """)
-    List<RolePermission> findByRoleInWithPermission(@Param("roles") List<Role> roles);
-
     @Modifying
-    @Query("""
-        DELETE FROM RolePermission rp
-        WHERE rp.role.id = :roleId
-    """)
     void deleteByRoleId(@Param("roleId") Long roleId);
 
     @Modifying
-    @Query("""
-        DELETE FROM RolePermission rp
-        WHERE rp.role.id IN :roleIds
-    """)
-    void deleteAllByRoleId(@Param("roleIds") Set<Long> roleIds);
+    @Query("DELETE FROM RolePermission rp WHERE rp.roleId IN :roleIds")
+    void deleteAllByRoleIds(@Param("roleIds") Set<Long> roleIds);
 
-    // Application Init
-    Boolean existsByRoleIdAndPermissionId(Long roleId, Long permissionId);
+    @Modifying
+    @Query("DELETE FROM RolePermission rp WHERE rp.id IN :ids")
+    void deleteAllByIds(@Param("ids") List<Long> ids);
+
+    @Modifying
+    @Query("""
+        INSERT INTO RolePermission (roleId, permissionId)
+        SELECT :roleId, p.id
+        FROM Permission p
+        WHERE p.id IN (:permissionIds)
+    """)
+    void insertAll(@Param("roleId") Long roleId,
+                   @Param("permissionIds") List<Long> permissionIds);
+
+    @Query("""
+        SELECT p FROM Permission p
+        JOIN RolePermission rp ON rp.permissionId = p.id
+        WHERE rp.roleId = :roleId
+    """)
+    List<Permission> findPermissionsByRoleId(@Param("roleId") Long roleId);
 
 }

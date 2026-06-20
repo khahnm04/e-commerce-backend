@@ -1,12 +1,10 @@
 package com.khahnm04.ecommerce.service.auth.impl;
 
+import com.khahnm04.ecommerce.dto.projection.auth.RoleProjection;
 import com.khahnm04.ecommerce.dto.request.BulkActionRequest;
-import com.khahnm04.ecommerce.dto.response.auth.PermissionResponse;
-import com.khahnm04.ecommerce.util.PaginationUtil;
-import com.khahnm04.ecommerce.util.SecurityUtil;
-import com.khahnm04.ecommerce.dto.request.filter.RoleFilterRequest;
-import com.khahnm04.ecommerce.dto.projection.RoleProjection;
+import com.khahnm04.ecommerce.dto.request.auth.RoleFilterRequest;
 import com.khahnm04.ecommerce.dto.request.auth.RoleRequest;
+import com.khahnm04.ecommerce.dto.response.auth.PermissionResponse;
 import com.khahnm04.ecommerce.dto.response.auth.RoleResponse;
 import com.khahnm04.ecommerce.entity.auth.Permission;
 import com.khahnm04.ecommerce.entity.auth.Role;
@@ -14,23 +12,25 @@ import com.khahnm04.ecommerce.entity.auth.RolePermission;
 import com.khahnm04.ecommerce.exception.AppException;
 import com.khahnm04.ecommerce.exception.ErrorCode;
 import com.khahnm04.ecommerce.mapper.auth.PermissionMapper;
-import com.khahnm04.ecommerce.mapper.auth.RoleMapper;
 import com.khahnm04.ecommerce.repository.auth.PermissionRepository;
 import com.khahnm04.ecommerce.repository.auth.RolePermissionRepository;
 import com.khahnm04.ecommerce.repository.auth.RoleRepository;
+import com.khahnm04.ecommerce.service.auth.PermissionCacheService;
 import com.khahnm04.ecommerce.service.auth.RoleService;
+import com.khahnm04.ecommerce.mapper.auth.RoleMapper;
 import com.khahnm04.ecommerce.specification.auth.RoleSpecification;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import com.khahnm04.ecommerce.util.PaginationUtil;
+import com.khahnm04.ecommerce.util.SecurityUtil;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import java.util.stream.Collectors;
 import java.time.Instant;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Slf4j(topic = "ROLE-SERVICE")
 @Service
@@ -38,10 +38,11 @@ import java.util.stream.Collectors;
 public class RoleServiceImpl implements RoleService {
 
     private final RoleRepository roleRepository;
-    private final PermissionRepository permissionRepository;
     private final RolePermissionRepository rolePermissionRepository;
+    private final PermissionRepository permissionRepository;
     private final RoleMapper roleMapper;
     private final PermissionMapper permissionMapper;
+    private final PermissionCacheService permissionCacheService;
 
     @Override
     @Transactional
@@ -49,40 +50,44 @@ public class RoleServiceImpl implements RoleService {
         if (roleRepository.existsByCodeAndIsDeletedFalse(request.code())) {
             throw new AppException(ErrorCode.ROLE_EXISTED);
         }
-
         Role role = roleMapper.toRole(request);
         role = roleRepository.save(role);
         List<Permission> permissions = assignPermissionsToRole(role, request.permissions());
 
-        RoleResponse response = roleMapper.toRoleResponse(role)
-            .toBuilder()
-            .permissions(permissions.stream()
-                .map(permissionMapper::toPermissionResponse)
-                .collect(Collectors.toSet()))
-            .build();
+        Set<PermissionResponse> permissionResponses = permissions.stream()
+            .map(permissionMapper::toPermissionResponse)
+            .collect(Collectors.toSet());
 
         log.info("Role created: code={}, name={}", role.getCode(), role.getName());
-        return response;
+        return roleMapper.toRoleResponse(role, permissionResponses);
     }
 
     @Override
     public RoleResponse getRoleDetailById(Long id, boolean isDeleted) {
-        Role role = isDeleted ? getSoftDeletedRoleById(id) : getRoleById(id);
-        List<RolePermission> rolePermissions = rolePermissionRepository.findByRoleId(role.getId());
+        Role role = isDeleted
+            ? getSoftDeletedRoleById(id)
+            : getRoleById(id);
 
-        Set<PermissionResponse> permissions = rolePermissions.stream()
-            .map(rp -> permissionMapper.toPermissionResponse(rp.getPermission()))
+        Set<PermissionResponse> permissions = rolePermissionRepository.findPermissionsByRoleId(role.getId())
+            .stream()
+            .map(permissionMapper::toPermissionResponse)
             .collect(Collectors.toSet());
 
-        return roleMapper.toRoleResponse(role)
-            .toBuilder()
-            .permissions(permissions)
-            .build();
+        return roleMapper.toRoleResponse(role, permissions);
     }
 
     @Override
-    public Page<RoleResponse> getAllRoles(RoleFilterRequest filter) {
-        return getAllRolesWithFilterAndSearch(filter, filter.isDeleted());
+    public Page<RoleResponse> getAllRoles(RoleFilterRequest request) {
+        Pageable pageable = PaginationUtil.createPageable(
+            request.page(),
+            request.size(),
+            request.sort()
+        );
+        Page<RoleProjection> rolePage = roleRepository.findBy(
+            RoleSpecification.buildQuery(request, request.isDeleted()),
+            query -> query.as(RoleProjection.class).page(pageable)
+        );
+        return rolePage.map(roleMapper::toRoleResponse);
     }
 
     @Override
@@ -91,22 +96,16 @@ public class RoleServiceImpl implements RoleService {
         if (roleRepository.existsByCodeAndIdNotAndIsDeletedFalse(request.code(), id)) {
             throw new AppException(ErrorCode.ROLE_EXISTED);
         }
-
         Role role = getRoleById(id);
         roleMapper.updateRole(role, request);
-
         List<Permission> permissions = replacePermissionsForRole(role, request.permissions());
-        roleRepository.save(role);
 
-        RoleResponse response = roleMapper.toRoleResponse(role)
-            .toBuilder()
-            .permissions(permissions.stream()
-                .map(permissionMapper::toPermissionResponse)
-                .collect(Collectors.toSet()))
-            .build();
+        Set<PermissionResponse> permissionResponses = permissions.stream()
+            .map(permissionMapper::toPermissionResponse)
+            .collect(Collectors.toSet());
 
         log.info("Role updated: code={}, name={}", role.getCode(), role.getName());
-        return response;
+        return roleMapper.toRoleResponse(role, permissionResponses);
     }
 
     @Override
@@ -117,7 +116,8 @@ public class RoleServiceImpl implements RoleService {
         role.setDeletedAt(Instant.now());
         role.setDeletedBy(SecurityUtil.getCurrentUser());
         roleRepository.save(role);
-        log.info("Soft-deleted role with id: {}", id);
+        permissionCacheService.evictAll();
+        log.info("Soft deleted role with id: {}", id);
     }
 
     @Override
@@ -126,6 +126,7 @@ public class RoleServiceImpl implements RoleService {
         Role role = getSoftDeletedRoleById(id);
         rolePermissionRepository.deleteByRoleId(id);
         roleRepository.delete(role);
+        permissionCacheService.evictAll();
         log.info("Deleted role with id: {}", id);
     }
 
@@ -137,6 +138,7 @@ public class RoleServiceImpl implements RoleService {
         role.setDeletedAt(null);
         role.setDeletedBy(null);
         roleRepository.save(role);
+        permissionCacheService.evictAll();
         log.info("Role restored with id: {}", id);
     }
 
@@ -147,16 +149,19 @@ public class RoleServiceImpl implements RoleService {
         String action = request.action().toUpperCase();
         switch (action) {
             case "SOFT_DELETE" -> {
-                roleRepository.softDeleteByIds(roleIds, SecurityUtil.getCurrentUser());
+                roleRepository.softDeleteAllByIds(roleIds, SecurityUtil.getCurrentUser());
+                permissionCacheService.evictAll();
                 log.info("Bulk action soft delete roles ids: {}", roleIds);
             }
             case "RESTORE" -> {
-                roleRepository.restoreByIds(roleIds);
+                roleRepository.restoreAllByIds(roleIds);
+                permissionCacheService.evictAll();
                 log.info("Bulk action restore roles ids: {}", roleIds);
             }
             case "DELETE" -> {
-                rolePermissionRepository.deleteAllByRoleId(roleIds);
+                rolePermissionRepository.deleteAllByRoleIds(roleIds);
                 roleRepository.deleteAllByIds(roleIds);
+                permissionCacheService.evictAll();
                 log.info("Bulk action delete roles ids: {}", roleIds);
             }
         }
@@ -173,10 +178,6 @@ public class RoleServiceImpl implements RoleService {
     }
 
     private List<Permission> assignPermissionsToRole(Role role, Set<Long> permissionIds) {
-        if (permissionIds == null || permissionIds.isEmpty()) {
-            throw new AppException(ErrorCode.PERMISSION_REQUIRED);
-        }
-
         List<Permission> permissions = permissionRepository.findAllById(permissionIds);
         if (permissions.size() != permissionIds.size()) {
             throw new AppException(ErrorCode.PERMISSION_NOT_FOUND);
@@ -184,8 +185,8 @@ public class RoleServiceImpl implements RoleService {
 
         List<RolePermission> rolePermissions = permissions.stream()
             .map(permission -> RolePermission.builder()
-                .role(role)
-                .permission(permission)
+                .roleId(role.getId())
+                .permissionId(permission.getId())
                 .build())
             .collect(Collectors.toList());
 
@@ -196,62 +197,35 @@ public class RoleServiceImpl implements RoleService {
 
     private List<Permission> replacePermissionsForRole(Role role, Set<Long> permissionIds) {
         List<Permission> permissions = permissionRepository.findAllById(permissionIds);
-
         if (permissions.size() != permissionIds.size()) {
             throw new AppException(ErrorCode.PERMISSION_NOT_FOUND);
         }
-
-        List<RolePermission> existing = rolePermissionRepository.findByRoleId(role.getId());
-
-        List<RolePermission> toDelete = existing.stream()
-            .filter(rolePermission -> !permissionIds.contains(rolePermission.getPermission().getId()))
-            .toList();
-
-        Set<Long> existingPermissionIds = existing.stream()
-            .map(rolePermission -> rolePermission.getPermission().getId())
+        List<RolePermission> existingRolPermissions = rolePermissionRepository.findByRoleId(role.getId());
+        Set<Long> existingPermissionIds = existingRolPermissions.stream()
+            .map(RolePermission::getPermissionId)
             .collect(Collectors.toSet());
 
-        List<RolePermission> toAdd = permissions.stream()
-            .filter(permission -> !existingPermissionIds.contains(permission.getId()))
-            .map(permission -> RolePermission.builder()
-                .role(role)
-                .permission(permission)
-                .build())
-            .collect(Collectors.toList());
+        if (existingPermissionIds.equals(permissionIds)) {
+            return permissions;
+        }
 
-        rolePermissionRepository.deleteAll(toDelete);
-        rolePermissionRepository.saveAll(toAdd);
+        List<Long> toDeletePermissionIds = existingRolPermissions.stream()
+            .filter(rp -> !permissionIds.contains(rp.getPermissionId()))
+            .map(RolePermission::getId)
+            .toList();
+
+        List<Long> toAddPermissionIds = permissionIds.stream()
+            .filter(permId -> !existingPermissionIds.contains(permId))
+            .toList();
+
+        if (!toDeletePermissionIds.isEmpty()) {
+            rolePermissionRepository.deleteAllByIds(toDeletePermissionIds);
+        }
+        if (!toAddPermissionIds.isEmpty()) {
+            rolePermissionRepository.insertAll(role.getId(), toAddPermissionIds);
+        }
+        permissionCacheService.evictAll();
         return permissions;
-    }
-
-    private Page<RoleResponse> getAllRolesWithFilterAndSearch(RoleFilterRequest request, Boolean isDeleted) {
-        Pageable pageable = PaginationUtil.createPageable(
-            request.page(),
-            request.size(),
-            request.sort()
-        );
-
-        Page<RoleProjection> rolePage = roleRepository.findBy(
-            RoleSpecification.buildQuery(request, isDeleted),
-            q -> q.as(RoleProjection.class).page(pageable)
-        );
-
-        List<RoleResponse> content = rolePage.getContent().stream()
-            .map(roleProjection -> RoleResponse.builder()
-                .id(roleProjection.getId())
-                .code(roleProjection.getCode())
-                .name(roleProjection.getName())
-                .description(roleProjection.getDescription())
-                .createdAt(roleProjection.getCreatedAt())
-                .createdBy(roleProjection.getCreatedBy())
-                .updatedAt(roleProjection.getUpdatedAt())
-                .updatedBy(roleProjection.getUpdatedBy())
-                .deletedAt(roleProjection.getDeletedAt())
-                .deletedBy(roleProjection.getDeletedBy())
-                .build())
-            .collect(Collectors.toList());
-
-        return new PageImpl<>(content, pageable, rolePage.getTotalElements());
     }
 
 }

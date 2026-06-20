@@ -1,7 +1,7 @@
 package com.khahnm04.ecommerce.service.auth;
 
-import com.khahnm04.ecommerce.dto.request.filter.RoleFilterRequest;
 import com.khahnm04.ecommerce.dto.request.BulkActionRequest;
+import com.khahnm04.ecommerce.dto.request.auth.RoleFilterRequest;
 import com.khahnm04.ecommerce.dto.request.auth.RoleRequest;
 import com.khahnm04.ecommerce.dto.response.auth.RoleResponse;
 import org.springframework.data.domain.Page;

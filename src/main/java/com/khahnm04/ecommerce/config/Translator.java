@@ -12,10 +12,14 @@ public class Translator {
     private final MessageSource messageSource;
 
     public String toLocale(String msgCode) {
+        return toLocale(msgCode, msgCode);
+    }
+
+    public String toLocale(String msgCode, String defaultMessage) {
         return messageSource.getMessage(
             msgCode,
             null,
-            msgCode,
+            defaultMessage,
             LocaleContextHolder.getLocale()
         );
     }
