@@ -3,7 +3,6 @@ package com.khahnm04.ecommerce.service.auth.impl;
 import com.khahnm04.ecommerce.dto.request.auth.LoginRequest;
 import com.khahnm04.ecommerce.dto.response.auth.LoginResponse;
 import com.khahnm04.ecommerce.dto.request.auth.TokenRequest;
-import com.khahnm04.ecommerce.dto.response.auth.RefreshTokenResponse;
 import com.khahnm04.ecommerce.dto.response.auth.TokenResponse;
 import com.khahnm04.ecommerce.dto.response.user.AccountUserResponse;
 import com.khahnm04.ecommerce.dto.response.user.AccountAdminResponse;
@@ -91,7 +90,7 @@ public class AuthServiceImpl implements AuthService {
             SignedJWT signedJWT = SignedJWT.parse(refreshToken);
             String jwtId = signedJWT.getJWTClaimsSet().getJWTID();
             redisTemplate.delete(WHITELIST_TOKEN + jwtId);
-            log.info("Remove refresh token from whitelist successfully");
+            log.info("Remove refresh_token from whitelist successfully");
 
             SignedJWT accessJWT = SignedJWT.parse(accessToken);
             String accessJwtId = accessJWT.getJWTClaimsSet().getJWTID();
@@ -104,8 +103,9 @@ public class AuthServiceImpl implements AuthService {
                     ttlSeconds,
                     TimeUnit.SECONDS
                 );
-                log.info("Add access token to blacklist successfully");
+                log.info("Add access_token to blacklist successfully");
             }
+            log.info("Logout successfully");
         } catch (ParseException e) {
             log.error("Cannot parse token and logout failed");
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
@@ -116,7 +116,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public RefreshTokenResponse refreshToken(String refreshToken, UserType userType, HttpServletResponse response) {
+    public void refreshToken(String refreshToken, UserType userType, HttpServletResponse response) {
         try {
             SignedJWT signedJWT = jwtService.verifyToken(refreshToken);
             String jwtId = signedJWT.getJWTClaimsSet().getJWTID();
@@ -162,14 +162,16 @@ public class AuthServiceImpl implements AuthService {
             saveRefreshTokenToRedis(newRefreshToken);
 
             log.info("Refresh token successfully: {}", subject);
-            return RefreshTokenResponse.builder()
-                .accessToken(newAccessToken.token())
-                .refreshToken(newRefreshToken.token())
-                .build();
         } catch (ParseException e) {
             log.error("Cannot parse refresh token");
             throw new AppException(ErrorCode.REFRESH_TOKEN_FAILED);
         }
+    }
+
+    @Override
+    public void clearCookie(HttpServletResponse response) {
+        clearTokenToCookie(response, ACCESS_TOKEN);
+        clearTokenToCookie(response, REFRESH_TOKEN);
     }
 
     private Pair<TokenRequest, LoginResponse> loginAsAccountAdmin(LoginRequest request) {
@@ -182,7 +184,7 @@ public class AuthServiceImpl implements AuthService {
 
         accountAdmin.setLastLoginAt(Instant.now());
         accountAdminRepository.save(accountAdmin);
-        log.info("Account admin with id = {} has been authenticated", accountAdmin.getId());
+        log.info("Account admin with email = {} has been authenticated", accountAdmin.getEmail());
 
         TokenRequest tokenRequest = TokenRequest.builder()
             .userId(accountAdmin.getId())
@@ -216,7 +218,7 @@ public class AuthServiceImpl implements AuthService {
 
         accountUser.setLastLoginAt(Instant.now());
         accountUserRepository.save(accountUser);
-        log.info("Account user with id = {} has been authenticated", accountUser.getId());
+        log.info("Account user with email = {} has been authenticated", accountUser.getEmail());
 
         TokenRequest tokenRequest = TokenRequest.builder()
             .userId(accountUser.getId())

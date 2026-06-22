@@ -5,7 +5,6 @@ import com.khahnm04.ecommerce.constant.auth.UserType;
 import com.khahnm04.ecommerce.dto.request.auth.LoginRequest;
 import com.khahnm04.ecommerce.dto.response.auth.LoginResponse;
 import com.khahnm04.ecommerce.dto.response.ApiResponse;
-import com.khahnm04.ecommerce.dto.response.auth.RefreshTokenResponse;
 import com.khahnm04.ecommerce.service.auth.AuthService;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.web.bind.annotation.*;
@@ -53,15 +52,24 @@ public class AuthController {
     }
 
     @PostMapping({"/refresh", "/admin/refresh"})
-    ApiResponse<RefreshTokenResponse> refresh(
+    ApiResponse<Void> refresh(
         @CookieValue(name = "refresh_token") String refreshToken,
         @RequestBody UserType userType,
         HttpServletResponse response
     ) {
         log.info("Refresh token");
-        return ApiResponse.<RefreshTokenResponse>builder()
-            .data(authService.refreshToken(refreshToken, userType, response))
+        authService.refreshToken(refreshToken, userType, response);
+        return ApiResponse.<Void>builder()
             .message(translator.toLocale("ADMIN_REFRESH_TOKEN_SUCCESS"))
+            .build();
+    }
+
+    @PostMapping({"/clear-cookie", "/admin/clear-cookie"})
+    @Operation(summary = "Clear cookie")
+    public ApiResponse<Void> clearCookie(HttpServletResponse response) {
+        authService.clearCookie(response);
+        return ApiResponse.<Void>builder()
+            .message(translator.toLocale("CLEAR_COOKIE_SUCCESS"))
             .build();
     }
 
