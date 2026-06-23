@@ -1,7 +1,7 @@
 package com.khahnm04.ecommerce.service.category.impl;
 
 import com.khahnm04.ecommerce.constant.category.CategoryStatus;
-import com.khahnm04.ecommerce.dto.projection.category.CategoryProjection;
+import com.khahnm04.ecommerce.dto.projection.CategoryProjection;
 import com.khahnm04.ecommerce.dto.request.BulkActionRequest;
 import com.khahnm04.ecommerce.dto.request.category.CategoryFilterRequest;
 import com.khahnm04.ecommerce.dto.request.category.CategoryRequest;
@@ -12,8 +12,8 @@ import com.khahnm04.ecommerce.exception.ErrorCode;
 import com.khahnm04.ecommerce.mapper.category.CategoryMapper;
 import com.khahnm04.ecommerce.repository.category.CategoryRepository;
 import com.khahnm04.ecommerce.service.category.CategoryService;
-import com.khahnm04.ecommerce.specification.category.CategorySpecification;
-import com.khahnm04.ecommerce.util.PaginationUtil;
+import com.khahnm04.ecommerce.specification.CategorySpecification;
+import com.khahnm04.ecommerce.util.PageableUtil;
 import com.khahnm04.ecommerce.util.SecurityUtil;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Page;
@@ -54,7 +54,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public Page<CategoryResponse> getAllCategories(CategoryFilterRequest request) {
-        Pageable pageable = PaginationUtil.createPageable(
+        Pageable pageable = PageableUtil.createPageable(
             request.page(),
             request.size(),
             request.sort()

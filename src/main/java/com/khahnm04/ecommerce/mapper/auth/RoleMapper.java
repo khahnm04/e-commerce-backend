@@ -2,7 +2,6 @@ package com.khahnm04.ecommerce.mapper.auth;
 
 import com.khahnm04.ecommerce.dto.request.auth.RoleRequest;
 import com.khahnm04.ecommerce.dto.response.auth.RoleResponse;
-import com.khahnm04.ecommerce.dto.projection.auth.RoleProjection;
 import com.khahnm04.ecommerce.dto.response.auth.PermissionResponse;
 import com.khahnm04.ecommerce.entity.auth.Role;
 import org.springframework.stereotype.Component;
@@ -34,21 +33,6 @@ public class RoleMapper {
             builder.permissions(permissions);
         }
         return builder.build();
-    }
-
-    public RoleResponse toRoleResponse(RoleProjection projection) {
-        return RoleResponse.builder()
-            .id(projection.getId())
-            .code(projection.getCode())
-            .name(projection.getName())
-            .createdAt(projection.getCreatedAt())
-            .createdBy(projection.getCreatedBy())
-            .updatedAt(projection.getUpdatedAt())
-            .updatedBy(projection.getUpdatedBy())
-            .deletedAt(projection.getDeletedAt())
-            .deletedBy(projection.getDeletedBy())
-            .isDeleted(projection.getIsDeleted())
-            .build();
     }
 
     public void updateRole(Role role, RoleRequest request) {

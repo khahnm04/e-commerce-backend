@@ -1,10 +1,10 @@
 package com.khahnm04.ecommerce.service.auth;
 
 import com.khahnm04.ecommerce.dto.request.BulkActionRequest;
-import com.khahnm04.ecommerce.dto.request.auth.RoleFilterRequest;
 import com.khahnm04.ecommerce.dto.request.auth.RoleRequest;
 import com.khahnm04.ecommerce.dto.response.auth.RoleResponse;
 import org.springframework.data.domain.Page;
+import java.time.Instant;
 
 public interface RoleService {
 
@@ -12,7 +12,15 @@ public interface RoleService {
 
     RoleResponse getRoleDetailById(Long id, boolean isDeleted);
 
-    Page<RoleResponse> getAllRoles(RoleFilterRequest filter);
+    Page<RoleResponse> getAllRoles(
+        int page,
+        int size,
+        String sort,
+        String keyword,
+        boolean isDeleted,
+        Instant startDate,
+        Instant endDate
+    );
 
     RoleResponse updateRole(Long id, RoleRequest request);
 

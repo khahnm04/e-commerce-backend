@@ -17,8 +17,8 @@ public class PermissionCacheService {
     private final PermissionRepository permissionRepository;
     private final RedisTemplate<String, Object> redisTemplate;
 
-    private static final String PERMISSIONS_PREFIX = "adminPermissions::";
-    private static final String IS_ADMIN_PREFIX = "adminCheck::";
+    private static final String PERMISSIONS_PREFIX = "admin_permissions::";
+    private static final String IS_ADMIN_PREFIX = "admin_check::";
 
     public List<String> getPermissions(String email) {
         String cacheKey = PERMISSIONS_PREFIX + email;

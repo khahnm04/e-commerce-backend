@@ -3,7 +3,7 @@ package com.khahnm04.ecommerce.mapper.coupon;
 import com.khahnm04.ecommerce.constant.coupon.CouponStatus;
 import com.khahnm04.ecommerce.constant.coupon.CouponTypeDiscount;
 import com.khahnm04.ecommerce.constant.coupon.CouponTypeDisplay;
-import com.khahnm04.ecommerce.dto.projection.coupon.CouponProjection;
+import com.khahnm04.ecommerce.dto.projection.CouponProjection;
 import com.khahnm04.ecommerce.dto.request.coupon.CouponRequest;
 import com.khahnm04.ecommerce.dto.response.coupon.CouponResponse;
 import com.khahnm04.ecommerce.entity.coupon.Coupon;

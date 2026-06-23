@@ -1,7 +1,7 @@
 package com.khahnm04.ecommerce.service.user.impl;
 
 import com.khahnm04.ecommerce.constant.user.AccountAdminStatus;
-import com.khahnm04.ecommerce.dto.projection.user.AccountAdminProjection;
+import com.khahnm04.ecommerce.dto.projection.AccountAdminProjection;
 import com.khahnm04.ecommerce.dto.request.user.*;
 import com.khahnm04.ecommerce.dto.request.BulkActionRequest;
 import com.khahnm04.ecommerce.dto.response.auth.RoleResponse;
@@ -15,13 +15,12 @@ import com.khahnm04.ecommerce.exception.ErrorCode;
 import com.khahnm04.ecommerce.mapper.auth.RoleMapper;
 import com.khahnm04.ecommerce.mapper.user.AccountAdminMapper;
 import com.khahnm04.ecommerce.repository.auth.AccountAdminRoleRepository;
-import com.khahnm04.ecommerce.repository.auth.PermissionRepository;
 import com.khahnm04.ecommerce.repository.auth.RoleRepository;
 import com.khahnm04.ecommerce.repository.user.AccountAdminRepository;
 import com.khahnm04.ecommerce.service.auth.PermissionCacheService;
 import com.khahnm04.ecommerce.service.user.AccountAdminService;
-import com.khahnm04.ecommerce.specification.user.AccountAdminSpecification;
-import com.khahnm04.ecommerce.util.PaginationUtil;
+import com.khahnm04.ecommerce.specification.AccountAdminSpecification;
+import com.khahnm04.ecommerce.util.PageableUtil;
 import com.khahnm04.ecommerce.util.SecurityUtil;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -81,7 +80,7 @@ public class AccountAdminServiceImpl implements AccountAdminService {
 
     @Override
     public Page<AccountAdminResponse> getAllAccountAdmins(AccountAdminFilterRequest request) {
-        Pageable pageable = PaginationUtil.createPageable(
+        Pageable pageable = PageableUtil.createPageable(
             request.page(),
             request.size(),
             request.sort()

@@ -31,8 +31,8 @@ public class AuthController {
         HttpServletResponse response
     ) {
         log.info("Login");
+        authService.login(request, response);
         return ApiResponse.<LoginResponse>builder()
-            .data(authService.login(request, response))
             .message(translator.toLocale("ADMIN_LOGIN_SUCCESS"))
             .build();
     }

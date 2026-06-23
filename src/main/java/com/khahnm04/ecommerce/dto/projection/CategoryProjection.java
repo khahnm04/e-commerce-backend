@@ -1,4 +1,4 @@
-package com.khahnm04.ecommerce.dto.projection.category;
+package com.khahnm04.ecommerce.dto.projection;
 
 import com.khahnm04.ecommerce.constant.category.CategoryStatus;
 import java.time.Instant;

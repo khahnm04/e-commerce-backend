@@ -1,4 +1,4 @@
-package com.khahnm04.ecommerce.specification.category;
+package com.khahnm04.ecommerce.specification;
 
 import com.khahnm04.ecommerce.constant.category.CategoryStatus;
 import com.khahnm04.ecommerce.dto.request.category.CategoryFilterRequest;

@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import java.util.List;
+import static com.khahnm04.ecommerce.constant.TokenConstant.ACCESS_TOKEN;
 
 @Configuration
 @RequiredArgsConstructor
@@ -44,9 +45,11 @@ public class OpenApiConfig {
             .servers(List.of(new Server().url(serverUrl)
                 .description(serverDescription)))
             .addSecurityItem(new SecurityRequirement()
-                .addList("Bearer Authentication"))
+                .addList("Bearer Authentication")
+                .addList("cookieAuth"))
             .components(new Components()
-                .addSecuritySchemes("Bearer Authentication", createBearerAuthScheme()))
+                .addSecuritySchemes("Bearer Authentication", createBearerAuthScheme())
+                .addSecuritySchemes("cookieAuth", createCookieAuthScheme()))
             .info(new Info()
                 .title(title)
                 .description(description)
@@ -62,6 +65,14 @@ public class OpenApiConfig {
             .scheme("bearer")
             .bearerFormat("JWT")
             .description("Enter JWT token");
+    }
+
+    private SecurityScheme createCookieAuthScheme() {
+        return new SecurityScheme()
+            .type(SecurityScheme.Type.APIKEY)
+            .in(SecurityScheme.In.COOKIE)
+            .name(ACCESS_TOKEN)
+            .description("Enter access token cookie value");
     }
 
 }

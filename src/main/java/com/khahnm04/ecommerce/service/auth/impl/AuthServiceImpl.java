@@ -68,19 +68,17 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     @Transactional
-    public LoginResponse login(LoginRequest request, HttpServletResponse response) {
-        Pair<TokenRequest, LoginResponse> result = request.userType() == UserType.ACCOUNT_ADMIN
+    public void login(LoginRequest request, HttpServletResponse response) {
+        TokenRequest tokenResponse = request.userType() == UserType.ACCOUNT_ADMIN
             ? loginAsAccountAdmin(request)
             : loginAsAccountUser(request);
 
-        TokenResponse accessToken = jwtService.generateAccessToken(result.getFirst());
-        TokenResponse refreshToken = jwtService.generateRefreshToken(result.getFirst());
+        TokenResponse accessToken = jwtService.generateAccessToken(tokenResponse);
+        TokenResponse refreshToken = jwtService.generateRefreshToken(tokenResponse);
 
         saveRefreshTokenToRedis(refreshToken);
         addAccessTokenToCookie(response, accessToken.token());
         addRefreshTokenToCookie(response, refreshToken.token(), request.rememberMe());
-
-        return result.getSecond();
     }
 
     @Override
@@ -174,7 +172,7 @@ public class AuthServiceImpl implements AuthService {
         clearTokenToCookie(response, REFRESH_TOKEN);
     }
 
-    private Pair<TokenRequest, LoginResponse> loginAsAccountAdmin(LoginRequest request) {
+    private TokenRequest loginAsAccountAdmin(LoginRequest request) {
         AccountAdmin accountAdmin = accountAdminRepository.findByEmailAndIsDeletedFalse(request.email())
             .orElseThrow(() -> new AppException(ErrorCode.LOGIN_FAILED));
 
@@ -186,29 +184,16 @@ public class AuthServiceImpl implements AuthService {
         accountAdminRepository.save(accountAdmin);
         log.info("Account admin with email = {} has been authenticated", accountAdmin.getEmail());
 
-        TokenRequest tokenRequest = TokenRequest.builder()
+        return TokenRequest.builder()
             .userId(accountAdmin.getId())
             .subject(accountAdmin.getEmail())
             .scope(buildScope(accountAdmin))
             .userType(UserType.ACCOUNT_ADMIN)
             .rememberMe(request.rememberMe())
             .build();
-
-        LoginResponse loginResponse = LoginResponse.builder()
-            .accountAdmin(AccountAdminResponse.builder()
-                .id(accountAdmin.getId())
-                .jobTitle(accountAdmin.getJobTitle())
-                .email(accountAdmin.getEmail())
-                .fullName(accountAdmin.getFullName())
-                .avatar(accountAdmin.getAvatar())
-                .build())
-            .userType(UserType.ACCOUNT_ADMIN)
-            .build();
-
-        return Pair.of(tokenRequest, loginResponse);
     }
 
-    private Pair<TokenRequest, LoginResponse> loginAsAccountUser(LoginRequest request) {
+    private TokenRequest loginAsAccountUser(LoginRequest request) {
         AccountUser accountUser = accountUserRepository.findByEmailAndIsDeletedFalse(request.email())
             .orElseThrow(() -> new AppException(ErrorCode.LOGIN_FAILED));
 
@@ -220,25 +205,13 @@ public class AuthServiceImpl implements AuthService {
         accountUserRepository.save(accountUser);
         log.info("Account user with email = {} has been authenticated", accountUser.getEmail());
 
-        TokenRequest tokenRequest = TokenRequest.builder()
+        return TokenRequest.builder()
             .userId(accountUser.getId())
             .subject(accountUser.getEmail())
             .scope("ROLE_ACCOUNT_USER")
             .userType(UserType.ACCOUNT_USER)
             .rememberMe(request.rememberMe())
             .build();
-
-        LoginResponse loginResponse = LoginResponse.builder()
-            .accountUser(AccountUserResponse.builder()
-                .id(accountUser.getId())
-                .email(accountUser.getEmail())
-                .fullName(accountUser.getFullName())
-                .avatar(accountUser.getAvatar())
-                .build())
-            .userType(UserType.ACCOUNT_USER)
-            .build();
-
-        return Pair.of(tokenRequest, loginResponse);
     }
 
     private String buildScope(AccountAdmin accountAdmin) {

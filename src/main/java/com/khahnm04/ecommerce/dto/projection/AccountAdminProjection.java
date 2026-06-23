@@ -1,4 +1,4 @@
-package com.khahnm04.ecommerce.dto.projection.user;
+package com.khahnm04.ecommerce.dto.projection;
 
 import com.khahnm04.ecommerce.constant.user.AccountAdminStatus;
 import com.khahnm04.ecommerce.constant.user.Gender;

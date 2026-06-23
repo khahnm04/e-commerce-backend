@@ -2,7 +2,7 @@ package com.khahnm04.ecommerce.mapper.user;
 
 import com.khahnm04.ecommerce.constant.user.AccountAdminStatus;
 import com.khahnm04.ecommerce.constant.user.Gender;
-import com.khahnm04.ecommerce.dto.projection.user.AccountAdminProjection;
+import com.khahnm04.ecommerce.dto.projection.AccountAdminProjection;
 import com.khahnm04.ecommerce.dto.request.user.AccountAdminCreationRequest;
 import com.khahnm04.ecommerce.dto.request.user.AccountAdminUpdateRequest;
 import com.khahnm04.ecommerce.dto.request.user.AdminProfileRequest;

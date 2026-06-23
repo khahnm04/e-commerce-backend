@@ -1,8 +1,6 @@
 package com.khahnm04.ecommerce.service.auth.impl;
 
-import com.khahnm04.ecommerce.dto.projection.auth.RoleProjection;
 import com.khahnm04.ecommerce.dto.request.BulkActionRequest;
-import com.khahnm04.ecommerce.dto.request.auth.RoleFilterRequest;
 import com.khahnm04.ecommerce.dto.request.auth.RoleRequest;
 import com.khahnm04.ecommerce.dto.response.auth.PermissionResponse;
 import com.khahnm04.ecommerce.dto.response.auth.RoleResponse;
@@ -18,9 +16,10 @@ import com.khahnm04.ecommerce.repository.auth.RoleRepository;
 import com.khahnm04.ecommerce.service.auth.PermissionCacheService;
 import com.khahnm04.ecommerce.service.auth.RoleService;
 import com.khahnm04.ecommerce.mapper.auth.RoleMapper;
-import com.khahnm04.ecommerce.specification.auth.RoleSpecification;
-import com.khahnm04.ecommerce.util.PaginationUtil;
+import com.khahnm04.ecommerce.specification.RoleSpecification;
+import com.khahnm04.ecommerce.util.PageableUtil;
 import com.khahnm04.ecommerce.util.SecurityUtil;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -77,17 +76,24 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
-    public Page<RoleResponse> getAllRoles(RoleFilterRequest request) {
-        Pageable pageable = PaginationUtil.createPageable(
-            request.page(),
-            request.size(),
-            request.sort()
-        );
-        Page<RoleProjection> rolePage = roleRepository.findBy(
-            RoleSpecification.buildQuery(request, request.isDeleted()),
-            query -> query.as(RoleProjection.class).page(pageable)
-        );
-        return rolePage.map(roleMapper::toRoleResponse);
+    public Page<RoleResponse> getAllRoles(
+        int page,
+        int size,
+        String sort,
+        String keyword,
+        boolean isDeleted,
+        Instant startDate,
+        Instant endDate
+    ) {
+        Pageable pageable = PageableUtil.createPageable(page, size, sort);
+
+        Specification<Role> spec = RoleSpecification.byIsDeleted(isDeleted)
+            .and(RoleSpecification.byKeyword(keyword))
+            .and(RoleSpecification.byStartDate(startDate))
+            .and(RoleSpecification.byEndDate(endDate));
+
+        Page<Role> rolePage = roleRepository.findAll(spec, pageable);
+        return rolePage.map(role -> roleMapper.toRoleResponse(role, null));
     }
 
     @Override

@@ -1,12 +1,15 @@
-package com.khahnm04.ecommerce.dto.projection.auth;
+package com.khahnm04.ecommerce.dto.projection;
 
+import com.khahnm04.ecommerce.constant.brand.BrandStatus;
 import java.time.Instant;
 
-public interface RoleProjection {
+public interface BrandProjection {
 
     Long getId();
-    String getCode();
     String getName();
+    String getSlug();
+    String getLogo();
+    BrandStatus getStatus();
     Instant getCreatedAt();
     String getCreatedBy();
     Instant getUpdatedAt();

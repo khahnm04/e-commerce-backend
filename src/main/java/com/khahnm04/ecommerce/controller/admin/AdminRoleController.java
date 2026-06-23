@@ -2,7 +2,6 @@ package com.khahnm04.ecommerce.controller.admin;
 
 import com.khahnm04.ecommerce.config.Translator;
 import com.khahnm04.ecommerce.dto.request.auth.RoleRequest;
-import com.khahnm04.ecommerce.dto.request.auth.RoleFilterRequest;
 import com.khahnm04.ecommerce.dto.request.BulkActionRequest;
 import com.khahnm04.ecommerce.dto.response.auth.RoleResponse;
 import com.khahnm04.ecommerce.dto.response.ApiResponse;
@@ -19,7 +18,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -28,6 +26,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import java.time.Instant;
 
 @Slf4j(topic = "ROLE-CONTROLLER")
 @RestController
@@ -71,13 +71,27 @@ public class AdminRoleController {
     @Operation(summary = "Get all roles")
     @PreAuthorize("hasAuthority('ROLE_VIEW')")
     PageResponse<RoleResponse> getAllRoles(
-        @Valid @ModelAttribute RoleFilterRequest request
+        @RequestParam(defaultValue = "1") int page,
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(defaultValue = "false") boolean isDeleted,
+        @RequestParam(defaultValue = "createdAt,desc") String sort,
+        @RequestParam(required = false) String keyword,
+        @RequestParam(required = false) Instant startDate,
+        @RequestParam(required = false) Instant endDate
     ) {
         log.info("Get all roles");
-        Page<RoleResponse> page = roleService.getAllRoles(request);
+        Page<RoleResponse> rolePage = roleService.getAllRoles(
+            page,
+            size,
+            sort,
+            keyword,
+            isDeleted,
+            startDate,
+            endDate
+        );
         return PageResponse.<RoleResponse>builder()
-            .data(page.getContent())
-            .meta(PageResponse.Meta.fromPage(page))
+            .data(rolePage.getContent())
+            .meta(PageResponse.Meta.fromPage(rolePage))
             .message(translator.toLocale("ROLE_GET_ALL_SUCCESS"))
             .build();
     }

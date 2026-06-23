@@ -1,7 +1,7 @@
 package com.khahnm04.ecommerce.service.coupon.impl;
 
 import com.khahnm04.ecommerce.constant.coupon.CouponStatus;
-import com.khahnm04.ecommerce.dto.projection.coupon.CouponProjection;
+import com.khahnm04.ecommerce.dto.projection.CouponProjection;
 import com.khahnm04.ecommerce.dto.request.BulkActionRequest;
 import com.khahnm04.ecommerce.dto.request.coupon.CouponFilterRequest;
 import com.khahnm04.ecommerce.dto.request.coupon.CouponRequest;
@@ -12,8 +12,8 @@ import com.khahnm04.ecommerce.exception.ErrorCode;
 import com.khahnm04.ecommerce.mapper.coupon.CouponMapper;
 import com.khahnm04.ecommerce.repository.coupon.CouponRepository;
 import com.khahnm04.ecommerce.service.coupon.CouponService;
-import com.khahnm04.ecommerce.specification.coupon.CouponSpecification;
-import com.khahnm04.ecommerce.util.PaginationUtil;
+import com.khahnm04.ecommerce.specification.CouponSpecification;
+import com.khahnm04.ecommerce.util.PageableUtil;
 import com.khahnm04.ecommerce.util.SecurityUtil;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Page;
@@ -53,7 +53,7 @@ public class CouponServiceImpl implements CouponService {
 
     @Override
     public Page<CouponResponse> getAllCoupons(CouponFilterRequest request) {
-        Pageable pageable = PaginationUtil.createPageable(
+        Pageable pageable = PageableUtil.createPageable(
             request.page(),
             request.size(),
             request.sort()

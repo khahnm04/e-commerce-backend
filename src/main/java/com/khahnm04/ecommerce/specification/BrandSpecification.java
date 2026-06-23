@@ -1,4 +1,4 @@
-package com.khahnm04.ecommerce.specification.brand;
+package com.khahnm04.ecommerce.specification;
 
 import com.khahnm04.ecommerce.constant.brand.BrandStatus;
 import com.khahnm04.ecommerce.dto.request.brand.BrandFilterRequest;

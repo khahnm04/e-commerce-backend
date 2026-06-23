@@ -1,4 +1,4 @@
-package com.khahnm04.ecommerce.specification.user;
+package com.khahnm04.ecommerce.specification;
 
 import com.khahnm04.ecommerce.constant.user.AccountAdminStatus;
 import com.khahnm04.ecommerce.constant.user.Gender;

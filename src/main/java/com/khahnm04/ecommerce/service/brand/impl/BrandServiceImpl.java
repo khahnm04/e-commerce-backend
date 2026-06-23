@@ -1,7 +1,7 @@
 package com.khahnm04.ecommerce.service.brand.impl;
 
 import com.khahnm04.ecommerce.constant.brand.BrandStatus;
-import com.khahnm04.ecommerce.dto.projection.brand.BrandProjection;
+import com.khahnm04.ecommerce.dto.projection.BrandProjection;
 import com.khahnm04.ecommerce.dto.request.BulkActionRequest;
 import com.khahnm04.ecommerce.dto.request.brand.BrandFilterRequest;
 import com.khahnm04.ecommerce.dto.request.brand.BrandRequest;
@@ -12,8 +12,8 @@ import com.khahnm04.ecommerce.exception.ErrorCode;
 import com.khahnm04.ecommerce.mapper.brand.BrandMapper;
 import com.khahnm04.ecommerce.repository.brand.BrandRepository;
 import com.khahnm04.ecommerce.service.brand.BrandService;
-import com.khahnm04.ecommerce.specification.brand.BrandSpecification;
-import com.khahnm04.ecommerce.util.PaginationUtil;
+import com.khahnm04.ecommerce.specification.BrandSpecification;
+import com.khahnm04.ecommerce.util.PageableUtil;
 import com.khahnm04.ecommerce.util.SecurityUtil;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Page;
@@ -53,7 +53,7 @@ public class BrandServiceImpl implements BrandService {
 
     @Override
     public Page<BrandResponse> getAllBrands(BrandFilterRequest request) {
-        Pageable pageable = PaginationUtil.createPageable(
+        Pageable pageable = PageableUtil.createPageable(
             request.page(),
             request.size(),
             request.sort()

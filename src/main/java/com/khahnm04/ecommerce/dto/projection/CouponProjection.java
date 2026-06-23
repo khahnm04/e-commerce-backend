@@ -1,4 +1,4 @@
-package com.khahnm04.ecommerce.dto.projection.coupon;
+package com.khahnm04.ecommerce.dto.projection;
 
 import com.khahnm04.ecommerce.constant.coupon.CouponStatus;
 import com.khahnm04.ecommerce.constant.coupon.CouponTypeDiscount;

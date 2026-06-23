@@ -1,7 +1,7 @@
 package com.khahnm04.ecommerce.mapper.brand;
 
 import com.khahnm04.ecommerce.constant.brand.BrandStatus;
-import com.khahnm04.ecommerce.dto.projection.brand.BrandProjection;
+import com.khahnm04.ecommerce.dto.projection.BrandProjection;
 import com.khahnm04.ecommerce.dto.request.brand.BrandRequest;
 import com.khahnm04.ecommerce.dto.response.brand.BrandResponse;
 import com.khahnm04.ecommerce.entity.brand.Brand;

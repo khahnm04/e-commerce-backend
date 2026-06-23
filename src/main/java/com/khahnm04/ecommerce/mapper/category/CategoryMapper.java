@@ -1,7 +1,7 @@
 package com.khahnm04.ecommerce.mapper.category;
 
 import com.khahnm04.ecommerce.constant.category.CategoryStatus;
-import com.khahnm04.ecommerce.dto.projection.category.CategoryProjection;
+import com.khahnm04.ecommerce.dto.projection.CategoryProjection;
 import com.khahnm04.ecommerce.dto.request.category.CategoryRequest;
 import com.khahnm04.ecommerce.dto.response.category.CategoryResponse;
 import com.khahnm04.ecommerce.entity.category.Category;
