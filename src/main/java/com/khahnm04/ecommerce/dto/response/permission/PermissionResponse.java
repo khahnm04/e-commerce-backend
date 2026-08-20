@@ -1,4 +1,4 @@
-package com.khahnm04.ecommerce.dto.response.auth;
+package com.khahnm04.ecommerce.dto.response.permission;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;

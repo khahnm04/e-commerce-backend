@@ -1,8 +1,8 @@
-package com.khahnm04.ecommerce.service.auth;
+package com.khahnm04.ecommerce.service.role;
 
 import com.khahnm04.ecommerce.dto.request.BulkActionRequest;
-import com.khahnm04.ecommerce.dto.request.auth.RoleRequest;
-import com.khahnm04.ecommerce.dto.response.auth.RoleResponse;
+import com.khahnm04.ecommerce.dto.request.role.RoleRequest;
+import com.khahnm04.ecommerce.dto.response.role.RoleResponse;
 import org.springframework.data.domain.Page;
 import java.time.Instant;
 

@@ -1,4 +1,4 @@
-package com.khahnm04.ecommerce.dto.request.auth;
+package com.khahnm04.ecommerce.dto.request.role;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;

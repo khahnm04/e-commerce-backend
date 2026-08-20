@@ -1,10 +1,9 @@
-package com.khahnm04.ecommerce.service.auth.impl;
+package com.khahnm04.ecommerce.service.permission;
 
-import com.khahnm04.ecommerce.dto.response.auth.PermissionResponse;
+import com.khahnm04.ecommerce.dto.response.permission.PermissionResponse;
 import com.khahnm04.ecommerce.entity.auth.Permission;
 import com.khahnm04.ecommerce.mapper.auth.PermissionMapper;
 import com.khahnm04.ecommerce.repository.auth.PermissionRepository;
-import com.khahnm04.ecommerce.service.auth.PermissionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

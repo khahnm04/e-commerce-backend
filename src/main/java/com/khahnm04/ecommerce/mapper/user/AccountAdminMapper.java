@@ -6,7 +6,7 @@ import com.khahnm04.ecommerce.dto.projection.AccountAdminProjection;
 import com.khahnm04.ecommerce.dto.request.user.AccountAdminCreationRequest;
 import com.khahnm04.ecommerce.dto.request.user.AccountAdminUpdateRequest;
 import com.khahnm04.ecommerce.dto.request.user.AdminProfileRequest;
-import com.khahnm04.ecommerce.dto.response.auth.RoleResponse;
+import com.khahnm04.ecommerce.dto.response.role.RoleResponse;
 import com.khahnm04.ecommerce.dto.response.user.AccountAdminResponse;
 import com.khahnm04.ecommerce.dto.response.user.AdminProfileResponse;
 import com.khahnm04.ecommerce.entity.user.AccountAdmin;

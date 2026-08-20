@@ -1,9 +1,9 @@
-package com.khahnm04.ecommerce.service.auth.impl;
+package com.khahnm04.ecommerce.service.role;
 
 import com.khahnm04.ecommerce.dto.request.BulkActionRequest;
-import com.khahnm04.ecommerce.dto.request.auth.RoleRequest;
-import com.khahnm04.ecommerce.dto.response.auth.PermissionResponse;
-import com.khahnm04.ecommerce.dto.response.auth.RoleResponse;
+import com.khahnm04.ecommerce.dto.request.role.RoleRequest;
+import com.khahnm04.ecommerce.dto.response.permission.PermissionResponse;
+import com.khahnm04.ecommerce.dto.response.role.RoleResponse;
 import com.khahnm04.ecommerce.entity.auth.Permission;
 import com.khahnm04.ecommerce.entity.auth.Role;
 import com.khahnm04.ecommerce.entity.auth.RolePermission;
@@ -13,8 +13,7 @@ import com.khahnm04.ecommerce.mapper.auth.PermissionMapper;
 import com.khahnm04.ecommerce.repository.auth.PermissionRepository;
 import com.khahnm04.ecommerce.repository.auth.RolePermissionRepository;
 import com.khahnm04.ecommerce.repository.auth.RoleRepository;
-import com.khahnm04.ecommerce.service.auth.PermissionCacheService;
-import com.khahnm04.ecommerce.service.auth.RoleService;
+import com.khahnm04.ecommerce.service.permission.PermissionCacheService;
 import com.khahnm04.ecommerce.mapper.auth.RoleMapper;
 import com.khahnm04.ecommerce.specification.RoleSpecification;
 import com.khahnm04.ecommerce.util.PageableUtil;
@@ -120,7 +119,7 @@ public class RoleServiceImpl implements RoleService {
         Role role = getRoleById(id);
         role.setIsDeleted(true);
         role.setDeletedAt(Instant.now());
-        role.setDeletedBy(SecurityUtil.getCurrentUser());
+        role.setDeletedBy(SecurityUtil.getCurrentUserFullName());
         roleRepository.save(role);
         permissionCacheService.evictAll();
         log.info("Soft deleted role with id: {}", id);
@@ -155,7 +154,7 @@ public class RoleServiceImpl implements RoleService {
         String action = request.action().toUpperCase();
         switch (action) {
             case "SOFT_DELETE" -> {
-                roleRepository.softDeleteAllByIds(roleIds, SecurityUtil.getCurrentUser());
+                roleRepository.softDeleteAllByIds(roleIds, SecurityUtil.getCurrentUserFullName());
                 permissionCacheService.evictAll();
                 log.info("Bulk action soft delete roles ids: {}", roleIds);
             }

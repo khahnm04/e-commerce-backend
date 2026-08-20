@@ -23,7 +23,6 @@ public interface AccountAdminRepository extends JpaRepository<AccountAdmin, Long
 
     Optional<AccountAdmin> findByIdAndIsDeletedFalse(Long id);
     Optional<AccountAdmin> findByIdAndIsDeletedTrue(Long id);
-
     Optional<AccountAdmin> findByEmailAndIsDeletedFalse(String email);
 
     @Modifying
@@ -73,12 +72,12 @@ public interface AccountAdminRepository extends JpaRepository<AccountAdmin, Long
             FROM AccountAdmin a
             JOIN AccountAdminRole ar ON ar.accountAdminId = a.id
             JOIN Role r ON ar.roleId = r.id
-            WHERE a.email = :email
+            WHERE a.id = :userId
             AND r.code = 'ADMIN'
             AND a.isDeleted = false
         ) THEN true ELSE false END
     """)
-    boolean isAdmin(@Param("email") String email);
+    boolean isAdmin(@Param("userId") Long userid);
 
     @Query("""
         SELECT DISTINCT p.code
@@ -86,9 +85,9 @@ public interface AccountAdminRepository extends JpaRepository<AccountAdmin, Long
         JOIN AccountAdminRole ar ON a.id = ar.accountAdminId
         JOIN RolePermission rp ON ar.roleId = rp.roleId
         JOIN Permission p ON rp.permissionId = p.id
-        WHERE a.email = :email
+        WHERE a.id = :userId
         AND a.isDeleted = false
     """)
-    List<String> findPermissionCodesByEmail(@Param("email") String email);
+    List<String> findPermissionCodesById(@Param("userId") Long userid);
 
 }

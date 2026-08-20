@@ -1,7 +1,7 @@
 package com.khahnm04.ecommerce.dto.response.user;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.khahnm04.ecommerce.dto.response.auth.RoleResponse;
+import com.khahnm04.ecommerce.dto.response.role.RoleResponse;
 import com.khahnm04.ecommerce.constant.user.AccountAdminStatus;
 import com.khahnm04.ecommerce.constant.user.Gender;
 import lombok.Builder;

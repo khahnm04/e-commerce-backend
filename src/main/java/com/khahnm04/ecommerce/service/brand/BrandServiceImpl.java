@@ -1,4 +1,4 @@
-package com.khahnm04.ecommerce.service.brand.impl;
+package com.khahnm04.ecommerce.service.brand;
 
 import com.khahnm04.ecommerce.constant.brand.BrandStatus;
 import com.khahnm04.ecommerce.dto.projection.BrandProjection;
@@ -11,7 +11,6 @@ import com.khahnm04.ecommerce.exception.AppException;
 import com.khahnm04.ecommerce.exception.ErrorCode;
 import com.khahnm04.ecommerce.mapper.brand.BrandMapper;
 import com.khahnm04.ecommerce.repository.brand.BrandRepository;
-import com.khahnm04.ecommerce.service.brand.BrandService;
 import com.khahnm04.ecommerce.specification.BrandSpecification;
 import com.khahnm04.ecommerce.util.PageableUtil;
 import com.khahnm04.ecommerce.util.SecurityUtil;
@@ -83,7 +82,7 @@ public class BrandServiceImpl implements BrandService {
         Brand brand = getBrandById(id);
         brand.setIsDeleted(true);
         brand.setDeletedAt(Instant.now());
-        brand.setDeletedBy(SecurityUtil.getCurrentUser());
+        brand.setDeletedBy(SecurityUtil.getCurrentUserFullName());
         brandRepository.save(brand);
         log.info("Soft deleted brand with id: {}", id);
     }
@@ -118,7 +117,7 @@ public class BrandServiceImpl implements BrandService {
                 log.info("Bulk update status {} brands ids: {}", action, brandIds);
             }
             case "SOFT_DELETE" -> {
-                brandRepository.softDeleteAllByIds(brandIds, SecurityUtil.getCurrentUser());
+                brandRepository.softDeleteAllByIds(brandIds, SecurityUtil.getCurrentUserFullName());
                 log.info("Bulk action soft delete brands ids: {}", brandIds);
             }
             case "RESTORE" -> {

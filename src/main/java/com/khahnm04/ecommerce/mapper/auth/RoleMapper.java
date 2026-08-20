@@ -1,8 +1,8 @@
 package com.khahnm04.ecommerce.mapper.auth;
 
-import com.khahnm04.ecommerce.dto.request.auth.RoleRequest;
-import com.khahnm04.ecommerce.dto.response.auth.RoleResponse;
-import com.khahnm04.ecommerce.dto.response.auth.PermissionResponse;
+import com.khahnm04.ecommerce.dto.request.role.RoleRequest;
+import com.khahnm04.ecommerce.dto.response.role.RoleResponse;
+import com.khahnm04.ecommerce.dto.response.permission.PermissionResponse;
 import com.khahnm04.ecommerce.entity.auth.Role;
 import org.springframework.stereotype.Component;
 import java.util.Set;

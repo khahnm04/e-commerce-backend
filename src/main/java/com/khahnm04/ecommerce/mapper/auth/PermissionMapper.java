@@ -1,6 +1,6 @@
 package com.khahnm04.ecommerce.mapper.auth;
 
-import com.khahnm04.ecommerce.dto.response.auth.PermissionResponse;
+import com.khahnm04.ecommerce.dto.response.permission.PermissionResponse;
 import com.khahnm04.ecommerce.entity.auth.Permission;
 import org.springframework.stereotype.Component;
 

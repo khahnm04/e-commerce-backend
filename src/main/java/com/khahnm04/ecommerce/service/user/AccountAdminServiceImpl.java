@@ -1,10 +1,10 @@
-package com.khahnm04.ecommerce.service.user.impl;
+package com.khahnm04.ecommerce.service.user;
 
 import com.khahnm04.ecommerce.constant.user.AccountAdminStatus;
 import com.khahnm04.ecommerce.dto.projection.AccountAdminProjection;
 import com.khahnm04.ecommerce.dto.request.user.*;
 import com.khahnm04.ecommerce.dto.request.BulkActionRequest;
-import com.khahnm04.ecommerce.dto.response.auth.RoleResponse;
+import com.khahnm04.ecommerce.dto.response.role.RoleResponse;
 import com.khahnm04.ecommerce.dto.response.user.AccountAdminResponse;
 import com.khahnm04.ecommerce.dto.response.user.AdminProfileResponse;
 import com.khahnm04.ecommerce.entity.auth.AccountAdminRole;
@@ -17,8 +17,7 @@ import com.khahnm04.ecommerce.mapper.user.AccountAdminMapper;
 import com.khahnm04.ecommerce.repository.auth.AccountAdminRoleRepository;
 import com.khahnm04.ecommerce.repository.auth.RoleRepository;
 import com.khahnm04.ecommerce.repository.user.AccountAdminRepository;
-import com.khahnm04.ecommerce.service.auth.PermissionCacheService;
-import com.khahnm04.ecommerce.service.user.AccountAdminService;
+import com.khahnm04.ecommerce.service.permission.PermissionCacheService;
 import com.khahnm04.ecommerce.specification.AccountAdminSpecification;
 import com.khahnm04.ecommerce.util.PageableUtil;
 import com.khahnm04.ecommerce.util.SecurityUtil;
@@ -120,9 +119,9 @@ public class AccountAdminServiceImpl implements AccountAdminService {
         AccountAdmin accountAdmin = getAccountAdminById(id);
         accountAdmin.setIsDeleted(true);
         accountAdmin.setDeletedAt(Instant.now());
-        accountAdmin.setDeletedBy(SecurityUtil.getCurrentUser());
+        accountAdmin.setDeletedBy(accountAdmin.getFullName());
         accountAdminRepository.save(accountAdmin);
-        permissionCacheService.evictByEmail(accountAdmin.getEmail());
+        permissionCacheService.evictByUserId(accountAdmin.getId());
         log.info("Soft-deleted account admin with id: {}", id);
     }
 
@@ -132,7 +131,7 @@ public class AccountAdminServiceImpl implements AccountAdminService {
         AccountAdmin accountAdmin = getSoftDeletedAccountAdminById(id);
         accountAdminRoleRepository.deleteByAccountAdminId(id);
         accountAdminRepository.delete(accountAdmin);
-        permissionCacheService.evictByEmail(accountAdmin.getEmail());
+        permissionCacheService.evictByUserId(accountAdmin.getId());
         log.info("Deleted account admin with id: {}", id);
     }
 
@@ -144,7 +143,7 @@ public class AccountAdminServiceImpl implements AccountAdminService {
         accountAdmin.setDeletedAt(null);
         accountAdmin.setDeletedBy(null);
         accountAdminRepository.save(accountAdmin);
-        permissionCacheService.evictByEmail(accountAdmin.getEmail());
+        permissionCacheService.evictByUserId(accountAdmin.getId());
         log.info("Account admin restored with id: {}", id);
     }
 
@@ -159,7 +158,9 @@ public class AccountAdminServiceImpl implements AccountAdminService {
                 log.info("Bulk update status {} account admins ids: {}", action, accountAdminIds);
             }
             case "SOFT_DELETE" -> {
-                accountAdminRepository.softDeleteAllByIds(accountAdminIds, SecurityUtil.getCurrentUser());
+                Long userId = SecurityUtil.getCurrentUserId();
+                AccountAdmin accountAdmin = getAccountAdminById(userId);
+                accountAdminRepository.softDeleteAllByIds(accountAdminIds, accountAdmin.getFullName());
                 permissionCacheService.evictAll();
                 log.info("Bulk action soft delete account admins ids: {}", accountAdminIds);
             }
@@ -179,16 +180,16 @@ public class AccountAdminServiceImpl implements AccountAdminService {
 
     @Override
     public AdminProfileResponse getMyProfile() {
-        String email = SecurityUtil.getCurrentUser();
-        AccountAdmin accountAdmin = getAccountAdminByEmail(email);
+        Long userId = SecurityUtil.getCurrentUserId();
+        AccountAdmin accountAdmin = getAccountAdminById(userId);
         return accountAdminMapper.toAdminProfileResponse(accountAdmin);
     }
 
     @Override
     @Transactional
     public AdminProfileResponse updateMyProfile(AdminProfileRequest request) {
-        String email = SecurityUtil.getCurrentUser();
-        AccountAdmin accountAdmin = getAccountAdminByEmail(email);
+        Long userId = SecurityUtil.getCurrentUserId();
+        AccountAdmin accountAdmin = getAccountAdminById(userId);
         accountAdminMapper.updateAdminProfile(accountAdmin, request);
         accountAdminRepository.save(accountAdmin);
         return accountAdminMapper.toAdminProfileResponse(accountAdmin);
@@ -196,16 +197,16 @@ public class AccountAdminServiceImpl implements AccountAdminService {
 
     @Override
     public void changePassword(ChangePasswordRequest request) {
-        String email = SecurityUtil.getCurrentUser();
-        AccountAdmin accountAdmin = getAccountAdminByEmail(email);
+        Long userId = SecurityUtil.getCurrentUserId();
+        AccountAdmin accountAdmin = getAccountAdminById(userId);
         accountAdmin.setPassword(passwordEncoder.encode(request.password()));
         accountAdminRepository.save(accountAdmin);
     }
 
     @Override
     public List<String> getMyPermissions() {
-        String email = SecurityUtil.getCurrentUser();
-        return permissionCacheService.getPermissions(email);
+        Long userId = SecurityUtil.getCurrentUserId();
+        return permissionCacheService.getPermissions(userId);
     }
 
     private AccountAdmin getAccountAdminById(Long id) {
@@ -271,7 +272,7 @@ public class AccountAdminServiceImpl implements AccountAdminService {
         if (!toAddRoleIds.isEmpty()) {
             accountAdminRoleRepository.insertAll(accountAdmin.getId(), toAddRoleIds);
         }
-        permissionCacheService.evictByEmail(accountAdmin.getEmail());
+        permissionCacheService.evictByUserId(accountAdmin.getId());
         return roles;
     }
 

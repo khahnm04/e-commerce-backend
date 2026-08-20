@@ -1,6 +1,7 @@
-package com.khahnm04.ecommerce.dto.response.auth;
+package com.khahnm04.ecommerce.dto.response.role;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.khahnm04.ecommerce.dto.response.permission.PermissionResponse;
 import lombok.Builder;
 import java.time.Instant;
 import java.util.Set;

@@ -1,4 +1,4 @@
-package com.khahnm04.ecommerce.service.coupon.impl;
+package com.khahnm04.ecommerce.service.coupon;
 
 import com.khahnm04.ecommerce.constant.coupon.CouponStatus;
 import com.khahnm04.ecommerce.dto.projection.CouponProjection;
@@ -11,7 +11,6 @@ import com.khahnm04.ecommerce.exception.AppException;
 import com.khahnm04.ecommerce.exception.ErrorCode;
 import com.khahnm04.ecommerce.mapper.coupon.CouponMapper;
 import com.khahnm04.ecommerce.repository.coupon.CouponRepository;
-import com.khahnm04.ecommerce.service.coupon.CouponService;
 import com.khahnm04.ecommerce.specification.CouponSpecification;
 import com.khahnm04.ecommerce.util.PageableUtil;
 import com.khahnm04.ecommerce.util.SecurityUtil;
@@ -83,7 +82,7 @@ public class CouponServiceImpl implements CouponService {
         Coupon coupon = getCouponById(id);
         coupon.setIsDeleted(true);
         coupon.setDeletedAt(Instant.now());
-        coupon.setDeletedBy(SecurityUtil.getCurrentUser());
+        coupon.setDeletedBy(SecurityUtil.getCurrentUserFullName());
         couponRepository.save(coupon);
         log.info("Soft deleted coupon with id: {}", id);
     }
@@ -118,7 +117,7 @@ public class CouponServiceImpl implements CouponService {
                 log.info("Bulk update status {} coupons ids: {}", action, couponIds);
             }
             case "SOFT_DELETE" -> {
-                couponRepository.softDeleteAllByIds(couponIds, SecurityUtil.getCurrentUser());
+                couponRepository.softDeleteAllByIds(couponIds, SecurityUtil.getCurrentUserFullName());
                 log.info("Bulk action soft delete coupons ids: {}", couponIds);
             }
             case "RESTORE" -> {

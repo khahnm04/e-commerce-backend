@@ -1,4 +1,4 @@
-package com.khahnm04.ecommerce.service.category.impl;
+package com.khahnm04.ecommerce.service.category;
 
 import com.khahnm04.ecommerce.constant.category.CategoryStatus;
 import com.khahnm04.ecommerce.dto.projection.CategoryProjection;
@@ -11,7 +11,6 @@ import com.khahnm04.ecommerce.exception.AppException;
 import com.khahnm04.ecommerce.exception.ErrorCode;
 import com.khahnm04.ecommerce.mapper.category.CategoryMapper;
 import com.khahnm04.ecommerce.repository.category.CategoryRepository;
-import com.khahnm04.ecommerce.service.category.CategoryService;
 import com.khahnm04.ecommerce.specification.CategorySpecification;
 import com.khahnm04.ecommerce.util.PageableUtil;
 import com.khahnm04.ecommerce.util.SecurityUtil;
@@ -95,7 +94,7 @@ public class CategoryServiceImpl implements CategoryService {
         Category category = getCategoryById(id);
         category.setIsDeleted(true);
         category.setDeletedAt(Instant.now());
-        category.setDeletedBy(SecurityUtil.getCurrentUser());
+        category.setDeletedBy(SecurityUtil.getCurrentUserFullName());
         categoryRepository.save(category);
         log.info("Soft deleted category with id: {}", id);
     }
@@ -133,7 +132,7 @@ public class CategoryServiceImpl implements CategoryService {
                 log.info("Bulk update status {} categories ids: {}", action, categoryIds);
             }
             case "SOFT_DELETE" -> {
-                categoryRepository.softDeleteAllByIds(categoryIds, SecurityUtil.getCurrentUser());
+                categoryRepository.softDeleteAllByIds(categoryIds, SecurityUtil.getCurrentUserFullName());
                 log.info("Bulk action soft delete categories ids: {}", categoryIds);
             }
             case "RESTORE" -> {

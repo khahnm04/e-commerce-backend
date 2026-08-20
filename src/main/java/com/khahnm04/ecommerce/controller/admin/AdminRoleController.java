@@ -1,12 +1,12 @@
 package com.khahnm04.ecommerce.controller.admin;
 
 import com.khahnm04.ecommerce.config.Translator;
-import com.khahnm04.ecommerce.dto.request.auth.RoleRequest;
+import com.khahnm04.ecommerce.dto.request.role.RoleRequest;
 import com.khahnm04.ecommerce.dto.request.BulkActionRequest;
-import com.khahnm04.ecommerce.dto.response.auth.RoleResponse;
+import com.khahnm04.ecommerce.dto.response.role.RoleResponse;
 import com.khahnm04.ecommerce.dto.response.ApiResponse;
 import com.khahnm04.ecommerce.dto.response.PageResponse;
-import com.khahnm04.ecommerce.service.auth.RoleService;
+import com.khahnm04.ecommerce.service.role.RoleService;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;

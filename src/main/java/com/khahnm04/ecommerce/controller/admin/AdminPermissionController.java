@@ -2,8 +2,8 @@ package com.khahnm04.ecommerce.controller.admin;
 
 import com.khahnm04.ecommerce.config.Translator;
 import com.khahnm04.ecommerce.dto.response.ApiResponse;
-import com.khahnm04.ecommerce.dto.response.auth.PermissionResponse;
-import com.khahnm04.ecommerce.service.auth.PermissionService;
+import com.khahnm04.ecommerce.dto.response.permission.PermissionResponse;
+import com.khahnm04.ecommerce.service.permission.PermissionService;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.GetMapping;

@@ -8,10 +8,16 @@ import org.springframework.security.oauth2.jwt.Jwt;
 @UtilityClass
 public class SecurityUtil {
 
-    public String getCurrentUser() {
+    public Long getCurrentUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Jwt jwt = (Jwt) authentication.getPrincipal();
-        return jwt.getSubject();
+        return Long.valueOf(jwt.getSubject());
+    }
+
+    public String getCurrentUserFullName() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Jwt jwt = (Jwt) authentication.getPrincipal();
+        return jwt.getClaimAsString("fullName");
     }
 
 }
