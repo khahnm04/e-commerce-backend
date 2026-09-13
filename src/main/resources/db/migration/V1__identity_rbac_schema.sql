@@ -1,115 +1,116 @@
-CREATE TABLE `user_providers` (
-    `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
-    `account_user_id` BIGINT NOT NULL,
-    `provider` VARCHAR(50) NOT NULL,
-    `provider_id` VARCHAR(255) NOT NULL
+CREATE TYPE account_status AS ENUM (
+    'ACTIVE',
+    'INACTIVE',
+    'BANNED',
+    'LOCKED'
 );
 
-CREATE TABLE `roles` (
-    `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
-    `code` VARCHAR(50) NOT NULL,
-    `name` VARCHAR(255) NOT NULL,
-    `created_at` DATETIME(6) DEFAULT CURRENT_TIMESTAMP(6),
-    `created_by` VARCHAR(255),
-    `updated_at` DATETIME(6) DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
-    `updated_by` VARCHAR(255),
-    `deleted_at` DATETIME(6),
-    `deleted_by` VARCHAR(255),
-    `is_deleted` BOOLEAN NOT NULL DEFAULT FALSE,
-    UNIQUE (code, (IF(is_deleted = 0, 1, NULL)))
+CREATE TYPE gender_type AS ENUM (
+    'MALE',
+    'FEMALE',
+    'OTHER'
 );
 
-CREATE TABLE `permissions` (
-    `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
-    `code` VARCHAR(50) UNIQUE NOT NULL,
-    `name` VARCHAR(255) NOT NULL
+CREATE TABLE accounts (
+    id             UUID PRIMARY KEY DEFAULT uuidv7(),
+    email          VARCHAR(255) NOT NULL UNIQUE,
+    phone_number   VARCHAR(20) NOT NULL UNIQUE,
+    password       VARCHAR(500),
+    status         account_status NOT NULL DEFAULT 'ACTIVE',
+    last_login_at  TIMESTAMPTZ,
+    created_at     TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    created_by     UUID,
+    updated_at     TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_by     UUID,
+    deleted_at     TIMESTAMPTZ,
+    deleted_by     UUID,
+    is_deleted     BOOLEAN NOT NULL DEFAULT FALSE
 );
 
-CREATE TABLE `account_admin_roles` (
-    `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
-    `account_admin_id` BIGINT NOT NULL,
-    `role_id` BIGINT NOT NULL
+CREATE TABLE roles (
+    id          UUID PRIMARY KEY DEFAULT uuidv7(),
+    code        VARCHAR(50) NOT NULL UNIQUE,
+    name        VARCHAR(255) NOT NULL,
+    created_at  TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    created_by  UUID,
+    updated_at  TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_by  UUID,
+    deleted_at  TIMESTAMPTZ,
+    deleted_by  UUID,
+    is_deleted  BOOLEAN NOT NULL DEFAULT FALSE
 );
 
-CREATE TABLE `role_permissions` (
-    `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
-    `role_id` BIGINT NOT NULL,
-    `permission_id` BIGINT NOT NULL
+CREATE TABLE account_roles (
+    id          UUID PRIMARY KEY DEFAULT uuidv7(),
+    account_id  UUID NOT NULL,
+    role_id     UUID NOT NULL,
+
+    UNIQUE (account_id, role_id),
+    FOREIGN KEY (account_id) REFERENCES accounts (id) ON DELETE CASCADE,
+    FOREIGN KEY (role_id) REFERENCES roles (id) ON DELETE RESTRICT
 );
 
-CREATE TABLE `account_users` (
-    `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
-    `email` VARCHAR(255) NOT NULL,
-    `phone_number` VARCHAR(20) NOT NULL,
-    `password` VARCHAR(500),
-    `full_name` VARCHAR(255) NOT NULL,
-    `date_of_birth` DATE,
-    `avatar` VARCHAR(500),
-    `gender` ENUM ('MALE', 'FEMALE', 'OTHER') DEFAULT 'OTHER',
-    `status` ENUM ('ACTIVE', 'INACTIVE', 'BANNED', 'LOCKED') NOT NULL DEFAULT 'ACTIVE',
-    `last_login_at` DATETIME,
-    `created_at` DATETIME(6) DEFAULT CURRENT_TIMESTAMP(6),
-    `created_by` VARCHAR(255),
-    `updated_at` DATETIME(6) DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
-    `updated_by` VARCHAR(255),
-    `deleted_at` DATETIME(6),
-    `deleted_by` VARCHAR(255),
-    `is_deleted` BOOLEAN NOT NULL DEFAULT FALSE,
-    UNIQUE(email, (IF(is_deleted = 0, 1, NULL))),
-    UNIQUE(phone_number, (IF(is_deleted = 0, 1, NULL)))
+CREATE TABLE permissions (
+    id    UUID PRIMARY KEY DEFAULT uuidv7(),
+    code  VARCHAR(50) NOT NULL UNIQUE,
+    name  VARCHAR(255) NOT NULL
 );
 
-CREATE TABLE `account_admins` (
-    `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
-    `job_title` VARCHAR(255),
-    `email` VARCHAR(255) NOT NULL,
-    `phone_number` VARCHAR(20) NOT NULL,
-    `password` VARCHAR(500),
-    `full_name` VARCHAR(255) NOT NULL,
-    `date_of_birth` DATE,
-    `avatar` VARCHAR(500),
-    `gender` ENUM ('MALE', 'FEMALE', 'OTHER') DEFAULT 'OTHER',
-    `status` ENUM ('ACTIVE', 'INACTIVE', 'BANNED', 'LOCKED') NOT NULL DEFAULT 'ACTIVE',
-    `last_login_at` DATETIME,
-    `created_at` DATETIME(6) DEFAULT CURRENT_TIMESTAMP(6),
-    `created_by` VARCHAR(255),
-    `updated_at` DATETIME(6) DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
-    `updated_by` VARCHAR(255),
-    `deleted_at` DATETIME(6),
-    `deleted_by` VARCHAR(255),
-    `is_deleted` BOOLEAN NOT NULL DEFAULT FALSE,
-    UNIQUE(email, (IF(is_deleted = 0, 1, NULL))),
-    UNIQUE(phone_number, (IF(is_deleted = 0, 1, NULL)))
+CREATE TABLE role_permissions (
+    id             UUID PRIMARY KEY DEFAULT uuidv7(),
+    role_id        UUID NOT NULL,
+    permission_id  UUID NOT NULL,
+
+    UNIQUE (role_id, permission_id),
+    FOREIGN KEY (role_id) REFERENCES roles (id) ON DELETE CASCADE,
+    FOREIGN KEY (permission_id) REFERENCES permissions (id) ON DELETE RESTRICT
 );
 
-CREATE TABLE `addresses` (
-    `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
-    `account_user_id` BIGINT NOT NULL,
-    `receiver_name` VARCHAR(255) NOT NULL,
-    `receiver_phone` VARCHAR(20) NOT NULL,
-    `province_code` VARCHAR(50),
-    `province_name` VARCHAR(255) NOT NULL,
-    `district_code` VARCHAR(50),
-    `district_name` VARCHAR(255) NOT NULL,
-    `ward_code` VARCHAR(50),
-    `ward_name` VARCHAR(255) NOT NULL,
-    `detail_address` VARCHAR(255) NOT NULL,
-    `address_type` ENUM ('HOME', 'OFFICE', 'OTHER') DEFAULT 'HOME',
-    `address_name` VARCHAR(255),
-    `is_default` BOOLEAN DEFAULT FALSE,
-    `created_at` DATETIME(6) DEFAULT CURRENT_TIMESTAMP(6),
-    `created_by` VARCHAR(255),
-    `updated_at` DATETIME(6) DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
-    `updated_by` VARCHAR(255),
-    `deleted_at` DATETIME(6),
-    `deleted_by` VARCHAR(255),
-    `is_deleted` BOOLEAN NOT NULL DEFAULT FALSE
+CREATE TABLE user_profiles (
+    id             UUID PRIMARY KEY DEFAULT uuidv7(),
+    account_id     UUID NOT NULL UNIQUE,
+    full_name      VARCHAR(255) NOT NULL,
+    date_of_birth  DATE,
+    avatar         VARCHAR(500),
+    gender         gender_type DEFAULT 'OTHER',
+    total_point     INT DEFAULT 0,
+    used_point      INT DEFAULT 0,
+    created_at     TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    created_by     UUID,
+    updated_at     TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_by     UUID,
+    deleted_at     TIMESTAMPTZ,
+    deleted_by     UUID,
+    is_deleted     BOOLEAN NOT NULL DEFAULT FALSE,
+
+    FOREIGN KEY (account_id) REFERENCES accounts (id) ON DELETE CASCADE
 );
 
-/* ====================== FOREIGN KEY ========================= */
-ALTER TABLE `account_admin_roles` ADD CONSTRAINT `fk_account_admin_roles_account_admins` FOREIGN KEY (`account_admin_id`) REFERENCES `account_admins` (`id`) ON DELETE RESTRICT;
-ALTER TABLE `account_admin_roles` ADD CONSTRAINT `fk_account_admin_roles_roles` FOREIGN KEY (`role_id`) REFERENCES `roles` (`id`) ON DELETE RESTRICT;
-ALTER TABLE `role_permissions` ADD CONSTRAINT `fk_role_permissions_roles` FOREIGN KEY (`role_id`) REFERENCES `roles` (`id`) ON DELETE RESTRICT;
-ALTER TABLE `role_permissions` ADD CONSTRAINT `fk_role_permissions_permissions` FOREIGN KEY (`permission_id`) REFERENCES `permissions` (`id`) ON DELETE RESTRICT;
-ALTER TABLE `user_providers` ADD CONSTRAINT `fk_user_providers_account_users` FOREIGN KEY (`account_user_id`) REFERENCES `account_users` (`id`) ON DELETE RESTRICT;
-ALTER TABLE `addresses` ADD CONSTRAINT `fk_addresses_account_users` FOREIGN KEY (`account_user_id`) REFERENCES `account_users` (`id`) ON DELETE RESTRICT;
+CREATE TABLE admin_profiles (
+    id             UUID PRIMARY KEY DEFAULT uuidv7(),
+    account_id     UUID NOT NULL UNIQUE,
+    job_title      VARCHAR(255),
+    full_name      VARCHAR(255) NOT NULL,
+    date_of_birth  DATE,
+    avatar         VARCHAR(500),
+    gender         gender_type DEFAULT 'OTHER',
+    created_at     TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    created_by     UUID,
+    updated_at     TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_by     UUID,
+    deleted_at     TIMESTAMPTZ,
+    deleted_by     UUID,
+    is_deleted     BOOLEAN NOT NULL DEFAULT FALSE,
+
+    FOREIGN KEY (account_id) REFERENCES accounts (id) ON DELETE CASCADE
+);
+
+CREATE TABLE user_providers (
+    id           UUID PRIMARY KEY DEFAULT uuidv7(),
+    account_id   UUID NOT NULL,
+    provider     VARCHAR(50) NOT NULL,
+    provider_id  VARCHAR(255) NOT NULL,
+
+    UNIQUE (provider, provider_id),
+    FOREIGN KEY (account_id) REFERENCES accounts (id) ON DELETE CASCADE
+);

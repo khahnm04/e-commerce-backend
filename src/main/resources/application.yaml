@@ -1,0 +1,51 @@
+server:
+  port: 8080
+
+api:
+  prefix: /api/v1
+
+spring:
+  application:
+    name: e-commerce-backend
+  config:
+    import: "optional:file:.env[.properties]"
+  mvc:
+    problemdetails:
+      enabled: true
+  datasource:
+    url: "jdbc:postgresql://localhost:5432/db_ecommerce"
+    driver-class-name: org.postgresql.Driver
+    username: root
+    password: root
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: true
+        use_sql_comments: true
+        default_schema: public
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+springdoc:
+  swagger-ui:
+    tags-sorter: alpha
+    operations-sorter: method
+
+jwt:
+  secret-key: ${SECRET_KEY}
+  access-token-expiration: 300
+  refresh-token-expiration: 86400
+
+cloudinary:
+  cloud-name: ${CLOUD_NAME}
+  api-key: ${API_KEY}
+  api-secret: ${API_SECRET}

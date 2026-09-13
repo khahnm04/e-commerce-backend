@@ -1,0 +1,44 @@
+package com.khahnm18.ecommercebackend.config;
+
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Bean;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
+import io.swagger.v3.oas.models.servers.Server;
+import io.swagger.v3.oas.models.info.Contact;
+import io.swagger.v3.oas.models.Components;
+import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.OpenAPI;
+import java.util.List;
+
+@Configuration
+public class OpenApiConfig {
+
+    @Bean
+    public OpenAPI openAPI() {
+        return new OpenAPI()
+            .servers(List.of(new Server().url("http://localhost:8080")
+                .description("Local")))
+            .addSecurityItem(new SecurityRequirement()
+                .addList("Bearer Authentication"))
+            .components(new Components()
+                .addSecuritySchemes("Bearer Authentication", createBearerAuthScheme()))
+            .info(new Info()
+                .title("E-Commerce API Documentation")
+                .description("API documentation for E-Commerce Backend platform")
+                .version("1.0.0")
+                .contact(new Contact()
+                    .name("Nguyen Minh Khanh")
+                    .email("support@khahnm18.com")));
+    }
+
+    private SecurityScheme createBearerAuthScheme() {
+        return new SecurityScheme()
+            .name("Bearer Authentication")
+            .type(SecurityScheme.Type.HTTP)
+            .scheme("bearer")
+            .bearerFormat("JWT")
+            .description("Enter JWT token");
+    }
+
+}

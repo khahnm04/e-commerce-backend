@@ -1,0 +1,22 @@
+package com.khahnm18.ecommercebackend.repository.auth;
+
+import com.khahnm18.ecommercebackend.entity.auth.AccountRole;
+import com.khahnm18.ecommercebackend.entity.auth.Role;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.repository.query.Param;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
+import java.util.List;
+import java.util.UUID;
+
+@Repository
+public interface AccountRoleRepository extends JpaRepository<AccountRole, UUID> {
+
+    @Query("""
+        SELECT r FROM Role r
+        JOIN AccountRole ar ON r.id = ar.roleId
+        WHERE ar.accountId = :accountId
+    """)
+    List<Role> findAllRolesByAccountId(@Param("accountId") UUID accountId);
+
+}
