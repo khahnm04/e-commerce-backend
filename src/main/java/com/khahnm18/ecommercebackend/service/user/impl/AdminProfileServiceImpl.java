@@ -5,11 +5,16 @@ import com.khahnm18.ecommercebackend.dto.request.auth.RoleRequest;
 import com.khahnm18.ecommercebackend.dto.request.user.AdminCreationRequest;
 import com.khahnm18.ecommercebackend.dto.response.auth.RoleResponse;
 import com.khahnm18.ecommercebackend.dto.response.user.AdminCreationResponse;
+import com.khahnm18.ecommercebackend.entity.auth.Account;
 import com.khahnm18.ecommercebackend.entity.auth.Role;
 import com.khahnm18.ecommercebackend.entity.auth.Permission;
+import com.khahnm18.ecommercebackend.entity.user.AdminProfile;
 import com.khahnm18.ecommercebackend.exception.AppException;
 import com.khahnm18.ecommercebackend.exception.ErrorCode;
 import com.khahnm18.ecommercebackend.mapper.auth.RoleMapper;
+import com.khahnm18.ecommercebackend.mapper.user.AccountMapper;
+import com.khahnm18.ecommercebackend.mapper.user.AdminProfileMapper;
+import com.khahnm18.ecommercebackend.repository.auth.AccountRepository;
 import com.khahnm18.ecommercebackend.repository.user.AdminProfileRepository;
 import com.khahnm18.ecommercebackend.service.auth.RolePermissionService;
 import com.khahnm18.ecommercebackend.service.auth.RoleService;
@@ -38,10 +43,19 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class AdminProfileServiceImpl implements AdminProfileService {
 
+    private final AccountMapper accountMapper;
+    private final AdminProfileMapper adminProfileMapper;
+    private final AccountRepository accountRepository;
     private final AdminProfileRepository adminProfileRepository;
 
     @Override
     public AdminCreationResponse createAdminPrrofile(AdminCreationRequest request) {
+        Account account = accountMapper.toAccount(request);
+        account = accountRepository.save(account);
+
+        AdminProfile adminProfile = adminProfileMapper.toAdminProfile(request, account.getId());
+        adminProfile = adminProfileRepository.save(adminProfile);
+
         return null;
     }
 
