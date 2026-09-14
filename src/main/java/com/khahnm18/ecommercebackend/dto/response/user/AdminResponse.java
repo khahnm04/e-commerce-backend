@@ -1,5 +1,6 @@
 package com.khahnm18.ecommercebackend.dto.response.user;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.khahnm18.ecommercebackend.constant.user.GenderType;
 import com.khahnm18.ecommercebackend.dto.response.auth.RoleResponse;
 import lombok.Builder;
@@ -9,6 +10,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Builder
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public record AdminResponse(
 
     UUID id,
