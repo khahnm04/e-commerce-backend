@@ -122,7 +122,7 @@ public class JwtServiceImpl implements JwtService {
     }
 
     private String buildScope(UUID accountId) {
-        List<Role> roles = accountRoleRepository.findAllRolesByAccountId(accountId);
+        List<Role> roles = accountRoleRepository.findRolesByAccountId(accountId);
         if (CollectionUtils.isEmpty(roles)) {
             return "";
         }

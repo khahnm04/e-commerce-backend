@@ -1,5 +1,6 @@
 package com.khahnm18.ecommercebackend.repository.auth;
 
+import com.khahnm18.ecommercebackend.constant.auth.AccountStatus;
 import com.khahnm18.ecommercebackend.entity.auth.Account;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -10,6 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import java.time.Instant;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.List;
 
@@ -17,7 +19,50 @@ import java.util.List;
 public interface AccountRepository extends JpaRepository<Account, UUID>, JpaSpecificationExecutor<Account> {
 
     Optional<Account> findByIdAndIsDeletedFalse(UUID accountId);
+    Optional<Account> findByIdAndIsDeletedTrue(UUID accountId);
+
     Optional<Account> findByEmailAndIsDeletedFalse(String email);
+
+    @Modifying
+    @Query("""
+        UPDATE Account a
+        SET a.status = :status
+        WHERE a.id IN :accountIds
+        AND a.isDeleted = false
+    """)
+    void updateStatusAllByIds(@Param("status") AccountStatus status,
+                              @Param("accountIds") Set<UUID> accountIds);
+
+    @Modifying
+    @Query("""
+        UPDATE Account a
+        SET a.isDeleted = true,
+            a.deletedAt = CURRENT_TIMESTAMP,
+            a.deletedBy = :accountId
+        WHERE a.id IN :accountIds
+        AND r.isDeleted = false
+    """)
+    void softDeleteAllByIds(@Param("accountIds") Set<UUID> accountIds,
+                            @Param("accountId") UUID accountId);
+
+    @Modifying
+    @Query("""
+        UPDATE Account a
+        SET a.isDeleted = false,
+            a.deletedAt = null,
+            a.deletedBy = null
+        WHERE a.id IN :accountIds
+        AND r.isDeleted = true
+    """)
+    void restoreAllByIds(@Param("accountIds") Set<UUID> accountIds);
+
+    @Modifying
+    @Query("""
+        DELETE FROM Account a
+        WHERE a.id IN :accountIds
+        AND a.isDeleted = true
+    """)
+    void deleteAllByIds(@Param("accountIds") Set<UUID> accountIds);
 
     @Modifying
     @Transactional

@@ -44,7 +44,7 @@ public class RoleMapper {
     public RoleResponse toRoleResponseWithPermissions(Role role, List<Permission> permissions) {
         if (role == null) return null;
 
-        List<PermissionResponse> permisions = (permissions == null)
+        List<PermissionResponse> permissionResponses = (permissions == null)
             ? Collections.emptyList()
             : permissions.stream()
                 .filter(Objects::nonNull)
@@ -55,7 +55,7 @@ public class RoleMapper {
             .id(role.getId())
             .code(role.getCode())
             .name(role.getName())
-            .permissions(permisions)
+            .permissions(permissionResponses)
             .createdBy(role.getCreatedBy())
             .createdAt(role.getCreatedAt())
             .updatedBy(role.getUpdatedBy())

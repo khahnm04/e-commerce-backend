@@ -16,6 +16,7 @@ public enum ErrorCode {
     LOGIN_FAILED("Login failed", HttpStatus.BAD_REQUEST),
     REFRESH_TOKEN_FAILED( "Refresh token failed", HttpStatus.UNAUTHORIZED),
 
+    ACCOUNT_EXISTED("Account already exists", HttpStatus.NOT_FOUND),
     ACCOUNT_NOT_FOUND("Account not found", HttpStatus.NOT_FOUND),
 
     ROLE_EXISTED("Role already exists", HttpStatus.BAD_REQUEST),

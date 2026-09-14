@@ -1,4 +1,4 @@
-package com.khahnm18.ecommercebackend.controller.admin;
+package com.khahnm18.ecommercebackend.controller;
 
 import com.khahnm18.ecommercebackend.dto.response.ApiResponse;
 import com.khahnm18.ecommercebackend.dto.response.auth.PermissionResponse;
@@ -19,7 +19,7 @@ import java.util.List;
 @RequestMapping("${api.prefix}/admin/permissions")
 @RequiredArgsConstructor
 @Tag(name = "Admin Permission Controller", description = "Permission management APIs")
-public class AdminPermissionController {
+public class PermissionController {
 
     private final PermissionService permissionService;
     private final Translator translator;

@@ -1,0 +1,217 @@
+package com.khahnm18.ecommercebackend.service.user.impl;
+
+import com.khahnm18.ecommercebackend.constant.auth.AccountStatus;
+import com.khahnm18.ecommercebackend.dto.request.BulkActionRequest;
+import com.khahnm18.ecommercebackend.dto.request.user.AdminCreationRequest;
+import com.khahnm18.ecommercebackend.dto.request.user.AdminUpdateRequest;
+import com.khahnm18.ecommercebackend.dto.response.user.AdminProfileResponse;
+import com.khahnm18.ecommercebackend.dto.response.user.AdminResponse;
+import com.khahnm18.ecommercebackend.entity.auth.Account;
+import com.khahnm18.ecommercebackend.entity.auth.Role;
+import com.khahnm18.ecommercebackend.entity.user.AdminProfile;
+import com.khahnm18.ecommercebackend.exception.AppException;
+import com.khahnm18.ecommercebackend.exception.ErrorCode;
+import com.khahnm18.ecommercebackend.mapper.user.AccountMapper;
+import com.khahnm18.ecommercebackend.mapper.user.AdminMapper;
+import com.khahnm18.ecommercebackend.repository.auth.AccountRepository;
+import com.khahnm18.ecommercebackend.repository.auth.AccountRoleRepository;
+import com.khahnm18.ecommercebackend.repository.user.AdminProfileRepository;
+import com.khahnm18.ecommercebackend.service.user.AccountRoleService;
+import com.khahnm18.ecommercebackend.service.user.AdminService;
+import com.khahnm18.ecommercebackend.specification.AdminSpecification;
+import com.khahnm18.ecommercebackend.util.PageableUtil;
+import com.khahnm18.ecommercebackend.util.SecurityUtil;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.stereotype.Service;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import java.time.Instant;
+import java.util.stream.Collectors;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+
+@Slf4j(topic = "ADMIN-PROFILE-SERVICE")
+@Service
+@RequiredArgsConstructor
+public class AdminServiceImpl implements AdminService {
+
+    private final AccountRoleService accountRoleService;
+    private final AccountMapper accountMapper;
+    private final AdminMapper adminMapper;
+    private final AccountRepository accountRepository;
+    private final AdminProfileRepository adminProfileRepository;
+    private final AccountRoleRepository accountRoleRepository;
+
+    @Override
+    @Transactional
+    public AdminResponse createAdmin(AdminCreationRequest request) {
+        Account account = accountMapper.toAccount(request);
+        account = this.saveAccount(account);
+
+        AdminProfile adminProfile = adminMapper.toAdminProfile(request, account.getId());
+        adminProfile = adminProfileRepository.save(adminProfile);
+
+        List<Role> roles = accountRoleService.assignRolesToAccount(account.getId(), request.roles());
+        log.info("Admin profile created success: fullName={}, email={}", adminProfile.getFullName(), account.getEmail());
+
+        return adminMapper.toAdminResponseWithRoles(adminProfile, account, roles);
+    }
+
+    @Override
+    public AdminResponse getAdminDetailById(UUID accountId, boolean isDeleted) {
+        Account account = isDeleted
+            ? this.getSoftDeletedAccountById(accountId)
+            : this.getAccountById(accountId);
+
+        AdminProfile adminProfile = getAdminProfileByAccountId(account.getId());
+        List<Role> roles = accountRoleRepository.findRolesByAccountId(accountId);
+        return adminMapper.toAdminResponseWithRoles(adminProfile, account, roles);
+    }
+
+    @Override
+    public Page<AdminResponse> getAllAdmins(
+        int page,
+        int size,
+        String sort,
+        String keyword,
+        boolean isDeleted,
+        Instant startDate,
+        Instant endDate
+    ) {
+        Pageable pageable = PageableUtil.createPageable(page, size, sort);
+
+        Specification<Account> spec = AdminSpecification.byIsDeleted(isDeleted)
+            .and(AdminSpecification.byKeyword(keyword))
+            .and(AdminSpecification.byStartDate(startDate))
+            .and(AdminSpecification.byEndDate(endDate));
+
+        Page<Account> accountPage = accountRepository.findAll(spec, pageable);
+
+        List<UUID> accountIds = accountPage.getContent().stream()
+            .map(Account::getId)
+            .toList();
+
+        Map<UUID, AdminProfile> profileMap = adminProfileRepository.findAllByAccountIdIn(accountIds)
+            .stream()
+            .collect(Collectors.toMap(
+                AdminProfile::getAccountId,
+                p -> p,
+                (p1, p2) -> p1)
+            );
+
+        return accountPage.map(account ->
+            adminMapper.toAdminResponse(profileMap.get(account.getId()), account));
+    }
+
+    @Override
+    @Transactional
+    public AdminResponse updateAdmin(UUID accountId, AdminUpdateRequest request) {
+        Account account = getAccountById(accountId);
+        AdminProfile adminProfile = getAdminProfileByAccountId(accountId);
+
+        accountMapper.updateAccount(account, request);
+        account = this.saveAccount(account);
+
+        adminMapper.updateAdmin(adminProfile, request);
+        adminProfile = adminProfileRepository.save(adminProfile);
+
+        List<Role> roles = accountRoleService.replaceRolesForAdmin(accountId, request.roles());
+        log.info("Admin profile updated successfully: accountId={}, email={}", accountId, account.getEmail());
+
+        return adminMapper.toAdminResponseWithRoles(adminProfile, account, roles);
+    }
+
+    @Override
+    @Transactional
+    public void softDeleteAdmin(UUID accountId) {
+        Account account = getAccountById(accountId);
+        account.setIsDeleted(true);
+        account.setDeletedAt(Instant.now());
+        account.setDeletedBy(SecurityUtil.getCurrentAccount());
+        log.info("Admin soft deleted success with account_id: {}", accountId);
+    }
+
+    @Override
+    @Transactional
+    public void deleteAdmin(UUID accountId) {
+        Account account = getAccountById(accountId);
+        accountRoleRepository.deleteByAccountId(accountId);
+        accountRepository.delete(account);
+        log.info("Admin deleted success with account_id: {}", accountId);
+    }
+
+    @Override
+    @Transactional
+    public void restoreAdmin(UUID accountId) {
+        Account account = getAccountById(accountId);
+        account.setIsDeleted(false);
+        account.setDeletedAt(null);
+        account.setDeletedBy(null);
+        log.info("Admin restored success with account_id: {}", accountId);
+    }
+
+    @Override
+    @Transactional
+    public void bulkAction(BulkActionRequest request) {
+        Set<UUID> accountIds = request.ids();
+        String action = request.action().toUpperCase();
+        switch (action) {
+            case "ACTIVE", "INACTIVE", "BANNED", "LOCKED" -> {
+                accountRepository.updateStatusAllByIds(AccountStatus.valueOf(action), accountIds);
+                log.info("Bulk update status {} admin with ids: {}", action, accountIds);
+            }
+            case "SOFT_DELETE" -> {
+                accountRepository.softDeleteAllByIds(accountIds, SecurityUtil.getCurrentAccount());
+                log.info("Bulk action soft delete admin with accountIds: {}", accountIds);
+            }
+            case "RESTORE" -> {
+                accountRepository.restoreAllByIds(accountIds);
+                log.info("Bulk action restore admin with accountIds: {}", accountIds);
+            }
+            case "DELETE" -> {
+                accountRoleRepository.deleteAllByAccountIds(accountIds);
+                accountRepository.deleteAllByIds(accountIds);
+                log.info("Bulk action delete admin with ids: {}", accountIds);
+            }
+        }
+    }
+
+    @Override
+    public AdminProfileResponse getMyProfile() {
+        UUID accountId = SecurityUtil.getCurrentAccount();
+        Account account = this.getAccountById(accountId);
+        AdminProfile adminProfile = this.getAdminProfileByAccountId(account.getId());
+        return adminMapper.toAdminProfileResponse(adminProfile, account);
+    }
+
+    private Account saveAccount(Account account) {
+        try {
+            return accountRepository.save(account);
+        } catch (DataIntegrityViolationException ex) {
+            log.warn("Account save failed - duplicate entry: email={}", account.getEmail());
+            throw new AppException(ErrorCode.ACCOUNT_EXISTED);
+        }
+    }
+
+    private Account getAccountById(UUID id) {
+        return accountRepository.findByIdAndIsDeletedFalse(id)
+            .orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_NOT_FOUND));
+    }
+
+    private Account getSoftDeletedAccountById(UUID id) {
+        return accountRepository.findByIdAndIsDeletedTrue(id)
+            .orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_NOT_FOUND));
+    }
+
+    private AdminProfile getAdminProfileByAccountId(UUID accopuntId) {
+        return adminProfileRepository.findByAccountIdAndIsDeletedFalse(accopuntId)
+            .orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_NOT_FOUND));
+    }
+
+}

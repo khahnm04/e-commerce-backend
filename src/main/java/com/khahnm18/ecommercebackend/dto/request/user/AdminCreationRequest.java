@@ -4,6 +4,8 @@ import com.khahnm18.ecommercebackend.constant.auth.AccountStatus;
 import com.khahnm18.ecommercebackend.constant.user.GenderType;
 import jakarta.validation.constraints.NotBlank;
 import java.time.LocalDate;
+import java.util.List;
+import java.util.UUID;
 
 public record AdminCreationRequest(
 
@@ -25,6 +27,9 @@ public record AdminCreationRequest(
     LocalDate dateOfBirth,
     String avatar,
     GenderType gender,
-    AccountStatus status
+    AccountStatus status,
+
+    @NotBlank(message = "admin.role.required")
+    List<UUID> roles
 
 ) {}

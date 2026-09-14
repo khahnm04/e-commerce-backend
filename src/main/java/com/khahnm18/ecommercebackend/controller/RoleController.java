@@ -1,4 +1,4 @@
-package com.khahnm18.ecommercebackend.controller.admin;
+package com.khahnm18.ecommercebackend.controller;
 
 import com.khahnm18.ecommercebackend.dto.request.auth.RoleRequest;
 import com.khahnm18.ecommercebackend.dto.response.ApiResponse;
@@ -32,7 +32,7 @@ import java.util.UUID;
 @RequestMapping("${api.prefix}/admin/roles")
 @RequiredArgsConstructor
 @Tag(name = "Admin Role Controller", description = "Role management APIs")
-public class AdminRoleController {
+public class RoleController {
 
     private final RoleService roleService;
     private final Translator translator;
