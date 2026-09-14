@@ -1,4 +1,4 @@
-package com.khahnm18.ecommercebackend.utils;
+package com.khahnm18.ecommercebackend.util;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.MessageSource;
