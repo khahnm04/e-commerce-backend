@@ -1,4 +1,4 @@
-package com.khahnm18.ecommercebackend.util;
+package com.khahnm18.ecommercebackend.utils;
 
 import lombok.experimental.UtilityClass;
 import org.springframework.security.core.context.SecurityContextHolder;

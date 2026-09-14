@@ -1,4 +1,4 @@
-package com.khahnm18.ecommercebackend.util;
+package com.khahnm18.ecommercebackend.utils;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
