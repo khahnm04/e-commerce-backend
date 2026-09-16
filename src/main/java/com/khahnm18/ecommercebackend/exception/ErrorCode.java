@@ -9,6 +9,7 @@ public enum ErrorCode {
 
     UNCATEGORIZED_EXCEPTION("Uncategorized error", HttpStatus.INTERNAL_SERVER_ERROR),
     VALIDATION_FAILED("The submitted data is invalid. Please check the fields", HttpStatus.BAD_REQUEST),
+    INVALID_INSTANT_FORMAT("Invalid instant format", HttpStatus.BAD_REQUEST),
 
     UNAUTHENTICATED("Unauthenticated", HttpStatus.UNAUTHORIZED),
     FORBIDDEN("You do not have permission", HttpStatus.FORBIDDEN),

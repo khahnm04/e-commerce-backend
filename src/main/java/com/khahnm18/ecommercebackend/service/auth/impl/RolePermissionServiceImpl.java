@@ -27,53 +27,40 @@ public class RolePermissionServiceImpl implements RolePermissionService {
     @Override
     @Transactional
     public List<Permission> assignPermissionsToRole(Role role, List<UUID> permissionIds) {
-        List<Permission> permissions = validatePermissions(permissionIds);
-
-        List<RolePermission> rolePermissions = permissions.stream()
-            .map(permission -> RolePermission.builder()
-                .roleId(role.getId())
-                .permissionId(permission.getId())
-                .build())
-            .toList();
-
-        rolePermissionRepository.saveAll(rolePermissions);
-        log.info("Assigned {} permissions to role: {}", rolePermissions.size(), role.getCode());
+        List<Permission> permissions = getPermissionsByPermissionIds(permissionIds);
+        this.saveRolePermissions(role, permissions);
         return permissions;
     }
 
     @Override
     @Transactional
-    public List<Permission> replacePermissionsForRole(Role role, List<UUID> permissionIds) {
-        List<Permission> permissions = validatePermissions(permissionIds);
-        List<RolePermission> existingRolePermissions = rolePermissionRepository.findByRoleId(role.getId());
-
-        List<UUID> existingPermissionIds = existingRolePermissions.stream()
-            .map(RolePermission::getPermissionId)
+    public List<Permission> replacePermissionsForRole(Role role, List<UUID> newPermissionIds) {
+        List<Permission> newPermissions = getPermissionsByPermissionIds(newPermissionIds);
+        List<UUID> currentPermissionIds = rolePermissionRepository.findPermissionsByRoleId(role.getId())
+            .stream()
+            .map(Permission::getId)
             .toList();
 
-        if (existingPermissionIds.equals(permissionIds)) {
-            return permissions;
-        }
-
-        List<UUID> toRemove = existingRolePermissions.stream()
-            .filter(rolePermission -> !permissionIds.contains(rolePermission.getPermissionId()))
-            .map(RolePermission::getId)
+        // Remove
+        List<UUID> permissionIdsToRemove = currentPermissionIds.stream()
+            .filter(currentPermissionId -> !newPermissionIds.contains(currentPermissionId))
             .toList();
+        if (!permissionIdsToRemove.isEmpty()) {
+            rolePermissionRepository.deleteByRoleIdAndPermissionIdIn(role.getId(), permissionIdsToRemove);
+        }
 
-        List<UUID> toAdd = permissionIds.stream()
-            .filter(permissionId -> !existingPermissionIds.contains(permissionId))
+        // Add
+        List<Permission> permissionsToAdd = newPermissions.stream()
+            .filter(newPermission -> !currentPermissionIds.contains(newPermission.getId()))
             .toList();
+        if (!permissionsToAdd.isEmpty()) {
+            this.saveRolePermissions(role, permissionsToAdd);
+        }
 
-        if (!toRemove.isEmpty()) {
-            rolePermissionRepository.deleteAllByIds(toRemove);
-        }
-        if (!toAdd.isEmpty()) {
-            rolePermissionRepository.insertAll(role.getId(), toAdd);
-        }
-        return permissions;
+        return newPermissions;
     }
 
-    private List<Permission> validatePermissions(List<UUID> permissionIds) {
+    private List<Permission> getPermissionsByPermissionIds(List<UUID> permissionIds) {
         if (permissionIds == null || permissionIds.isEmpty()) {
             return Collections.emptyList();
         }
@@ -82,6 +69,17 @@ public class RolePermissionServiceImpl implements RolePermissionService {
             throw new AppException(ErrorCode.PERMISSION_NOT_FOUND);
         }
         return permissions;
+    }
+
+    private void saveRolePermissions(Role role, List<Permission> permissions) {
+        List<RolePermission> rolePermissions = permissions.stream()
+            .map(permission -> RolePermission.builder()
+                .roleId(role.getId())
+                .permissionId(permission.getId())
+                .build())
+            .toList();
+        rolePermissionRepository.saveAll(rolePermissions);
+        log.info("Assigned {} permissions to role: {}", rolePermissions.size(), role.getCode());
     }
 
 }

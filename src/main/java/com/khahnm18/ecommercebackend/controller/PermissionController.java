@@ -14,11 +14,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import java.util.List;
 
-@Slf4j(topic = "ADMIN-PERMISSION-CONTROLLER")
+@Slf4j(topic = "PERMISSION-CONTROLLER")
 @RestController
 @RequestMapping("${api.prefix}/admin/permissions")
 @RequiredArgsConstructor
-@Tag(name = "Admin Permission Controller", description = "Permission management APIs")
+@Tag(name = "Permission Controller", description = "Permission management APIs")
 public class PermissionController {
 
     private final PermissionService permissionService;

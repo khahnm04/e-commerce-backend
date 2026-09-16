@@ -40,7 +40,7 @@ public interface AccountRepository extends JpaRepository<Account, UUID>, JpaSpec
             a.deletedAt = CURRENT_TIMESTAMP,
             a.deletedBy = :accountId
         WHERE a.id IN :accountIds
-        AND r.isDeleted = false
+        AND a.isDeleted = false
     """)
     void softDeleteAllByIds(@Param("accountIds") Set<UUID> accountIds,
                             @Param("accountId") UUID accountId);
@@ -52,7 +52,7 @@ public interface AccountRepository extends JpaRepository<Account, UUID>, JpaSpec
             a.deletedAt = null,
             a.deletedBy = null
         WHERE a.id IN :accountIds
-        AND r.isDeleted = true
+        AND a.isDeleted = true
     """)
     void restoreAllByIds(@Param("accountIds") Set<UUID> accountIds);
 

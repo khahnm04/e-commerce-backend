@@ -1,6 +1,5 @@
 package com.khahnm18.ecommercebackend.service.user.impl;
 
-import com.khahnm18.ecommercebackend.entity.auth.Account;
 import com.khahnm18.ecommercebackend.entity.auth.AccountRole;
 import com.khahnm18.ecommercebackend.entity.auth.Role;
 import com.khahnm18.ecommercebackend.exception.AppException;
@@ -65,7 +64,7 @@ public class AccountRoleServiceImpl implements AccountRoleService {
             .toList();
 
         if (!toRemove.isEmpty()) {
-            accountRoleRepository.deleteAllByIds(toRemove);
+            accountRoleRepository.deleteAllByIdIn(toRemove);
         }
         if (!toAdd.isEmpty()) {
             accountRoleRepository.insertAll(accountId, toAdd);

@@ -8,7 +8,7 @@ import java.util.UUID;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record LoginResponse(
 
-    UUID userId,
+    UUID accountId,
     String accessToken,
     String refreshToken
 

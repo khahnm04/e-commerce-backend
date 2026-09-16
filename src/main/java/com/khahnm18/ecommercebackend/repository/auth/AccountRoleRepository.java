@@ -27,10 +27,10 @@ public interface AccountRoleRepository extends JpaRepository<AccountRole, UUID> 
     void deleteByAccountId(UUID accountId);
 
     @Modifying
-    void deleteAllByAccountIds(Set<UUID> roleIds);
+    void deleteAllByAccountIdIn(Set<UUID> accountIds);
 
     @Modifying
-    void deleteAllByIds(List<UUID> ids);
+    void deleteAllByIdIn(List<UUID> ids);
 
     @Modifying
     @Query("""

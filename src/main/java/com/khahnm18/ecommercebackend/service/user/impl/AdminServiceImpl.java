@@ -175,7 +175,7 @@ public class AdminServiceImpl implements AdminService {
                 log.info("Bulk action restore admin with accountIds: {}", accountIds);
             }
             case "DELETE" -> {
-                accountRoleRepository.deleteAllByAccountIds(accountIds);
+                accountRoleRepository.deleteAllByAccountIdIn(accountIds);
                 accountRepository.deleteAllByIds(accountIds);
                 log.info("Bulk action delete admin with ids: {}", accountIds);
             }

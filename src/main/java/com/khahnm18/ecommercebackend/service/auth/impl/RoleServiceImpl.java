@@ -138,7 +138,7 @@ public class RoleServiceImpl implements RoleService {
                 log.info("Bulk action restore roles ids: {}", roleIds);
             }
             case "DELETE" -> {
-                rolePermissionRepository.deleteAllByRoleIds(roleIds);
+                rolePermissionRepository.deleteAllByRoleIdIn(roleIds);
                 roleRepository.deleteAllByIds(roleIds);
                 permissionCacheService.evictAll();
                 log.info("Bulk action delete roles ids: {}", roleIds);

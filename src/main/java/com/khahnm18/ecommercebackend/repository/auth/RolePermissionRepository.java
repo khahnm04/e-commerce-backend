@@ -14,8 +14,6 @@ import java.util.UUID;
 @Repository
 public interface RolePermissionRepository extends JpaRepository<RolePermission, UUID> {
 
-    List<RolePermission> findByRoleId(UUID id);
-
     @Query("""
         SELECT p FROM Permission p
         JOIN RolePermission rp
@@ -25,24 +23,12 @@ public interface RolePermissionRepository extends JpaRepository<RolePermission, 
     List<Permission> findPermissionsByRoleId(@Param("roleId") UUID roleId);
 
     @Modifying
-    void deleteByRoleId(@Param("roleId") UUID roleId);
+    void deleteByRoleId(UUID roleId);
 
     @Modifying
-    @Query("DELETE FROM RolePermission rp WHERE rp.roleId IN :roleIds")
-    void deleteAllByRoleIds(@Param("roleIds") Set<UUID> roleIds);
+    void deleteAllByRoleIdIn(Set<UUID> roleIds);
 
     @Modifying
-    @Query("DELETE FROM RolePermission rp WHERE rp.id IN :ids")
-    void deleteAllByIds(@Param("ids") List<UUID> ids);
-
-    @Modifying
-    @Query("""
-        INSERT INTO RolePermission (roleId, permissionId)
-        SELECT :roleId, p.id
-        FROM Permission p
-        WHERE p.id IN (:permissionIds)
-    """)
-    void insertAll(@Param("roleId") UUID roleId,
-                   @Param("permissionIds") List<UUID> permissionIds);
+    void deleteByRoleIdAndPermissionIdIn(UUID roleId, List<UUID> permissionIds);
 
 }

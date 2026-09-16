@@ -34,7 +34,7 @@ public class AuthController {
     public ApiResponse<LoginResponse> login(
         @Valid @RequestBody LoginRequest request
     ) {
-        log.info("Login");
+        log.info("Login: email={}", request.email());
         return ApiResponse.<LoginResponse>builder()
             .status(HttpStatus.OK.value())
             .message(translator.toLocale("auth.login.success"))

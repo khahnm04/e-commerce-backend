@@ -23,7 +23,7 @@ import java.text.ParseException;
 import java.time.Instant;
 import java.util.UUID;
 
-@Slf4j(topic = "ADMIN-AUTH-SERVICE")
+@Slf4j(topic = "AUTH-SERVICE")
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
@@ -53,7 +53,7 @@ public class AuthServiceImpl implements AuthService {
 
         log.info("Account with email: {} has been authenticated", account.getEmail());
         return LoginResponse.builder()
-            .userId(account.getId())
+            .accountId(account.getId())
             .accessToken(accessToken.token())
             .refreshToken(refreshToken.token())
             .build();
@@ -93,7 +93,7 @@ public class AuthServiceImpl implements AuthService {
             redisService.delete(WHITELIST_TOKEN + jwtId);
             saveRefreshTokenToRedis(newRefreshToken);
 
-            log.info("Refresh token successfully, userId: {}", accountId);
+            log.info("Refresh token successfully, accountId: {}", accountId);
             return RefreshTokenResponse.builder()
                 .accessToken(newAccessToken.token())
                 .refreshToken(newRefreshToken.token())

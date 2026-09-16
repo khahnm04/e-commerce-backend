@@ -27,11 +27,11 @@ import lombok.extern.slf4j.Slf4j;
 import java.time.Instant;
 import java.util.UUID;
 
-@Slf4j(topic = "ADMIN-ROLE-CONTROLLER")
+@Slf4j(topic = "ROLE-CONTROLLER")
 @RestController
 @RequestMapping("${api.prefix}/admin/roles")
 @RequiredArgsConstructor
-@Tag(name = "Admin Role Controller", description = "Role management APIs")
+@Tag(name = "Role Controller", description = "Role management APIs")
 public class RoleController {
 
     private final RoleService roleService;
