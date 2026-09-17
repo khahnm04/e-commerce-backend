@@ -1,5 +1,6 @@
 package com.khahnm18.ecommercebackend.service.auth.cache;
 
+import com.khahnm18.ecommercebackend.entity.auth.Permission;
 import com.khahnm18.ecommercebackend.repository.auth.AccountRepository;
 import com.khahnm18.ecommercebackend.repository.auth.PermissionRepository;
 import org.springframework.cache.annotation.CacheEvict;
@@ -22,7 +23,10 @@ public class PermissionCacheService {
     @Cacheable(cacheNames = "admin_perms", key = "#accountId")
     public List<String> getPermissions(UUID accountId) {
         if (accountCacheService.isAdmin(accountId)) {
-            return permissionRepository.findAllPermissionCodes();
+            return permissionRepository.findAll()
+                .stream()
+                .map(Permission::getCode)
+                .toList();
         }
         return accountRepository.findAllPermissionCodesByAccountId(accountId);
     }

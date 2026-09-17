@@ -8,10 +8,13 @@ import com.khahnm18.ecommercebackend.exception.ErrorCode;
 import com.khahnm18.ecommercebackend.repository.auth.PermissionRepository;
 import com.khahnm18.ecommercebackend.repository.auth.RolePermissionRepository;
 import com.khahnm18.ecommercebackend.service.auth.RolePermissionService;
+import com.khahnm18.ecommercebackend.util.SecurityUtil;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -29,6 +32,8 @@ public class RolePermissionServiceImpl implements RolePermissionService {
     public List<Permission> assignPermissionsToRole(Role role, List<UUID> permissionIds) {
         List<Permission> permissions = getPermissionsByPermissionIds(permissionIds);
         this.saveRolePermissions(role, permissions);
+        role.setUpdatedAt(Instant.now());
+        role.setUpdatedBy(SecurityUtil.getCurrentAccount());
         return permissions;
     }
 
@@ -36,7 +41,7 @@ public class RolePermissionServiceImpl implements RolePermissionService {
     @Transactional
     public List<Permission> replacePermissionsForRole(Role role, List<UUID> newPermissionIds) {
         List<Permission> newPermissions = getPermissionsByPermissionIds(newPermissionIds);
-        List<UUID> currentPermissionIds = rolePermissionRepository.findPermissionsByRoleId(role.getId())
+        List<UUID> currentPermissionIds = permissionRepository.findPermissionsByRoleId(role.getId())
             .stream()
             .map(Permission::getId)
             .toList();
@@ -57,6 +62,8 @@ public class RolePermissionServiceImpl implements RolePermissionService {
             this.saveRolePermissions(role, permissionsToAdd);
         }
 
+        role.setUpdatedAt(Instant.now());
+        role.setUpdatedBy(SecurityUtil.getCurrentAccount());
         return newPermissions;
     }
 

@@ -8,10 +8,10 @@ import com.khahnm18.ecommercebackend.entity.auth.Permission;
 import com.khahnm18.ecommercebackend.exception.AppException;
 import com.khahnm18.ecommercebackend.exception.ErrorCode;
 import com.khahnm18.ecommercebackend.mapper.auth.RoleMapper;
+import com.khahnm18.ecommercebackend.repository.auth.PermissionRepository;
 import com.khahnm18.ecommercebackend.service.auth.RolePermissionService;
 import com.khahnm18.ecommercebackend.service.auth.RoleService;
 import com.khahnm18.ecommercebackend.repository.auth.RoleRepository;
-import com.khahnm18.ecommercebackend.repository.auth.RolePermissionRepository;
 import com.khahnm18.ecommercebackend.service.auth.cache.PermissionCacheService;
 import com.khahnm18.ecommercebackend.specification.RoleSpecification;
 import com.khahnm18.ecommercebackend.util.PageableUtil;
@@ -34,26 +34,16 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class RoleServiceImpl implements RoleService {
 
-    private final RolePermissionService rolePermissionService;
-    private final PermissionCacheService permissionCacheService;
     private final RoleMapper roleMapper;
     private final RoleRepository roleRepository;
-    private final RolePermissionRepository rolePermissionRepository;
-
-    @Override
-    @Transactional
-    public RoleResponse createRole(RoleRequest request) {
-        Role role = roleMapper.toRole(request);
-        role = this.saveRole(role);
-        List<Permission> permissions = rolePermissionService.assignPermissionsToRole(role, request.permissions());
-        log.info("Role created success: code={}, name={}", role.getCode(), role.getName());
-        return roleMapper.toRoleResponseWithPermissions(role, permissions);
-    }
+    private final PermissionRepository permissionRepository;
+    private final RolePermissionService rolePermissionService;
+    private final PermissionCacheService permissionCacheService;
 
     @Override
     public RoleResponse getRoleDetailById(UUID id, boolean isDeleted) {
         Role role = isDeleted ? this.getSoftDeletedRoleById(id) : this.getRoleById(id);
-        List<Permission> permissions = rolePermissionRepository.findPermissionsByRoleId(role.getId());
+        List<Permission> permissions = permissionRepository.findPermissionsByRoleId(role.getId());
         return roleMapper.toRoleResponseWithPermissions(role, permissions);
     }
 
@@ -80,12 +70,22 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     @Transactional
+    public RoleResponse createRole(RoleRequest request) {
+        Role role = roleMapper.toRole(request);
+        role = this.saveRole(role);
+        List<Permission> permissions = rolePermissionService.assignPermissionsToRole(role, request.permissions());
+        log.info("Role created: code={}, name={}", role.getCode(), role.getName());
+        return roleMapper.toRoleResponseWithPermissions(role, permissions);
+    }
+
+    @Override
+    @Transactional
     public RoleResponse updateRole(UUID id, RoleRequest request) {
         Role role = getRoleById(id);
         roleMapper.updateRole(role, request);
         role = this.saveRole(role);
         List<Permission> permissions = rolePermissionService.replacePermissionsForRole(role, request.permissions());
-        log.info("Role updated success: code={}, name={}", role.getCode(), role.getName());
+        log.info("Role updated: code={}, name={}", role.getCode(), role.getName());
         return roleMapper.toRoleResponseWithPermissions(role, permissions);
     }
 
@@ -93,32 +93,18 @@ public class RoleServiceImpl implements RoleService {
     @Transactional
     public void softDeleteRole(UUID id) {
         Role role = getRoleById(id);
-        role.setIsDeleted(true);
-        role.setDeletedAt(Instant.now());
-        role.setDeletedBy(SecurityUtil.getCurrentAccount());
+        this.softDelete(role);
         permissionCacheService.evictAll();
-        log.info("Role soft deleted success with id: {}", id);
-    }
-
-    @Override
-    @Transactional
-    public void deleteRole(UUID id) {
-        Role role = getSoftDeletedRoleById(id);
-        rolePermissionRepository.deleteByRoleId(id);
-        roleRepository.delete(role);
-        permissionCacheService.evictAll();
-        log.info("Role deleted success with id: {}", id);
+        log.info("Role soft deleted with id={}", id);
     }
 
     @Override
     @Transactional
     public void restoreRole(UUID id) {
         Role role = getSoftDeletedRoleById(id);
-        role.setIsDeleted(false);
-        role.setDeletedAt(null);
-        role.setDeletedBy(null);
+        this.restore(role);
         permissionCacheService.evictAll();
-        log.info("Role restored success with id: {}", id);
+        log.info("Role restored with id={}", id);
     }
 
     @Override
@@ -128,21 +114,40 @@ public class RoleServiceImpl implements RoleService {
         String action = request.action().toUpperCase();
         switch (action) {
             case "SOFT_DELETE" -> {
-                roleRepository.softDeleteAllByIds(roleIds, SecurityUtil.getCurrentAccount());
+                List<Role> roles = roleRepository.findAllById(roleIds);
+                roles.forEach(this::softDelete);
                 permissionCacheService.evictAll();
-                log.info("Bulk action soft delete roles ids: {}", roleIds);
+                log.info("Bulk action soft delete role with ids: {}", roleIds);
             }
             case "RESTORE" -> {
-                roleRepository.restoreAllByIds(roleIds);
+                List<Role> roles = roleRepository.findAllById(roleIds);
+                roles.forEach(this::restore);
                 permissionCacheService.evictAll();
-                log.info("Bulk action restore roles ids: {}", roleIds);
+                log.info("Bulk action restore roles with ids: {}", roleIds);
             }
             case "DELETE" -> {
-                rolePermissionRepository.deleteAllByRoleIdIn(roleIds);
-                roleRepository.deleteAllByIds(roleIds);
+                roleRepository.deleteByIdInAndIsDeletedTrue(roleIds);
                 permissionCacheService.evictAll();
-                log.info("Bulk action delete roles ids: {}", roleIds);
+                log.info("Bulk action delete roles with ids: {}", roleIds);
             }
+        }
+    }
+
+    @Override
+    @Transactional
+    public void deleteRole(UUID id) {
+        Role role = getSoftDeletedRoleById(id);
+        roleRepository.delete(role);
+        permissionCacheService.evictAll();
+        log.info("Role deleted success with id: {}", id);
+    }
+
+    private Role saveRole(Role role) {
+        try {
+            return roleRepository.save(role);
+        } catch (DataIntegrityViolationException ex) {
+            log.warn("Role save failed - duplicate entry: name={}", role.getName());
+            throw new AppException(ErrorCode.ROLE_EXISTED);
         }
     }
 
@@ -156,13 +161,16 @@ public class RoleServiceImpl implements RoleService {
             .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
     }
 
-    private Role saveRole(Role role) {
-        try {
-            return roleRepository.save(role);
-        } catch (DataIntegrityViolationException ex) {
-            log.warn("Role save failed - duplicate entry: name={}", role.getName());
-            throw new AppException(ErrorCode.ROLE_EXISTED);
-        }
+    private void softDelete(Role role) {
+        role.setIsDeleted(true);
+        role.setDeletedAt(Instant.now());
+        role.setDeletedBy(SecurityUtil.getCurrentAccount());
+    }
+
+    private void restore(Role role) {
+        role.setIsDeleted(false);
+        role.setDeletedAt(null);
+        role.setDeletedBy(null);
     }
 
 }

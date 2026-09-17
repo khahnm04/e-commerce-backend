@@ -37,27 +37,13 @@ public class RoleController {
     private final RoleService roleService;
     private final Translator translator;
 
-    @PostMapping
-    @Operation(summary = "Create role")
-    @ResponseStatus(HttpStatus.CREATED)
-    ApiResponse<RoleResponse> createRole(
-        @Valid @RequestBody RoleRequest request
-    ) {
-        log.info("Create role");
-        return ApiResponse.<RoleResponse>builder()
-            .status(HttpStatus.CREATED.value())
-            .data(roleService.createRole(request))
-            .message(translator.toLocale("role.create.success"))
-            .build();
-    }
-
     @GetMapping("/{id}")
     @Operation(summary = "Get role detail by id")
     ApiResponse<RoleResponse> getRoleDetailById(
         @PathVariable UUID id,
         @RequestParam(defaultValue = "false") boolean isDeleted
     ) {
-        log.info("Get role detail");
+        log.info("Get role detail: roleId={}", id);
         return ApiResponse.<RoleResponse>builder()
             .status(HttpStatus.OK.value())
             .data(roleService.getRoleDetailById(id, isDeleted))
@@ -94,13 +80,27 @@ public class RoleController {
             .build();
     }
 
+    @PostMapping
+    @Operation(summary = "Create role")
+    @ResponseStatus(HttpStatus.CREATED)
+    ApiResponse<RoleResponse> createRole(
+        @Valid @RequestBody RoleRequest request
+    ) {
+        log.info("Create role");
+        return ApiResponse.<RoleResponse>builder()
+            .status(HttpStatus.CREATED.value())
+            .data(roleService.createRole(request))
+            .message(translator.toLocale("role.create.success"))
+            .build();
+    }
+
     @PutMapping("/{id}")
     @Operation(summary = "Update role")
     ApiResponse<RoleResponse> updateRole(
         @PathVariable UUID id,
         @Valid @RequestBody RoleRequest request
     ) {
-        log.info("Update role");
+        log.info("Update role: roleId={}", id);
         return ApiResponse.<RoleResponse>builder()
             .status(HttpStatus.OK.value())
             .data(roleService.updateRole(id, request))
@@ -113,24 +113,11 @@ public class RoleController {
     ApiResponse<Void> softDeleteRole(
         @PathVariable UUID id
     ) {
-        log.info("Soft delete role");
+        log.info("Soft delete role: roleId={}", id);
         roleService.softDeleteRole(id);
         return ApiResponse.<Void>builder()
             .status(HttpStatus.OK.value())
             .message(translator.toLocale("role.soft-delete.success"))
-            .build();
-    }
-
-    @DeleteMapping("/{id}")
-    @Operation(summary = "Delete role")
-    ApiResponse<Void> deleteRole(
-        @PathVariable UUID id
-    ) {
-        log.info("Delete role");
-        roleService.deleteRole(id);
-        return ApiResponse.<Void>builder()
-            .status(HttpStatus.OK.value())
-            .message(translator.toLocale("role.delete.success"))
             .build();
     }
 
@@ -144,6 +131,19 @@ public class RoleController {
         return ApiResponse.<Void>builder()
             .status(HttpStatus.OK.value())
             .message(translator.toLocale("role.restore.success"))
+            .build();
+    }
+
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Delete role")
+    ApiResponse<Void> deleteRole(
+        @PathVariable UUID id
+    ) {
+        log.info("Delete role");
+        roleService.deleteRole(id);
+        return ApiResponse.<Void>builder()
+            .status(HttpStatus.OK.value())
+            .message(translator.toLocale("role.delete.success"))
             .build();
     }
 
