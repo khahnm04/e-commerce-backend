@@ -117,7 +117,7 @@ public class RoleServiceImpl implements RoleService {
                 List<Role> roles = roleRepository.findAllById(roleIds);
                 roles.forEach(this::softDelete);
                 permissionCacheService.evictAll();
-                log.info("Bulk action soft delete role with ids: {}", roleIds);
+                log.info("Bulk action soft delete roles with ids: {}", roleIds);
             }
             case "RESTORE" -> {
                 List<Role> roles = roleRepository.findAllById(roleIds);

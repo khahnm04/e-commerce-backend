@@ -1,5 +1,6 @@
 package com.khahnm18.ecommercebackend.controller;
 
+import com.khahnm18.ecommercebackend.dto.request.BulkActionRequest;
 import com.khahnm18.ecommercebackend.dto.request.auth.RoleRequest;
 import com.khahnm18.ecommercebackend.dto.response.ApiResponse;
 import com.khahnm18.ecommercebackend.dto.response.PageResponse;
@@ -126,11 +127,24 @@ public class RoleController {
     ApiResponse<Void> restoreRole(
         @PathVariable UUID id
     ) {
-        log.info("Restore role");
+        log.info("Restore role: roleId={}", id);
         roleService.restoreRole(id);
         return ApiResponse.<Void>builder()
             .status(HttpStatus.OK.value())
             .message(translator.toLocale("role.restore.success"))
+            .build();
+    }
+
+    @PatchMapping("/bulk")
+    @Operation(summary = "Bulk action role")
+    ApiResponse<Void> deleteRole(
+        @Valid @RequestBody BulkActionRequest request
+    ) {
+        log.info("Bulk action role: roleIds={}", request.ids());
+        roleService.bulkAction(request);
+        return ApiResponse.<Void>builder()
+            .status(HttpStatus.OK.value())
+            .message(translator.toLocale("role.bulk.success"))
             .build();
     }
 
@@ -139,7 +153,7 @@ public class RoleController {
     ApiResponse<Void> deleteRole(
         @PathVariable UUID id
     ) {
-        log.info("Delete role");
+        log.info("Delete role: roleId={}", id);
         roleService.deleteRole(id);
         return ApiResponse.<Void>builder()
             .status(HttpStatus.OK.value())
