@@ -135,7 +135,7 @@ public class RoleController {
             .build();
     }
 
-    @PatchMapping("/bulk")
+    @PatchMapping("/bulk-action")
     @Operation(summary = "Bulk action role")
     ApiResponse<Void> deleteRole(
         @Valid @RequestBody BulkActionRequest request
@@ -144,7 +144,7 @@ public class RoleController {
         roleService.bulkAction(request);
         return ApiResponse.<Void>builder()
             .status(HttpStatus.OK.value())
-            .message(translator.toLocale("role.bulk.success"))
+            .message(translator.toLocale("role.bulk-action.success"))
             .build();
     }
 
