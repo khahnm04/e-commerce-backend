@@ -1,5 +1,6 @@
 package com.khahnm18.ecommercebackend.service.user.impl;
 
+import com.khahnm18.ecommercebackend.entity.auth.Account;
 import com.khahnm18.ecommercebackend.entity.auth.AccountRole;
 import com.khahnm18.ecommercebackend.entity.auth.Role;
 import com.khahnm18.ecommercebackend.exception.AppException;
@@ -7,10 +8,12 @@ import com.khahnm18.ecommercebackend.exception.ErrorCode;
 import com.khahnm18.ecommercebackend.repository.auth.AccountRoleRepository;
 import com.khahnm18.ecommercebackend.repository.auth.RoleRepository;
 import com.khahnm18.ecommercebackend.service.user.AccountRoleService;
+import com.khahnm18.ecommercebackend.util.SecurityUtil;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -25,54 +28,45 @@ public class AccountRoleServiceImpl implements AccountRoleService {
 
     @Override
     @Transactional
-    public List<Role> assignRolesToAccount(UUID accountId, List<UUID> roleIds) {
-        List<Role> roles = validateRoles(roleIds);
-
-        List<AccountRole> accountRoles = roles.stream()
-            .map(role -> AccountRole.builder()
-                .accountId(accountId)
-                .roleId(role.getId())
-                .build())
-            .toList();
-
-        accountRoleRepository.saveAll(accountRoles);
-        log.info("Assigned {} roles to account: {}", accountRoles.size(), accountId);
+    public List<Role> assignRolesToAccount(Account account, List<UUID> roleIds) {
+        List<Role> roles = getRolesByRoleIds(roleIds);
+        this.saveAccountRoles(account, roles);
+        account.setUpdatedAt(Instant.now());
+        account.setUpdatedBy(SecurityUtil.getCurrentAccount());
         return roles;
     }
 
     @Override
     @Transactional
-    public List<Role> replaceRolesForAdmin(UUID accountId, List<UUID> roleIds) {
-        List<Role> roles = validateRoles(roleIds);
-        List<AccountRole> existingAccountRoles = accountRoleRepository.findByAccountId(accountId);
-
-        List<UUID> existingRoleIds = existingAccountRoles.stream()
-            .map(AccountRole::getRoleId)
+    public List<Role> replaceRolesForAdmin(Account account, List<UUID> newRoleIds) {
+        List<Role> newRoles = this.getRolesByRoleIds(newRoleIds);
+        List<UUID> currentRoleIds = roleRepository.findRolesByAccountId(account.getId())
+            .stream()
+            .map(Role::getId)
             .toList();
 
-        if (existingRoleIds.equals(roleIds)) {
-            return roles;
-        }
-
-        List<UUID> toRemove = existingAccountRoles.stream()
-            .filter(accountRole -> !roleIds.contains(accountRole.getRoleId()))
-            .map(AccountRole::getId)
+        // Remove
+        List<UUID> roleIdsToRemove = currentRoleIds.stream()
+            .filter(currentRoleId -> !newRoleIds.contains(currentRoleId))
             .toList();
+        if (!roleIdsToRemove.isEmpty()) {
+            accountRoleRepository.deleteByAccountIdAndRoleIdIn(account.getId(), roleIdsToRemove);
+        }
 
-        List<UUID> toAdd = roleIds.stream()
-            .filter(roleId -> !existingRoleIds.contains(roleId))
+        // Add
+        List<Role> rolesToAdd = newRoles.stream()
+            .filter(newRole -> !currentRoleIds.contains(newRole.getId()))
             .toList();
+        if (!rolesToAdd.isEmpty()) {
+            this.saveAccountRoles(account, rolesToAdd);
+        }
 
-        if (!toRemove.isEmpty()) {
-            accountRoleRepository.deleteAllByIdIn(toRemove);
-        }
-        if (!toAdd.isEmpty()) {
-            accountRoleRepository.insertAll(accountId, toAdd);
-        }
-        return roles;
+        account.setUpdatedAt(Instant.now());
+        account.setUpdatedBy(SecurityUtil.getCurrentAccount());
+        return newRoles;
     }
 
-    private List<Role> validateRoles(List<UUID> roleIds) {
+    private List<Role> getRolesByRoleIds(List<UUID> roleIds) {
         if (roleIds == null || roleIds.isEmpty()) {
             return Collections.emptyList();
         }
@@ -81,6 +75,18 @@ public class AccountRoleServiceImpl implements AccountRoleService {
             throw new AppException(ErrorCode.ROLE_NOT_FOUND);
         }
         return roles;
+    }
+
+    private void saveAccountRoles(Account account, List<Role> roles) {
+        List<AccountRole> accountRoles = roles.stream()
+            .map(role -> AccountRole.builder()
+                .accountId(account.getId())
+                .roleId(role.getId())
+                .build())
+            .toList();
+
+        accountRoleRepository.saveAll(accountRoles);
+        log.info("Assigned {} roles to account: {}", accountRoles.size(), account.getId());
     }
 
 }

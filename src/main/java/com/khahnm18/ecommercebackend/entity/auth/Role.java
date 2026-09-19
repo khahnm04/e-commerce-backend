@@ -1,6 +1,7 @@
 package com.khahnm18.ecommercebackend.entity.auth;
 
 import com.khahnm18.ecommercebackend.entity.BaseEntity;
+import org.hibernate.annotations.DynamicUpdate;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import jakarta.persistence.Column;
@@ -14,6 +15,7 @@ import lombok.Builder;
 @Getter
 @Setter
 @Builder
+@DynamicUpdate
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "roles")

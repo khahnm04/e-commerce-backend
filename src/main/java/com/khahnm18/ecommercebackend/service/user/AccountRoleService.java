@@ -7,8 +7,8 @@ import java.util.UUID;
 
 public interface AccountRoleService {
 
-    List<Role> assignRolesToAccount(UUID accountId, List<UUID> roleIds);
+    List<Role> assignRolesToAccount(Account account, List<UUID> roleIds);
 
-    List<Role> replaceRolesForAdmin(UUID accountId, List<UUID> roleIds);
+    List<Role> replaceRolesForAdmin(Account account, List<UUID> roleIds);
 
 }

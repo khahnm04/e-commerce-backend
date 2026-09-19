@@ -1,5 +1,6 @@
 package com.khahnm18.ecommercebackend.entity.auth;
 
+import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.Generated;
 import org.hibernate.generator.EventType;
 import jakarta.persistence.Entity;
@@ -17,6 +18,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @Builder
+@DynamicUpdate
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "account_roles")

@@ -8,12 +8,12 @@ import com.khahnm18.ecommercebackend.exception.ErrorCode;
 import com.khahnm18.ecommercebackend.repository.auth.PermissionRepository;
 import com.khahnm18.ecommercebackend.repository.auth.RolePermissionRepository;
 import com.khahnm18.ecommercebackend.service.auth.RolePermissionService;
+import com.khahnm18.ecommercebackend.service.auth.cache.PermissionCacheService;
 import com.khahnm18.ecommercebackend.util.SecurityUtil;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
@@ -26,6 +26,7 @@ public class RolePermissionServiceImpl implements RolePermissionService {
 
     private final PermissionRepository permissionRepository;
     private final RolePermissionRepository rolePermissionRepository;
+    private final PermissionCacheService permissionCacheService;
 
     @Override
     @Transactional
@@ -64,6 +65,8 @@ public class RolePermissionServiceImpl implements RolePermissionService {
 
         role.setUpdatedAt(Instant.now());
         role.setUpdatedBy(SecurityUtil.getCurrentAccount());
+
+        permissionCacheService.evictAll();
         return newPermissions;
     }
 

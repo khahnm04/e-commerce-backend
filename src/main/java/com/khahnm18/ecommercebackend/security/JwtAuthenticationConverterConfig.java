@@ -43,8 +43,10 @@ public class JwtAuthenticationConverterConfig implements Converter<Jwt, Abstract
 
             if (uri.startsWith("/api/v1/admin")) {
                 UUID accountId = UUID.fromString(jwt.getSubject());
+                boolean isAdmin = defaultAuthorities.stream()
+                    .anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
 
-                List<String> permissions = permissionCacheService.getPermissions(accountId);
+                List<String> permissions = permissionCacheService.getPermissions(accountId, isAdmin);
                 log.info("Loaded {} permissions for Admin with Id: {}", permissions.size(), accountId);
 
                 List<GrantedAuthority> combinedAuthorities = new ArrayList<>(defaultAuthorities);

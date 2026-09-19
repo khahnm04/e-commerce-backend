@@ -1,5 +1,6 @@
 package com.khahnm18.ecommercebackend.config;
 
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.Authentication;
 import org.springframework.context.annotation.Configuration;
@@ -15,9 +16,13 @@ public class AuditorAwareConfig implements AuditorAware<UUID> {
     @Override
     public Optional<UUID> getCurrentAuditor() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        return authentication != null && authentication.getName() != null
-            ? Optional.of(UUID.fromString(authentication.getName()))
-            : Optional.empty();
+        if (authentication == null
+            || authentication.getName() == null
+            || !authentication.isAuthenticated()
+            || authentication instanceof AnonymousAuthenticationToken) {
+            return Optional.empty();
+        }
+        return Optional.of(UUID.fromString(authentication.getName()));
     }
 
 }

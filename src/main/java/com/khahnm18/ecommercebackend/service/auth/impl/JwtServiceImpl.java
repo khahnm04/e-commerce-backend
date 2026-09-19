@@ -6,7 +6,7 @@ import com.khahnm18.ecommercebackend.entity.auth.Role;
 import com.khahnm18.ecommercebackend.exception.AppException;
 import com.khahnm18.ecommercebackend.exception.ErrorCode;
 import com.khahnm18.ecommercebackend.config.properties.JwtProperties;
-import com.khahnm18.ecommercebackend.repository.auth.AccountRoleRepository;
+import com.khahnm18.ecommercebackend.repository.auth.RoleRepository;
 import com.khahnm18.ecommercebackend.service.auth.JwtService;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.SignedJWT;
@@ -31,7 +31,7 @@ import java.util.UUID;
 public class JwtServiceImpl implements JwtService {
 
     private final JwtProperties jwtProperties;
-    private final AccountRoleRepository accountRoleRepository;
+    private final RoleRepository roleRepository;
 
     @Override
     public TokenResponse generateAccessToken(Account account) {
@@ -122,7 +122,7 @@ public class JwtServiceImpl implements JwtService {
     }
 
     private String buildScope(UUID accountId) {
-        List<Role> roles = accountRoleRepository.findRolesByAccountId(accountId);
+        List<Role> roles = roleRepository.findRolesByAccountId(accountId);
         if (CollectionUtils.isEmpty(roles)) {
             return "";
         }

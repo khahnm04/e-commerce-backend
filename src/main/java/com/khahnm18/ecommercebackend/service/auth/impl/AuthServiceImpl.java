@@ -44,7 +44,8 @@ public class AuthServiceImpl implements AuthService {
             throw new AppException(ErrorCode.LOGIN_FAILED);
         }
 
-        accountRepository.updateLastLoginAt(account.getId(), Instant.now());
+        account.setLastLoginAt(Instant.now());
+        accountRepository.save(account);
 
         TokenResponse accessToken = jwtService.generateAccessToken(account);
         TokenResponse refreshToken = jwtService.generateRefreshToken(account);

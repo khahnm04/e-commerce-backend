@@ -2,6 +2,7 @@ package com.khahnm18.ecommercebackend.entity.auth;
 
 import com.khahnm18.ecommercebackend.constant.auth.AccountStatus;
 import com.khahnm18.ecommercebackend.entity.BaseEntity;
+import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import jakarta.persistence.Entity;
@@ -20,6 +21,7 @@ import java.time.Instant;
 @Getter
 @Setter
 @Builder
+@DynamicUpdate
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "accounts")

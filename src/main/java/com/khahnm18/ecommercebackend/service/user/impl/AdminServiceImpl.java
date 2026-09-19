@@ -14,7 +14,7 @@ import com.khahnm18.ecommercebackend.exception.ErrorCode;
 import com.khahnm18.ecommercebackend.mapper.user.AccountMapper;
 import com.khahnm18.ecommercebackend.mapper.user.AdminMapper;
 import com.khahnm18.ecommercebackend.repository.auth.AccountRepository;
-import com.khahnm18.ecommercebackend.repository.auth.AccountRoleRepository;
+import com.khahnm18.ecommercebackend.repository.auth.RoleRepository;
 import com.khahnm18.ecommercebackend.repository.user.AdminProfileRepository;
 import com.khahnm18.ecommercebackend.service.user.AccountRoleService;
 import com.khahnm18.ecommercebackend.service.user.AdminService;
@@ -46,7 +46,7 @@ public class AdminServiceImpl implements AdminService {
     private final AdminMapper adminMapper;
     private final AccountRepository accountRepository;
     private final AdminProfileRepository adminProfileRepository;
-    private final AccountRoleRepository accountRoleRepository;
+    private final RoleRepository roleRepository;
 
     @Override
     @Transactional
@@ -57,7 +57,7 @@ public class AdminServiceImpl implements AdminService {
         AdminProfile adminProfile = adminMapper.toAdminProfile(request, account.getId());
         adminProfile = adminProfileRepository.save(adminProfile);
 
-        List<Role> roles = accountRoleService.assignRolesToAccount(account.getId(), request.roles());
+        List<Role> roles = accountRoleService.assignRolesToAccount(account, request.roles());
         log.info("Admin profile created success: fullName={}, email={}", adminProfile.getFullName(), account.getEmail());
 
         return adminMapper.toAdminResponseWithRoles(adminProfile, account, roles);
@@ -70,7 +70,7 @@ public class AdminServiceImpl implements AdminService {
             : this.getAccountById(accountId);
 
         AdminProfile adminProfile = getAdminProfileByAccountId(account.getId());
-        List<Role> roles = accountRoleRepository.findRolesByAccountId(accountId);
+        List<Role> roles = roleRepository.findRolesByAccountId(accountId);
         return adminMapper.toAdminResponseWithRoles(adminProfile, account, roles);
     }
 
@@ -121,7 +121,7 @@ public class AdminServiceImpl implements AdminService {
         adminMapper.updateAdmin(adminProfile, request);
         adminProfile = adminProfileRepository.save(adminProfile);
 
-        List<Role> roles = accountRoleService.replaceRolesForAdmin(accountId, request.roles());
+        List<Role> roles = accountRoleService.replaceRolesForAdmin(account, request.roles());
         log.info("Admin profile updated successfully: accountId={}, email={}", accountId, account.getEmail());
 
         return adminMapper.toAdminResponseWithRoles(adminProfile, account, roles);
@@ -141,7 +141,6 @@ public class AdminServiceImpl implements AdminService {
     @Transactional
     public void deleteAdmin(UUID accountId) {
         Account account = getAccountById(accountId);
-        accountRoleRepository.deleteByAccountId(accountId);
         accountRepository.delete(account);
         log.info("Admin deleted success with account_id: {}", accountId);
     }
@@ -163,20 +162,22 @@ public class AdminServiceImpl implements AdminService {
         String action = request.action().toUpperCase();
         switch (action) {
             case "ACTIVE", "INACTIVE", "BANNED", "LOCKED" -> {
-                accountRepository.updateStatusAllByIds(AccountStatus.valueOf(action), accountIds);
+                List<Account> accounts = accountRepository.findAllById(accountIds);
+                accounts.forEach(account -> account.setStatus(AccountStatus.valueOf(action)));
                 log.info("Bulk update status {} admin with ids: {}", action, accountIds);
             }
             case "SOFT_DELETE" -> {
-                accountRepository.softDeleteAllByIds(accountIds, SecurityUtil.getCurrentAccount());
+                List<Account> accounts = accountRepository.findAllById(accountIds);
+                accounts.forEach(this::softDelete);
                 log.info("Bulk action soft delete admin with accountIds: {}", accountIds);
             }
             case "RESTORE" -> {
-                accountRepository.restoreAllByIds(accountIds);
+                List<Account> accounts = accountRepository.findAllById(accountIds);
+                accounts.forEach(this::restore);
                 log.info("Bulk action restore admin with accountIds: {}", accountIds);
             }
             case "DELETE" -> {
-                accountRoleRepository.deleteAllByAccountIdIn(accountIds);
-                accountRepository.deleteAllByIds(accountIds);
+                accountRepository.deleteAllByIdInAndIsDeletedTrue(accountIds);
                 log.info("Bulk action delete admin with ids: {}", accountIds);
             }
         }
@@ -212,6 +213,18 @@ public class AdminServiceImpl implements AdminService {
     private AdminProfile getAdminProfileByAccountId(UUID accopuntId) {
         return adminProfileRepository.findByAccountIdAndIsDeletedFalse(accopuntId)
             .orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_NOT_FOUND));
+    }
+
+    private void softDelete(Account account) {
+        account.setIsDeleted(true);
+        account.setDeletedAt(Instant.now());
+        account.setDeletedBy(SecurityUtil.getCurrentAccount());
+    }
+
+    private void restore(Account account) {
+        account.setIsDeleted(false);
+        account.setDeletedAt(null);
+        account.setDeletedBy(null);
     }
 
 }

@@ -15,4 +15,10 @@ public class SecurityUtil {
         return UUID.fromString(jwt.getSubject());
     }
 
+    public boolean isAdmin() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return authentication.getAuthorities().stream()
+            .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()));
+    }
+
 }

@@ -16,13 +16,12 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class PermissionCacheService {
 
-    private final AccountCacheService accountCacheService;
     private final AccountRepository accountRepository;
     private final PermissionRepository permissionRepository;
 
     @Cacheable(cacheNames = "admin_perms", key = "#accountId")
-    public List<String> getPermissions(UUID accountId) {
-        if (accountCacheService.isAdmin(accountId)) {
+    public List<String> getPermissions(UUID accountId, boolean isAdmin) {
+        if (isAdmin) {
             return permissionRepository.findAll()
                 .stream()
                 .map(Permission::getCode)
@@ -31,12 +30,12 @@ public class PermissionCacheService {
         return accountRepository.findAllPermissionCodesByAccountId(accountId);
     }
 
-    @CacheEvict(cacheNames = {"admin_perms", "admin_check"}, key = "#accountId")
+    @CacheEvict(cacheNames = "admin_perms", key = "#accountId")
     public void evictByAccountId(UUID accountId) {
         log.info("Permission cache evicted for accountId: {}", accountId);
     }
 
-    @CacheEvict(cacheNames = {"admin_perms", "admin_check"}, allEntries = true)
+    @CacheEvict(cacheNames = "admin_perms", allEntries = true)
     public void evictAll() {
         log.info("All permission caches evicted successfully");
     }
