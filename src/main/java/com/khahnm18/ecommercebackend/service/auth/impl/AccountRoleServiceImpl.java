@@ -1,4 +1,4 @@
-package com.khahnm18.ecommercebackend.service.user.impl;
+package com.khahnm18.ecommercebackend.service.auth.impl;
 
 import com.khahnm18.ecommercebackend.entity.auth.Account;
 import com.khahnm18.ecommercebackend.entity.auth.AccountRole;
@@ -7,7 +7,7 @@ import com.khahnm18.ecommercebackend.exception.AppException;
 import com.khahnm18.ecommercebackend.exception.ErrorCode;
 import com.khahnm18.ecommercebackend.repository.auth.AccountRoleRepository;
 import com.khahnm18.ecommercebackend.repository.auth.RoleRepository;
-import com.khahnm18.ecommercebackend.service.user.AccountRoleService;
+import com.khahnm18.ecommercebackend.service.auth.AccountRoleService;
 import com.khahnm18.ecommercebackend.util.SecurityUtil;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
@@ -31,8 +31,6 @@ public class AccountRoleServiceImpl implements AccountRoleService {
     public List<Role> assignRolesToAccount(Account account, List<UUID> roleIds) {
         List<Role> roles = getRolesByRoleIds(roleIds);
         this.saveAccountRoles(account, roles);
-        account.setUpdatedAt(Instant.now());
-        account.setUpdatedBy(SecurityUtil.getCurrentAccount());
         return roles;
     }
 
@@ -84,7 +82,6 @@ public class AccountRoleServiceImpl implements AccountRoleService {
                 .roleId(role.getId())
                 .build())
             .toList();
-
         accountRoleRepository.saveAll(accountRoles);
         log.info("Assigned {} roles to account: {}", accountRoles.size(), account.getId());
     }

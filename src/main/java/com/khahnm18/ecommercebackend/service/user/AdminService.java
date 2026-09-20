@@ -11,8 +11,6 @@ import java.util.UUID;
 
 public interface AdminService {
 
-    AdminResponse createAdmin(AdminCreationRequest request);
-
     AdminResponse getAdminDetailById(UUID accountId, boolean isDeleted);
 
     Page<AdminResponse> getAllAdmins(
@@ -25,16 +23,18 @@ public interface AdminService {
         Instant endDate
     );
 
+    AdminProfileResponse getMyProfile();
+
+    AdminResponse createAdmin(AdminCreationRequest request);
+
     AdminResponse updateAdmin(UUID accountId, AdminUpdateRequest request);
 
     void softDeleteAdmin(UUID accountId);
-
-    void deleteAdmin(UUID accountId);
 
     void restoreAdmin(UUID accountId);
 
     void bulkAction(BulkActionRequest request);
 
-    AdminProfileResponse getMyProfile();
+    void deleteAdmin(UUID accountId);
 
 }

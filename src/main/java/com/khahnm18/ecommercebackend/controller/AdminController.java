@@ -37,22 +37,8 @@ import java.util.UUID;
 @Tag(name = "Admin Controller", description = "Account admin and admin profile management APIs")
 public class AdminController {
 
-    private final AdminService adminService;
     private final Translator translator;
-
-    @PostMapping
-    @Operation(summary = "Create account admin and admin profile")
-    @ResponseStatus(HttpStatus.CREATED)
-    ApiResponse<AdminResponse> createAccount(
-        @Valid @RequestBody AdminCreationRequest request
-    ) {
-        log.info("Create account admin and admin profile");
-        return ApiResponse.<AdminResponse>builder()
-            .status(HttpStatus.CREATED.value())
-            .data(adminService.createAdmin(request))
-            .message(translator.toLocale("admin.create.success"))
-            .build();
-    }
+    private final AdminService adminService;
 
     @GetMapping("/{id}")
     @Operation(summary = "Get admin detail by id")
@@ -97,6 +83,31 @@ public class AdminController {
             .build();
     }
 
+    @GetMapping("/my-profile")
+    @Operation(summary = "Get my account admin profile")
+    ApiResponse<AdminProfileResponse> getMyProfile() {
+        log.info("Get my profile");
+        return ApiResponse.<AdminProfileResponse>builder()
+            .status(HttpStatus.OK.value())
+            .data(adminService.getMyProfile())
+            .message(translator.toLocale("admin.my-profile.success"))
+            .build();
+    }
+
+    @PostMapping
+    @Operation(summary = "Create account admin and admin profile")
+    @ResponseStatus(HttpStatus.CREATED)
+    ApiResponse<AdminResponse> createAccount(
+        @Valid @RequestBody AdminCreationRequest request
+    ) {
+        log.info("Create account admin and admin profile");
+        return ApiResponse.<AdminResponse>builder()
+            .status(HttpStatus.CREATED.value())
+            .data(adminService.createAdmin(request))
+            .message(translator.toLocale("admin.create.success"))
+            .build();
+    }
+
     @PutMapping("/{id}")
     @Operation(summary = "Update admin")
     ApiResponse<AdminResponse> updateAdmin(
@@ -124,19 +135,6 @@ public class AdminController {
             .build();
     }
 
-    @DeleteMapping("/{id}")
-    @Operation(summary = "Permanently delete admin")
-    ApiResponse<Void> deleteAdmin(
-        @PathVariable("id") UUID accountId
-    ) {
-        log.info("Permanently delete admin: accountId={}", accountId);
-        adminService.deleteAdmin(accountId);
-        return ApiResponse.<Void>builder()
-            .status(HttpStatus.OK.value())
-            .message(translator.toLocale("admin.delete.success"))
-            .build();
-    }
-
     @PatchMapping("/{id}/restore")
     @Operation(summary = "Restore soft-deleted admin")
     ApiResponse<Void> restoreAdmin(
@@ -151,7 +149,7 @@ public class AdminController {
     }
 
 
-    @PatchMapping("/bulk")
+    @PatchMapping("/bulk-action")
     @Operation(summary = "Bulk action admin")
     ApiResponse<Void> bulkAction(
         @Valid @RequestBody BulkActionRequest request
@@ -159,18 +157,20 @@ public class AdminController {
         adminService.bulkAction(request);
         return ApiResponse.<Void>builder()
             .status(HttpStatus.OK.value())
-            .message(translator.toLocale("admin.bulk.success"))
+            .message(translator.toLocale("admin.bulk-action.success"))
             .build();
     }
 
-    @GetMapping("/my-profile")
-    @Operation(summary = "Get my account admin profile")
-    ApiResponse<AdminProfileResponse> getMyProfile() {
-        log.info("Get my profile");
-        return ApiResponse.<AdminProfileResponse>builder()
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Delete admin")
+    ApiResponse<Void> deleteAdmin(
+        @PathVariable("id") UUID accountId
+    ) {
+        log.info("Delete admin: accountId={}", accountId);
+        adminService.deleteAdmin(accountId);
+        return ApiResponse.<Void>builder()
             .status(HttpStatus.OK.value())
-            .data(adminService.getMyProfile())
-            .message(translator.toLocale("admin.my-profile.success"))
+            .message(translator.toLocale("admin.delete.success"))
             .build();
     }
 

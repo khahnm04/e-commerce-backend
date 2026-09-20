@@ -9,10 +9,10 @@ import java.time.LocalDate;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record AdminProfileResponse(
 
-    String fullName,
-    String jobTitle,
     String email,
     String phoneNumber,
+    String jobTitle,
+    String fullName,
     LocalDate dateOfBirth,
     String avatar,
     GenderType gender

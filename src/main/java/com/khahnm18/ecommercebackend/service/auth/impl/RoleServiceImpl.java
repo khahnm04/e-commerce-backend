@@ -43,7 +43,7 @@ public class RoleServiceImpl implements RoleService {
     @Override
     public RoleResponse getRoleDetailById(UUID id, boolean isDeleted) {
         Role role = isDeleted ? this.getSoftDeletedRoleById(id) : this.getRoleById(id);
-        List<Permission> permissions = permissionRepository.findPermissionsByRoleId(role.getId());
+        List<Permission> permissions = permissionRepository.findPermissionsByRoleId(id);
         return roleMapper.toRoleResponseWithPermissions(role, permissions);
     }
 

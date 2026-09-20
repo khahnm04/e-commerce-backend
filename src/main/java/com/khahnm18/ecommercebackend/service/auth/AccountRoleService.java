@@ -1,4 +1,4 @@
-package com.khahnm18.ecommercebackend.service.user;
+package com.khahnm18.ecommercebackend.service.auth;
 
 import com.khahnm18.ecommercebackend.entity.auth.Account;
 import com.khahnm18.ecommercebackend.entity.auth.Role;

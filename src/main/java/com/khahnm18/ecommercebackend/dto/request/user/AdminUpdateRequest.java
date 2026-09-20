@@ -15,11 +15,11 @@ public record AdminUpdateRequest(
     @NotBlank(message = "admin.phoneNumber.required")
     String phoneNumber,
 
-    @NotBlank(message = "admin.jobTitle.required")
-    String jobTitle,
-
     @NotBlank(message = "admin.fullName.required")
     String fullName,
+
+    @NotBlank(message = "admin.jobTitle.required")
+    String jobTitle,
 
     LocalDate dateOfBirth,
     String avatar,

@@ -11,12 +11,12 @@ import com.khahnm18.ecommercebackend.entity.auth.Role;
 import com.khahnm18.ecommercebackend.entity.user.AdminProfile;
 import com.khahnm18.ecommercebackend.exception.AppException;
 import com.khahnm18.ecommercebackend.exception.ErrorCode;
-import com.khahnm18.ecommercebackend.mapper.user.AccountMapper;
+import com.khahnm18.ecommercebackend.mapper.auth.AccountMapper;
 import com.khahnm18.ecommercebackend.mapper.user.AdminMapper;
 import com.khahnm18.ecommercebackend.repository.auth.AccountRepository;
 import com.khahnm18.ecommercebackend.repository.auth.RoleRepository;
 import com.khahnm18.ecommercebackend.repository.user.AdminProfileRepository;
-import com.khahnm18.ecommercebackend.service.user.AccountRoleService;
+import com.khahnm18.ecommercebackend.service.auth.AccountRoleService;
 import com.khahnm18.ecommercebackend.service.user.AdminService;
 import com.khahnm18.ecommercebackend.specification.AdminSpecification;
 import com.khahnm18.ecommercebackend.util.PageableUtil;
@@ -25,6 +25,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
@@ -47,21 +48,7 @@ public class AdminServiceImpl implements AdminService {
     private final AccountRepository accountRepository;
     private final AdminProfileRepository adminProfileRepository;
     private final RoleRepository roleRepository;
-
-    @Override
-    @Transactional
-    public AdminResponse createAdmin(AdminCreationRequest request) {
-        Account account = accountMapper.toAccount(request);
-        account = this.saveAccount(account);
-
-        AdminProfile adminProfile = adminMapper.toAdminProfile(request, account.getId());
-        adminProfile = adminProfileRepository.save(adminProfile);
-
-        List<Role> roles = accountRoleService.assignRolesToAccount(account, request.roles());
-        log.info("Admin profile created success: fullName={}, email={}", adminProfile.getFullName(), account.getEmail());
-
-        return adminMapper.toAdminResponseWithRoles(adminProfile, account, roles);
-    }
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public AdminResponse getAdminDetailById(UUID accountId, boolean isDeleted) {
@@ -69,7 +56,7 @@ public class AdminServiceImpl implements AdminService {
             ? this.getSoftDeletedAccountById(accountId)
             : this.getAccountById(accountId);
 
-        AdminProfile adminProfile = getAdminProfileByAccountId(account.getId());
+        AdminProfile adminProfile = getAdminProfileByAccountId(accountId);
         List<Role> roles = roleRepository.findRolesByAccountId(accountId);
         return adminMapper.toAdminResponseWithRoles(adminProfile, account, roles);
     }
@@ -99,14 +86,34 @@ public class AdminServiceImpl implements AdminService {
 
         Map<UUID, AdminProfile> profileMap = adminProfileRepository.findAllByAccountIdIn(accountIds)
             .stream()
-            .collect(Collectors.toMap(
-                AdminProfile::getAccountId,
-                p -> p,
-                (p1, p2) -> p1)
-            );
+            .collect(Collectors.toMap(AdminProfile::getAccountId, p -> p, (p1, p2) -> p1));
 
         return accountPage.map(account ->
             adminMapper.toAdminResponse(profileMap.get(account.getId()), account));
+    }
+
+    @Override
+    public AdminProfileResponse getMyProfile() {
+        UUID accountId = SecurityUtil.getCurrentAccount();
+        Account account = this.getAccountById(accountId);
+        AdminProfile adminProfile = this.getAdminProfileByAccountId(account.getId());
+        return adminMapper.toAdminProfileResponse(adminProfile, account);
+    }
+
+    @Override
+    @Transactional
+    public AdminResponse createAdmin(AdminCreationRequest request) {
+        Account account = accountMapper.toAccount(request);
+        account.setPassword(passwordEncoder.encode(request.password()));
+        account = this.saveAccount(account);
+
+        AdminProfile adminProfile = adminMapper.toAdminProfile(request, account.getId());
+        adminProfile = adminProfileRepository.save(adminProfile);
+
+        List<Role> roles = accountRoleService.assignRolesToAccount(account, request.roles());
+        log.info("Admin profile created: fullName={}, email={}", adminProfile.getFullName(), account.getEmail());
+
+        return adminMapper.toAdminResponseWithRoles(adminProfile, account, roles);
     }
 
     @Override
@@ -122,7 +129,7 @@ public class AdminServiceImpl implements AdminService {
         adminProfile = adminProfileRepository.save(adminProfile);
 
         List<Role> roles = accountRoleService.replaceRolesForAdmin(account, request.roles());
-        log.info("Admin profile updated successfully: accountId={}, email={}", accountId, account.getEmail());
+        log.info("Admin profile updated: accountId={}, email={}", accountId, account.getEmail());
 
         return adminMapper.toAdminResponseWithRoles(adminProfile, account, roles);
     }
@@ -134,15 +141,7 @@ public class AdminServiceImpl implements AdminService {
         account.setIsDeleted(true);
         account.setDeletedAt(Instant.now());
         account.setDeletedBy(SecurityUtil.getCurrentAccount());
-        log.info("Admin soft deleted success with account_id: {}", accountId);
-    }
-
-    @Override
-    @Transactional
-    public void deleteAdmin(UUID accountId) {
-        Account account = getAccountById(accountId);
-        accountRepository.delete(account);
-        log.info("Admin deleted success with account_id: {}", accountId);
+        log.info("Admin soft deleted with account_id: {}", accountId);
     }
 
     @Override
@@ -152,7 +151,7 @@ public class AdminServiceImpl implements AdminService {
         account.setIsDeleted(false);
         account.setDeletedAt(null);
         account.setDeletedBy(null);
-        log.info("Admin restored success with account_id: {}", accountId);
+        log.info("Admin restored with account_id: {}", accountId);
     }
 
     @Override
@@ -164,7 +163,7 @@ public class AdminServiceImpl implements AdminService {
             case "ACTIVE", "INACTIVE", "BANNED", "LOCKED" -> {
                 List<Account> accounts = accountRepository.findAllById(accountIds);
                 accounts.forEach(account -> account.setStatus(AccountStatus.valueOf(action)));
-                log.info("Bulk update status {} admin with ids: {}", action, accountIds);
+                log.info("Bulk update status {} admin with accountIds: {}", action, accountIds);
             }
             case "SOFT_DELETE" -> {
                 List<Account> accounts = accountRepository.findAllById(accountIds);
@@ -178,17 +177,17 @@ public class AdminServiceImpl implements AdminService {
             }
             case "DELETE" -> {
                 accountRepository.deleteAllByIdInAndIsDeletedTrue(accountIds);
-                log.info("Bulk action delete admin with ids: {}", accountIds);
+                log.info("Bulk action delete admin with accountIds: {}", accountIds);
             }
         }
     }
 
     @Override
-    public AdminProfileResponse getMyProfile() {
-        UUID accountId = SecurityUtil.getCurrentAccount();
-        Account account = this.getAccountById(accountId);
-        AdminProfile adminProfile = this.getAdminProfileByAccountId(account.getId());
-        return adminMapper.toAdminProfileResponse(adminProfile, account);
+    @Transactional
+    public void deleteAdmin(UUID accountId) {
+        Account account = getAccountById(accountId);
+        accountRepository.delete(account);
+        log.info("Admin deleted success with account_id: {}", accountId);
     }
 
     private Account saveAccount(Account account) {

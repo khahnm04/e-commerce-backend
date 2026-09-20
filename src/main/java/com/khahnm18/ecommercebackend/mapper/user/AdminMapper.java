@@ -26,8 +26,8 @@ public class AdminMapper {
         if (request == null) return null;
         return AdminProfile.builder()
             .accountId(accountId)
-            .jobTitle(request.jobTitle())
             .fullName(request.fullName())
+            .jobTitle(request.jobTitle())
             .dateOfBirth(request.dateOfBirth())
             .avatar(request.avatar())
             .gender(request.gender())

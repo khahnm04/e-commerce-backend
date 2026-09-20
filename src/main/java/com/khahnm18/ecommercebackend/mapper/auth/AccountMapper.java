@@ -1,5 +1,6 @@
-package com.khahnm18.ecommercebackend.mapper.user;
+package com.khahnm18.ecommercebackend.mapper.auth;
 
+import com.khahnm18.ecommercebackend.constant.auth.AccountStatus;
 import com.khahnm18.ecommercebackend.dto.request.user.AdminCreationRequest;
 import com.khahnm18.ecommercebackend.dto.request.user.AdminUpdateRequest;
 import com.khahnm18.ecommercebackend.entity.auth.Account;
@@ -15,8 +16,7 @@ public class AccountMapper {
         return Account.builder()
             .email(request.email())
             .phoneNumber(request.phoneNumber())
-            .password(request.password())
-            .status(request.status())
+            .status(request.status() == null ? AccountStatus.ACTIVE : request.status())
             .build();
     }
 
