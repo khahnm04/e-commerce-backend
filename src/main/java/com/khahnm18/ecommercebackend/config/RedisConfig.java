@@ -1,6 +1,5 @@
 package com.khahnm18.ecommercebackend.config;
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;

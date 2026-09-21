@@ -21,9 +21,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final JwtDecoderConfig jwtDecoderConfig;
-    private final JwtAuthenticationConverterConfig jwtAuthenticationConverterConfig;
-
     public static final String[] PUBLIC_GET_ENDPOINTS = {
         "/swagger-ui/**",
         "/v3/api-docs*/**"
@@ -32,6 +29,11 @@ public class SecurityConfig {
     public static final String[] PUBLIC_POST_ENDPOINTS = {
         "/api/v1/auth/**",
     };
+
+    private final JwtDecoderConfig jwtDecoderConfig;
+    private final JwtAuthenticationConverterConfig jwtAuthenticationConverterConfig;
+    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+    private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
 
     @Bean
     public SecurityFilterChain adminFilterChain(HttpSecurity http) throws Exception {
@@ -47,8 +49,8 @@ public class SecurityConfig {
                         .decoder(jwtDecoderConfig)
                         .jwtAuthenticationConverter(jwtAuthenticationConverterConfig)
                     )
-                    .authenticationEntryPoint(new JwtAuthenticationEntryPoint())
-                    .accessDeniedHandler(new JwtAccessDeniedHandler())
+                    .authenticationEntryPoint(jwtAuthenticationEntryPoint)
+                    .accessDeniedHandler(jwtAccessDeniedHandler)
             )
             .csrf(AbstractHttpConfigurer::disable)
             .cors(cors -> cors.configurationSource(corsConfigurationSource()));

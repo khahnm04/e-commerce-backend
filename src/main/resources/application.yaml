@@ -41,10 +41,12 @@ springdoc:
 
 jwt:
   secret-key: ${SECRET_KEY}
-  access-token-expiration: 300
+  access-token-expiration: 3600
   refresh-token-expiration: 86400
 
-cloudinary:
-  cloud-name: ${CLOUD_NAME}
-  api-key: ${API_KEY}
-  api-secret: ${API_SECRET}
+cloudflare:
+  r2:
+    access-key: ${R2_ACCESS_KEY}
+    secret-key: ${R2_SECRET_KEY}
+    endpoint: https://${ACCOUNT_ID}.r2.cloudflarestorage.com
+    bucket: ${BUCKET_NAME}

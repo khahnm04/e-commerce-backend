@@ -3,18 +3,23 @@ package com.khahnm18.ecommercebackend.security;
 import com.khahnm18.ecommercebackend.exception.ErrorCode;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.springframework.stereotype.Component;
+import org.springframework.http.ProblemDetail;
+import org.springframework.http.MediaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.http.ProblemDetail;
-import org.springframework.http.MediaType;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import java.io.IOException;
 import java.net.URI;
 
 @Slf4j(topic = "JWT-AUTHENTICATION-ENTRY-POINT")
+@Component
+@RequiredArgsConstructor
 public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
+
+    private final ObjectMapper objectMapper;
 
     @Override
     public void commence(
@@ -38,13 +43,11 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
             )
         );
         problem.setInstance(URI.create(request.getRequestURI()));
-        problem.setProperty("code", errorCode.name());
+        problem.setProperty("errorCode", errorCode.name());
 
         response.setStatus(errorCode.getStatusCode().value());
         response.setContentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE);
 
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new JavaTimeModule());
         response.getWriter().write(objectMapper.writeValueAsString(problem));
         response.flushBuffer();
     }

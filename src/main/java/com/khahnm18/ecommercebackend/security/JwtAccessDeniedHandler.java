@@ -1,20 +1,25 @@
 package com.khahnm18.ecommercebackend.security;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.khahnm18.ecommercebackend.exception.ErrorCode;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.MediaType;
-import org.springframework.http.ProblemDetail;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.web.access.AccessDeniedHandler;
+import org.springframework.stereotype.Component;
+import org.springframework.http.ProblemDetail;
+import org.springframework.http.MediaType;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import java.io.IOException;
 import java.net.URI;
 
 @Slf4j(topic = "JWT-ACCESS-DENIED-HANDLER")
+@Component
+@RequiredArgsConstructor
 public class JwtAccessDeniedHandler implements AccessDeniedHandler {
+
+    private final ObjectMapper objectMapper;
 
     @Override
     public void handle(
@@ -38,13 +43,11 @@ public class JwtAccessDeniedHandler implements AccessDeniedHandler {
             )
         );
         problem.setInstance(URI.create(request.getRequestURI()));
-        problem.setProperty("code", errorCode.name());
+        problem.setProperty("errorCode", errorCode.name());
 
         response.setStatus(errorCode.getStatusCode().value());
         response.setContentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE);
 
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new JavaTimeModule());
         response.getWriter().write(objectMapper.writeValueAsString(problem));
         response.flushBuffer();
     }

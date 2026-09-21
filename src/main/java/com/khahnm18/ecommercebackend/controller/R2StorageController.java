@@ -1,0 +1,34 @@
+package com.khahnm18.ecommercebackend.controller;
+
+import com.khahnm18.ecommercebackend.dto.response.ApiResponse;
+import com.khahnm18.ecommercebackend.dto.response.storage.PresignedResponse;
+import com.khahnm18.ecommercebackend.service.storage.StorageService;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.http.HttpStatus;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j(topic = "R2STORAGE-CONTROLLER")
+@RestController
+@RequestMapping("${api.prefix}/r2")
+@RequiredArgsConstructor
+public class R2StorageController {
+
+    private final StorageService storageService;
+
+    @GetMapping("/presigned-url")
+    ApiResponse<PresignedResponse> generatePresignedUrl(
+        @RequestParam("fileName") String filename
+    ) {
+        var data = storageService.generatePresignedUrl(filename);
+        return ApiResponse.<PresignedResponse>builder()
+            .status(HttpStatus.OK.value())
+            .message("Presigned URL generated successfully")
+            .data(data)
+            .build();
+    }
+
+}
