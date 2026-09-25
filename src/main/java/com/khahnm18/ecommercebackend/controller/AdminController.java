@@ -1,5 +1,6 @@
 package com.khahnm18.ecommercebackend.controller;
 
+import com.khahnm18.ecommercebackend.constant.auth.AccountStatus;
 import com.khahnm18.ecommercebackend.dto.request.BulkActionRequest;
 import com.khahnm18.ecommercebackend.dto.request.user.AdminCreationRequest;
 import com.khahnm18.ecommercebackend.dto.request.user.AdminUpdateRequest;
@@ -43,7 +44,7 @@ public class AdminController {
     @GetMapping("/{id}")
     @Operation(summary = "Get admin detail by id")
     ApiResponse<AdminResponse> getAdminDetailById(
-        @PathVariable UUID accountId,
+        @PathVariable("id") UUID accountId,
         @RequestParam(defaultValue = "false") boolean isDeleted
     ) {
         log.info("Get admin detail: accountId={}", accountId);
@@ -63,8 +64,9 @@ public class AdminController {
         @RequestParam(defaultValue = "createdAt,desc") String sort,
         @RequestParam(required = false) String keyword,
         @RequestParam(required = false) Instant startDate,
-        @RequestParam(required = false) Instant endDate
-    ) {
+        @RequestParam(required = false) Instant endDate,
+        @RequestParam(required = false) AccountStatus status
+        ) {
         log.info("Get all admins");
         Page<AdminResponse> adminPage = adminService.getAllAdmins(
             page,
@@ -73,7 +75,8 @@ public class AdminController {
             keyword,
             isDeleted,
             startDate,
-            endDate
+            endDate,
+            status
         );
         return PageResponse.<AdminResponse>builder()
             .status(HttpStatus.OK.value())
@@ -111,7 +114,7 @@ public class AdminController {
     @PutMapping("/{id}")
     @Operation(summary = "Update admin")
     ApiResponse<AdminResponse> updateAdmin(
-        @PathVariable UUID accountId,
+        @PathVariable("id") UUID accountId,
         @Valid @RequestBody AdminUpdateRequest request
     ) {
         log.info("Update admin: accountId={}", accountId);

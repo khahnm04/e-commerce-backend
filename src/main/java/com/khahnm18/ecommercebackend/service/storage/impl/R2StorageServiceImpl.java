@@ -7,23 +7,23 @@ import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequ
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
-import software.amazon.awssdk.services.s3.S3Client;
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import java.time.Duration;
 import java.util.UUID;
 
+@Slf4j(topic = "R2STORAGE-SERVICE")
 @Service
 @RequiredArgsConstructor
 public class R2StorageServiceImpl implements StorageService {
 
-    private final S3Client s3Client;
     private final S3Presigner s3Presigner;
     private final CloudflareR2Properties cloudflareR2Properties;
 
     @Override
-    public PresignedResponse generatePresignedUrl(String fileName) {
-        String key = generateKey(fileName);
+    public PresignedResponse generatePresignedUrl(String folder, String fileName) {
+        String key = generateKey(folder, fileName);
 
         PutObjectRequest objectRequest = PutObjectRequest.builder()
             .bucket(cloudflareR2Properties.getBucket())
@@ -44,8 +44,8 @@ public class R2StorageServiceImpl implements StorageService {
             .build();
     }
 
-    private String generateKey(String originalFilename) {
-        return "media/product/" + UUID.randomUUID() + "-" + originalFilename;
+    private String generateKey(String folder, String originalFilename) {
+        return folder + UUID.randomUUID() + "-" + originalFilename;
     }
 
 }

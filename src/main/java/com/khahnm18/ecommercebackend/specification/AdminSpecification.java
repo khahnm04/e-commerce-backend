@@ -1,5 +1,6 @@
 package com.khahnm18.ecommercebackend.specification;
 
+import com.khahnm18.ecommercebackend.constant.auth.AccountStatus;
 import com.khahnm18.ecommercebackend.entity.auth.Account;
 import org.springframework.data.jpa.domain.Specification;
 import java.time.Instant;
@@ -8,12 +9,20 @@ public class AdminSpecification {
 
     private static final String FIELD_EMAIL = "email";
     private static final String FIELD_PHONE_NUMBER = "phoneNumber";
+    private static final String FIELD_STATUS = "status";
     private static final String FIELD_CREATED_AT = "createdAt";
     private static final String FIELD_IS_DELETED = "isDeleted";
 
     public static Specification<Account> byIsDeleted(Boolean isDeleted) {
         return (root, query, cb) ->
             cb.equal(root.get(FIELD_IS_DELETED), isDeleted);
+    }
+
+    public static Specification<Account> byStatus(AccountStatus status) {
+        return (root, query, cb) -> {
+            if (status == null) return null;
+            return cb.equal(root.get(FIELD_STATUS), status);
+        };
     }
 
     public static Specification<Account> byKeyword(String keyword) {

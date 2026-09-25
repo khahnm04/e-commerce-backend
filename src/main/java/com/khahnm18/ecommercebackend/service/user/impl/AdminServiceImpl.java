@@ -69,14 +69,16 @@ public class AdminServiceImpl implements AdminService {
         String keyword,
         boolean isDeleted,
         Instant startDate,
-        Instant endDate
+        Instant endDate,
+        AccountStatus status
     ) {
         Pageable pageable = PageableUtil.createPageable(page, size, sort);
 
         Specification<Account> spec = AdminSpecification.byIsDeleted(isDeleted)
             .and(AdminSpecification.byKeyword(keyword))
             .and(AdminSpecification.byStartDate(startDate))
-            .and(AdminSpecification.byEndDate(endDate));
+            .and(AdminSpecification.byEndDate(endDate))
+            .and(AdminSpecification.byStatus(status));
 
         Page<Account> accountPage = accountRepository.findAll(spec, pageable);
 
@@ -138,19 +140,15 @@ public class AdminServiceImpl implements AdminService {
     @Transactional
     public void softDeleteAdmin(UUID accountId) {
         Account account = getAccountById(accountId);
-        account.setIsDeleted(true);
-        account.setDeletedAt(Instant.now());
-        account.setDeletedBy(SecurityUtil.getCurrentAccount());
+        this.softDelete(account);
         log.info("Admin soft deleted with account_id: {}", accountId);
     }
 
     @Override
     @Transactional
     public void restoreAdmin(UUID accountId) {
-        Account account = getAccountById(accountId);
-        account.setIsDeleted(false);
-        account.setDeletedAt(null);
-        account.setDeletedBy(null);
+        Account account = getSoftDeletedAccountById(accountId);
+        this.restore(account);
         log.info("Admin restored with account_id: {}", accountId);
     }
 
@@ -185,7 +183,7 @@ public class AdminServiceImpl implements AdminService {
     @Override
     @Transactional
     public void deleteAdmin(UUID accountId) {
-        Account account = getAccountById(accountId);
+        Account account = getSoftDeletedAccountById(accountId);
         accountRepository.delete(account);
         log.info("Admin deleted success with account_id: {}", accountId);
     }

@@ -4,8 +4,8 @@ import com.khahnm18.ecommercebackend.dto.response.ApiResponse;
 import com.khahnm18.ecommercebackend.dto.response.storage.PresignedResponse;
 import com.khahnm18.ecommercebackend.service.storage.StorageService;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.http.HttpStatus;
 import lombok.RequiredArgsConstructor;
@@ -21,9 +21,10 @@ public class R2StorageController {
 
     @GetMapping("/presigned-url")
     ApiResponse<PresignedResponse> generatePresignedUrl(
-        @RequestParam("fileName") String filename
+        @RequestParam("folder") String folder,
+        @RequestParam("fileName") String fileName
     ) {
-        var data = storageService.generatePresignedUrl(filename);
+        var data = storageService.generatePresignedUrl(folder, fileName);
         return ApiResponse.<PresignedResponse>builder()
             .status(HttpStatus.OK.value())
             .message("Presigned URL generated successfully")

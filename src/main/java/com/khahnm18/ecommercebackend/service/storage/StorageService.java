@@ -4,6 +4,6 @@ import com.khahnm18.ecommercebackend.dto.response.storage.PresignedResponse;
 
 public interface StorageService {
 
-    PresignedResponse generatePresignedUrl(String fileName);
+    PresignedResponse generatePresignedUrl(String folder, String fileName);
 
 }

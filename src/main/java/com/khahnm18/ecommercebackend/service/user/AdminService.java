@@ -1,5 +1,6 @@
 package com.khahnm18.ecommercebackend.service.user;
 
+import com.khahnm18.ecommercebackend.constant.auth.AccountStatus;
 import com.khahnm18.ecommercebackend.dto.request.BulkActionRequest;
 import com.khahnm18.ecommercebackend.dto.request.user.AdminCreationRequest;
 import com.khahnm18.ecommercebackend.dto.request.user.AdminUpdateRequest;
@@ -20,7 +21,8 @@ public interface AdminService {
         String keyword,
         boolean isDeleted,
         Instant startDate,
-        Instant endDate
+        Instant endDate,
+        AccountStatus status
     );
 
     AdminProfileResponse getMyProfile();
