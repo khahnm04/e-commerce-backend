@@ -17,13 +17,15 @@ public enum ErrorCode {
     LOGIN_FAILED("Login failed", HttpStatus.BAD_REQUEST),
     REFRESH_TOKEN_FAILED( "Refresh token failed", HttpStatus.UNAUTHORIZED),
 
-    ACCOUNT_EXISTED("Account already exists", HttpStatus.NOT_FOUND),
-    ACCOUNT_NOT_FOUND("Account not found", HttpStatus.NOT_FOUND),
+    PERMISSION_NOT_FOUND("Permission not found", HttpStatus.BAD_REQUEST),
 
     ROLE_EXISTED("Role already exists", HttpStatus.BAD_REQUEST),
     ROLE_NOT_FOUND("Role not found", HttpStatus.BAD_REQUEST),
 
-    PERMISSION_NOT_FOUND("Permission not found", HttpStatus.BAD_REQUEST),
+    ACCOUNT_EXISTED("Account already exists", HttpStatus.NOT_FOUND),
+    ACCOUNT_NOT_FOUND("Account not found", HttpStatus.NOT_FOUND),
+
+    WEBSITE_INFO_NOT_FOUND("Website info not found", HttpStatus.NOT_FOUND),
     ;
 
     private final String message;

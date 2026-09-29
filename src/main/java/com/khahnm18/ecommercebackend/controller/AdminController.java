@@ -37,7 +37,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("${api.prefix}/admin/admins")
 @RequiredArgsConstructor
-@Tag(name = "Admin Controller", description = "Account admin and admin profile management APIs")
+@Tag(name = "Admin Controller", description = "Account admin management APIs")
 public class AdminController {
 
     private final Translator translator;
