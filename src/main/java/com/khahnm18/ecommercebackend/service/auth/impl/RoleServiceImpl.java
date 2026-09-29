@@ -114,18 +114,21 @@ public class RoleServiceImpl implements RoleService {
         String action = request.action().toUpperCase();
         switch (action) {
             case "SOFT_DELETE" -> {
+                SecurityUtil.requireAuthority("ROLE_TRASH");
                 List<Role> roles = roleRepository.findAllById(roleIds);
                 roles.forEach(this::softDelete);
                 permissionCacheService.evictAll();
                 log.info("Bulk action soft delete roles with ids: {}", roleIds);
             }
             case "RESTORE" -> {
+                SecurityUtil.requireAuthority("ROLE_TRASH");
                 List<Role> roles = roleRepository.findAllById(roleIds);
                 roles.forEach(this::restore);
                 permissionCacheService.evictAll();
                 log.info("Bulk action restore roles with ids: {}", roleIds);
             }
             case "DELETE" -> {
+                SecurityUtil.requireAuthority("ROLE_DELETE");
                 roleRepository.deleteByIdInAndIsDeletedTrue(roleIds);
                 permissionCacheService.evictAll();
                 log.info("Bulk action delete roles with ids: {}", roleIds);

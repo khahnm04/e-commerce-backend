@@ -7,6 +7,7 @@ import com.khahnm18.ecommercebackend.dto.response.PageResponse;
 import com.khahnm18.ecommercebackend.dto.response.auth.RoleResponse;
 import com.khahnm18.ecommercebackend.service.auth.RoleService;
 import com.khahnm18.ecommercebackend.util.Translator;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -40,6 +41,7 @@ public class RoleController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Get role detail by id")
+    @PreAuthorize("hasAuthority('ROLE_VIEW')")
     ApiResponse<RoleResponse> getRoleDetailById(
         @PathVariable UUID id,
         @RequestParam(defaultValue = "false") boolean isDeleted
@@ -54,6 +56,7 @@ public class RoleController {
 
     @GetMapping
     @Operation(summary = "Get all roles")
+    @PreAuthorize("hasAuthority('ROLE_VIEW')")
     PageResponse<RoleResponse> getAllRoles(
         @RequestParam(defaultValue = "1") int page,
         @RequestParam(defaultValue = "10") int size,
@@ -84,6 +87,7 @@ public class RoleController {
     @PostMapping
     @Operation(summary = "Create role")
     @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasAuthority('ROLE_CREATE')")
     ApiResponse<RoleResponse> createRole(
         @Valid @RequestBody RoleRequest request
     ) {
@@ -97,6 +101,7 @@ public class RoleController {
 
     @PutMapping("/{id}")
     @Operation(summary = "Update role")
+    @PreAuthorize("hasAuthority('ROLE_UPDATE')")
     ApiResponse<RoleResponse> updateRole(
         @PathVariable UUID id,
         @Valid @RequestBody RoleRequest request
@@ -111,6 +116,7 @@ public class RoleController {
 
     @PatchMapping("/{id}/soft-delete")
     @Operation(summary = "Soft delete role")
+    @PreAuthorize("hasAuthority('ROLE_TRASH')")
     ApiResponse<Void> softDeleteRole(
         @PathVariable UUID id
     ) {
@@ -124,6 +130,7 @@ public class RoleController {
 
     @PatchMapping("/{id}/restore")
     @Operation(summary = "Restore role")
+    @PreAuthorize("hasAuthority('ROLE_TRASH')")
     ApiResponse<Void> restoreRole(
         @PathVariable UUID id
     ) {
@@ -137,6 +144,7 @@ public class RoleController {
 
     @PatchMapping("/bulk-action")
     @Operation(summary = "Bulk action role")
+    @PreAuthorize("hasAnyAuthority('ROLE_UPDATE', 'ROLE_TRASH', 'ROLE_DELETE')")
     ApiResponse<Void> deleteRole(
         @Valid @RequestBody BulkActionRequest request
     ) {
@@ -150,6 +158,7 @@ public class RoleController {
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete role")
+    @PreAuthorize("hasAuthority('ROLE_DELETE')")
     ApiResponse<Void> deleteRole(
         @PathVariable UUID id
     ) {

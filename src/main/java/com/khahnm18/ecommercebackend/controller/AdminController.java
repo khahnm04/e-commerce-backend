@@ -4,12 +4,14 @@ import com.khahnm18.ecommercebackend.constant.auth.AccountStatus;
 import com.khahnm18.ecommercebackend.dto.request.BulkActionRequest;
 import com.khahnm18.ecommercebackend.dto.request.user.AdminCreationRequest;
 import com.khahnm18.ecommercebackend.dto.request.user.AdminUpdateRequest;
+import com.khahnm18.ecommercebackend.dto.request.user.ResetPasswordRequest;
 import com.khahnm18.ecommercebackend.dto.response.ApiResponse;
 import com.khahnm18.ecommercebackend.dto.response.PageResponse;
 import com.khahnm18.ecommercebackend.dto.response.user.AdminProfileResponse;
 import com.khahnm18.ecommercebackend.dto.response.user.AdminResponse;
 import com.khahnm18.ecommercebackend.service.user.AdminService;
 import com.khahnm18.ecommercebackend.util.Translator;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -43,6 +45,7 @@ public class AdminController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Get admin detail by id")
+    @PreAuthorize("hasAuthority('ADMIN_VIEW')")
     ApiResponse<AdminResponse> getAdminDetailById(
         @PathVariable("id") UUID accountId,
         @RequestParam(defaultValue = "false") boolean isDeleted
@@ -57,6 +60,7 @@ public class AdminController {
 
     @GetMapping
     @Operation(summary = "Get all admins")
+    @PreAuthorize("hasAuthority('ADMIN_VIEW')")
     PageResponse<AdminResponse> getAllAdmins(
         @RequestParam(defaultValue = "1") int page,
         @RequestParam(defaultValue = "10") int size,
@@ -100,6 +104,7 @@ public class AdminController {
     @PostMapping
     @Operation(summary = "Create account admin and admin profile")
     @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasAuthority('ADMIN_CREATE')")
     ApiResponse<AdminResponse> createAccount(
         @Valid @RequestBody AdminCreationRequest request
     ) {
@@ -113,6 +118,7 @@ public class AdminController {
 
     @PutMapping("/{id}")
     @Operation(summary = "Update admin")
+    @PreAuthorize("hasAuthority('ADMIN_UPDATE')")
     ApiResponse<AdminResponse> updateAdmin(
         @PathVariable("id") UUID accountId,
         @Valid @RequestBody AdminUpdateRequest request
@@ -125,8 +131,24 @@ public class AdminController {
             .build();
     }
 
+    @PatchMapping("/{id}/reset-password")
+    @Operation(summary = "Reset password admin")
+    @PreAuthorize("hasAuthority('ADMIN_UPDATE')")
+    ApiResponse<Void> resetPassword(
+        @PathVariable("id") UUID accountId,
+        @Valid @RequestBody ResetPasswordRequest request
+    ) {
+        log.info("Reset password admin: accountId={}", accountId);
+        adminService.resetPassword(accountId, request);
+        return ApiResponse.<Void>builder()
+            .status(HttpStatus.OK.value())
+            .message(translator.toLocale("admin.reset-password.success"))
+            .build();
+    }
+
     @PatchMapping("/{id}/soft-delete")
     @Operation(summary = "Soft delete admin")
+    @PreAuthorize("hasAuthority('ADMIN_TRASH')")
     ApiResponse<Void> softDeleteAdmin(
         @PathVariable("id") UUID accountId
     ) {
@@ -139,7 +161,8 @@ public class AdminController {
     }
 
     @PatchMapping("/{id}/restore")
-    @Operation(summary = "Restore soft-deleted admin")
+    @Operation(summary = "Restore admin")
+    @PreAuthorize("hasAuthority('ADMIN_TRASH')")
     ApiResponse<Void> restoreAdmin(
         @PathVariable("id") UUID accountId
     ) {
@@ -154,6 +177,7 @@ public class AdminController {
 
     @PatchMapping("/bulk-action")
     @Operation(summary = "Bulk action admin")
+    @PreAuthorize("hasAnyAuthority('ADMIN_UPDATE', 'ADMIN_TRASH', 'ADMIN_DELETE')")
     ApiResponse<Void> bulkAction(
         @Valid @RequestBody BulkActionRequest request
     ) {
@@ -166,6 +190,7 @@ public class AdminController {
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete admin")
+    @PreAuthorize("hasAuthority('ADMIN_DELETE')")
     ApiResponse<Void> deleteAdmin(
         @PathVariable("id") UUID accountId
     ) {

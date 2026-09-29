@@ -4,6 +4,7 @@ import com.khahnm18.ecommercebackend.constant.auth.AccountStatus;
 import com.khahnm18.ecommercebackend.dto.request.BulkActionRequest;
 import com.khahnm18.ecommercebackend.dto.request.user.AdminCreationRequest;
 import com.khahnm18.ecommercebackend.dto.request.user.AdminUpdateRequest;
+import com.khahnm18.ecommercebackend.dto.request.user.ResetPasswordRequest;
 import com.khahnm18.ecommercebackend.dto.response.user.AdminProfileResponse;
 import com.khahnm18.ecommercebackend.dto.response.user.AdminResponse;
 import com.khahnm18.ecommercebackend.entity.auth.Account;
@@ -114,7 +115,6 @@ public class AdminServiceImpl implements AdminService {
 
         List<Role> roles = accountRoleService.assignRolesToAccount(account, request.roles());
         log.info("Admin profile created: fullName={}, email={}", adminProfile.getFullName(), account.getEmail());
-
         return adminMapper.toAdminResponseWithRoles(adminProfile, account, roles);
     }
 
@@ -132,7 +132,6 @@ public class AdminServiceImpl implements AdminService {
 
         List<Role> roles = accountRoleService.replaceRolesForAdmin(account, request.roles());
         log.info("Admin profile updated: accountId={}, email={}", accountId, account.getEmail());
-
         return adminMapper.toAdminResponseWithRoles(adminProfile, account, roles);
     }
 
@@ -159,25 +158,37 @@ public class AdminServiceImpl implements AdminService {
         String action = request.action().toUpperCase();
         switch (action) {
             case "ACTIVE", "INACTIVE", "BANNED", "LOCKED" -> {
+                SecurityUtil.requireAuthority("ADMIN_UPDATE");
                 List<Account> accounts = accountRepository.findAllById(accountIds);
                 accounts.forEach(account -> account.setStatus(AccountStatus.valueOf(action)));
                 log.info("Bulk update status {} admin with accountIds: {}", action, accountIds);
             }
             case "SOFT_DELETE" -> {
+                SecurityUtil.requireAuthority("ADMIN_TRASH");
                 List<Account> accounts = accountRepository.findAllById(accountIds);
                 accounts.forEach(this::softDelete);
                 log.info("Bulk action soft delete admin with accountIds: {}", accountIds);
             }
             case "RESTORE" -> {
+                SecurityUtil.requireAuthority("ADMIN_TRASH");
                 List<Account> accounts = accountRepository.findAllById(accountIds);
                 accounts.forEach(this::restore);
                 log.info("Bulk action restore admin with accountIds: {}", accountIds);
             }
             case "DELETE" -> {
+                SecurityUtil.requireAuthority("ADMIN_DELETE");
                 accountRepository.deleteAllByIdInAndIsDeletedTrue(accountIds);
                 log.info("Bulk action delete admin with accountIds: {}", accountIds);
             }
         }
+    }
+
+    @Override
+    @Transactional
+    public void resetPassword(UUID accountId, ResetPasswordRequest request) {
+        Account account = getAccountById(accountId);
+        account.setPassword(passwordEncoder.encode(request.password()));
+        log.info("Admin reset password success with account_id: {}", accountId);
     }
 
     @Override
