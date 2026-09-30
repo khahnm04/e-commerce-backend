@@ -2,10 +2,8 @@ package com.khahnm18.ecommercebackend.service.user.impl;
 
 import com.khahnm18.ecommercebackend.constant.auth.AccountStatus;
 import com.khahnm18.ecommercebackend.dto.request.BulkActionRequest;
-import com.khahnm18.ecommercebackend.dto.request.user.AdminCreationRequest;
-import com.khahnm18.ecommercebackend.dto.request.user.AdminUpdateRequest;
-import com.khahnm18.ecommercebackend.dto.request.user.ResetPasswordRequest;
-import com.khahnm18.ecommercebackend.dto.response.user.AdminProfileResponse;
+import com.khahnm18.ecommercebackend.dto.request.user.*;
+import com.khahnm18.ecommercebackend.dto.response.user.MyProfileAdminResponse;
 import com.khahnm18.ecommercebackend.dto.response.user.AdminResponse;
 import com.khahnm18.ecommercebackend.entity.auth.Account;
 import com.khahnm18.ecommercebackend.entity.auth.Role;
@@ -38,7 +36,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-@Slf4j(topic = "ADMIN-PROFILE-SERVICE")
+@Slf4j(topic = "ADMIN-SERVICE")
 @Service
 @RequiredArgsConstructor
 public class AdminServiceImpl implements AdminService {
@@ -96,7 +94,7 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
-    public AdminProfileResponse getMyProfile() {
+    public MyProfileAdminResponse getMyProfile() {
         UUID accountId = SecurityUtil.getCurrentAccount();
         Account account = this.getAccountById(accountId);
         AdminProfile adminProfile = this.getAdminProfileByAccountId(account.getId());
@@ -133,6 +131,32 @@ public class AdminServiceImpl implements AdminService {
         List<Role> roles = accountRoleService.replaceRolesForAdmin(account, request.roles());
         log.info("Admin profile updated: accountId={}, email={}", accountId, account.getEmail());
         return adminMapper.toAdminResponseWithRoles(adminProfile, account, roles);
+    }
+
+    @Override
+    @Transactional
+    public MyProfileAdminResponse updateMyProfileAdmin(MyProfileAdminRequest request) {
+        UUID accountId = SecurityUtil.getCurrentAccount();
+        Account account = this.getAccountById(accountId);
+        AdminProfile adminProfile = this.getAdminProfileByAccountId(account.getId());
+        accountMapper.updateAccount(account, request);
+        adminMapper.updateAdminProfile(adminProfile, request);
+        log.info("My profile Admin updated: accountId={}, email={}", accountId, account.getEmail());
+        return adminMapper.toAdminProfileResponse(adminProfile, account);
+    }
+
+    @Override
+    @Transactional
+    public void changePassword(ChangePasswordRequest request) {
+        UUID accountId = SecurityUtil.getCurrentAccount();
+        Account account = this.getAccountById(accountId);
+        if (!passwordEncoder.matches(request.oldPassword(), account.getPassword())) {
+            throw new AppException(ErrorCode.OLD_PASSWORD_INCORRECT);
+        }
+        if (passwordEncoder.matches(request.newPassword(), account.getPassword())) {
+            throw new AppException(ErrorCode.NEW_PASSWORD_SAME_AS_OLD);
+        }
+        account.setPassword(passwordEncoder.encode(request.newPassword()));
     }
 
     @Override

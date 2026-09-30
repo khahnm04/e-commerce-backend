@@ -2,10 +2,8 @@ package com.khahnm18.ecommercebackend.service.user;
 
 import com.khahnm18.ecommercebackend.constant.auth.AccountStatus;
 import com.khahnm18.ecommercebackend.dto.request.BulkActionRequest;
-import com.khahnm18.ecommercebackend.dto.request.user.AdminCreationRequest;
-import com.khahnm18.ecommercebackend.dto.request.user.AdminUpdateRequest;
-import com.khahnm18.ecommercebackend.dto.request.user.ResetPasswordRequest;
-import com.khahnm18.ecommercebackend.dto.response.user.AdminProfileResponse;
+import com.khahnm18.ecommercebackend.dto.request.user.*;
+import com.khahnm18.ecommercebackend.dto.response.user.MyProfileAdminResponse;
 import com.khahnm18.ecommercebackend.dto.response.user.AdminResponse;
 import org.springframework.data.domain.Page;
 import java.time.Instant;
@@ -26,11 +24,15 @@ public interface AdminService {
         AccountStatus status
     );
 
-    AdminProfileResponse getMyProfile();
+    MyProfileAdminResponse getMyProfile();
 
     AdminResponse createAdmin(AdminCreationRequest request);
 
     AdminResponse updateAdmin(UUID accountId, AdminUpdateRequest request);
+
+    MyProfileAdminResponse updateMyProfileAdmin(MyProfileAdminRequest request);
+
+    void changePassword(ChangePasswordRequest request);
 
     void softDeleteAdmin(UUID accountId);
 

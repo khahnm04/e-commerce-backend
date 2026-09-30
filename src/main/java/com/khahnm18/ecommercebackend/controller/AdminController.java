@@ -2,12 +2,10 @@ package com.khahnm18.ecommercebackend.controller;
 
 import com.khahnm18.ecommercebackend.constant.auth.AccountStatus;
 import com.khahnm18.ecommercebackend.dto.request.BulkActionRequest;
-import com.khahnm18.ecommercebackend.dto.request.user.AdminCreationRequest;
-import com.khahnm18.ecommercebackend.dto.request.user.AdminUpdateRequest;
-import com.khahnm18.ecommercebackend.dto.request.user.ResetPasswordRequest;
+import com.khahnm18.ecommercebackend.dto.request.user.*;
 import com.khahnm18.ecommercebackend.dto.response.ApiResponse;
 import com.khahnm18.ecommercebackend.dto.response.PageResponse;
-import com.khahnm18.ecommercebackend.dto.response.user.AdminProfileResponse;
+import com.khahnm18.ecommercebackend.dto.response.user.MyProfileAdminResponse;
 import com.khahnm18.ecommercebackend.dto.response.user.AdminResponse;
 import com.khahnm18.ecommercebackend.service.user.AdminService;
 import com.khahnm18.ecommercebackend.util.Translator;
@@ -23,8 +21,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.http.HttpStatus;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -92,9 +90,9 @@ public class AdminController {
 
     @GetMapping("/my-profile")
     @Operation(summary = "Get my account admin profile")
-    ApiResponse<AdminProfileResponse> getMyProfile() {
+    ApiResponse<MyProfileAdminResponse> getMyProfile() {
         log.info("Get my profile");
-        return ApiResponse.<AdminProfileResponse>builder()
+        return ApiResponse.<MyProfileAdminResponse>builder()
             .status(HttpStatus.OK.value())
             .data(adminService.getMyProfile())
             .message(translator.toLocale("admin.my-profile.success"))
@@ -131,6 +129,19 @@ public class AdminController {
             .build();
     }
 
+    @PutMapping("/my-profile")
+    @Operation(summary = "Update my profile admin")
+    ApiResponse<MyProfileAdminResponse> updateMyProfileAdmin(
+        @Valid @RequestBody MyProfileAdminRequest request
+    ) {
+        log.info("Update my profile admin");
+        return ApiResponse.<MyProfileAdminResponse>builder()
+            .status(HttpStatus.OK.value())
+            .data(adminService.updateMyProfileAdmin(request))
+            .message(translator.toLocale("admin.update-my-profile.success"))
+            .build();
+    }
+
     @PatchMapping("/{id}/reset-password")
     @Operation(summary = "Reset password admin")
     @PreAuthorize("hasAuthority('ADMIN_UPDATE')")
@@ -143,6 +154,19 @@ public class AdminController {
         return ApiResponse.<Void>builder()
             .status(HttpStatus.OK.value())
             .message(translator.toLocale("admin.reset-password.success"))
+            .build();
+    }
+
+    @PatchMapping("/my-profile/change-password")
+    @Operation(summary = "Change my password")
+    ApiResponse<Void> changePassword(
+        @Valid @RequestBody ChangePasswordRequest request
+    ) {
+        log.info("Change my password");
+        adminService.changePassword(request);
+        return ApiResponse.<Void>builder()
+            .status(HttpStatus.OK.value())
+            .message(translator.toLocale("admin.change-password.success"))
             .build();
     }
 
@@ -173,7 +197,6 @@ public class AdminController {
             .message(translator.toLocale("admin.restore.success"))
             .build();
     }
-
 
     @PatchMapping("/bulk-action")
     @Operation(summary = "Bulk action admin")

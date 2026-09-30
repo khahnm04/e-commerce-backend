@@ -25,6 +25,9 @@ public enum ErrorCode {
     ACCOUNT_EXISTED("Account already exists", HttpStatus.NOT_FOUND),
     ACCOUNT_NOT_FOUND("Account not found", HttpStatus.NOT_FOUND),
 
+    OLD_PASSWORD_INCORRECT("Old password is incorrect", HttpStatus.BAD_REQUEST),
+    NEW_PASSWORD_SAME_AS_OLD("New password must be different from the old password", HttpStatus.BAD_REQUEST),
+
     WEBSITE_INFO_NOT_FOUND("Website info not found", HttpStatus.NOT_FOUND),
     ;
 

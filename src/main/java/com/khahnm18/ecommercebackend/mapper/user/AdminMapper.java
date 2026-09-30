@@ -1,9 +1,10 @@
 package com.khahnm18.ecommercebackend.mapper.user;
 
 import com.khahnm18.ecommercebackend.dto.request.user.AdminCreationRequest;
+import com.khahnm18.ecommercebackend.dto.request.user.MyProfileAdminRequest;
 import com.khahnm18.ecommercebackend.dto.request.user.AdminUpdateRequest;
 import com.khahnm18.ecommercebackend.dto.response.auth.RoleResponse;
-import com.khahnm18.ecommercebackend.dto.response.user.AdminProfileResponse;
+import com.khahnm18.ecommercebackend.dto.response.user.MyProfileAdminResponse;
 import com.khahnm18.ecommercebackend.dto.response.user.AdminResponse;
 import com.khahnm18.ecommercebackend.entity.auth.Account;
 import com.khahnm18.ecommercebackend.entity.auth.Role;
@@ -109,9 +110,10 @@ public class AdminMapper {
         }
     }
 
-    public AdminProfileResponse toAdminProfileResponse(AdminProfile adminProfile, Account account) {
+    public MyProfileAdminResponse toAdminProfileResponse(AdminProfile adminProfile, Account account) {
         if (account == null) return null;
-        return AdminProfileResponse.builder()
+        return MyProfileAdminResponse.builder()
+            .accountId(account.getId())
             .email(account.getEmail())
             .phoneNumber(account.getPhoneNumber())
             .jobTitle(adminProfile.getJobTitle())
@@ -120,6 +122,24 @@ public class AdminMapper {
             .avatar(adminProfile.getAvatar())
             .gender(adminProfile.getGender())
             .build();
+    }
+
+    public void updateAdminProfile(AdminProfile adminProfile, MyProfileAdminRequest request) {
+        if (request.jobTitle() != null) {
+            adminProfile.setJobTitle(request.jobTitle());
+        }
+        if (request.fullName() != null) {
+            adminProfile.setFullName(request.fullName());
+        }
+        if (request.dateOfBirth() != null) {
+            adminProfile.setDateOfBirth(request.dateOfBirth());
+        }
+        if (request.avatar() != null) {
+            adminProfile.setAvatar(request.avatar());
+        }
+        if (request.gender() != null) {
+            adminProfile.setGender(request.gender());
+        }
     }
 
 }

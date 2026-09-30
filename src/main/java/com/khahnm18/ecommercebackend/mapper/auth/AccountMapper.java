@@ -2,6 +2,7 @@ package com.khahnm18.ecommercebackend.mapper.auth;
 
 import com.khahnm18.ecommercebackend.constant.auth.AccountStatus;
 import com.khahnm18.ecommercebackend.dto.request.user.AdminCreationRequest;
+import com.khahnm18.ecommercebackend.dto.request.user.MyProfileAdminRequest;
 import com.khahnm18.ecommercebackend.dto.request.user.AdminUpdateRequest;
 import com.khahnm18.ecommercebackend.entity.auth.Account;
 import org.springframework.stereotype.Component;
@@ -29,6 +30,15 @@ public class AccountMapper {
         }
         if (request.status() != null) {
             account.setStatus(account.getStatus());
+        }
+    }
+
+    public void updateAccount(Account account, MyProfileAdminRequest request) {
+        if (request.email() != null) {
+            account.setEmail(account.getEmail());
+        }
+        if (request.phoneNumber() != null) {
+            account.setPhoneNumber(account.getPhoneNumber());
         }
     }
 
