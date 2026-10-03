@@ -18,6 +18,7 @@ import com.khahnm18.ecommercebackend.repository.user.AdminProfileRepository;
 import com.khahnm18.ecommercebackend.service.auth.AccountRoleService;
 import com.khahnm18.ecommercebackend.service.user.AdminService;
 import com.khahnm18.ecommercebackend.specification.AdminSpecification;
+import com.khahnm18.ecommercebackend.specification.UserSpecification;
 import com.khahnm18.ecommercebackend.util.PageableUtil;
 import com.khahnm18.ecommercebackend.util.SecurityUtil;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -73,7 +74,8 @@ public class AdminServiceImpl implements AdminService {
     ) {
         Pageable pageable = PageableUtil.createPageable(page, size, sort);
 
-        Specification<Account> spec = AdminSpecification.byIsDeleted(isDeleted)
+        Specification<Account> spec = AdminSpecification.isAdminAccount()
+            .and(UserSpecification.byIsDeleted(isDeleted))
             .and(AdminSpecification.byKeyword(keyword))
             .and(AdminSpecification.byStartDate(startDate))
             .and(AdminSpecification.byEndDate(endDate))

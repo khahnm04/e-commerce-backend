@@ -156,10 +156,10 @@
     "semantic_hash": "722d7816344fc858741d4e17d07bf28c"
   },
   "src/main/java/com/khahnm18/ecommercebackend/controller/UserController.java": {
-    "mtime": 1790753168.3932903,
-    "seen": 1790755510.67505,
-    "ast_hash": "78ee4fc357cf4dd2defe9d68ee6a65d4",
-    "semantic_hash": "78ee4fc357cf4dd2defe9d68ee6a65d4"
+    "mtime": 1791029018.998,
+    "seen": 1791030643.5945108,
+    "ast_hash": "bbeb45cb28414dc3e1115eff341cb4f2",
+    "semantic_hash": ""
   },
   "src/main/java/com/khahnm18/ecommercebackend/controller/WebsiteInfoController.java": {
     "mtime": 1790695315.134,
@@ -378,10 +378,10 @@
     "semantic_hash": "c2b5c4c58a72e6c16c07d93450c5ff28"
   },
   "src/main/java/com/khahnm18/ecommercebackend/exception/ErrorCode.java": {
-    "mtime": 1790748737.476,
-    "seen": 1790755510.6750772,
-    "ast_hash": "f2e89dc33c94fe43e69061daeae9ca33",
-    "semantic_hash": "f2e89dc33c94fe43e69061daeae9ca33"
+    "mtime": 1791031261.5418038,
+    "seen": 1791031368.606094,
+    "ast_hash": "26e9e8672ff45465c3510829e37703f5",
+    "semantic_hash": ""
   },
   "src/main/java/com/khahnm18/ecommercebackend/exception/GlobalExceptionHandler.java": {
     "mtime": 1790652817.698,
@@ -450,10 +450,10 @@
     "semantic_hash": "e99b5ccbe20014ce8e71c3e424fc8388"
   },
   "src/main/java/com/khahnm18/ecommercebackend/repository/auth/RoleRepository.java": {
-    "mtime": 1789809930.248,
-    "seen": 1790755510.6750913,
-    "ast_hash": "879e95358fa8db57f16e840b3c02548b",
-    "semantic_hash": "879e95358fa8db57f16e840b3c02548b"
+    "mtime": 1791029435.6,
+    "seen": 1791030643.5966775,
+    "ast_hash": "7a28dbca712b2255d5555f5682d78b27",
+    "semantic_hash": ""
   },
   "src/main/java/com/khahnm18/ecommercebackend/repository/user/AdminProfileRepository.java": {
     "mtime": 1789361588.31,
@@ -618,16 +618,16 @@
     "semantic_hash": "7b482c0a6772caf297b06ec85453ec30"
   },
   "src/main/java/com/khahnm18/ecommercebackend/service/user/impl/AdminServiceImpl.java": {
-    "mtime": 1790748664.297,
-    "seen": 1790755510.6751206,
-    "ast_hash": "d33ebae8ab4b540d433a6f73b3e41a18",
-    "semantic_hash": "d33ebae8ab4b540d433a6f73b3e41a18"
+    "mtime": 1791028704.578,
+    "seen": 1791030643.5978127,
+    "ast_hash": "e3f73a33a07447a0e07bd07a474b53db",
+    "semantic_hash": ""
   },
   "src/main/java/com/khahnm18/ecommercebackend/service/user/impl/UserServiceImpl.java": {
-    "mtime": 1790753661.107,
-    "seen": 1790755510.6751213,
-    "ast_hash": "c1e6f4210c9cc7dc5350c864267ff466",
-    "semantic_hash": "c1e6f4210c9cc7dc5350c864267ff466"
+    "mtime": 1791029435.612,
+    "seen": 1791030643.5978136,
+    "ast_hash": "a72dd689df0b37a07c0d17578dd3abba",
+    "semantic_hash": ""
   },
   "src/main/java/com/khahnm18/ecommercebackend/service/website/WebsiteInfoService.java": {
     "mtime": 1790688376.104,
@@ -642,10 +642,10 @@
     "semantic_hash": "641baa9a106b01980d4a6c83f0a2a91f"
   },
   "src/main/java/com/khahnm18/ecommercebackend/specification/AdminSpecification.java": {
-    "mtime": 1790135949.925,
-    "seen": 1790755510.6751232,
-    "ast_hash": "9dc8ad1f06c16bda77bffbb923a5b277",
-    "semantic_hash": "9dc8ad1f06c16bda77bffbb923a5b277"
+    "mtime": 1791028704.569,
+    "seen": 1791030643.597894,
+    "ast_hash": "cad7bb479e3488cdf0c8167997c3cbeb",
+    "semantic_hash": ""
   },
   "src/main/java/com/khahnm18/ecommercebackend/specification/RoleSpecification.java": {
     "mtime": 1788278517.13,
@@ -654,10 +654,10 @@
     "semantic_hash": "eb7e827dab89c34c9bf20ab9db208b89"
   },
   "src/main/java/com/khahnm18/ecommercebackend/specification/UserSpecification.java": {
-    "mtime": 1790756177.828,
-    "seen": 1790756183.5220654,
-    "ast_hash": "babf8d8c7806af2e4332c7492eeebb3c",
-    "semantic_hash": "babf8d8c7806af2e4332c7492eeebb3c"
+    "mtime": 1791028704.56,
+    "seen": 1791030643.597932,
+    "ast_hash": "92987d73b6a1b931820b9a1a277e6132",
+    "semantic_hash": ""
   },
   "src/main/java/com/khahnm18/ecommercebackend/util/PageableUtil.java": {
     "mtime": 1789400071.738,
@@ -711,6 +711,78 @@
     "mtime": 1790669002.437,
     "seen": 1790756183.522262,
     "ast_hash": "ef20d4f409e80c91e07f66af1e5f6968",
+    "semantic_hash": ""
+  },
+  "README.md": {
+    "mtime": 1790758470.2,
+    "seen": 1791030643.5981338,
+    "ast_hash": "04c6e90faac2675aa89e2176d2eec7d8",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/khahnm18/ecommercebackend/constant/brand/BrandStatus.java": {
+    "mtime": 1791031141.7541115,
+    "seen": 1791031368.6032536,
+    "ast_hash": "e2a54b1fc46c5012610044d9aa34d09d",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/khahnm18/ecommercebackend/controller/BrandController.java": {
+    "mtime": 1791031254.423877,
+    "seen": 1791031368.6034527,
+    "ast_hash": "5d2ca85df7dbdd5d7dbc070fcbb830ec",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/khahnm18/ecommercebackend/dto/request/brand/BrandCreationRequest.java": {
+    "mtime": 1791031156.4439416,
+    "seen": 1791031368.604086,
+    "ast_hash": "6d43032aaa43aaa90241d4a204c31666",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/khahnm18/ecommercebackend/dto/request/brand/BrandUpdateRequest.java": {
+    "mtime": 1791031163.0288663,
+    "seen": 1791031368.6040878,
+    "ast_hash": "c8bf44bf5dac26b4a9e5022d6a6b809f",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/khahnm18/ecommercebackend/dto/response/brand/BrandResponse.java": {
+    "mtime": 1791031169.851789,
+    "seen": 1791031368.605144,
+    "ast_hash": "ebbf3c017e2bfdb7a12018eba29b6bb6",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/khahnm18/ecommercebackend/entity/brand/Brand.java": {
+    "mtime": 1791031150.7010076,
+    "seen": 1791031368.605868,
+    "ast_hash": "6fd87ef5733c64b9bc3c54cd25f2494d",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/khahnm18/ecommercebackend/mapper/brand/BrandMapper.java": {
+    "mtime": 1791031179.188684,
+    "seen": 1791031368.6063678,
+    "ast_hash": "8f593dc480bcda67390297ad4c692121",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/khahnm18/ecommercebackend/repository/brand/BrandRepository.java": {
+    "mtime": 1791031188.1435845,
+    "seen": 1791031368.6068385,
+    "ast_hash": "59b7973f07c0ff59bec876c9ca7c7490",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/khahnm18/ecommercebackend/service/brand/BrandService.java": {
+    "mtime": 1791031209.210354,
+    "seen": 1791031368.608124,
+    "ast_hash": "7e7843614e661f11c457e55c3bfdce22",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/khahnm18/ecommercebackend/service/brand/impl/BrandServiceImpl.java": {
+    "mtime": 1791031231.7461133,
+    "seen": 1791031368.6081254,
+    "ast_hash": "7cf8ff6e64c193cb6cb6290b3c5adf7e",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/khahnm18/ecommercebackend/specification/BrandSpecification.java": {
+    "mtime": 1791031197.2304845,
+    "seen": 1791031368.6087542,
+    "ast_hash": "5bf3e25282eedbd1626929fde5e87741",
     "semantic_hash": ""
   }
 }

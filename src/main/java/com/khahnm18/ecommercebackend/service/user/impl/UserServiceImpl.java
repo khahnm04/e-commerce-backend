@@ -6,12 +6,16 @@ import com.khahnm18.ecommercebackend.dto.request.user.UserCreationRequest;
 import com.khahnm18.ecommercebackend.dto.request.user.UserUpdateRequest;
 import com.khahnm18.ecommercebackend.dto.response.user.UserResponse;
 import com.khahnm18.ecommercebackend.entity.auth.Account;
+import com.khahnm18.ecommercebackend.entity.auth.AccountRole;
+import com.khahnm18.ecommercebackend.entity.auth.Role;
 import com.khahnm18.ecommercebackend.entity.user.UserProfile;
 import com.khahnm18.ecommercebackend.exception.AppException;
 import com.khahnm18.ecommercebackend.exception.ErrorCode;
 import com.khahnm18.ecommercebackend.mapper.auth.AccountMapper;
 import com.khahnm18.ecommercebackend.mapper.user.UserMapper;
 import com.khahnm18.ecommercebackend.repository.auth.AccountRepository;
+import com.khahnm18.ecommercebackend.repository.auth.AccountRoleRepository;
+import com.khahnm18.ecommercebackend.repository.auth.RoleRepository;
 import com.khahnm18.ecommercebackend.repository.user.UserProfileRepository;
 import com.khahnm18.ecommercebackend.service.user.UserService;
 import com.khahnm18.ecommercebackend.specification.UserSpecification;
@@ -42,6 +46,8 @@ public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
     private final AccountRepository accountRepository;
     private final UserProfileRepository userProfileRepository;
+    private final RoleRepository roleRepository;
+    private final AccountRoleRepository accountRoleRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Override
@@ -67,7 +73,8 @@ public class UserServiceImpl implements UserService {
     ) {
         Pageable pageable = PageableUtil.createPageable(page, size, sort);
 
-        Specification<Account> spec = UserSpecification.byIsDeleted(isDeleted)
+        Specification<Account> spec = UserSpecification.isUserAccount()
+            .and(UserSpecification.byIsDeleted(isDeleted))
             .and(UserSpecification.byKeyword(keyword))
             .and(UserSpecification.byStartDate(startDate))
             .and(UserSpecification.byEndDate(endDate))
@@ -96,6 +103,14 @@ public class UserServiceImpl implements UserService {
 
         UserProfile userProfile = userMapper.toUserProfile(request, account.getId());
         userProfile = userProfileRepository.save(userProfile);
+
+        Role customerRole = roleRepository.findByCodeAndIsDeletedFalse("CUSTOMER")
+            .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
+
+        accountRoleRepository.save(AccountRole.builder()
+            .accountId(account.getId())
+            .roleId(customerRole.getId())
+            .build());
 
         log.info("User profile created: fullName={}, email={}", userProfile.getFullName(), account.getEmail());
         return userMapper.toUserResponse(userProfile, account);

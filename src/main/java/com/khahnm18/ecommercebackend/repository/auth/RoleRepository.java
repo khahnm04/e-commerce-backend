@@ -18,8 +18,10 @@ public interface RoleRepository extends JpaRepository<Role, UUID>, JpaSpecificat
     Optional<Role> findByIdAndIsDeletedFalse(UUID id);
     Optional<Role> findByIdAndIsDeletedTrue(UUID id);
 
+    Optional<Role> findByCodeAndIsDeletedFalse(String code);
+
     @Modifying
-    void deleteByIdInAndIsDeletedTrue(Set<UUID> roleIds);
+    void deleteAllByIdInAndIsDeletedTrue(Set<UUID> roleIds);
 
     @Query("""
         SELECT r FROM Role r

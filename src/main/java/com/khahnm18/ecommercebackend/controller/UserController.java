@@ -9,6 +9,7 @@ import com.khahnm18.ecommercebackend.dto.response.PageResponse;
 import com.khahnm18.ecommercebackend.dto.response.user.UserResponse;
 import com.khahnm18.ecommercebackend.service.user.UserService;
 import com.khahnm18.ecommercebackend.util.Translator;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -42,6 +43,7 @@ public class UserController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Get user detail by id")
+    @PreAuthorize("hasAuthority('USER_VIEW')")
     ApiResponse<UserResponse> getUserDetailById(
         @PathVariable("id") UUID accountId,
         @RequestParam(defaultValue = "false") boolean isDeleted
@@ -56,6 +58,7 @@ public class UserController {
 
     @GetMapping
     @Operation(summary = "Get all users")
+    @PreAuthorize("hasAuthority('USER_VIEW')")
     PageResponse<UserResponse> getAllUsers(
         @RequestParam(defaultValue = "1") int page,
         @RequestParam(defaultValue = "10") int size,
@@ -87,6 +90,7 @@ public class UserController {
 
     @PostMapping
     @Operation(summary = "Create account user")
+    @PreAuthorize("hasAuthority('USER_CREATE')")
     @ResponseStatus(HttpStatus.CREATED)
     ApiResponse<UserResponse> createUser(
         @Valid @RequestBody UserCreationRequest request
@@ -101,6 +105,7 @@ public class UserController {
 
     @PutMapping("/{id}")
     @Operation(summary = "Update user")
+    @PreAuthorize("hasAuthority('USER_UPDATE')")
     ApiResponse<UserResponse> updateUser(
         @PathVariable("id") UUID accountId,
         @Valid @RequestBody UserUpdateRequest request
@@ -115,6 +120,7 @@ public class UserController {
 
     @PatchMapping("/{id}/soft-delete")
     @Operation(summary = "Soft delete user")
+    @PreAuthorize("hasAuthority('USER_TRASH')")
     ApiResponse<Void> softDeleteUser(
         @PathVariable("id") UUID accountId
     ) {
@@ -127,7 +133,8 @@ public class UserController {
     }
 
     @PatchMapping("/{id}/restore")
-    @Operation(summary = "Restore soft-deleted user")
+    @Operation(summary = "Restore user")
+    @PreAuthorize("hasAuthority('USER_TRASH')")
     ApiResponse<Void> restoreUser(
         @PathVariable("id") UUID accountId
     ) {
@@ -141,6 +148,7 @@ public class UserController {
 
     @PatchMapping("/bulk-action")
     @Operation(summary = "Bulk action user")
+    @PreAuthorize("hasAnyAuthority('USER_UPDATE', 'USER_TRASH', 'USER_DELETE')")
     ApiResponse<Void> bulkAction(
         @Valid @RequestBody BulkActionRequest request
     ) {
@@ -152,7 +160,8 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
-    @Operation(summary = "Permanently delete user")
+    @Operation(summary = "Delete user")
+    @PreAuthorize("hasAuthority('USER_DELETE')")
     ApiResponse<Void> deleteUser(
         @PathVariable("id") UUID accountId
     ) {

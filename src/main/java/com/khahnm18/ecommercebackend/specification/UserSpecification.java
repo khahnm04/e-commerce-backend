@@ -1,17 +1,33 @@
 package com.khahnm18.ecommercebackend.specification;
 
-import com.khahnm18.ecommercebackend.constant.auth.AccountStatus;
 import com.khahnm18.ecommercebackend.entity.auth.Account;
+import com.khahnm18.ecommercebackend.entity.user.UserProfile;
+import com.khahnm18.ecommercebackend.constant.auth.AccountStatus;
 import org.springframework.data.jpa.domain.Specification;
+import jakarta.persistence.criteria.Subquery;
+import jakarta.persistence.criteria.Root;
 import java.time.Instant;
+import java.util.Objects;
 
 public class UserSpecification {
 
+    private static final String FIELD_ID = "id";
+    private static final String FIELD_ACCOUNT_ID = "accountId";
     private static final String FIELD_EMAIL = "email";
     private static final String FIELD_PHONE_NUMBER = "phoneNumber";
     private static final String FIELD_STATUS = "status";
     private static final String FIELD_CREATED_AT = "createdAt";
     private static final String FIELD_IS_DELETED = "isDeleted";
+
+    public static Specification<Account> isUserAccount() {
+        return (root, query, cb) -> {
+            Subquery<Integer> sub = Objects.requireNonNull(query).subquery(Integer.class);
+            Root<UserProfile> profile = sub.from(UserProfile.class);
+            sub.select(cb.literal(1))
+                .where(cb.equal(profile.get(FIELD_ACCOUNT_ID), root.get(FIELD_ID)));
+            return cb.exists(sub);
+        };
+    }
 
     public static Specification<Account> byIsDeleted(Boolean isDeleted) {
         return (root, query, cb) ->

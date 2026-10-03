@@ -29,6 +29,9 @@ public enum ErrorCode {
     NEW_PASSWORD_SAME_AS_OLD("New password must be different from the old password", HttpStatus.BAD_REQUEST),
 
     WEBSITE_INFO_NOT_FOUND("Website info not found", HttpStatus.NOT_FOUND),
+
+    BRAND_EXISTED("Brand already exists", HttpStatus.BAD_REQUEST),
+    BRAND_NOT_FOUND("Brand not found", HttpStatus.NOT_FOUND),
     ;
 
     private final String message;

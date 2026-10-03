@@ -129,7 +129,7 @@ public class RoleServiceImpl implements RoleService {
             }
             case "DELETE" -> {
                 SecurityUtil.requireAuthority("ROLE_DELETE");
-                roleRepository.deleteByIdInAndIsDeletedTrue(roleIds);
+                roleRepository.deleteAllByIdInAndIsDeletedTrue(roleIds);
                 permissionCacheService.evictAll();
                 log.info("Bulk action delete roles with ids: {}", roleIds);
             }
