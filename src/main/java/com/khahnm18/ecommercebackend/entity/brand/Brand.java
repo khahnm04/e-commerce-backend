@@ -26,10 +26,10 @@ import lombok.Builder;
 @Table(name = "brands")
 public class Brand extends BaseEntity {
 
-    @Column(name = "name", nullable = false, unique = true, length = 255)
+    @Column(name = "name", nullable = false, unique = true)
     private String name;
 
-    @Column(name = "slug", nullable = false, unique = true, length = 255)
+    @Column(name = "slug", nullable = false, unique = true)
     private String slug;
 
     @Column(name = "avatar", length = 500)

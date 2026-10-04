@@ -32,6 +32,10 @@ public enum ErrorCode {
 
     BRAND_EXISTED("Brand already exists", HttpStatus.BAD_REQUEST),
     BRAND_NOT_FOUND("Brand not found", HttpStatus.NOT_FOUND),
+
+    CATEGORY_EXISTED("Category already exists", HttpStatus.BAD_REQUEST),
+    CATEGORY_NOT_FOUND("Category not found", HttpStatus.NOT_FOUND),
+    CATEGORY_PARENT_INVALID("The parent category is invalid", HttpStatus.BAD_REQUEST),
     ;
 
     private final String message;
