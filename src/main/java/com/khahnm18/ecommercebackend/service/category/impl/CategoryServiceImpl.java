@@ -180,14 +180,14 @@ public class CategoryServiceImpl implements CategoryService {
 
     private void validateParentCategory(UUID categoryId, CategoryRequest request) {
         if (request.parentId() != null) {
-            UUID currentParentId = request.parentId();
+            UUID parentId = request.parentId();
             Set<UUID> visited = new HashSet<>();
-            while (currentParentId != null) {
-                if (currentParentId.equals(categoryId) || visited.contains(currentParentId)) {
+            while (parentId != null) {
+                if (parentId.equals(categoryId) || visited.contains(parentId)) {
                     throw new AppException(ErrorCode.CATEGORY_PARENT_INVALID);
                 }
-                visited.add(currentParentId);
-                currentParentId = this.getCategoryById(currentParentId).getParentId();
+                visited.add(parentId);
+                parentId = this.getCategoryById(parentId).getParentId();
             }
             this.getCategoryById(request.parentId());
         }
