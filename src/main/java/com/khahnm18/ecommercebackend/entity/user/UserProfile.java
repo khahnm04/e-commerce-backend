@@ -1,6 +1,6 @@
 package com.khahnm18.ecommercebackend.entity.user;
 
-import com.khahnm18.ecommercebackend.constant.user.GenderType;
+import com.khahnm18.ecommercebackend.enums.GenderType;
 import com.khahnm18.ecommercebackend.entity.BaseEntity;
 import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.JdbcTypeCode;

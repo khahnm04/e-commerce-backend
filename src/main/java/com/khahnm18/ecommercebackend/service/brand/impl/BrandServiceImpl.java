@@ -1,13 +1,13 @@
 package com.khahnm18.ecommercebackend.service.brand.impl;
 
-import com.khahnm18.ecommercebackend.constant.brand.BrandStatus;
+import com.khahnm18.ecommercebackend.enums.BrandStatus;
 import com.khahnm18.ecommercebackend.dto.request.BulkActionRequest;
 import com.khahnm18.ecommercebackend.dto.request.brand.BrandRequest;
 import com.khahnm18.ecommercebackend.dto.response.brand.BrandResponse;
 import com.khahnm18.ecommercebackend.entity.brand.Brand;
 import com.khahnm18.ecommercebackend.exception.AppException;
 import com.khahnm18.ecommercebackend.exception.ErrorCode;
-import com.khahnm18.ecommercebackend.mapper.brand.BrandMapper;
+import com.khahnm18.ecommercebackend.mapper.BrandMapper;
 import com.khahnm18.ecommercebackend.repository.brand.BrandRepository;
 import com.khahnm18.ecommercebackend.service.brand.BrandService;
 import com.khahnm18.ecommercebackend.specification.BrandSpecification;

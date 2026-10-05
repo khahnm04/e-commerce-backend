@@ -1,7 +1,7 @@
 package com.khahnm18.ecommercebackend.dto.response.category;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.khahnm18.ecommercebackend.constant.category.CategoryStatus;
+import com.khahnm18.ecommercebackend.enums.CategoryStatus;
 import lombok.Builder;
 import java.time.Instant;
 import java.util.UUID;

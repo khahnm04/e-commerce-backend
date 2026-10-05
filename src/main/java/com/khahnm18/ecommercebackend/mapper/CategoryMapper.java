@@ -1,6 +1,6 @@
-package com.khahnm18.ecommercebackend.mapper.category;
+package com.khahnm18.ecommercebackend.mapper;
 
-import com.khahnm18.ecommercebackend.constant.category.CategoryStatus;
+import com.khahnm18.ecommercebackend.enums.CategoryStatus;
 import com.khahnm18.ecommercebackend.dto.request.category.CategoryRequest;
 import com.khahnm18.ecommercebackend.dto.response.category.CategoryResponse;
 import com.khahnm18.ecommercebackend.entity.category.Category;

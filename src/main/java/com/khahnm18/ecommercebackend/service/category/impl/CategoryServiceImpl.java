@@ -1,13 +1,13 @@
 package com.khahnm18.ecommercebackend.service.category.impl;
 
-import com.khahnm18.ecommercebackend.constant.category.CategoryStatus;
+import com.khahnm18.ecommercebackend.enums.CategoryStatus;
 import com.khahnm18.ecommercebackend.dto.request.BulkActionRequest;
 import com.khahnm18.ecommercebackend.dto.request.category.CategoryRequest;
 import com.khahnm18.ecommercebackend.dto.response.category.CategoryResponse;
 import com.khahnm18.ecommercebackend.entity.category.Category;
 import com.khahnm18.ecommercebackend.exception.AppException;
 import com.khahnm18.ecommercebackend.exception.ErrorCode;
-import com.khahnm18.ecommercebackend.mapper.category.CategoryMapper;
+import com.khahnm18.ecommercebackend.mapper.CategoryMapper;
 import com.khahnm18.ecommercebackend.repository.category.CategoryRepository;
 import com.khahnm18.ecommercebackend.service.category.CategoryService;
 import com.khahnm18.ecommercebackend.specification.CategorySpecification;

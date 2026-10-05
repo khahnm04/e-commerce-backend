@@ -1,6 +1,6 @@
 package com.khahnm18.ecommercebackend.specification;
 
-import com.khahnm18.ecommercebackend.constant.auth.AccountStatus;
+import com.khahnm18.ecommercebackend.enums.AccountStatus;
 import com.khahnm18.ecommercebackend.entity.auth.Account;
 import com.khahnm18.ecommercebackend.entity.user.AdminProfile;
 import jakarta.persistence.criteria.Root;

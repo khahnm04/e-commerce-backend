@@ -1,6 +1,6 @@
 package com.khahnm18.ecommercebackend.entity.brand;
 
-import com.khahnm18.ecommercebackend.constant.brand.BrandStatus;
+import com.khahnm18.ecommercebackend.enums.BrandStatus;
 import com.khahnm18.ecommercebackend.entity.BaseEntity;
 import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.JdbcTypeCode;

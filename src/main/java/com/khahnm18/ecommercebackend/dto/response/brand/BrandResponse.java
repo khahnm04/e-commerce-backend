@@ -1,7 +1,7 @@
 package com.khahnm18.ecommercebackend.dto.response.brand;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.khahnm18.ecommercebackend.constant.brand.BrandStatus;
+import com.khahnm18.ecommercebackend.enums.BrandStatus;
 import lombok.Builder;
 import java.time.Instant;
 import java.util.UUID;

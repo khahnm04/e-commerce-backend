@@ -1,6 +1,6 @@
 package com.khahnm18.ecommercebackend.controller;
 
-import com.khahnm18.ecommercebackend.constant.auth.AccountStatus;
+import com.khahnm18.ecommercebackend.enums.AccountStatus;
 import com.khahnm18.ecommercebackend.dto.request.BulkActionRequest;
 import com.khahnm18.ecommercebackend.dto.request.user.*;
 import com.khahnm18.ecommercebackend.dto.response.ApiResponse;

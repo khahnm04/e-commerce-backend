@@ -1,4 +1,4 @@
-package com.khahnm18.ecommercebackend.constant.user;
+package com.khahnm18.ecommercebackend.enums;
 
 public enum GenderType {
     MALE,

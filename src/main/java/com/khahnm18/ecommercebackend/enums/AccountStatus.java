@@ -1,4 +1,4 @@
-package com.khahnm18.ecommercebackend.constant.auth;
+package com.khahnm18.ecommercebackend.enums;
 
 public enum AccountStatus {
     ACTIVE,

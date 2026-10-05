@@ -1,4 +1,4 @@
-package com.khahnm18.ecommercebackend.mapper.website;
+package com.khahnm18.ecommercebackend.mapper;
 
 import com.khahnm18.ecommercebackend.dto.request.website.WebsiteInfoRequest;
 import com.khahnm18.ecommercebackend.dto.response.response.WebsiteInfoResponse;

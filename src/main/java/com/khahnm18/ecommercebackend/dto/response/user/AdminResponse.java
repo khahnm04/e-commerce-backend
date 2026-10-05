@@ -1,8 +1,8 @@
 package com.khahnm18.ecommercebackend.dto.response.user;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.khahnm18.ecommercebackend.constant.auth.AccountStatus;
-import com.khahnm18.ecommercebackend.constant.user.GenderType;
+import com.khahnm18.ecommercebackend.enums.AccountStatus;
+import com.khahnm18.ecommercebackend.enums.GenderType;
 import com.khahnm18.ecommercebackend.dto.response.auth.RoleResponse;
 import lombok.Builder;
 import java.time.LocalDate;

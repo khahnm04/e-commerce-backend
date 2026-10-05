@@ -1,4 +1,4 @@
-package com.khahnm18.ecommercebackend.mapper.user;
+package com.khahnm18.ecommercebackend.mapper;
 
 import com.khahnm18.ecommercebackend.dto.request.user.AdminCreationRequest;
 import com.khahnm18.ecommercebackend.dto.request.user.MyProfileAdminRequest;
@@ -9,7 +9,6 @@ import com.khahnm18.ecommercebackend.dto.response.user.AdminResponse;
 import com.khahnm18.ecommercebackend.entity.auth.Account;
 import com.khahnm18.ecommercebackend.entity.auth.Role;
 import com.khahnm18.ecommercebackend.entity.user.AdminProfile;
-import com.khahnm18.ecommercebackend.mapper.auth.RoleMapper;
 import org.springframework.stereotype.Component;
 import lombok.RequiredArgsConstructor;
 import java.util.Collections;

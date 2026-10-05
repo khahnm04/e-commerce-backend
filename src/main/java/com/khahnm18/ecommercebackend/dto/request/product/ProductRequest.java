@@ -1,12 +1,11 @@
 package com.khahnm18.ecommercebackend.dto.request.product;
 
-import com.khahnm18.ecommercebackend.constant.product.ProductStatus;
+import com.khahnm18.ecommercebackend.enums.ProductStatus;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 public record ProductRequest(
@@ -32,6 +31,6 @@ public record ProductRequest(
     ProductStatus status,
 
     @NotEmpty(message = "product.categories.required")
-    Set<UUID> categories
+    List<UUID> categories
 
 ) {}

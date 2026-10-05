@@ -1,4 +1,4 @@
-package com.khahnm18.ecommercebackend.mapper.auth;
+package com.khahnm18.ecommercebackend.mapper;
 
 import com.khahnm18.ecommercebackend.dto.response.auth.PermissionResponse;
 import com.khahnm18.ecommercebackend.entity.auth.Permission;

@@ -1,4 +1,4 @@
-package com.khahnm18.ecommercebackend.mapper.user;
+package com.khahnm18.ecommercebackend.mapper;
 
 import com.khahnm18.ecommercebackend.dto.request.user.UserCreationRequest;
 import com.khahnm18.ecommercebackend.dto.request.user.UserUpdateRequest;

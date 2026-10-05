@@ -1,6 +1,6 @@
 package com.khahnm18.ecommercebackend.entity.auth;
 
-import com.khahnm18.ecommercebackend.constant.auth.AccountStatus;
+import com.khahnm18.ecommercebackend.enums.AccountStatus;
 import com.khahnm18.ecommercebackend.entity.BaseEntity;
 import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.JdbcTypeCode;

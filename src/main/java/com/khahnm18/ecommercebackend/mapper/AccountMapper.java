@@ -1,6 +1,6 @@
-package com.khahnm18.ecommercebackend.mapper.auth;
+package com.khahnm18.ecommercebackend.mapper;
 
-import com.khahnm18.ecommercebackend.constant.auth.AccountStatus;
+import com.khahnm18.ecommercebackend.enums.AccountStatus;
 import com.khahnm18.ecommercebackend.dto.request.user.AdminCreationRequest;
 import com.khahnm18.ecommercebackend.dto.request.user.MyProfileAdminRequest;
 import com.khahnm18.ecommercebackend.dto.request.user.AdminUpdateRequest;

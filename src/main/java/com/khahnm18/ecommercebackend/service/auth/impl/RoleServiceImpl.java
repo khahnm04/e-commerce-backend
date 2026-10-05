@@ -7,7 +7,7 @@ import com.khahnm18.ecommercebackend.entity.auth.Role;
 import com.khahnm18.ecommercebackend.entity.auth.Permission;
 import com.khahnm18.ecommercebackend.exception.AppException;
 import com.khahnm18.ecommercebackend.exception.ErrorCode;
-import com.khahnm18.ecommercebackend.mapper.auth.RoleMapper;
+import com.khahnm18.ecommercebackend.mapper.RoleMapper;
 import com.khahnm18.ecommercebackend.repository.auth.PermissionRepository;
 import com.khahnm18.ecommercebackend.service.auth.RolePermissionService;
 import com.khahnm18.ecommercebackend.service.auth.RoleService;

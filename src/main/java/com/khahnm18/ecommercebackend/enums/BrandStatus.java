@@ -1,4 +1,4 @@
-package com.khahnm18.ecommercebackend.constant.brand;
+package com.khahnm18.ecommercebackend.enums;
 
 public enum BrandStatus {
     ACTIVE,

@@ -5,7 +5,7 @@ import com.khahnm18.ecommercebackend.exception.ErrorCode;
 import com.khahnm18.ecommercebackend.entity.website.WebsiteInfo;
 import com.khahnm18.ecommercebackend.dto.request.website.WebsiteInfoRequest;
 import com.khahnm18.ecommercebackend.dto.response.response.WebsiteInfoResponse;
-import com.khahnm18.ecommercebackend.mapper.website.WebsiteInfoMapper;
+import com.khahnm18.ecommercebackend.mapper.WebsiteInfoMapper;
 import com.khahnm18.ecommercebackend.service.website.WebsiteInfoService;
 import com.khahnm18.ecommercebackend.repository.website.WebsiteInfoRepository;
 import org.springframework.transaction.annotation.Transactional;

@@ -1,7 +1,7 @@
 package com.khahnm18.ecommercebackend.config.init;
 
-import com.khahnm18.ecommercebackend.constant.auth.AccountStatus;
-import com.khahnm18.ecommercebackend.constant.user.GenderType;
+import com.khahnm18.ecommercebackend.enums.AccountStatus;
+import com.khahnm18.ecommercebackend.enums.GenderType;
 import com.khahnm18.ecommercebackend.entity.auth.Account;
 import com.khahnm18.ecommercebackend.entity.auth.AccountRole;
 import com.khahnm18.ecommercebackend.entity.auth.Role;

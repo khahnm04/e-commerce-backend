@@ -1,6 +1,6 @@
 package com.khahnm18.ecommercebackend.controller;
 
-import com.khahnm18.ecommercebackend.constant.brand.BrandStatus;
+import com.khahnm18.ecommercebackend.enums.BrandStatus;
 import com.khahnm18.ecommercebackend.dto.request.BulkActionRequest;
 import com.khahnm18.ecommercebackend.dto.request.brand.BrandRequest;
 import com.khahnm18.ecommercebackend.dto.response.ApiResponse;

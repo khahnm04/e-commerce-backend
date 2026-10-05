@@ -1,6 +1,6 @@
 package com.khahnm18.ecommercebackend.specification;
 
-import com.khahnm18.ecommercebackend.constant.category.CategoryStatus;
+import com.khahnm18.ecommercebackend.enums.CategoryStatus;
 import com.khahnm18.ecommercebackend.entity.category.Category;
 import org.springframework.data.jpa.domain.Specification;
 import java.time.Instant;

@@ -7,6 +7,8 @@ import java.util.UUID;
 
 public interface ProductCategoryService {
 
-    List<Category> assignPermissionsToRole(Product product, List<UUID> catgeoryIds);
+    List<Category> assignCategoriesToProduct(Product product, List<UUID> catgeoryIds);
+
+    List<Category> replaceCategoriesForProduct(Product product, List<UUID> newCategoryIds);
 
 }

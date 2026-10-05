@@ -1,7 +1,7 @@
 package com.khahnm18.ecommercebackend.dto.request.user;
 
-import com.khahnm18.ecommercebackend.constant.auth.AccountStatus;
-import com.khahnm18.ecommercebackend.constant.user.GenderType;
+import com.khahnm18.ecommercebackend.enums.AccountStatus;
+import com.khahnm18.ecommercebackend.enums.GenderType;
 import jakarta.validation.constraints.NotBlank;
 import java.time.LocalDate;
 

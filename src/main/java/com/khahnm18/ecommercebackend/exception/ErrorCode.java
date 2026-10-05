@@ -36,6 +36,9 @@ public enum ErrorCode {
     CATEGORY_EXISTED("Category already exists", HttpStatus.BAD_REQUEST),
     CATEGORY_NOT_FOUND("Category not found", HttpStatus.NOT_FOUND),
     CATEGORY_PARENT_INVALID("The parent category is invalid", HttpStatus.BAD_REQUEST),
+
+    PRODUCT_EXISTED("Product already exists", HttpStatus.BAD_REQUEST),
+    PRODUCT_NOT_FOUND("Product not found", HttpStatus.NOT_FOUND),
     ;
 
     private final String message;

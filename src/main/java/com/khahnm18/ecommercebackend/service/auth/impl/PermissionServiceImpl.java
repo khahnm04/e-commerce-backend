@@ -2,7 +2,7 @@ package com.khahnm18.ecommercebackend.service.auth.impl;
 
 import com.khahnm18.ecommercebackend.dto.response.auth.PermissionResponse;
 import com.khahnm18.ecommercebackend.entity.auth.Permission;
-import com.khahnm18.ecommercebackend.mapper.auth.PermissionMapper;
+import com.khahnm18.ecommercebackend.mapper.PermissionMapper;
 import com.khahnm18.ecommercebackend.service.auth.PermissionService;
 import com.khahnm18.ecommercebackend.repository.auth.PermissionRepository;
 import org.springframework.stereotype.Service;

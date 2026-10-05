@@ -1,4 +1,4 @@
-package com.khahnm18.ecommercebackend.constant.category;
+package com.khahnm18.ecommercebackend.enums;
 
 public enum CategoryStatus {
     ACTIVE,

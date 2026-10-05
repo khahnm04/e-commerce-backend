@@ -2,7 +2,7 @@ package com.khahnm18.ecommercebackend.specification;
 
 import com.khahnm18.ecommercebackend.entity.auth.Account;
 import com.khahnm18.ecommercebackend.entity.user.UserProfile;
-import com.khahnm18.ecommercebackend.constant.auth.AccountStatus;
+import com.khahnm18.ecommercebackend.enums.AccountStatus;
 import org.springframework.data.jpa.domain.Specification;
 import jakarta.persistence.criteria.Subquery;
 import jakarta.persistence.criteria.Root;

@@ -1,6 +1,6 @@
 package com.khahnm18.ecommercebackend.service.user.impl;
 
-import com.khahnm18.ecommercebackend.constant.auth.AccountStatus;
+import com.khahnm18.ecommercebackend.enums.AccountStatus;
 import com.khahnm18.ecommercebackend.dto.request.BulkActionRequest;
 import com.khahnm18.ecommercebackend.dto.request.user.UserCreationRequest;
 import com.khahnm18.ecommercebackend.dto.request.user.UserUpdateRequest;
@@ -11,8 +11,8 @@ import com.khahnm18.ecommercebackend.entity.auth.Role;
 import com.khahnm18.ecommercebackend.entity.user.UserProfile;
 import com.khahnm18.ecommercebackend.exception.AppException;
 import com.khahnm18.ecommercebackend.exception.ErrorCode;
-import com.khahnm18.ecommercebackend.mapper.auth.AccountMapper;
-import com.khahnm18.ecommercebackend.mapper.user.UserMapper;
+import com.khahnm18.ecommercebackend.mapper.AccountMapper;
+import com.khahnm18.ecommercebackend.mapper.UserMapper;
 import com.khahnm18.ecommercebackend.repository.auth.AccountRepository;
 import com.khahnm18.ecommercebackend.repository.auth.AccountRoleRepository;
 import com.khahnm18.ecommercebackend.repository.auth.RoleRepository;

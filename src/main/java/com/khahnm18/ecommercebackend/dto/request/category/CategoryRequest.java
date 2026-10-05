@@ -1,6 +1,6 @@
 package com.khahnm18.ecommercebackend.dto.request.category;
 
-import com.khahnm18.ecommercebackend.constant.category.CategoryStatus;
+import com.khahnm18.ecommercebackend.enums.CategoryStatus;
 import jakarta.validation.constraints.NotBlank;
 import java.util.UUID;
 

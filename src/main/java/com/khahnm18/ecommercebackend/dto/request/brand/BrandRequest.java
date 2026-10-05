@@ -1,6 +1,6 @@
 package com.khahnm18.ecommercebackend.dto.request.brand;
 
-import com.khahnm18.ecommercebackend.constant.brand.BrandStatus;
+import com.khahnm18.ecommercebackend.enums.BrandStatus;
 import jakarta.validation.constraints.NotBlank;
 
 public record BrandRequest(
