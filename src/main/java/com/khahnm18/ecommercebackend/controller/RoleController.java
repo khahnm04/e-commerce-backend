@@ -31,7 +31,7 @@ import java.util.UUID;
 
 @Slf4j(topic = "ROLE-CONTROLLER")
 @RestController
-@RequestMapping("${api.prefix}/admin/roles")
+@RequestMapping("${api.prefix}/roles")
 @RequiredArgsConstructor
 @Tag(name = "Role Controller", description = "Role management APIs")
 public class RoleController {

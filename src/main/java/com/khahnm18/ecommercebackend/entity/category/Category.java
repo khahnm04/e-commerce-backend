@@ -30,7 +30,7 @@ public class Category extends BaseEntity {
     @Column(name = "parent_id")
     private UUID parentId;
 
-    @Column(name = "name", nullable = false, unique = true)
+    @Column(name = "name", nullable = false)
     private String name;
 
     @Column(name = "slug", nullable = false, unique = true)

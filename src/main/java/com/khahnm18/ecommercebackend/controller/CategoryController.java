@@ -32,7 +32,7 @@ import java.util.UUID;
 
 @Slf4j(topic = "CATEGORY-CONTROLLER")
 @RestController
-@RequestMapping("${api.prefix}/admin/categories")
+@RequestMapping("${api.prefix}/categories")
 @RequiredArgsConstructor
 @Tag(name = "Category Controller", description = "Category management APIs")
 public class CategoryController {

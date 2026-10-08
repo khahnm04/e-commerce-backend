@@ -1,13 +1,13 @@
 package com.khahnm18.ecommercebackend.service.product.impl;
 
-import com.khahnm18.ecommercebackend.entity.category.Category;
-import com.khahnm18.ecommercebackend.entity.product.Product;
-import com.khahnm18.ecommercebackend.entity.product.ProductCategory;
 import com.khahnm18.ecommercebackend.exception.AppException;
 import com.khahnm18.ecommercebackend.exception.ErrorCode;
+import com.khahnm18.ecommercebackend.entity.category.Category;
+import com.khahnm18.ecommercebackend.entity.product.ProductGroupCategory;
+import com.khahnm18.ecommercebackend.entity.product.ProductGroup;
 import com.khahnm18.ecommercebackend.repository.category.CategoryRepository;
-import com.khahnm18.ecommercebackend.repository.product.ProductCategoryRepository;
-import com.khahnm18.ecommercebackend.service.product.ProductCategoryService;
+import com.khahnm18.ecommercebackend.repository.product.ProductGroupCategoryRepository;
+import com.khahnm18.ecommercebackend.service.product.ProductGroupCategoryService;
 import com.khahnm18.ecommercebackend.util.SecurityUtil;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
@@ -18,27 +18,27 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
-@Slf4j(topic = "PRODUCT-CATEGORY-SERVICE")
+@Slf4j(topic = "PRODUCT-GROUP-CATEGORY-SERVICE")
 @Service
 @RequiredArgsConstructor
-public class ProductCategoryServiceImpl implements ProductCategoryService {
+public class ProductGroupCategoryServiceImpl implements ProductGroupCategoryService {
 
     private final CategoryRepository categoryRepository;
-    private final ProductCategoryRepository productCategoryRepository;
+    private final ProductGroupCategoryRepository productGroupCategoryRepository;
 
     @Override
     @Transactional
-    public List<Category> assignCategoriesToProduct(Product product, List<UUID> categoryIds) {
-        List<Category> categories = getCategoriesByCategoryIds(categoryIds);
-        this.saveProductCategories(product, categories);
+    public List<Category> assignCategoriesToProductGroup(ProductGroup productGroup, List<UUID> categoryIds) {
+        List<Category> categories = this.getCategoriesByCategoryIds(categoryIds);
+        this.saveProductCategories(productGroup, categories);
         return categories;
     }
 
     @Override
     @Transactional
-    public List<Category> replaceCategoriesForProduct(Product product, List<UUID> newCategoryIds) {
-        List<Category> newCategories = getCategoriesByCategoryIds(newCategoryIds);
-        List<UUID> currentCategoryIds = categoryRepository.findCategoriesByProductId(product.getId())
+    public List<Category> replaceCategoriesForProductGroup(ProductGroup productGroup, List<UUID> newCategoryIds) {
+        List<Category> newCategories = this.getCategoriesByCategoryIds(newCategoryIds);
+        List<UUID> currentCategoryIds = categoryRepository.findCategoriesByGroupId(productGroup.getId())
             .stream()
             .map(Category::getId)
             .toList();
@@ -48,7 +48,7 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
             .filter(currentCategoryId -> !newCategoryIds.contains(currentCategoryId))
             .toList();
         if (!categoryIdsToRemove.isEmpty()) {
-            productCategoryRepository.deleteByProductIdAndCategoryIdIn(product.getId(), categoryIdsToRemove);
+            productGroupCategoryRepository.deleteByGroupIdAndCategoryIdIn(productGroup.getId(), categoryIdsToRemove);
         }
 
         // Add
@@ -56,11 +56,11 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
             .filter(newCategory -> !currentCategoryIds.contains(newCategory.getId()))
             .toList();
         if (!categoriesToAdd.isEmpty()) {
-            this.saveProductCategories(product, categoriesToAdd);
+            this.saveProductCategories(productGroup, categoriesToAdd);
         }
 
-        product.setUpdatedAt(Instant.now());
-        product.setUpdatedBy(SecurityUtil.getCurrentAccount());
+        productGroup.setUpdatedAt(Instant.now());
+        productGroup.setUpdatedBy(SecurityUtil.getCurrentAccount());
         return newCategories;
     }
 
@@ -75,15 +75,15 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
         return categories;
     }
 
-    private void saveProductCategories(Product product, List<Category> categories) {
-        List<ProductCategory> productCategories = categories.stream()
-            .map(category -> ProductCategory.builder()
-                .productId(product.getId())
+    private void saveProductCategories(ProductGroup productGroup, List<Category> categories) {
+        List<ProductGroupCategory> productCategories = categories.stream()
+            .map(category -> ProductGroupCategory.builder()
+                .groupId(productGroup.getId())
                 .categoryId(category.getId())
                 .build())
             .toList();
-        productCategoryRepository.saveAll(productCategories);
-        log.info("Assigned {} categories to product: {}", productCategories.size(), product.getName());
+        productGroupCategoryRepository.saveAll(productCategories);
+        log.info("Assigned {} categories to product group: {}", productCategories.size(), productGroup.getName());
     }
 
 }

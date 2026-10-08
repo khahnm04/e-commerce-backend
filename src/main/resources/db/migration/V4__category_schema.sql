@@ -6,7 +6,7 @@ CREATE TYPE category_status AS ENUM (
 CREATE TABLE categories (
     id           UUID PRIMARY KEY DEFAULT uuidv7(),
     parent_id    UUID,
-    name         VARCHAR(255) UNIQUE NOT NULL,
+    name         VARCHAR(255) NOT NULL,
     slug         VARCHAR(255) UNIQUE NOT NULL,
     avatar       VARCHAR(500),
     description  TEXT,

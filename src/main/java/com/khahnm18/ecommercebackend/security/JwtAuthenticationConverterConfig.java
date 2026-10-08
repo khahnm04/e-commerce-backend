@@ -9,8 +9,6 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Component;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
@@ -36,26 +34,16 @@ public class JwtAuthenticationConverterConfig implements Converter<Jwt, Abstract
     @Override
     public AbstractAuthenticationToken convert(@NonNull Jwt jwt) {
         Collection<GrantedAuthority> defaultAuthorities = defaultAuthoritiesConverter.convert(jwt);
-        ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        UUID accountId = UUID.fromString(jwt.getSubject());
+        boolean isAdmin = defaultAuthorities.stream()
+            .anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
 
-        if (attributes != null) {
-            String uri = attributes.getRequest().getRequestURI();
+        List<String> permissions = permissionCacheService.getPermissions(accountId, isAdmin);
+        log.info("Loaded {} permissions for Account with Id: {}", permissions.size(), accountId);
 
-            if (uri.startsWith("/api/v1/admin")) {
-                UUID accountId = UUID.fromString(jwt.getSubject());
-                boolean isAdmin = defaultAuthorities.stream()
-                    .anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
-
-                List<String> permissions = permissionCacheService.getPermissions(accountId, isAdmin);
-                log.info("Loaded {} permissions for Admin with Id: {}", permissions.size(), accountId);
-
-                List<GrantedAuthority> combinedAuthorities = new ArrayList<>(defaultAuthorities);
-                permissions.forEach(p -> combinedAuthorities.add(new SimpleGrantedAuthority(p)));
-                return new JwtAuthenticationToken(jwt, combinedAuthorities);
-            }
-        }
-
-        return new JwtAuthenticationToken(jwt, defaultAuthorities);
+        List<GrantedAuthority> combinedAuthorities = new ArrayList<>(defaultAuthorities);
+        permissions.forEach(p -> combinedAuthorities.add(new SimpleGrantedAuthority(p)));
+        return new JwtAuthenticationToken(jwt, combinedAuthorities);
     }
 
 }

@@ -39,6 +39,12 @@ public enum ErrorCode {
 
     PRODUCT_EXISTED("Product already exists", HttpStatus.BAD_REQUEST),
     PRODUCT_NOT_FOUND("Product not found", HttpStatus.NOT_FOUND),
+
+    PRODUCT_GROUP_EXISTED("Product group already exists", HttpStatus.BAD_REQUEST),
+    PRODUCT_GROUP_NOT_FOUND("Product group not found", HttpStatus.NOT_FOUND),
+
+    PRODUCT_VERSION_EXISTED("Product version already exists", HttpStatus.BAD_REQUEST),
+    PRODUCT_VERSION_NOT_FOUND("Product version not found", HttpStatus.NOT_FOUND),
     ;
 
     private final String message;

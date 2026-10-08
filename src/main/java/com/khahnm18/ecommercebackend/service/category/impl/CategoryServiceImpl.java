@@ -117,24 +117,24 @@ public class CategoryServiceImpl implements CategoryService {
                 SecurityUtil.requireAuthority("CATEGORY_UPDATE");
                 List<Category> categories = categoryRepository.findAllById(categoryIds);
                 categories.forEach(category -> category.setStatus(CategoryStatus.valueOf(action)));
-                log.info("Bulk update status {} category with categoryIds: {}", action, categoryIds);
+                log.info("Bulk update status {} category with categorys: {}", action, categoryIds);
             }
             case "SOFT_DELETE" -> {
                 SecurityUtil.requireAuthority("CATEGORY_TRASH");
                 List<Category> categories = categoryRepository.findAllById(categoryIds);
                 categories.forEach(this::softDelete);
-                log.info("Bulk action soft delete category with categoryIds: {}", categoryIds);
+                log.info("Bulk action soft delete category with categorys: {}", categoryIds);
             }
             case "RESTORE" -> {
                 SecurityUtil.requireAuthority("CATEGORY_TRASH");
                 List<Category> categories = categoryRepository.findAllById(categoryIds);
                 categories.forEach(this::restore);
-                log.info("Bulk action restore category with categoryIds: {}", categoryIds);
+                log.info("Bulk action restore category with categorys: {}", categoryIds);
             }
             case "DELETE" -> {
                 SecurityUtil.requireAuthority("CATEGORY_DELETE");
                 categoryRepository.deleteAllByIdInAndIsDeletedTrue(categoryIds);
-                log.info("Bulk action delete category with categoryIds: {}", categoryIds);
+                log.info("Bulk action delete category with categorys: {}", categoryIds);
             }
         }
     }

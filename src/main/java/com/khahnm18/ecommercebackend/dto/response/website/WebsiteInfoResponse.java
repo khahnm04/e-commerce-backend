@@ -1,4 +1,4 @@
-package com.khahnm18.ecommercebackend.dto.response.response;
+package com.khahnm18.ecommercebackend.dto.response.website;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;

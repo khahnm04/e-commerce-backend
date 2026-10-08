@@ -16,10 +16,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.Builder;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.UUID;
 
 @Entity
 @Getter
@@ -31,11 +28,24 @@ import java.util.Map;
 @Table(name = "products")
 public class Product extends BaseEntity {
 
+    @Column(name = "version_id", nullable = false)
+    private UUID versionId;
+
     @Column(name = "name", nullable = false)
     private String name;
 
     @Column(name = "slug", nullable = false, unique = true)
     private String slug;
+
+    @Column(name = "color", nullable = false)
+    private String color;
+
+    @Column(name = "sku", unique = true)
+    private String sku;
+
+    @Builder.Default
+    @Column(name = "is_default", nullable = false)
+    private Boolean isDefault = false;
 
     @Builder.Default
     @Column(name = "price_old", nullable = false, precision = 15, scale = 2)
@@ -55,34 +65,6 @@ public class Product extends BaseEntity {
 
     @Column(name = "avatar", nullable = false, length = 500)
     private String avatar;
-
-    @Builder.Default
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "images", columnDefinition = "jsonb")
-    private List<String> images = new ArrayList<>();
-
-    @Builder.Default
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "specifications", columnDefinition = "jsonb")
-    private Map<String, Object> specifications = new HashMap<>();
-
-    @Builder.Default
-    @Column(name = "view", nullable = false)
-    private Integer view = 0;
-
-    @Builder.Default
-    @Column(name = "rating_avg", nullable = false, precision = 3, scale = 2)
-    private BigDecimal ratingAvg = BigDecimal.ZERO;
-
-    @Builder.Default
-    @Column(name = "rating_count", nullable = false)
-    private Integer ratingCount = 0;
-
-    @Column(name = "description", columnDefinition = "TEXT")
-    private String description;
-
-    @Column(name = "content", columnDefinition = "TEXT")
-    private String content;
 
     @Builder.Default
     @Enumerated(EnumType.STRING)

@@ -19,7 +19,7 @@ import java.util.UUID;
 
 @Slf4j(topic = "PERMISSION-CONTROLLER")
 @RestController
-@RequestMapping("${api.prefix}/admin/permissions")
+@RequestMapping("${api.prefix}/permissions")
 @RequiredArgsConstructor
 @Tag(name = "Permission Controller", description = "Permission management APIs")
 public class PermissionController {

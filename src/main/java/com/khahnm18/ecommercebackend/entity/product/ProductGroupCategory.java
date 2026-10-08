@@ -21,8 +21,8 @@ import java.util.UUID;
 @DynamicUpdate
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "product_option_values")
-public class ProductOptionValue {
+@Table(name = "product_group_categories")
+public class ProductGroupCategory {
 
     @Id
     @Generated(event = EventType.INSERT)
@@ -34,13 +34,10 @@ public class ProductOptionValue {
     )
     private UUID id;
 
-    @Column(name = "product_option_id", nullable = false)
-    private UUID productOptionId;
+    @Column(name = "group_id", nullable = false)
+    private UUID groupId;
 
-    @Column(name = "label", nullable = false, length = 255)
-    private String label;
-
-    @Column(name = "value", nullable = false, length = 255)
-    private String value;
+    @Column(name = "category_id", nullable = false)
+    private UUID categoryId;
 
 }

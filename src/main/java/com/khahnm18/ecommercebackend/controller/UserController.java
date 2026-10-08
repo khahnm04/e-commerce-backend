@@ -33,7 +33,7 @@ import java.util.UUID;
 
 @Slf4j(topic = "USER-CONTROLLER")
 @RestController
-@RequestMapping("${api.prefix}/admin/users")
+@RequestMapping("${api.prefix}/users")
 @RequiredArgsConstructor
 @Tag(name = "User Controller", description = "Account user management APIs")
 public class UserController {

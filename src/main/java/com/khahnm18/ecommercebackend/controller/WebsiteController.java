@@ -2,7 +2,7 @@ package com.khahnm18.ecommercebackend.controller;
 
 import com.khahnm18.ecommercebackend.dto.response.ApiResponse;
 import com.khahnm18.ecommercebackend.dto.request.website.WebsiteInfoRequest;
-import com.khahnm18.ecommercebackend.dto.response.response.WebsiteInfoResponse;
+import com.khahnm18.ecommercebackend.dto.response.website.WebsiteInfoResponse;
 import com.khahnm18.ecommercebackend.service.website.WebsiteInfoService;
 import com.khahnm18.ecommercebackend.util.Translator;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -19,12 +19,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import java.util.List;
 
-@Slf4j(topic = "WEBSITE-INFO-CONTROLLER")
+@Slf4j(topic = "WEBSITE-CONTROLLER")
 @RestController
-@RequestMapping("${api.prefix}/admin/website-info")
+@RequestMapping("${api.prefix}/website-info")
 @RequiredArgsConstructor
 @Tag(name = "Website Info Controller", description = "Website Info management APIs")
-public class WebsiteInfoController {
+public class WebsiteController {
 
     private final WebsiteInfoService websiteInfoService;
     private final Translator translator;

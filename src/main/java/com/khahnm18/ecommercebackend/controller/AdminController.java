@@ -33,7 +33,7 @@ import java.util.UUID;
 
 @Slf4j(topic = "ADMIN-CONTROLLER")
 @RestController
-@RequestMapping("${api.prefix}/admin/admins")
+@RequestMapping("${api.prefix}/admins")
 @RequiredArgsConstructor
 @Tag(name = "Admin Controller", description = "Account admin management APIs")
 public class AdminController {

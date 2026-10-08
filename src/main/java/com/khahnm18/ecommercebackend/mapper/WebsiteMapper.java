@@ -1,12 +1,12 @@
 package com.khahnm18.ecommercebackend.mapper;
 
 import com.khahnm18.ecommercebackend.dto.request.website.WebsiteInfoRequest;
-import com.khahnm18.ecommercebackend.dto.response.response.WebsiteInfoResponse;
+import com.khahnm18.ecommercebackend.dto.response.website.WebsiteInfoResponse;
 import com.khahnm18.ecommercebackend.entity.website.WebsiteInfo;
 import org.springframework.stereotype.Component;
 
 @Component
-public class WebsiteInfoMapper {
+public class WebsiteMapper {
 
     public WebsiteInfo toWebsiteInfo(WebsiteInfoRequest request) {
         return WebsiteInfo.builder()

@@ -5,7 +5,7 @@ CREATE TYPE brand_status AS ENUM (
 
 CREATE TABLE brands (
     id           UUID PRIMARY KEY DEFAULT uuidv7(),
-    name         VARCHAR(255) UNIQUE NOT NULL,
+    name         VARCHAR(255) NOT NULL,
     slug         VARCHAR(255) UNIQUE NOT NULL,
     avatar       VARCHAR(500),
     description  TEXT,

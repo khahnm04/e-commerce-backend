@@ -32,7 +32,7 @@ import java.util.UUID;
 
 @Slf4j(topic = "BRAND-CONTROLLER")
 @RestController
-@RequestMapping("${api.prefix}/admin/brands")
+@RequestMapping("${api.prefix}/brands")
 @RequiredArgsConstructor
 @Tag(name = "Brand Controller", description = "Brand management APIs")
 public class BrandController {

@@ -16,7 +16,6 @@ import java.util.UUID;
 public interface CategoryRepository extends JpaRepository<Category, UUID>, JpaSpecificationExecutor<Category> {
 
     Optional<Category> findByIdAndIsDeletedFalse(UUID id);
-
     Optional<Category> findByIdAndIsDeletedTrue(UUID id);
 
     @Modifying
@@ -24,9 +23,9 @@ public interface CategoryRepository extends JpaRepository<Category, UUID>, JpaSp
 
     @Query("""
         SELECT c FROM Category c
-        JOIN ProductCategory pc ON pc.categoryId = c.id
-        WHERE pc.productId = :productId
+        JOIN ProductGroupCategory pgc ON pgc.categoryId = c.id
+        WHERE pgc.groupId = :groupId
     """)
-    List<Category> findCategoriesByProductId(@Param("productId") UUID productId);
+    List<Category> findCategoriesByGroupId(@Param("groupId") UUID groupId);
 
 }
