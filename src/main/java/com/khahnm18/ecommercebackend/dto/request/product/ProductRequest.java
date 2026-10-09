@@ -22,13 +22,16 @@ public record ProductRequest(
     @NotBlank(message = "product.color.required")
     String color,
 
+    @NotBlank(message = "product.sku.required")
     String sku,
 
     Boolean isDefault,
 
+    @PositiveOrZero(message = "product.priceOld.required")
     @DecimalMin(value = "0.00", message = "product.priceOld.invalid")
     BigDecimal priceOld,
 
+    @PositiveOrZero(message = "product.priceNew.required")
     @DecimalMin(value = "0.00", message = "product.priceNew.invalid")
     BigDecimal priceNew,
 

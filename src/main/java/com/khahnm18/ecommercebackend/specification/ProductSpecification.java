@@ -42,13 +42,6 @@ public class ProductSpecification {
         };
     }
 
-    public static Specification<Product> byVersionId(UUID versionId) {
-        return (root, query, cb) -> {
-            if (versionId == null) return null;
-            return cb.equal(root.get(FIELD_VERSION_ID), versionId);
-        };
-    }
-
     public static Specification<Product> byStartDate(Instant startDate) {
         return (root, query, cb) -> {
             if (startDate == null) return null;
@@ -60,6 +53,13 @@ public class ProductSpecification {
         return (root, query, cb) -> {
             if (endDate == null) return null;
             return cb.lessThanOrEqualTo(root.get(FIELD_CREATED_AT), endDate);
+        };
+    }
+
+    public static Specification<Product> byVersionId(UUID versionId) {
+        return (root, query, cb) -> {
+            if (versionId == null) return null;
+            return cb.equal(root.get(FIELD_VERSION_ID), versionId);
         };
     }
 

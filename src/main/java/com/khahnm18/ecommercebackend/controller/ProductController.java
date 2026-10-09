@@ -1,20 +1,13 @@
 package com.khahnm18.ecommercebackend.controller;
 
-import com.khahnm18.ecommercebackend.dto.request.BulkActionRequest;
-import com.khahnm18.ecommercebackend.dto.request.product.ProductRequest;
+import com.khahnm18.ecommercebackend.util.Translator;
+import com.khahnm18.ecommercebackend.enums.ProductStatus;
 import com.khahnm18.ecommercebackend.dto.response.ApiResponse;
 import com.khahnm18.ecommercebackend.dto.response.PageResponse;
+import com.khahnm18.ecommercebackend.dto.request.BulkActionRequest;
+import com.khahnm18.ecommercebackend.dto.request.product.ProductRequest;
 import com.khahnm18.ecommercebackend.dto.response.product.ProductResponse;
-import com.khahnm18.ecommercebackend.enums.ProductStatus;
 import com.khahnm18.ecommercebackend.service.product.ProductService;
-import com.khahnm18.ecommercebackend.util.Translator;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,6 +20,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -71,7 +71,15 @@ public class ProductController {
     ) {
         log.info("Get all products");
         Page<ProductResponse> productPage = productService.getAllProducts(
-            page, size, sort, keyword, isDeleted, startDate, endDate, status, versionId
+            page,
+            size,
+            sort,
+            keyword,
+            isDeleted,
+            startDate,
+            endDate,
+            status,
+            versionId
         );
         return PageResponse.<ProductResponse>builder()
             .status(HttpStatus.OK.value())
@@ -85,7 +93,10 @@ public class ProductController {
     @Operation(summary = "Create product")
     @PreAuthorize("hasAuthority('PRODUCT_CREATE')")
     @ResponseStatus(HttpStatus.CREATED)
-    ApiResponse<ProductResponse> createProduct(@Valid @RequestBody ProductRequest request) {
+    ApiResponse<ProductResponse> createProduct(
+        @Valid @RequestBody ProductRequest request
+
+    ) {
         log.info("Create product");
         return ApiResponse.<ProductResponse>builder()
             .status(HttpStatus.CREATED.value())
@@ -112,7 +123,9 @@ public class ProductController {
     @PatchMapping("/{id}/soft-delete")
     @Operation(summary = "Soft delete product")
     @PreAuthorize("hasAuthority('PRODUCT_TRASH')")
-    ApiResponse<Void> softDeleteProduct(@PathVariable("id") UUID productId) {
+    ApiResponse<Void> softDeleteProduct(
+        @PathVariable("id") UUID productId
+    ) {
         log.info("Soft delete product: productId={}", productId);
         productService.softDeleteProduct(productId);
         return ApiResponse.<Void>builder()
@@ -124,7 +137,9 @@ public class ProductController {
     @PatchMapping("/{id}/restore")
     @Operation(summary = "Restore product")
     @PreAuthorize("hasAuthority('PRODUCT_TRASH')")
-    ApiResponse<Void> restoreProduct(@PathVariable("id") UUID productId) {
+    ApiResponse<Void> restoreProduct(
+        @PathVariable("id") UUID productId
+    ) {
         log.info("Restore product: productId={}", productId);
         productService.restoreProduct(productId);
         return ApiResponse.<Void>builder()
@@ -136,7 +151,9 @@ public class ProductController {
     @PatchMapping("/bulk-action")
     @Operation(summary = "Bulk action products")
     @PreAuthorize("hasAnyAuthority('PRODUCT_UPDATE', 'PRODUCT_TRASH', 'PRODUCT_DELETE')")
-    ApiResponse<Void> bulkAction(@Valid @RequestBody BulkActionRequest request) {
+    ApiResponse<Void> bulkAction(
+        @Valid @RequestBody BulkActionRequest request
+    ) {
         productService.bulkAction(request);
         return ApiResponse.<Void>builder()
             .status(HttpStatus.OK.value())
@@ -147,7 +164,9 @@ public class ProductController {
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete product")
     @PreAuthorize("hasAuthority('PRODUCT_DELETE')")
-    ApiResponse<Void> deleteProduct(@PathVariable("id") UUID productId) {
+    ApiResponse<Void> deleteProduct(
+        @PathVariable("id") UUID productId
+    ) {
         log.info("Delete product: productId={}", productId);
         productService.deleteProduct(productId);
         return ApiResponse.<Void>builder()
@@ -155,4 +174,5 @@ public class ProductController {
             .message(translator.toLocale("product.delete.success"))
             .build();
     }
+
 }
