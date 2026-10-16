@@ -14,7 +14,6 @@ public interface ProductVersionService {
     Page<ProductVersionResponse> getAllProductVersions(
         int page,
         int size,
-        String sort,
         String keyword,
         boolean isDeleted,
         Instant startDate,

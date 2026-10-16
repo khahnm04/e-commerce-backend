@@ -15,7 +15,6 @@ public interface BrandService {
     Page<BrandResponse> getAllBrands(
         int page,
         int size,
-        String sort,
         String keyword,
         boolean isDeleted,
         Instant startDate,

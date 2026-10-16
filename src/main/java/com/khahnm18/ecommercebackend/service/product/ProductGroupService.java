@@ -14,7 +14,6 @@ public interface ProductGroupService {
     Page<ProductGroupResponse> getAllProductGroups(
         int page,
         int size,
-        String sort,
         String keyword,
         boolean isDeleted,
         Instant startDate,

@@ -13,10 +13,13 @@ import com.khahnm18.ecommercebackend.service.auth.RolePermissionService;
 import com.khahnm18.ecommercebackend.service.auth.RoleService;
 import com.khahnm18.ecommercebackend.repository.auth.RoleRepository;
 import com.khahnm18.ecommercebackend.service.auth.cache.PermissionCacheService;
-import com.khahnm18.ecommercebackend.specification.RoleSpecification;
-import com.khahnm18.ecommercebackend.util.PageableUtil;
+import com.khahnm18.ecommercebackend.entity.auth.QRole;
 import com.khahnm18.ecommercebackend.util.SecurityUtil;
-import org.springframework.data.jpa.domain.Specification;
+import com.querydsl.core.types.Predicate;
+import com.querydsl.jpa.impl.JPAQuery;
+import com.querydsl.jpa.impl.JPAQueryFactory;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -25,6 +28,7 @@ import org.springframework.data.domain.Page;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import java.time.Instant;
+import java.util.Optional;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -34,6 +38,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class RoleServiceImpl implements RoleService {
 
+    private final JPAQueryFactory queryFactory;
     private final RoleMapper roleMapper;
     private final RoleRepository roleRepository;
     private final PermissionRepository permissionRepository;
@@ -51,21 +56,43 @@ public class RoleServiceImpl implements RoleService {
     public Page<RoleResponse> getAllRoles(
         int page,
         int size,
-        String sort,
         String keyword,
         boolean isDeleted,
         Instant startDate,
         Instant endDate
     ) {
-        Pageable pageable = PageableUtil.createPageable(page, size, sort);
+        Pageable pageable = PageRequest.of(page - 1, size);
+        QRole role = QRole.role;
 
-        Specification<Role> spec = RoleSpecification.byIsDeleted(isDeleted)
-            .and(RoleSpecification.byKeyword(keyword))
-            .and(RoleSpecification.byStartDate(startDate))
-            .and(RoleSpecification.byEndDate(endDate));
+        Predicate[] predicates = {
+            role.isDeleted.eq(isDeleted),
+            Optional.ofNullable(startDate).map(role.createdAt::goe).orElse(null),
+            Optional.ofNullable(endDate).map(role.createdAt::loe).orElse(null),
+            Optional.ofNullable(keyword)
+                .filter(kw -> !kw.isBlank())
+                .map(String::strip)
+                .map(kw -> role.code.containsIgnoreCase(kw)
+                    .or(role.name.containsIgnoreCase(kw)))
+                .orElse(null)
+        };
 
-        Page<Role> rolePage = roleRepository.findAll(spec, pageable);
-        return rolePage.map(roleMapper::toRoleResponse);
+        List<RoleResponse> content = queryFactory
+            .selectFrom(role)
+            .where(predicates)
+            .orderBy(role.createdAt.desc())
+            .offset(pageable.getOffset())
+            .limit(pageable.getPageSize())
+            .fetch()
+            .stream()
+            .map(roleMapper::toRoleResponse)
+            .toList();
+
+        JPAQuery<Long> countQuery = queryFactory
+            .select(role.count())
+            .from(role)
+            .where(predicates);
+
+        return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
     }
 
     @Override

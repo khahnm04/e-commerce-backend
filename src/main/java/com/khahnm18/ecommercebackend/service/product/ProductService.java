@@ -15,7 +15,6 @@ public interface ProductService {
     Page<ProductResponse> getAllProducts(
         int page,
         int size,
-        String sort,
         String keyword,
         boolean isDeleted,
         Instant startDate,

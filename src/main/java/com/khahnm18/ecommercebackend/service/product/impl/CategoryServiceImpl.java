@@ -7,22 +7,26 @@ import com.khahnm18.ecommercebackend.dto.response.product.CategoryResponse;
 import com.khahnm18.ecommercebackend.entity.product.Category;
 import com.khahnm18.ecommercebackend.exception.AppException;
 import com.khahnm18.ecommercebackend.exception.ErrorCode;
+import com.khahnm18.ecommercebackend.entity.product.QCategory;
 import com.khahnm18.ecommercebackend.mapper.CategoryMapper;
 import com.khahnm18.ecommercebackend.repository.product.CategoryRepository;
 import com.khahnm18.ecommercebackend.service.product.CategoryService;
-import com.khahnm18.ecommercebackend.specification.CategorySpecification;
-import com.khahnm18.ecommercebackend.util.PageableUtil;
 import com.khahnm18.ecommercebackend.util.SecurityUtil;
+import com.querydsl.core.types.Predicate;
+import com.querydsl.jpa.impl.JPAQuery;
+import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import java.time.Instant;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -32,6 +36,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class CategoryServiceImpl implements CategoryService {
 
+    private final JPAQueryFactory queryFactory;
     private final CategoryMapper categoryMapper;
     private final CategoryRepository categoryRepository;
 
@@ -47,7 +52,6 @@ public class CategoryServiceImpl implements CategoryService {
     public Page<CategoryResponse> getAllCategories(
         int page,
         int size,
-        String sort,
         String keyword,
         boolean isDeleted,
         Instant startDate,
@@ -55,17 +59,40 @@ public class CategoryServiceImpl implements CategoryService {
         CategoryStatus status,
         UUID parentId
     ) {
-        Pageable pageable = PageableUtil.createPageable(page, size, sort);
+        Pageable pageable = PageRequest.of(page - 1, size);
+        QCategory category = QCategory.category;
 
-        Specification<Category> spec = CategorySpecification.byIsDeleted(isDeleted)
-            .and(CategorySpecification.byKeyword(keyword))
-            .and(CategorySpecification.byStartDate(startDate))
-            .and(CategorySpecification.byEndDate(endDate))
-            .and(CategorySpecification.byStatus(status))
-            .and(CategorySpecification.byParentId(parentId));
+        Predicate[] predicates = {
+            category.isDeleted.eq(isDeleted),
+            Optional.ofNullable(status).map(category.status::eq).orElse(null),
+            Optional.ofNullable(parentId).map(category.parentId::eq).orElse(null),
+            Optional.ofNullable(startDate).map(category.createdAt::goe).orElse(null),
+            Optional.ofNullable(endDate).map(category.createdAt::loe).orElse(null),
+            Optional.ofNullable(keyword)
+                .filter(kw -> !kw.isBlank())
+                .map(String::strip)
+                .map(kw -> category.name.containsIgnoreCase(kw)
+                    .or(category.slug.containsIgnoreCase(kw)))
+                .orElse(null)
+        };
 
-        return categoryRepository.findAll(spec, pageable)
-            .map(categoryMapper::toCategoryResponse);
+        List<CategoryResponse> content = queryFactory
+            .selectFrom(category)
+            .where(predicates)
+            .orderBy(category.createdAt.desc())
+            .offset(pageable.getOffset())
+            .limit(pageable.getPageSize())
+            .fetch()
+            .stream()
+            .map(categoryMapper::toCategoryResponse)
+            .toList();
+
+        JPAQuery<Long> countQuery = queryFactory
+            .select(category.count())
+            .from(category)
+            .where(predicates);
+
+        return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
     }
 
     @Override

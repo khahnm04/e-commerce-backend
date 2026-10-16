@@ -61,7 +61,6 @@ public class AdminRoleController {
         @RequestParam(defaultValue = "1") int page,
         @RequestParam(defaultValue = "10") int size,
         @RequestParam(defaultValue = "false") boolean isDeleted,
-        @RequestParam(defaultValue = "createdAt,desc") String sort,
         @RequestParam(required = false) String keyword,
         @RequestParam(required = false) Instant startDate,
         @RequestParam(required = false) Instant endDate
@@ -70,7 +69,6 @@ public class AdminRoleController {
         Page<RoleResponse> rolePage = roleService.getAllRoles(
             page,
             size,
-            sort,
             keyword,
             isDeleted,
             startDate,

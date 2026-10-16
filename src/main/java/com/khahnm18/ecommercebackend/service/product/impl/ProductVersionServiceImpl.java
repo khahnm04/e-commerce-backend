@@ -1,28 +1,33 @@
 package com.khahnm18.ecommercebackend.service.product.impl;
 
-import com.khahnm18.ecommercebackend.exception.AppException;
-import com.khahnm18.ecommercebackend.exception.ErrorCode;
 import com.khahnm18.ecommercebackend.dto.request.BulkActionRequest;
 import com.khahnm18.ecommercebackend.dto.request.product.ProductVersionRequest;
 import com.khahnm18.ecommercebackend.dto.response.product.ProductVersionResponse;
 import com.khahnm18.ecommercebackend.entity.product.ProductVersion;
+import com.khahnm18.ecommercebackend.entity.product.QProductVersion;
+import com.khahnm18.ecommercebackend.exception.AppException;
+import com.khahnm18.ecommercebackend.exception.ErrorCode;
 import com.khahnm18.ecommercebackend.mapper.ProductVersionMapper;
 import com.khahnm18.ecommercebackend.repository.product.ProductGroupRepository;
 import com.khahnm18.ecommercebackend.repository.product.ProductVersionRepository;
 import com.khahnm18.ecommercebackend.service.product.ProductVersionService;
-import com.khahnm18.ecommercebackend.specification.ProductVersionSpecification;
-import com.khahnm18.ecommercebackend.util.PageableUtil;
 import com.khahnm18.ecommercebackend.util.SecurityUtil;
+import com.querydsl.core.types.Predicate;
+import com.querydsl.jpa.impl.JPAQuery;
+import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.data.jpa.domain.Specification;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Page;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -31,6 +36,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ProductVersionServiceImpl implements ProductVersionService {
 
+    private final JPAQueryFactory queryFactory;
     private final ProductVersionMapper productVersionMapper;
     private final ProductVersionRepository productVersionRepository;
     private final ProductGroupRepository productGroupRepository;
@@ -47,23 +53,46 @@ public class ProductVersionServiceImpl implements ProductVersionService {
     public Page<ProductVersionResponse> getAllProductVersions(
         int page,
         int size,
-        String sort,
         String keyword,
         boolean isDeleted,
         Instant startDate,
         Instant endDate,
         UUID groupId
     ) {
-        Pageable pageable = PageableUtil.createPageable(page, size, sort);
+        Pageable pageable = PageRequest.of(page - 1, size);
+        QProductVersion productVersion = QProductVersion.productVersion;
 
-        Specification<ProductVersion> spec = ProductVersionSpecification.byIsDeleted(isDeleted)
-            .and(ProductVersionSpecification.byKeyword(keyword))
-            .and(ProductVersionSpecification.byStartDate(startDate))
-            .and(ProductVersionSpecification.byEndDate(endDate))
-            .and(ProductVersionSpecification.byGroupId(groupId));
+        Predicate[] predicates = {
+            productVersion.isDeleted.eq(isDeleted),
+            Optional.ofNullable(startDate).map(productVersion.createdAt::goe).orElse(null),
+            Optional.ofNullable(endDate).map(productVersion.createdAt::loe).orElse(null),
+            Optional.ofNullable(groupId).map(productVersion.groupId::eq).orElse(null),
+            Optional.ofNullable(keyword)
+                .filter(kw -> !kw.isBlank())
+                .map(String::strip)
+                .map(kw -> productVersion.name.containsIgnoreCase(kw)
+                    .or(productVersion.slug.containsIgnoreCase(kw))
+                    .or(productVersion.version.containsIgnoreCase(kw)))
+                .orElse(null)
+        };
 
-        return productVersionRepository.findAll(spec, pageable)
-            .map(productVersionMapper::toProductVersionResponse);
+        List<ProductVersionResponse> content = queryFactory
+            .selectFrom(productVersion)
+            .where(predicates)
+            .orderBy(productVersion.createdAt.desc())
+            .offset(pageable.getOffset())
+            .limit(pageable.getPageSize())
+            .fetch()
+            .stream()
+            .map(productVersionMapper::toProductVersionResponse)
+            .toList();
+
+        JPAQuery<Long> countQuery = queryFactory
+            .select(productVersion.count())
+            .from(productVersion)
+            .where(predicates);
+
+        return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
     }
 
     @Override

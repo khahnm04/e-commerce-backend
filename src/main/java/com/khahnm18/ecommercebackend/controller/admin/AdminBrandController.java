@@ -62,7 +62,6 @@ public class AdminBrandController {
         @RequestParam(defaultValue = "1") int page,
         @RequestParam(defaultValue = "10") int size,
         @RequestParam(defaultValue = "false") boolean isDeleted,
-        @RequestParam(defaultValue = "createdAt,desc") String sort,
         @RequestParam(required = false) String keyword,
         @RequestParam(required = false) Instant startDate,
         @RequestParam(required = false) Instant endDate,
@@ -72,7 +71,6 @@ public class AdminBrandController {
         Page<BrandResponse> brandPage = brandService.getAllBrands(
             page,
             size,
-            sort,
             keyword,
             isDeleted,
             startDate,

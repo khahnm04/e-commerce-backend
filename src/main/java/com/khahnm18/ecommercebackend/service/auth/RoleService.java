@@ -16,7 +16,6 @@ public interface RoleService {
     Page<RoleResponse> getAllRoles(
         int page,
         int size,
-        String sort,
         String keyword,
         boolean isDeleted,
         Instant startDate,

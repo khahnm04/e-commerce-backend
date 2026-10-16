@@ -5,6 +5,8 @@ import com.khahnm18.ecommercebackend.dto.request.product.ProductGroupRequest;
 import com.khahnm18.ecommercebackend.dto.response.product.ProductGroupResponse;
 import com.khahnm18.ecommercebackend.entity.product.Category;
 import com.khahnm18.ecommercebackend.entity.product.ProductGroup;
+import com.khahnm18.ecommercebackend.entity.product.QProductGroup;
+import com.khahnm18.ecommercebackend.entity.product.QProductGroupCategory;
 import com.khahnm18.ecommercebackend.exception.AppException;
 import com.khahnm18.ecommercebackend.exception.ErrorCode;
 import com.khahnm18.ecommercebackend.mapper.ProductGroupMapper;
@@ -12,19 +14,24 @@ import com.khahnm18.ecommercebackend.repository.product.CategoryRepository;
 import com.khahnm18.ecommercebackend.repository.product.ProductGroupRepository;
 import com.khahnm18.ecommercebackend.service.product.ProductGroupCategoryService;
 import com.khahnm18.ecommercebackend.service.product.ProductGroupService;
-import com.khahnm18.ecommercebackend.specification.ProductGroupSpecification;
-import com.khahnm18.ecommercebackend.util.PageableUtil;
 import com.khahnm18.ecommercebackend.util.SecurityUtil;
+import com.querydsl.core.types.Predicate;
+import com.querydsl.jpa.JPAExpressions;
+import com.querydsl.jpa.impl.JPAQuery;
+import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -33,6 +40,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ProductGroupServiceImpl implements ProductGroupService {
 
+    private final JPAQueryFactory queryFactory;
     private final ProductGroupMapper productGroupMapper;
     private final CategoryRepository categoryRepository;
     private final ProductGroupRepository productGroupRepository;
@@ -51,23 +59,51 @@ public class ProductGroupServiceImpl implements ProductGroupService {
     public Page<ProductGroupResponse> getAllProductGroups(
         int page,
         int size,
-        String sort,
         String keyword,
         boolean isDeleted,
         Instant startDate,
         Instant endDate,
         UUID categoryId
     ) {
-        Pageable pageable = PageableUtil.createPageable(page, size, sort);
+        Pageable pageable = PageRequest.of(page - 1, size);
+        QProductGroup productGroup = QProductGroup.productGroup;
+        QProductGroupCategory pgc = QProductGroupCategory.productGroupCategory;
 
-        Specification<ProductGroup> spec = ProductGroupSpecification.byIsDeleted(isDeleted)
-            .and(ProductGroupSpecification.byKeyword(keyword))
-            .and(ProductGroupSpecification.byStartDate(startDate))
-            .and(ProductGroupSpecification.byEndDate(endDate))
-            .and(ProductGroupSpecification.byCategoryId(categoryId));
+        Predicate[] predicates = {
+            productGroup.isDeleted.eq(isDeleted),
+            Optional.ofNullable(startDate).map(productGroup.createdAt::goe).orElse(null),
+            Optional.ofNullable(endDate).map(productGroup.createdAt::loe).orElse(null),
+            Optional.ofNullable(categoryId)
+                .map(cid -> JPAExpressions.selectOne()
+                    .from(pgc)
+                    .where(pgc.groupId.eq(productGroup.id).and(pgc.categoryId.eq(cid)))
+                    .exists())
+                .orElse(null),
+            Optional.ofNullable(keyword)
+                .filter(kw -> !kw.isBlank())
+                .map(String::strip)
+                .map(kw -> productGroup.name.containsIgnoreCase(kw)
+                    .or(productGroup.slug.containsIgnoreCase(kw)))
+                .orElse(null)
+        };
 
-        return productGroupRepository.findAll(spec, pageable)
-            .map(productGroupMapper::toProductGroupResponse);
+        List<ProductGroupResponse> content = queryFactory
+            .selectFrom(productGroup)
+            .where(predicates)
+            .orderBy(productGroup.createdAt.desc())
+            .offset(pageable.getOffset())
+            .limit(pageable.getPageSize())
+            .fetch()
+            .stream()
+            .map(productGroupMapper::toProductGroupResponse)
+            .toList();
+
+        JPAQuery<Long> countQuery = queryFactory
+            .select(productGroup.count())
+            .from(productGroup)
+            .where(predicates);
+
+        return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
     }
 
     @Override
@@ -110,7 +146,7 @@ public class ProductGroupServiceImpl implements ProductGroupService {
     public void restoreProductGroup(UUID productGroupId) {
         ProductGroup productGroup = getSoftDeletedProductGroupById(productGroupId);
         this.restore(productGroup);
-        log.info("Product group restored with product_group_id: {}", productGroupId);
+        log.info("Product restored with product_group_id: {}", productGroupId);
     }
 
     @Override

@@ -16,7 +16,6 @@ public interface AdminService {
     Page<AdminResponse> getAllAdmins(
         int page,
         int size,
-        String sort,
         String keyword,
         boolean isDeleted,
         Instant startDate,

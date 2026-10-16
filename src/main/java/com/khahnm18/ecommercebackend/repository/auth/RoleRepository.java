@@ -1,7 +1,6 @@
 package com.khahnm18.ecommercebackend.repository.auth;
 
 import com.khahnm18.ecommercebackend.entity.auth.Role;
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.repository.query.Param;
@@ -13,7 +12,7 @@ import java.util.Set;
 import java.util.UUID;
 
 @Repository
-public interface RoleRepository extends JpaRepository<Role, UUID>, JpaSpecificationExecutor<Role> {
+public interface RoleRepository extends JpaRepository<Role, UUID> {
 
     Optional<Role> findByIdAndIsDeletedFalse(UUID id);
     Optional<Role> findByIdAndIsDeletedTrue(UUID id);

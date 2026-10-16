@@ -17,23 +17,25 @@ import com.khahnm18.ecommercebackend.repository.auth.RoleRepository;
 import com.khahnm18.ecommercebackend.repository.user.AdminProfileRepository;
 import com.khahnm18.ecommercebackend.service.auth.AccountRoleService;
 import com.khahnm18.ecommercebackend.service.user.AdminService;
-import com.khahnm18.ecommercebackend.specification.AdminSpecification;
-import com.khahnm18.ecommercebackend.specification.UserSpecification;
-import com.khahnm18.ecommercebackend.util.PageableUtil;
+import com.khahnm18.ecommercebackend.entity.auth.QAccount;
+import com.khahnm18.ecommercebackend.entity.user.QAdminProfile;
 import com.khahnm18.ecommercebackend.util.SecurityUtil;
+import com.querydsl.core.types.Predicate;
+import com.querydsl.jpa.impl.JPAQuery;
+import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import java.time.Instant;
-import java.util.stream.Collectors;
+import java.util.Optional;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -42,6 +44,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class AdminServiceImpl implements AdminService {
 
+    private final JPAQueryFactory queryFactory;
     private final AccountRoleService accountRoleService;
     private final AccountMapper accountMapper;
     private final AdminMapper adminMapper;
@@ -65,34 +68,50 @@ public class AdminServiceImpl implements AdminService {
     public Page<AdminResponse> getAllAdmins(
         int page,
         int size,
-        String sort,
         String keyword,
         boolean isDeleted,
         Instant startDate,
         Instant endDate,
         AccountStatus status
     ) {
-        Pageable pageable = PageableUtil.createPageable(page, size, sort);
+        Pageable pageable = PageRequest.of(page - 1, size);
+        QAccount account = QAccount.account;
+        QAdminProfile profile = QAdminProfile.adminProfile;
 
-        Specification<Account> spec = AdminSpecification.isAdminAccount()
-            .and(UserSpecification.byIsDeleted(isDeleted))
-            .and(AdminSpecification.byKeyword(keyword))
-            .and(AdminSpecification.byStartDate(startDate))
-            .and(AdminSpecification.byEndDate(endDate))
-            .and(AdminSpecification.byStatus(status));
+        Predicate[] predicates = {
+            account.isDeleted.eq(isDeleted),
+            Optional.ofNullable(status).map(account.status::eq).orElse(null),
+            Optional.ofNullable(startDate).map(account.createdAt::goe).orElse(null),
+            Optional.ofNullable(endDate).map(account.createdAt::loe).orElse(null),
+            Optional.ofNullable(keyword)
+                .filter(kw -> !kw.isBlank())
+                .map(String::strip)
+                .map(kw -> account.email.containsIgnoreCase(kw)
+                    .or(account.phoneNumber.containsIgnoreCase(kw))
+                    .or(profile.fullName.containsIgnoreCase(kw)))
+                .orElse(null)
+        };
 
-        Page<Account> accountPage = accountRepository.findAll(spec, pageable);
-
-        List<UUID> accountIds = accountPage.getContent().stream()
-            .map(Account::getId)
+        List<AdminResponse> content = queryFactory
+            .select(profile, account)
+            .from(account)
+            .innerJoin(profile).on(profile.accountId.eq(account.id))
+            .where(predicates)
+            .orderBy(account.createdAt.desc())
+            .offset(pageable.getOffset())
+            .limit(pageable.getPageSize())
+            .fetch()
+            .stream()
+            .map(tuple -> adminMapper.toAdminResponse(tuple.get(profile), tuple.get(account)))
             .toList();
 
-        Map<UUID, AdminProfile> profileMap = adminProfileRepository.findAllByAccountIdIn(accountIds)
-            .stream()
-            .collect(Collectors.toMap(AdminProfile::getAccountId, p -> p, (p1, p2) -> p1));
+        JPAQuery<Long> countQuery = queryFactory
+            .select(account.count())
+            .from(account)
+            .innerJoin(profile).on(profile.accountId.eq(account.id))
+            .where(predicates);
 
-        return accountPage.map(account ->
-            adminMapper.toAdminResponse(profileMap.get(account.getId()), account));
+        return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
     }
 
     @Override
