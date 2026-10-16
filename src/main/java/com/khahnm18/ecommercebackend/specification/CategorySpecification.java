@@ -1,7 +1,7 @@
 package com.khahnm18.ecommercebackend.specification;
 
 import com.khahnm18.ecommercebackend.enums.CategoryStatus;
-import com.khahnm18.ecommercebackend.entity.category.Category;
+import com.khahnm18.ecommercebackend.entity.product.Category;
 import org.springframework.data.jpa.domain.Specification;
 import java.time.Instant;
 import java.util.UUID;

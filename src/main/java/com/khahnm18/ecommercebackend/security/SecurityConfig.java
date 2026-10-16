@@ -28,6 +28,7 @@ public class SecurityConfig {
 
     public static final String[] PUBLIC_POST_ENDPOINTS = {
         "/api/v1/auth/**",
+        "/api/v1/admin/auth/**",
     };
 
     private final JwtDecoderConfig jwtDecoderConfig;

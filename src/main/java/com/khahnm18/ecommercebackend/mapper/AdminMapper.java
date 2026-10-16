@@ -1,144 +1,81 @@
 package com.khahnm18.ecommercebackend.mapper;
 
 import com.khahnm18.ecommercebackend.dto.request.user.AdminCreationRequest;
-import com.khahnm18.ecommercebackend.dto.request.user.MyProfileAdminRequest;
 import com.khahnm18.ecommercebackend.dto.request.user.AdminUpdateRequest;
+import com.khahnm18.ecommercebackend.dto.request.user.MyProfileAdminRequest;
 import com.khahnm18.ecommercebackend.dto.response.auth.RoleResponse;
-import com.khahnm18.ecommercebackend.dto.response.user.MyProfileAdminResponse;
 import com.khahnm18.ecommercebackend.dto.response.user.AdminResponse;
+import com.khahnm18.ecommercebackend.dto.response.user.MyProfileAdminResponse;
 import com.khahnm18.ecommercebackend.entity.auth.Account;
 import com.khahnm18.ecommercebackend.entity.auth.Role;
 import com.khahnm18.ecommercebackend.entity.user.AdminProfile;
-import org.springframework.stereotype.Component;
-import lombok.RequiredArgsConstructor;
-import java.util.Collections;
-import java.util.Objects;
+import org.mapstruct.*;
 import java.util.List;
 import java.util.UUID;
 
-@Component
-@RequiredArgsConstructor
-public class AdminMapper {
+@Mapper(
+    componentModel = "spring",
+    uses = {RoleMapper.class},
+    unmappedTargetPolicy = ReportingPolicy.IGNORE,
+    nullValueMappingStrategy = NullValueMappingStrategy.RETURN_DEFAULT
+)
+public interface AdminMapper {
 
-    private final RoleMapper roleMapper;
+    @Mapping(target = "gender", defaultValue = "OTHER")
+    AdminProfile toAdminProfile(AdminCreationRequest request, UUID accountId);
 
-    public AdminProfile toAdminProfile(AdminCreationRequest request, UUID accountId) {
-        if (request == null) return null;
-        return AdminProfile.builder()
-            .accountId(accountId)
-            .fullName(request.fullName())
-            .jobTitle(request.jobTitle())
-            .dateOfBirth(request.dateOfBirth())
-            .avatar(request.avatar())
-            .gender(request.gender())
-            .build();
-    }
+    @Mapping(target = "roles", ignore = true)
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "accountId", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "createdBy", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "updatedBy", ignore = true)
+    @Mapping(target = "deletedAt", ignore = true)
+    @Mapping(target = "deletedBy", ignore = true)
+    @Mapping(target = "isDeleted", ignore = true)
+    AdminResponse toAdminResponse(AdminProfile adminProfile, Account account);
 
-    public AdminResponse toAdminResponseWithRoles(AdminProfile adminProfile, Account account, List<Role> roles) {
-        if (account == null) return null;
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "accountId", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "createdBy", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "updatedBy", ignore = true)
+    @Mapping(target = "deletedAt", ignore = true)
+    @Mapping(target = "deletedBy", ignore = true)
+    @Mapping(target = "isDeleted", ignore = true)
+    AdminResponse toAdminResponse(AdminProfile adminProfile, Account account, List<Role> roles);
 
-        List<RoleResponse> roleResponses = (roles == null)
-            ? Collections.emptyList()
-            : roles.stream()
-                .filter(Objects::nonNull)
-                .map(roleMapper::toRoleResponse)
-                .toList();
-
-        return AdminResponse.builder()
-            .id(adminProfile.getId())
-            .accountId(account.getId())
-            .email(account.getEmail())
-            .phoneNumber(account.getPhoneNumber())
-            .jobTitle(adminProfile.getJobTitle())
-            .fullName(adminProfile.getFullName())
-            .dateOfBirth(adminProfile.getDateOfBirth())
-            .avatar(adminProfile.getAvatar())
-            .gender(adminProfile.getGender())
-            .status(account.getStatus())
-            .lastLoginAt(account.getLastLoginAt())
-            .roles(roleResponses)
-            .createdAt(account.getCreatedAt())
-            .createdBy(account.getCreatedBy())
-            .updatedAt(account.getUpdatedAt())
-            .updatedBy(account.getUpdatedBy())
-            .deletedAt(account.getDeletedAt())
-            .deletedBy(account.getDeletedBy())
-            .isDeleted(account.getIsDeleted())
-            .build();
-    }
-
-    public AdminResponse toAdminResponse(AdminProfile adminProfile, Account account) {
-        if (account == null) return null;
-        return AdminResponse.builder()
-            .id(adminProfile.getId())
-            .accountId(account.getId())
-            .email(account.getEmail())
-            .phoneNumber(account.getPhoneNumber())
-            .jobTitle(adminProfile.getJobTitle())
-            .fullName(adminProfile.getFullName())
-            .dateOfBirth(adminProfile.getDateOfBirth())
-            .avatar(adminProfile.getAvatar())
-            .gender(adminProfile.getGender())
-            .status(account.getStatus())
-            .lastLoginAt(account.getLastLoginAt())
-            .createdAt(account.getCreatedAt())
-            .createdBy(account.getCreatedBy())
-            .updatedAt(account.getUpdatedAt())
-            .updatedBy(account.getUpdatedBy())
-            .deletedAt(account.getDeletedAt())
-            .deletedBy(account.getDeletedBy())
-            .isDeleted(account.getIsDeleted())
-            .build();
-    }
-
-    public void updateAdmin(AdminProfile adminProfile, AdminUpdateRequest request) {
-        if (request.jobTitle() != null) {
-            adminProfile.setJobTitle(request.jobTitle());
+    @AfterMapping
+    default void fillAdminResponse(
+        AdminProfile adminProfile,
+        Account account,
+        @MappingTarget AdminResponse.AdminResponseBuilder builder
+    ) {
+        if (adminProfile != null) {
+            builder.id(adminProfile.getId());
         }
-        if (request.fullName() != null) {
-            adminProfile.setFullName(request.fullName());
-        }
-        if (request.dateOfBirth() != null) {
-            adminProfile.setDateOfBirth(request.dateOfBirth());
-        }
-        if (request.avatar() != null) {
-            adminProfile.setAvatar(request.avatar());
-        }
-        if (request.gender() != null) {
-            adminProfile.setGender(request.gender());
+        if (account != null) {
+            builder.accountId(account.getId())
+                .createdAt(account.getCreatedAt())
+                .createdBy(account.getCreatedBy())
+                .updatedAt(account.getUpdatedAt())
+                .updatedBy(account.getUpdatedBy())
+                .deletedAt(account.getDeletedAt())
+                .deletedBy(account.getDeletedBy())
+                .isDeleted(account.getIsDeleted());
         }
     }
 
-    public MyProfileAdminResponse toAdminProfileResponse(AdminProfile adminProfile, Account account) {
-        if (account == null) return null;
-        return MyProfileAdminResponse.builder()
-            .accountId(account.getId())
-            .email(account.getEmail())
-            .phoneNumber(account.getPhoneNumber())
-            .jobTitle(adminProfile.getJobTitle())
-            .fullName(adminProfile.getFullName())
-            .dateOfBirth(adminProfile.getDateOfBirth())
-            .avatar(adminProfile.getAvatar())
-            .gender(adminProfile.getGender())
-            .build();
-    }
+    List<RoleResponse> mapRoles(List<Role> roles);
 
-    public void updateAdminProfile(AdminProfile adminProfile, MyProfileAdminRequest request) {
-        if (request.jobTitle() != null) {
-            adminProfile.setJobTitle(request.jobTitle());
-        }
-        if (request.fullName() != null) {
-            adminProfile.setFullName(request.fullName());
-        }
-        if (request.dateOfBirth() != null) {
-            adminProfile.setDateOfBirth(request.dateOfBirth());
-        }
-        if (request.avatar() != null) {
-            adminProfile.setAvatar(request.avatar());
-        }
-        if (request.gender() != null) {
-            adminProfile.setGender(request.gender());
-        }
-    }
+    MyProfileAdminResponse toAdminProfileResponse(AdminProfile adminProfile, Account account);
+
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    void updateAdmin(@MappingTarget AdminProfile adminProfile, AdminUpdateRequest request);
+
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    void updateAdminProfile(@MappingTarget AdminProfile adminProfile, MyProfileAdminRequest request);
 
 }

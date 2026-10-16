@@ -1,65 +1,64 @@
 package com.khahnm18.ecommercebackend.mapper;
 
+import com.khahnm18.ecommercebackend.dto.request.auth.RegisterRequest;
 import com.khahnm18.ecommercebackend.dto.request.user.UserCreationRequest;
 import com.khahnm18.ecommercebackend.dto.request.user.UserUpdateRequest;
+import com.khahnm18.ecommercebackend.dto.response.user.MyProfileUserResponse;
 import com.khahnm18.ecommercebackend.dto.response.user.UserResponse;
 import com.khahnm18.ecommercebackend.entity.auth.Account;
 import com.khahnm18.ecommercebackend.entity.user.UserProfile;
-import org.springframework.stereotype.Component;
+import org.mapstruct.*;
 import java.util.UUID;
 
-@Component
-public class UserMapper {
+@Mapper(
+    componentModel = "spring",
+    unmappedTargetPolicy = ReportingPolicy.IGNORE
+)
+public interface UserMapper {
 
-    public UserProfile toUserProfile(UserCreationRequest request, UUID accountId) {
-        if (request == null) return null;
-        return UserProfile.builder()
-            .accountId(accountId)
-            .fullName(request.fullName())
-            .dateOfBirth(request.dateOfBirth())
-            .avatar(request.avatar())
-            .gender(request.gender())
-            .build();
+    @Mapping(target = "gender", defaultValue = "OTHER")
+    UserProfile toUserProfile(UserCreationRequest request, UUID accountId);
+
+    @Mapping(target = "gender", ignore = true)
+    @Mapping(target = "dateOfBirth", ignore = true)
+    @Mapping(target = "avatar", ignore = true)
+    UserProfile toUserProfile(RegisterRequest request, UUID accountId);
+
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "accountId", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "createdBy", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "updatedBy", ignore = true)
+    @Mapping(target = "deletedAt", ignore = true)
+    @Mapping(target = "deletedBy", ignore = true)
+    @Mapping(target = "isDeleted", ignore = true)
+    UserResponse toUserResponse(UserProfile userProfile, Account account);
+
+    @AfterMapping
+    default void fillUserResponse(
+        UserProfile userProfile,
+        Account account,
+        @MappingTarget UserResponse.UserResponseBuilder builder
+    ) {
+        if (userProfile != null) {
+            builder.id(userProfile.getId());
+        }
+        if (account != null) {
+            builder.accountId(account.getId())
+                .createdAt(account.getCreatedAt())
+                .createdBy(account.getCreatedBy())
+                .updatedAt(account.getUpdatedAt())
+                .updatedBy(account.getUpdatedBy())
+                .deletedAt(account.getDeletedAt())
+                .deletedBy(account.getDeletedBy())
+                .isDeleted(account.getIsDeleted());
+        }
     }
 
-    public UserResponse toUserResponse(UserProfile userProfile, Account account) {
-        if (account == null) return null;
-        return UserResponse.builder()
-            .id(userProfile != null ? userProfile.getId() : null)
-            .accountId(account.getId())
-            .email(account.getEmail())
-            .phoneNumber(account.getPhoneNumber())
-            .fullName(userProfile != null ? userProfile.getFullName() : null)
-            .dateOfBirth(userProfile != null ? userProfile.getDateOfBirth() : null)
-            .avatar(userProfile != null ? userProfile.getAvatar() : null)
-            .gender(userProfile != null ? userProfile.getGender() : null)
-            .totalPoint(userProfile != null ? userProfile.getTotalPoint() : null)
-            .usedPoint(userProfile != null ? userProfile.getUsedPoint() : null)
-            .status(account.getStatus())
-            .lastLoginAt(account.getLastLoginAt())
-            .createdAt(account.getCreatedAt())
-            .createdBy(account.getCreatedBy())
-            .updatedAt(account.getUpdatedAt())
-            .updatedBy(account.getUpdatedBy())
-            .deletedAt(account.getDeletedAt())
-            .deletedBy(account.getDeletedBy())
-            .isDeleted(account.getIsDeleted())
-            .build();
-    }
+    MyProfileUserResponse toUserProfileResponse(UserProfile userProfile, Account account);
 
-    public void updateUserProfile(UserProfile userProfile, UserUpdateRequest request) {
-        if (request.fullName() != null) {
-            userProfile.setFullName(request.fullName());
-        }
-        if (request.dateOfBirth() != null) {
-            userProfile.setDateOfBirth(request.dateOfBirth());
-        }
-        if (request.avatar() != null) {
-            userProfile.setAvatar(request.avatar());
-        }
-        if (request.gender() != null) {
-            userProfile.setGender(request.gender());
-        }
-    }
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    void updateUserProfile(@MappingTarget UserProfile userProfile, UserUpdateRequest request);
 
 }

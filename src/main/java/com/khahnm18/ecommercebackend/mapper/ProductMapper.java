@@ -3,90 +3,31 @@ package com.khahnm18.ecommercebackend.mapper;
 import com.khahnm18.ecommercebackend.dto.request.product.ProductRequest;
 import com.khahnm18.ecommercebackend.dto.response.product.ProductResponse;
 import com.khahnm18.ecommercebackend.entity.product.Product;
-import com.khahnm18.ecommercebackend.enums.ProductStatus;
-import org.springframework.stereotype.Component;
+import org.mapstruct.NullValuePropertyMappingStrategy;
+import org.mapstruct.ReportingPolicy;
+import org.mapstruct.MappingTarget;
+import org.mapstruct.BeanMapping;
+import org.mapstruct.Mapping;
+import org.mapstruct.Mapper;
 import java.math.BigDecimal;
 
-@Component
-public class ProductMapper {
+@Mapper(
+    componentModel = "spring",
+    imports = BigDecimal.class,
+    unmappedTargetPolicy = ReportingPolicy.IGNORE
+)
+public interface ProductMapper {
 
-    public Product toProduct(ProductRequest request) {
-        if (request == null) return null;
-        return Product.builder()
-            .versionId(request.versionId())
-            .name(request.name())
-            .slug(request.slug())
-            .color(request.color())
-            .sku(request.sku())
-            .isDefault(request.isDefault() != null && request.isDefault())
-            .priceOld(request.priceOld() != null ? request.priceOld() : BigDecimal.ZERO)
-            .priceNew(request.priceNew() != null ? request.priceNew() : BigDecimal.ZERO)
-            .stock(request.stock() != null ? request.stock() : 0)
-            .avatar(request.avatar())
-            .status(request.status() != null ? request.status() : ProductStatus.ACTIVE)
-            .build();
-    }
+    @Mapping(target = "status", defaultValue = "ACTIVE")
+    @Mapping(target = "isDefault", defaultValue = "false")
+    @Mapping(target = "stock", defaultValue = "0")
+    @Mapping(target = "priceOld", defaultExpression = "java(BigDecimal.ZERO)")
+    @Mapping(target = "priceNew", defaultExpression = "java(BigDecimal.ZERO)")
+    Product toProduct(ProductRequest request);
 
-    public ProductResponse toProductResponse(Product product) {
-        if (product == null) return null;
-        return ProductResponse.builder()
-            .id(product.getId())
-            .versionId(product.getVersionId())
-            .name(product.getName())
-            .slug(product.getSlug())
-            .color(product.getColor())
-            .sku(product.getSku())
-            .isDefault(product.getIsDefault())
-            .priceOld(product.getPriceOld())
-            .priceNew(product.getPriceNew())
-            .discount(product.getDiscount())
-            .stock(product.getStock())
-            .avatar(product.getAvatar())
-            .status(product.getStatus())
-            .createdAt(product.getCreatedAt())
-            .createdBy(product.getCreatedBy())
-            .updatedAt(product.getUpdatedAt())
-            .updatedBy(product.getUpdatedBy())
-            .deletedAt(product.getDeletedAt())
-            .deletedBy(product.getDeletedBy())
-            .isDeleted(product.getIsDeleted())
-            .build();
-    }
+    ProductResponse toProductResponse(Product product);
 
-    public void updateProduct(Product product, ProductRequest request) {
-        if (request.versionId() != null) {
-            product.setVersionId(request.versionId());
-        }
-        if (request.name() != null) {
-            product.setName(request.name());
-        }
-        if (request.slug() != null) {
-            product.setSlug(request.slug());
-        }
-        if (request.color() != null) {
-            product.setColor(request.color());
-        }
-        if (request.sku() != null) {
-            product.setSku(request.sku());
-        }
-        if (request.isDefault() != null) {
-            product.setIsDefault(request.isDefault());
-        }
-        if (request.priceOld() != null) {
-            product.setPriceOld(request.priceOld());
-        }
-        if (request.priceNew() != null) {
-            product.setPriceNew(request.priceNew());
-        }
-        if (request.stock() != null) {
-            product.setStock(request.stock());
-        }
-        if (request.avatar() != null) {
-            product.setAvatar(request.avatar());
-        }
-        if (request.status() != null) {
-            product.setStatus(request.status());
-        }
-    }
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    void updateProduct(@MappingTarget Product product, ProductRequest request);
 
 }

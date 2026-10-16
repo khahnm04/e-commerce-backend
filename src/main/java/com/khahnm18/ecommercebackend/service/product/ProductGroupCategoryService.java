@@ -1,6 +1,6 @@
 package com.khahnm18.ecommercebackend.service.product;
 
-import com.khahnm18.ecommercebackend.entity.category.Category;
+import com.khahnm18.ecommercebackend.entity.product.Category;
 import com.khahnm18.ecommercebackend.entity.product.ProductGroup;
 import java.util.List;
 import java.util.UUID;

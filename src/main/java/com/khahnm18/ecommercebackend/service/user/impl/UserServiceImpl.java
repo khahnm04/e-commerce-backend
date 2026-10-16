@@ -5,6 +5,7 @@ import com.khahnm18.ecommercebackend.dto.request.BulkActionRequest;
 import com.khahnm18.ecommercebackend.dto.request.user.UserCreationRequest;
 import com.khahnm18.ecommercebackend.dto.request.user.UserUpdateRequest;
 import com.khahnm18.ecommercebackend.dto.response.user.UserResponse;
+import com.khahnm18.ecommercebackend.dto.response.user.MyProfileUserResponse;
 import com.khahnm18.ecommercebackend.entity.auth.Account;
 import com.khahnm18.ecommercebackend.entity.auth.AccountRole;
 import com.khahnm18.ecommercebackend.entity.auth.Role;
@@ -18,30 +19,34 @@ import com.khahnm18.ecommercebackend.repository.auth.AccountRoleRepository;
 import com.khahnm18.ecommercebackend.repository.auth.RoleRepository;
 import com.khahnm18.ecommercebackend.repository.user.UserProfileRepository;
 import com.khahnm18.ecommercebackend.service.user.UserService;
-import com.khahnm18.ecommercebackend.specification.UserSpecification;
-import com.khahnm18.ecommercebackend.util.PageableUtil;
 import com.khahnm18.ecommercebackend.util.SecurityUtil;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
+import com.khahnm18.ecommercebackend.entity.auth.QAccount;
+import com.khahnm18.ecommercebackend.entity.user.QUserProfile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.support.PageableExecutionUtils;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Page;
+import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.querydsl.jpa.impl.JPAQuery;
+import com.querydsl.core.types.Predicate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import java.time.Instant;
+import java.util.Optional;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Slf4j(topic = "USER-SERVICE")
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
+    private final JPAQueryFactory queryFactory;
     private final AccountMapper accountMapper;
     private final UserMapper userMapper;
     private final AccountRepository accountRepository;
@@ -64,40 +69,64 @@ public class UserServiceImpl implements UserService {
     public Page<UserResponse> getAllUsers(
         int page,
         int size,
-        String sort,
         String keyword,
         boolean isDeleted,
         Instant startDate,
         Instant endDate,
         AccountStatus status
     ) {
-        Pageable pageable = PageableUtil.createPageable(page, size, sort);
+        Pageable pageable = PageRequest.of(page - 1, size);
+        QAccount account = QAccount.account;
+        QUserProfile profile = QUserProfile.userProfile;
 
-        Specification<Account> spec = UserSpecification.isUserAccount()
-            .and(UserSpecification.byIsDeleted(isDeleted))
-            .and(UserSpecification.byKeyword(keyword))
-            .and(UserSpecification.byStartDate(startDate))
-            .and(UserSpecification.byEndDate(endDate))
-            .and(UserSpecification.byStatus(status));
+        Predicate[] predicates = {
+            account.isDeleted.eq(isDeleted),
+            Optional.ofNullable(status).map(account.status::eq).orElse(null),
+            Optional.ofNullable(startDate).map(account.createdAt::goe).orElse(null),
+            Optional.ofNullable(endDate).map(account.createdAt::loe).orElse(null),
+            Optional.ofNullable(keyword)
+                .filter(kw -> !kw.isBlank())
+                .map(String::strip)
+                .map(kw -> account.email.containsIgnoreCase(kw)
+                    .or(account.phoneNumber.containsIgnoreCase(kw))
+                    .or(profile.fullName.containsIgnoreCase(kw)))
+                .orElse(null)
+        };
 
-        Page<Account> accountPage = accountRepository.findAll(spec, pageable);
-
-        List<UUID> accountIds = accountPage.getContent().stream()
-            .map(Account::getId)
+        List<UserResponse> content = queryFactory
+            .select(profile, account)
+            .from(account)
+            .innerJoin(profile).on(profile.accountId.eq(account.id))
+            .where(predicates)
+            .orderBy(account.createdAt.desc())
+            .offset(pageable.getOffset())
+            .limit(pageable.getPageSize())
+            .fetch()
+            .stream()
+            .map(tuple -> userMapper.toUserResponse(tuple.get(profile), tuple.get(account)))
             .toList();
 
-        Map<UUID, UserProfile> profileMap = userProfileRepository.findAllByAccountIdIn(accountIds)
-            .stream()
-            .collect(Collectors.toMap(UserProfile::getAccountId, p -> p, (p1, p2) -> p1));
+        JPAQuery<Long> countQuery = queryFactory
+            .select(account.count())
+            .from(account)
+            .innerJoin(profile).on(profile.accountId.eq(account.id))
+            .where(predicates);
 
-        return accountPage.map(account ->
-            userMapper.toUserResponse(profileMap.get(account.getId()), account));
+        return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
+    }
+
+    @Override
+    public MyProfileUserResponse getMyProfile() {
+        UUID accountId = SecurityUtil.getCurrentAccount();
+        Account account = this.getAccountById(accountId);
+        UserProfile userProfile = this.getUserProfileByAccountId(account.getId());
+        return userMapper.toUserProfileResponse(userProfile, account);
     }
 
     @Override
     @Transactional
     public UserResponse createUser(UserCreationRequest request) {
-        Account account = accountMapper.toAccountFromUser(request);
+        Account account = accountMapper.toAccount(request);
         account.setPassword(passwordEncoder.encode(request.password()));
         account = this.saveAccount(account);
 
@@ -122,7 +151,7 @@ public class UserServiceImpl implements UserService {
         Account account = getAccountById(accountId);
         UserProfile userProfile = getUserProfileByAccountId(accountId);
 
-        accountMapper.updateAccountFromUser(account, request);
+        accountMapper.updateAccount(account, request);
         account = this.saveAccount(account);
 
         userMapper.updateUserProfile(userProfile, request);

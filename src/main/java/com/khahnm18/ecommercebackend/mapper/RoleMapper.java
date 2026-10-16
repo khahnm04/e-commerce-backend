@@ -1,78 +1,37 @@
 package com.khahnm18.ecommercebackend.mapper;
 
 import com.khahnm18.ecommercebackend.dto.request.auth.RoleRequest;
-import com.khahnm18.ecommercebackend.dto.response.auth.PermissionResponse;
 import com.khahnm18.ecommercebackend.dto.response.auth.RoleResponse;
+import com.khahnm18.ecommercebackend.dto.response.auth.PermissionResponse;
 import com.khahnm18.ecommercebackend.entity.auth.Role;
 import com.khahnm18.ecommercebackend.entity.auth.Permission;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
-import java.util.Collections;
-import java.util.Objects;
+import org.mapstruct.NullValuePropertyMappingStrategy;
+import org.mapstruct.NullValueMappingStrategy;
+import org.mapstruct.ReportingPolicy;
+import org.mapstruct.MappingTarget;
+import org.mapstruct.BeanMapping;
+import org.mapstruct.Mapping;
+import org.mapstruct.Mapper;
 import java.util.List;
 
-@Component
-@RequiredArgsConstructor
-public class RoleMapper {
+@Mapper(
+    componentModel = "spring",
+    uses = {PermissionMapper.class},
+    unmappedTargetPolicy = ReportingPolicy.IGNORE,
+    nullValueMappingStrategy = NullValueMappingStrategy.RETURN_DEFAULT
+)
+public interface RoleMapper {
 
-    private final PermissionMapper permissionMapper;
+    Role toRole(RoleRequest request);
 
-    public Role toRole(RoleRequest request) {
-        if (request == null) return null;
-        return Role.builder()
-            .code(request.code())
-            .name(request.name())
-            .build();
-    }
+    @Mapping(target = "permissions", ignore = true)
+    RoleResponse toRoleResponse(Role role);
 
-    public RoleResponse toRoleResponse(Role role) {
-        if (role == null) return null;
-        return RoleResponse.builder()
-            .id(role.getId())
-            .code(role.getCode())
-            .name(role.getName())
-            .createdBy(role.getCreatedBy())
-            .createdAt(role.getCreatedAt())
-            .updatedBy(role.getUpdatedBy())
-            .updatedAt(role.getUpdatedAt())
-            .deletedAt(role.getDeletedAt())
-            .deletedBy(role.getDeletedBy())
-            .isDeleted(role.getIsDeleted())
-            .build();
-    }
+    RoleResponse toRoleResponse(Role role, List<Permission> permissions);
 
-    public RoleResponse toRoleResponseWithPermissions(Role role, List<Permission> permissions) {
-        if (role == null) return null;
+    List<PermissionResponse> mapPermissions(List<Permission> permissions);
 
-        List<PermissionResponse> permissionResponses = (permissions == null)
-            ? Collections.emptyList()
-            : permissions.stream()
-                .filter(Objects::nonNull)
-                .map(permissionMapper::toPermissionResponse)
-                .toList();
-
-        return RoleResponse.builder()
-            .id(role.getId())
-            .code(role.getCode())
-            .name(role.getName())
-            .permissions(permissionResponses)
-            .createdBy(role.getCreatedBy())
-            .createdAt(role.getCreatedAt())
-            .updatedBy(role.getUpdatedBy())
-            .updatedAt(role.getUpdatedAt())
-            .deletedAt(role.getDeletedAt())
-            .deletedBy(role.getDeletedBy())
-            .isDeleted(role.getIsDeleted())
-            .build();
-    }
-
-    public void updateRole(Role role, RoleRequest request) {
-        if (request.code() != null) {
-            role.setCode(request.code());
-        }
-        if (request.name() != null) {
-            role.setName(request.name());
-        }
-    }
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    void updateRole(@MappingTarget Role role, RoleRequest request);
 
 }

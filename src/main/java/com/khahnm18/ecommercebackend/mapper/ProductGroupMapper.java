@@ -1,75 +1,42 @@
 package com.khahnm18.ecommercebackend.mapper;
 
 import com.khahnm18.ecommercebackend.dto.request.product.ProductGroupRequest;
-import com.khahnm18.ecommercebackend.dto.response.category.CategoryResponse;
+import com.khahnm18.ecommercebackend.dto.response.product.CategoryResponse;
 import com.khahnm18.ecommercebackend.dto.response.product.ProductGroupResponse;
-import com.khahnm18.ecommercebackend.entity.category.Category;
+import com.khahnm18.ecommercebackend.entity.product.Category;
 import com.khahnm18.ecommercebackend.entity.product.ProductGroup;
-import org.springframework.stereotype.Component;
-import java.util.ArrayList;
-import java.util.Collections;
+import org.mapstruct.NullValuePropertyMappingStrategy;
+import org.mapstruct.CollectionMappingStrategy;
+import org.mapstruct.NullValueMappingStrategy;
+import org.mapstruct.ReportingPolicy;
+import org.mapstruct.MappingTarget;
+import org.mapstruct.BeanMapping;
+import org.mapstruct.Mapping;
+import org.mapstruct.Mapper;
 import java.util.List;
-import java.util.Objects;
 
-@Component
-public class ProductGroupMapper {
+@Mapper(
+    componentModel = "spring",
+    unmappedTargetPolicy = ReportingPolicy.IGNORE,
+    nullValueIterableMappingStrategy = NullValueMappingStrategy.RETURN_DEFAULT,
+    collectionMappingStrategy = CollectionMappingStrategy.TARGET_IMMUTABLE
+)
+public interface ProductGroupMapper {
 
-    public ProductGroup toProductGroup(ProductGroupRequest request) {
-        if (request == null) return null;
-        return ProductGroup.builder()
-            .name(request.name())
-            .slug(request.slug())
-            .images(request.images() != null ? new ArrayList<>(request.images()) : new ArrayList<>())
-            .build();
-    }
+    ProductGroup toProductGroup(ProductGroupRequest request);
 
-    public ProductGroupResponse toProductGroupResponse(ProductGroup productGroup) {
-        if (productGroup == null) return null;
-        return buildProductGroupResponse(productGroup).build();
-    }
+    @Mapping(target = "categories", ignore = true)
+    ProductGroupResponse toProductGroupResponse(ProductGroup productGroup);
 
-    public ProductGroupResponse toProductGroupResponseWithCategories(ProductGroup productGroup, List<Category> categories) {
-        if (productGroup == null) return null;
-        List<CategoryResponse> categoryResponses = (categories == null)
-            ? Collections.emptyList()
-            : categories.stream()
-                .filter(Objects::nonNull)
-                .map(category -> CategoryResponse.builder()
-                    .id(category.getId())
-                    .name(category.getName())
-                    .slug(category.getSlug())
-                    .build())
-                .toList();
-        return buildProductGroupResponse(productGroup)
-            .categories(categoryResponses)
-            .build();
-    }
+    ProductGroupResponse toProductGroupResponse(ProductGroup productGroup, List<Category> categories);
 
-    public void updateProductGroup(ProductGroup productGroup, ProductGroupRequest request) {
-        if (request.name() != null) {
-            productGroup.setName(request.name());
-        }
-        if (request.slug() != null) {
-            productGroup.setSlug(request.slug());
-        }
-        if (request.images() != null) {
-            productGroup.setImages(new ArrayList<>(request.images()));
-        }
-    }
+    @BeanMapping(ignoreByDefault = true)
+    @Mapping(target = "id", source = "id")
+    @Mapping(target = "name", source = "name")
+    @Mapping(target = "slug", source = "slug")
+    CategoryResponse toCategoryResponse(Category category);
 
-    private ProductGroupResponse.ProductGroupResponseBuilder buildProductGroupResponse(ProductGroup productGroup) {
-        return ProductGroupResponse.builder()
-            .id(productGroup.getId())
-            .name(productGroup.getName())
-            .slug(productGroup.getSlug())
-            .images(productGroup.getImages())
-            .createdAt(productGroup.getCreatedAt())
-            .createdBy(productGroup.getCreatedBy())
-            .updatedAt(productGroup.getUpdatedAt())
-            .updatedBy(productGroup.getUpdatedBy())
-            .deletedAt(productGroup.getDeletedAt())
-            .deletedBy(productGroup.getDeletedBy())
-            .isDeleted(productGroup.getIsDeleted());
-    }
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    void updateProductGroup(@MappingTarget ProductGroup productGroup, ProductGroupRequest request);
 
 }

@@ -11,6 +11,8 @@ import java.util.UUID;
 @Repository
 public interface AdminProfileRepository  extends JpaRepository<AdminProfile, UUID>, JpaSpecificationExecutor<AdminProfile> {
 
+    boolean existsByAccountIdAndIsDeletedFalse(UUID accountId);
+
     Optional<AdminProfile> findByAccountIdAndIsDeletedFalse(UUID accountId);
 
     List<AdminProfile> findAllByAccountIdIn(List<UUID> accountIds);

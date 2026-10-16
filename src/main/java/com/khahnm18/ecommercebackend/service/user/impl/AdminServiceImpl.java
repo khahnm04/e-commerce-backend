@@ -58,7 +58,7 @@ public class AdminServiceImpl implements AdminService {
 
         AdminProfile adminProfile = getAdminProfileByAccountId(accountId);
         List<Role> roles = roleRepository.findRolesByAccountId(accountId);
-        return adminMapper.toAdminResponseWithRoles(adminProfile, account, roles);
+        return adminMapper.toAdminResponse(adminProfile, account, roles);
     }
 
     @Override
@@ -115,7 +115,7 @@ public class AdminServiceImpl implements AdminService {
 
         List<Role> roles = accountRoleService.assignRolesToAccount(account, request.roles());
         log.info("Admin profile created: fullName={}, email={}", adminProfile.getFullName(), account.getEmail());
-        return adminMapper.toAdminResponseWithRoles(adminProfile, account, roles);
+        return adminMapper.toAdminResponse(adminProfile, account, roles);
     }
 
     @Override
@@ -132,7 +132,7 @@ public class AdminServiceImpl implements AdminService {
 
         List<Role> roles = accountRoleService.replaceRolesForAdmin(account, request.roles());
         log.info("Admin profile updated: accountId={}, email={}", accountId, account.getEmail());
-        return adminMapper.toAdminResponseWithRoles(adminProfile, account, roles);
+        return adminMapper.toAdminResponse(adminProfile, account, roles);
     }
 
     @Override

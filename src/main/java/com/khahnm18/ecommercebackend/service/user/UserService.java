@@ -5,6 +5,7 @@ import com.khahnm18.ecommercebackend.dto.request.BulkActionRequest;
 import com.khahnm18.ecommercebackend.dto.request.user.UserCreationRequest;
 import com.khahnm18.ecommercebackend.dto.request.user.UserUpdateRequest;
 import com.khahnm18.ecommercebackend.dto.response.user.UserResponse;
+import com.khahnm18.ecommercebackend.dto.response.user.MyProfileUserResponse;
 import org.springframework.data.domain.Page;
 import java.time.Instant;
 import java.util.UUID;
@@ -16,13 +17,14 @@ public interface UserService {
     Page<UserResponse> getAllUsers(
         int page,
         int size,
-        String sort,
         String keyword,
         boolean isDeleted,
         Instant startDate,
         Instant endDate,
         AccountStatus status
     );
+
+    MyProfileUserResponse getMyProfile();
 
     UserResponse createUser(UserCreationRequest request);
 

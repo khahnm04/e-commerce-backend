@@ -2,17 +2,15 @@ package com.khahnm18.ecommercebackend.mapper;
 
 import com.khahnm18.ecommercebackend.dto.response.auth.PermissionResponse;
 import com.khahnm18.ecommercebackend.entity.auth.Permission;
-import org.springframework.stereotype.Component;
+import org.mapstruct.ReportingPolicy;
+import org.mapstruct.Mapper;
 
-@Component
-public class PermissionMapper {
+@Mapper(
+    componentModel = "spring",
+    unmappedTargetPolicy = ReportingPolicy.IGNORE
+)
+public interface PermissionMapper {
 
-    public PermissionResponse toPermissionResponse(Permission permission) {
-        return PermissionResponse.builder()
-            .id(permission.getId())
-            .code(permission.getCode())
-            .name(permission.getName())
-            .build();
-    }
+    PermissionResponse toPermissionResponse(Permission permission);
 
 }

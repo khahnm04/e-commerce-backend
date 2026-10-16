@@ -1,6 +1,5 @@
 package com.khahnm18.ecommercebackend.dto.response.product;
 
-import com.khahnm18.ecommercebackend.dto.response.category.CategoryResponse;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import java.time.Instant;

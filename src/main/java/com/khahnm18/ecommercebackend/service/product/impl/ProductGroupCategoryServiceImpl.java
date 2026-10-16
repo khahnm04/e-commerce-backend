@@ -2,10 +2,10 @@ package com.khahnm18.ecommercebackend.service.product.impl;
 
 import com.khahnm18.ecommercebackend.exception.AppException;
 import com.khahnm18.ecommercebackend.exception.ErrorCode;
-import com.khahnm18.ecommercebackend.entity.category.Category;
+import com.khahnm18.ecommercebackend.entity.product.Category;
 import com.khahnm18.ecommercebackend.entity.product.ProductGroupCategory;
 import com.khahnm18.ecommercebackend.entity.product.ProductGroup;
-import com.khahnm18.ecommercebackend.repository.category.CategoryRepository;
+import com.khahnm18.ecommercebackend.repository.product.CategoryRepository;
 import com.khahnm18.ecommercebackend.repository.product.ProductGroupCategoryRepository;
 import com.khahnm18.ecommercebackend.service.product.ProductGroupCategoryService;
 import com.khahnm18.ecommercebackend.util.SecurityUtil;

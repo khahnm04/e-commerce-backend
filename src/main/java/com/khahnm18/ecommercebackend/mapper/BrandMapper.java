@@ -1,60 +1,27 @@
 package com.khahnm18.ecommercebackend.mapper;
 
-import com.khahnm18.ecommercebackend.enums.BrandStatus;
-import com.khahnm18.ecommercebackend.dto.request.brand.BrandRequest;
-import com.khahnm18.ecommercebackend.dto.response.brand.BrandResponse;
-import com.khahnm18.ecommercebackend.entity.brand.Brand;
-import org.springframework.stereotype.Component;
+import com.khahnm18.ecommercebackend.dto.request.product.BrandRequest;
+import com.khahnm18.ecommercebackend.dto.response.product.BrandResponse;
+import com.khahnm18.ecommercebackend.entity.product.Brand;
+import org.mapstruct.NullValuePropertyMappingStrategy;
+import org.mapstruct.ReportingPolicy;
+import org.mapstruct.MappingTarget;
+import org.mapstruct.BeanMapping;
+import org.mapstruct.Mapping;
+import org.mapstruct.Mapper;
 
-@Component
-public class BrandMapper {
+@Mapper(
+    componentModel = "spring",
+    unmappedTargetPolicy = ReportingPolicy.IGNORE
+)
+public interface BrandMapper {
 
-    public Brand toBrand(BrandRequest request) {
-        if (request == null) return null;
-        return Brand.builder()
-            .name(request.name())
-            .slug(request.slug())
-            .avatar(request.avatar())
-            .description(request.description())
-            .status(request.status() != null ? request.status() : BrandStatus.ACTIVE)
-            .build();
-    }
+    @Mapping(target = "status", defaultValue = "ACTIVE")
+    Brand toBrand(BrandRequest request);
 
-    public BrandResponse toBrandResponse(Brand brand) {
-        if (brand == null) return null;
-        return BrandResponse.builder()
-            .id(brand.getId())
-            .name(brand.getName())
-            .slug(brand.getSlug())
-            .avatar(brand.getAvatar())
-            .description(brand.getDescription())
-            .status(brand.getStatus())
-            .createdAt(brand.getCreatedAt())
-            .createdBy(brand.getCreatedBy())
-            .updatedAt(brand.getUpdatedAt())
-            .updatedBy(brand.getUpdatedBy())
-            .deletedAt(brand.getDeletedAt())
-            .deletedBy(brand.getDeletedBy())
-            .isDeleted(brand.getIsDeleted())
-            .build();
-    }
+    BrandResponse toBrandResponse(Brand brand);
 
-    public void updateBrand(Brand brand, BrandRequest request) {
-        if (request.name() != null) {
-            brand.setName(request.name());
-        }
-        if (request.slug() != null) {
-            brand.setSlug(request.slug());
-        }
-        if (request.avatar() != null) {
-            brand.setAvatar(request.avatar());
-        }
-        if (request.description() != null) {
-            brand.setDescription(request.description());
-        }
-        if (request.status() != null) {
-            brand.setStatus(request.status());
-        }
-    }
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    void updateBrand(@MappingTarget Brand brand, BrandRequest request);
 
 }

@@ -3,12 +3,12 @@ package com.khahnm18.ecommercebackend.service.product.impl;
 import com.khahnm18.ecommercebackend.dto.request.BulkActionRequest;
 import com.khahnm18.ecommercebackend.dto.request.product.ProductGroupRequest;
 import com.khahnm18.ecommercebackend.dto.response.product.ProductGroupResponse;
-import com.khahnm18.ecommercebackend.entity.category.Category;
+import com.khahnm18.ecommercebackend.entity.product.Category;
 import com.khahnm18.ecommercebackend.entity.product.ProductGroup;
 import com.khahnm18.ecommercebackend.exception.AppException;
 import com.khahnm18.ecommercebackend.exception.ErrorCode;
 import com.khahnm18.ecommercebackend.mapper.ProductGroupMapper;
-import com.khahnm18.ecommercebackend.repository.category.CategoryRepository;
+import com.khahnm18.ecommercebackend.repository.product.CategoryRepository;
 import com.khahnm18.ecommercebackend.repository.product.ProductGroupRepository;
 import com.khahnm18.ecommercebackend.service.product.ProductGroupCategoryService;
 import com.khahnm18.ecommercebackend.service.product.ProductGroupService;
@@ -44,7 +44,7 @@ public class ProductGroupServiceImpl implements ProductGroupService {
             ? this.getSoftDeletedProductGroupById(productGroupId)
             : this.getProductGroupById(productGroupId);
         List<Category> categories = categoryRepository.findCategoriesByGroupId(productGroup.getId());
-        return productGroupMapper.toProductGroupResponseWithCategories(productGroup, categories);
+        return productGroupMapper.toProductGroupResponse(productGroup, categories);
     }
 
     @Override
@@ -80,7 +80,7 @@ public class ProductGroupServiceImpl implements ProductGroupService {
             productGroupCategoryService.assignCategoriesToProductGroup(productGroup, request.categories());
 
         log.info("Product group created: name={}, slug={}", productGroup.getName(), productGroup.getSlug());
-        return productGroupMapper.toProductGroupResponseWithCategories(productGroup, categories);
+        return productGroupMapper.toProductGroupResponse(productGroup, categories);
     }
 
     @Override
@@ -94,7 +94,7 @@ public class ProductGroupServiceImpl implements ProductGroupService {
             productGroupCategoryService.replaceCategoriesForProductGroup(productGroup, request.categories());
 
         log.info("Product group updated: productGroupId={}, name={}", productGroupId, productGroup.getName());
-        return productGroupMapper.toProductGroupResponseWithCategories(productGroup, categories);
+        return productGroupMapper.toProductGroupResponse(productGroup, categories);
     }
 
     @Override

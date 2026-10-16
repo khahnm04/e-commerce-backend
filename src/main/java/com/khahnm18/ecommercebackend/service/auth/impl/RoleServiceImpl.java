@@ -44,7 +44,7 @@ public class RoleServiceImpl implements RoleService {
     public RoleResponse getRoleDetailById(UUID id, boolean isDeleted) {
         Role role = isDeleted ? this.getSoftDeletedRoleById(id) : this.getRoleById(id);
         List<Permission> permissions = permissionRepository.findPermissionsByRoleId(id);
-        return roleMapper.toRoleResponseWithPermissions(role, permissions);
+        return roleMapper.toRoleResponse(role, permissions);
     }
 
     @Override
@@ -75,7 +75,7 @@ public class RoleServiceImpl implements RoleService {
         role = this.saveRole(role);
         List<Permission> permissions = rolePermissionService.assignPermissionsToRole(role, request.permissions());
         log.info("Role created: code={}, name={}", role.getCode(), role.getName());
-        return roleMapper.toRoleResponseWithPermissions(role, permissions);
+        return roleMapper.toRoleResponse(role, permissions);
     }
 
     @Override
@@ -86,7 +86,7 @@ public class RoleServiceImpl implements RoleService {
         role = this.saveRole(role);
         List<Permission> permissions = rolePermissionService.replacePermissionsForRole(role, request.permissions());
         log.info("Role updated: code={}, name={}", role.getCode(), role.getName());
-        return roleMapper.toRoleResponseWithPermissions(role, permissions);
+        return roleMapper.toRoleResponse(role, permissions);
     }
 
     @Override

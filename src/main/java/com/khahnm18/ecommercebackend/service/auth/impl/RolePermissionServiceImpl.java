@@ -33,8 +33,6 @@ public class RolePermissionServiceImpl implements RolePermissionService {
     public List<Permission> assignPermissionsToRole(Role role, List<UUID> permissionIds) {
         List<Permission> permissions = getPermissionsByPermissionIds(permissionIds);
         this.saveRolePermissions(role, permissions);
-        role.setUpdatedAt(Instant.now());
-        role.setUpdatedBy(SecurityUtil.getCurrentAccount());
         return permissions;
     }
 
@@ -65,7 +63,6 @@ public class RolePermissionServiceImpl implements RolePermissionService {
 
         role.setUpdatedAt(Instant.now());
         role.setUpdatedBy(SecurityUtil.getCurrentAccount());
-
         permissionCacheService.evictAll();
         return newPermissions;
     }

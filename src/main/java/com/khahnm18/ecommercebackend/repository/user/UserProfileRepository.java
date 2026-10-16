@@ -11,6 +11,8 @@ import java.util.UUID;
 @Repository
 public interface UserProfileRepository extends JpaRepository<UserProfile, UUID>, JpaSpecificationExecutor<UserProfile> {
 
+    boolean existsByAccountIdAndIsDeletedFalse(UUID accountId);
+
     Optional<UserProfile> findByAccountIdAndIsDeletedFalse(UUID accountId);
 
     List<UserProfile> findAllByAccountIdIn(List<UUID> accountIds);

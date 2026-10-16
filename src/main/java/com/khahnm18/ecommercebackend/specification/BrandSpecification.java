@@ -1,7 +1,7 @@
 package com.khahnm18.ecommercebackend.specification;
 
 import com.khahnm18.ecommercebackend.enums.BrandStatus;
-import com.khahnm18.ecommercebackend.entity.brand.Brand;
+import com.khahnm18.ecommercebackend.entity.product.Brand;
 import org.springframework.data.jpa.domain.Specification;
 import java.time.Instant;
 

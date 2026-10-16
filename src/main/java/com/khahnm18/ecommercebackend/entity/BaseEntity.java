@@ -61,7 +61,9 @@ public abstract class BaseEntity implements Serializable {
 
     @PrePersist
     public void prePersist() {
-        if (isDeleted == null) isDeleted = false;
+        if (isDeleted == null) {
+            isDeleted = false;
+        }
     }
 
 }

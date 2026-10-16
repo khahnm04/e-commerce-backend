@@ -1,63 +1,32 @@
 package com.khahnm18.ecommercebackend.mapper;
 
-import com.khahnm18.ecommercebackend.enums.CategoryStatus;
-import com.khahnm18.ecommercebackend.dto.request.category.CategoryRequest;
-import com.khahnm18.ecommercebackend.dto.response.category.CategoryResponse;
-import com.khahnm18.ecommercebackend.entity.category.Category;
-import org.springframework.stereotype.Component;
+import com.khahnm18.ecommercebackend.dto.request.product.CategoryRequest;
+import com.khahnm18.ecommercebackend.dto.response.product.CategoryResponse;
+import com.khahnm18.ecommercebackend.entity.product.Category;
+import org.mapstruct.NullValuePropertyMappingStrategy;
+import org.mapstruct.ReportingPolicy;
+import org.mapstruct.MappingTarget;
+import org.mapstruct.BeanMapping;
+import org.mapstruct.Mapping;
+import org.mapstruct.Mapper;
 
-@Component
-public class CategoryMapper {
+@Mapper(
+    componentModel = "spring",
+    unmappedTargetPolicy = ReportingPolicy.IGNORE
+)
+public interface CategoryMapper {
 
-    public Category toCategory(CategoryRequest request) {
-        if (request == null) return null;
-        return Category.builder()
-            .parentId(request.parentId())
-            .name(request.name())
-            .slug(request.slug())
-            .avatar(request.avatar())
-            .description(request.description())
-            .status(request.status() != null ? request.status() : CategoryStatus.ACTIVE)
-            .build();
-    }
+    @Mapping(target = "status", defaultValue = "ACTIVE")
+    Category toCategory(CategoryRequest request);
 
-    public CategoryResponse toCategoryResponse(Category category) {
-        if (category == null) return null;
-        return CategoryResponse.builder()
-            .id(category.getId())
-            .parentId(category.getParentId())
-            .name(category.getName())
-            .slug(category.getSlug())
-            .avatar(category.getAvatar())
-            .description(category.getDescription())
-            .status(category.getStatus())
-            .createdAt(category.getCreatedAt())
-            .createdBy(category.getCreatedBy())
-            .updatedAt(category.getUpdatedAt())
-            .updatedBy(category.getUpdatedBy())
-            .deletedAt(category.getDeletedAt())
-            .deletedBy(category.getDeletedBy())
-            .isDeleted(category.getIsDeleted())
-            .build();
-    }
+    CategoryResponse toCategoryResponse(Category category);
 
-    public void updateCategory(Category category, CategoryRequest request) {
-        category.setParentId(request.parentId());
-        if (request.name() != null) {
-            category.setName(request.name());
-        }
-        if (request.slug() != null) {
-            category.setSlug(request.slug());
-        }
-        if (request.avatar() != null) {
-            category.setAvatar(request.avatar());
-        }
-        if (request.description() != null) {
-            category.setDescription(request.description());
-        }
-        if (request.status() != null) {
-            category.setStatus(request.status());
-        }
-    }
+    @Mapping(
+        target = "parentId",
+        source = "parentId",
+        nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.SET_TO_NULL
+    )
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    void updateCategory(@MappingTarget Category category, CategoryRequest request);
 
 }
