@@ -23,6 +23,7 @@ import com.khahnm18.ecommercebackend.repository.user.AdminProfileRepository;
 import com.khahnm18.ecommercebackend.repository.user.UserProfileRepository;
 import com.khahnm18.ecommercebackend.service.auth.AuthService;
 import com.khahnm18.ecommercebackend.service.auth.JwtService;
+import com.khahnm18.ecommercebackend.service.mail.MailService;
 import com.khahnm18.ecommercebackend.service.redis.RedisService;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -30,28 +31,32 @@ import org.springframework.stereotype.Service;
 import com.nimbusds.jwt.SignedJWT;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import java.util.concurrent.TimeUnit;
 import java.text.ParseException;
 import java.time.Instant;
+import java.util.concurrent.TimeUnit;
+import java.util.Map;
 import java.util.UUID;
+
+import static com.khahnm18.ecommercebackend.constant.TokenConstant.WHITELIST_TOKEN;
+import static com.khahnm18.ecommercebackend.constant.EmailSubjectConstant.WELCOME_SUBJECT;
+import static com.khahnm18.ecommercebackend.constant.EmailTemplateConstant.WELCOME_TEMPLATE;
 
 @Slf4j(topic = "AUTH-SERVICE")
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
 
-    private final JwtService jwtService;
-    private final RedisService redisService;
     private final PasswordEncoder passwordEncoder;
+    private final MailService mailService;
     private final AccountMapper accountMapper;
     private final UserMapper userMapper;
+    private final JwtService jwtService;
+    private final RedisService redisService;
     private final RoleRepository roleRepository;
     private final AccountRepository accountRepository;
     private final AccountRoleRepository accountRoleRepository;
     private final AdminProfileRepository adminProfileRepository;
     private final UserProfileRepository userProfileRepository;
-
-    private static final String WHITELIST_TOKEN = "whitelist_token:";
 
     @Override
     public LoginResponse loginAdmin(LoginRequest request) {
@@ -130,6 +135,13 @@ public class AuthServiceImpl implements AuthService {
             .accountId(account.getId())
             .roleId(customerRole.getId())
             .build());
+
+        mailService.sendEmail(
+            account.getEmail(),
+            WELCOME_SUBJECT,
+            WELCOME_TEMPLATE,
+            Map.of("email", account.getEmail())
+        );
 
         log.info("User registered: fullName={}, email={}", userProfile.getFullName(), account.getEmail());
         return RegisterResponse.builder()
