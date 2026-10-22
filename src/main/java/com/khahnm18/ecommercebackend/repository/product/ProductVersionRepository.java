@@ -9,7 +9,7 @@ import java.util.Set;
 import java.util.UUID;
 
 @Repository
-public interface ProductVersionRepository extends JpaRepository<ProductVersion, UUID> {
+public interface ProductVersionRepository extends JpaRepository<ProductVersion, UUID>, CustomProductVersionRepository {
 
     Optional<ProductVersion> findByIdAndIsDeletedFalse(UUID id);
     Optional<ProductVersion> findByIdAndIsDeletedTrue(UUID id);

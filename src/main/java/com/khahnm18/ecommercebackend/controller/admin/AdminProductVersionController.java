@@ -2,6 +2,7 @@ package com.khahnm18.ecommercebackend.controller.admin;
 
 import com.khahnm18.ecommercebackend.dto.request.BulkActionRequest;
 import com.khahnm18.ecommercebackend.dto.request.product.ProductVersionRequest;
+import com.khahnm18.ecommercebackend.dto.request.product.ProductVersionSearchRequest;
 import com.khahnm18.ecommercebackend.dto.response.ApiResponse;
 import com.khahnm18.ecommercebackend.dto.response.PageResponse;
 import com.khahnm18.ecommercebackend.dto.response.product.ProductVersionResponse;
@@ -29,11 +30,11 @@ import lombok.extern.slf4j.Slf4j;
 import java.time.Instant;
 import java.util.UUID;
 
-@Slf4j(topic = "PRODUCT-VERSION-CONTROLLER")
+@Slf4j(topic = "ADMIN-PRODUCT-VERSION-CONTROLLER")
 @RestController
-@RequestMapping("${api.prefix}/product-versions")
+@RequestMapping("${api.prefix}/admin/product-versions")
 @RequiredArgsConstructor
-@Tag(name = "Product Version Controller", description = "Product version management APIs")
+@Tag(name = "Admin Product Version Controller", description = "Admin Product Version Management APIs")
 public class AdminProductVersionController {
 
     private final Translator translator;
@@ -58,23 +59,15 @@ public class AdminProductVersionController {
     @Operation(summary = "Get all product versions")
     @PreAuthorize("hasAuthority('PRODUCT_VERSION_VIEW')")
     PageResponse<ProductVersionResponse> getAllProductVersions(
-        @RequestParam(defaultValue = "1") int page,
-        @RequestParam(defaultValue = "10") int size,
-        @RequestParam(defaultValue = "false") boolean isDeleted,
-        @RequestParam(required = false) String keyword,
-        @RequestParam(required = false) Instant startDate,
-        @RequestParam(required = false) Instant endDate,
-        @RequestParam(required = false) UUID groupId
+        @RequestParam(required = false, defaultValue = "1") int page,
+        @RequestParam(required = false, defaultValue = "10") int size,
+        ProductVersionSearchRequest request
     ) {
         log.info("Get all product versions");
         Page<ProductVersionResponse> productVersionPage = productVersionService.getAllProductVersions(
             page,
             size,
-            keyword,
-            isDeleted,
-            startDate,
-            endDate,
-            groupId
+            request
         );
         return PageResponse.<ProductVersionResponse>builder()
             .status(HttpStatus.OK.value())

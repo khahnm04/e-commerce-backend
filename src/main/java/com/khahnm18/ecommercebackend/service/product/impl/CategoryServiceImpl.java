@@ -3,23 +3,19 @@ package com.khahnm18.ecommercebackend.service.product.impl;
 import com.khahnm18.ecommercebackend.enums.CategoryStatus;
 import com.khahnm18.ecommercebackend.dto.request.BulkActionRequest;
 import com.khahnm18.ecommercebackend.dto.request.product.CategoryRequest;
+import com.khahnm18.ecommercebackend.dto.request.product.CategorySearchRequest;
 import com.khahnm18.ecommercebackend.dto.response.product.CategoryResponse;
 import com.khahnm18.ecommercebackend.entity.product.Category;
 import com.khahnm18.ecommercebackend.exception.AppException;
 import com.khahnm18.ecommercebackend.exception.ErrorCode;
-import com.khahnm18.ecommercebackend.entity.product.QCategory;
 import com.khahnm18.ecommercebackend.mapper.CategoryMapper;
 import com.khahnm18.ecommercebackend.repository.product.CategoryRepository;
 import com.khahnm18.ecommercebackend.service.product.CategoryService;
 import com.khahnm18.ecommercebackend.util.SecurityUtil;
-import com.querydsl.core.types.Predicate;
-import com.querydsl.jpa.impl.JPAQuery;
-import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
@@ -36,7 +32,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class CategoryServiceImpl implements CategoryService {
 
-    private final JPAQueryFactory queryFactory;
     private final CategoryMapper categoryMapper;
     private final CategoryRepository categoryRepository;
 
@@ -52,47 +47,21 @@ public class CategoryServiceImpl implements CategoryService {
     public Page<CategoryResponse> getAllCategories(
         int page,
         int size,
-        String keyword,
-        boolean isDeleted,
-        Instant startDate,
-        Instant endDate,
-        CategoryStatus status,
-        UUID parentId
+        CategorySearchRequest request
     ) {
-        Pageable pageable = PageRequest.of(page - 1, size);
-        QCategory category = QCategory.category;
+        Pageable pageable = PageRequest.of(Math.max(0, page - 1), size);
+        return categoryRepository
+            .search(request, pageable)
+            .map(categoryMapper::toCategoryResponse);
+    }
 
-        Predicate[] predicates = {
-            category.isDeleted.eq(isDeleted),
-            Optional.ofNullable(status).map(category.status::eq).orElse(null),
-            Optional.ofNullable(parentId).map(category.parentId::eq).orElse(null),
-            Optional.ofNullable(startDate).map(category.createdAt::goe).orElse(null),
-            Optional.ofNullable(endDate).map(category.createdAt::loe).orElse(null),
-            Optional.ofNullable(keyword)
-                .filter(kw -> !kw.isBlank())
-                .map(String::strip)
-                .map(kw -> category.name.containsIgnoreCase(kw)
-                    .or(category.slug.containsIgnoreCase(kw)))
-                .orElse(null)
-        };
-
-        List<CategoryResponse> content = queryFactory
-            .selectFrom(category)
-            .where(predicates)
-            .orderBy(category.createdAt.desc())
-            .offset(pageable.getOffset())
-            .limit(pageable.getPageSize())
-            .fetch()
+    @Override
+    public List<CategoryResponse> getAllActiveCategories() {
+        return categoryRepository
+            .findActiveCategories()
             .stream()
             .map(categoryMapper::toCategoryResponse)
             .toList();
-
-        JPAQuery<Long> countQuery = queryFactory
-            .select(category.count())
-            .from(category)
-            .where(predicates);
-
-        return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
     }
 
     @Override

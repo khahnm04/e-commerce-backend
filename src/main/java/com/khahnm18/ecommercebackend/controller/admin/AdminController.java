@@ -33,9 +33,9 @@ import java.util.UUID;
 
 @Slf4j(topic = "ADMIN-CONTROLLER")
 @RestController
-@RequestMapping("${api.prefix}/admins")
+@RequestMapping("${api.prefix}/admin/admins")
 @RequiredArgsConstructor
-@Tag(name = "Admin Controller", description = "Account admin management APIs")
+@Tag(name = "Admin Controller", description = "Admin management APIs")
 public class AdminController {
 
     private final Translator translator;
@@ -60,24 +60,12 @@ public class AdminController {
     @Operation(summary = "Get all admins")
     @PreAuthorize("hasAuthority('ADMIN_VIEW')")
     PageResponse<AdminResponse> getAllAdmins(
-        @RequestParam(defaultValue = "1") int page,
-        @RequestParam(defaultValue = "10") int size,
-        @RequestParam(defaultValue = "false") boolean isDeleted,
-        @RequestParam(required = false) String keyword,
-        @RequestParam(required = false) Instant startDate,
-        @RequestParam(required = false) Instant endDate,
-        @RequestParam(required = false) AccountStatus status
-        ) {
+        @RequestParam(required = false, defaultValue = "1") int page,
+        @RequestParam(required = false, defaultValue = "10") int size,
+        AdminSearchRequest request
+    ) {
         log.info("Get all admins");
-        Page<AdminResponse> adminPage = adminService.getAllAdmins(
-            page,
-            size,
-            keyword,
-            isDeleted,
-            startDate,
-            endDate,
-            status
-        );
+        Page<AdminResponse> adminPage = adminService.getAllAdmins(page, size, request);
         return PageResponse.<AdminResponse>builder()
             .status(HttpStatus.OK.value())
             .data(adminPage.getContent())

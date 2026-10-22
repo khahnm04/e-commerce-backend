@@ -1,5 +1,6 @@
 package com.khahnm18.ecommercebackend.controller.admin;
 
+import com.khahnm18.ecommercebackend.dto.request.user.UserSearchRequest;
 import com.khahnm18.ecommercebackend.enums.AccountStatus;
 import com.khahnm18.ecommercebackend.dto.request.BulkActionRequest;
 import com.khahnm18.ecommercebackend.dto.request.user.UserCreationRequest;
@@ -31,11 +32,11 @@ import lombok.extern.slf4j.Slf4j;
 import java.time.Instant;
 import java.util.UUID;
 
-@Slf4j(topic = "USER-CONTROLLER")
+@Slf4j(topic = "ADMIN-USER-CONTROLLER")
 @RestController
-@RequestMapping("${api.prefix}/users")
+@RequestMapping("${api.prefix}/admin/users")
 @RequiredArgsConstructor
-@Tag(name = "User Controller", description = "Account user management APIs")
+@Tag(name = "Admin User Controller", description = "Admin User Management APIs")
 public class AdminUserController {
 
     private final Translator translator;
@@ -60,24 +61,12 @@ public class AdminUserController {
     @Operation(summary = "Get all users")
     @PreAuthorize("hasAuthority('USER_VIEW')")
     PageResponse<UserResponse> getAllUsers(
-        @RequestParam(defaultValue = "1") int page,
-        @RequestParam(defaultValue = "10") int size,
-        @RequestParam(defaultValue = "false") boolean isDeleted,
-        @RequestParam(required = false) String keyword,
-        @RequestParam(required = false) Instant startDate,
-        @RequestParam(required = false) Instant endDate,
-        @RequestParam(required = false) AccountStatus status
+        @RequestParam(required = false, defaultValue = "1") int page,
+        @RequestParam(required = false, defaultValue = "10") int size,
+        UserSearchRequest request
     ) {
         log.info("Get all users");
-        Page<UserResponse> userPage = userService.getAllUsers(
-            page,
-            size,
-            keyword,
-            isDeleted,
-            startDate,
-            endDate,
-            status
-        );
+        Page<UserResponse> userPage = userService.getAllUsers(page, size, request);
         return PageResponse.<UserResponse>builder()
             .status(HttpStatus.OK.value())
             .data(userPage.getContent())

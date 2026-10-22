@@ -3,23 +3,19 @@ package com.khahnm18.ecommercebackend.service.product.impl;
 import com.khahnm18.ecommercebackend.enums.BrandStatus;
 import com.khahnm18.ecommercebackend.dto.request.BulkActionRequest;
 import com.khahnm18.ecommercebackend.dto.request.product.BrandRequest;
+import com.khahnm18.ecommercebackend.dto.request.product.BrandSearchRequest;
 import com.khahnm18.ecommercebackend.dto.response.product.BrandResponse;
 import com.khahnm18.ecommercebackend.entity.product.Brand;
 import com.khahnm18.ecommercebackend.exception.AppException;
 import com.khahnm18.ecommercebackend.exception.ErrorCode;
-import com.khahnm18.ecommercebackend.entity.product.QBrand;
 import com.khahnm18.ecommercebackend.mapper.BrandMapper;
 import com.khahnm18.ecommercebackend.repository.product.BrandRepository;
 import com.khahnm18.ecommercebackend.service.product.BrandService;
 import com.khahnm18.ecommercebackend.util.SecurityUtil;
-import com.querydsl.core.types.Predicate;
-import com.querydsl.jpa.impl.JPAQuery;
-import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
@@ -35,7 +31,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class BrandServiceImpl implements BrandService {
 
-    private final JPAQueryFactory queryFactory;
     private final BrandMapper brandMapper;
     private final BrandRepository brandRepository;
 
@@ -51,45 +46,12 @@ public class BrandServiceImpl implements BrandService {
     public Page<BrandResponse> getAllBrands(
         int page,
         int size,
-        String keyword,
-        boolean isDeleted,
-        Instant startDate,
-        Instant endDate,
-        BrandStatus status
+        BrandSearchRequest request
     ) {
-        Pageable pageable = PageRequest.of(page - 1, size);
-        QBrand brand = QBrand.brand;
-
-        Predicate[] predicates = {
-            brand.isDeleted.eq(isDeleted),
-            Optional.ofNullable(status).map(brand.status::eq).orElse(null),
-            Optional.ofNullable(startDate).map(brand.createdAt::goe).orElse(null),
-            Optional.ofNullable(endDate).map(brand.createdAt::loe).orElse(null),
-            Optional.ofNullable(keyword)
-                .filter(kw -> !kw.isBlank())
-                .map(String::strip)
-                .map(kw -> brand.name.containsIgnoreCase(kw)
-                    .or(brand.slug.containsIgnoreCase(kw)))
-                .orElse(null)
-        };
-
-        List<BrandResponse> content = queryFactory
-            .selectFrom(brand)
-            .where(predicates)
-            .orderBy(brand.createdAt.desc())
-            .offset(pageable.getOffset())
-            .limit(pageable.getPageSize())
-            .fetch()
-            .stream()
-            .map(brandMapper::toBrandResponse)
-            .toList();
-
-        JPAQuery<Long> countQuery = queryFactory
-            .select(brand.count())
-            .from(brand)
-            .where(predicates);
-
-        return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
+        Pageable pageable = PageRequest.of(Math.max(0, page - 1), size);
+        return brandRepository
+            .search(request, pageable)
+            .map(brandMapper::toBrandResponse);
     }
 
     @Override

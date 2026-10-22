@@ -3,6 +3,7 @@ package com.khahnm18.ecommercebackend.controller.admin;
 import com.khahnm18.ecommercebackend.util.Translator;
 import com.khahnm18.ecommercebackend.dto.request.BulkActionRequest;
 import com.khahnm18.ecommercebackend.dto.request.product.ProductGroupRequest;
+import com.khahnm18.ecommercebackend.dto.request.product.ProductGroupSearchRequest;
 import com.khahnm18.ecommercebackend.dto.response.ApiResponse;
 import com.khahnm18.ecommercebackend.dto.response.PageResponse;
 import com.khahnm18.ecommercebackend.dto.response.product.ProductGroupResponse;
@@ -29,11 +30,11 @@ import lombok.extern.slf4j.Slf4j;
 import java.time.Instant;
 import java.util.UUID;
 
-@Slf4j(topic = "PRODUCT-GROUP-CONTROLLER")
+@Slf4j(topic = "ADMIN-PRODUCT-GROUP-CONTROLLER")
 @RestController
-@RequestMapping("${api.prefix}/product-groups")
+@RequestMapping("${api.prefix}/admin/product-groups")
 @RequiredArgsConstructor
-@Tag(name = "Product Group Controller", description = "Product group management APIs")
+@Tag(name = "Admin Product Group Controller", description = "Admin Product Group Management APIs")
 public class AdminProductGroupController {
 
     private final Translator translator;
@@ -58,23 +59,15 @@ public class AdminProductGroupController {
     @Operation(summary = "Get all product groups")
     @PreAuthorize("hasAuthority('PRODUCT_GROUP_VIEW')")
     PageResponse<ProductGroupResponse> getAllProductGroups(
-        @RequestParam(defaultValue = "1") int page,
-        @RequestParam(defaultValue = "10") int size,
-        @RequestParam(defaultValue = "false") boolean isDeleted,
-        @RequestParam(required = false) String keyword,
-        @RequestParam(required = false) Instant startDate,
-        @RequestParam(required = false) Instant endDate,
-        @RequestParam(required = false) UUID categoryId
+        @RequestParam(required = false, defaultValue = "1") int page,
+        @RequestParam(required = false, defaultValue = "10") int size,
+        ProductGroupSearchRequest request
     ) {
         log.info("Get all product groups");
         Page<ProductGroupResponse> productGroupPage = productGroupService.getAllProductGroups(
             page,
             size,
-            keyword,
-            isDeleted,
-            startDate,
-            endDate,
-            categoryId
+            request
         );
         return PageResponse.<ProductGroupResponse>builder()
             .status(HttpStatus.OK.value())

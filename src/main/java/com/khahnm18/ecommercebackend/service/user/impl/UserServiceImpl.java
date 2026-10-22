@@ -1,5 +1,7 @@
 package com.khahnm18.ecommercebackend.service.user.impl;
 
+import com.khahnm18.ecommercebackend.dto.request.user.UserSearchRequest;
+import com.khahnm18.ecommercebackend.entity.BaseEntity;
 import com.khahnm18.ecommercebackend.enums.AccountStatus;
 import com.khahnm18.ecommercebackend.dto.request.BulkActionRequest;
 import com.khahnm18.ecommercebackend.dto.request.user.UserCreationRequest;
@@ -66,53 +68,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Page<UserResponse> getAllUsers(
-        int page,
-        int size,
-        String keyword,
-        boolean isDeleted,
-        Instant startDate,
-        Instant endDate,
-        AccountStatus status
-    ) {
-        Pageable pageable = PageRequest.of(page - 1, size);
-        QAccount account = QAccount.account;
-        QUserProfile profile = QUserProfile.userProfile;
-
-        Predicate[] predicates = {
-            account.isDeleted.eq(isDeleted),
-            Optional.ofNullable(status).map(account.status::eq).orElse(null),
-            Optional.ofNullable(startDate).map(account.createdAt::goe).orElse(null),
-            Optional.ofNullable(endDate).map(account.createdAt::loe).orElse(null),
-            Optional.ofNullable(keyword)
-                .filter(kw -> !kw.isBlank())
-                .map(String::strip)
-                .map(kw -> account.email.containsIgnoreCase(kw)
-                    .or(account.phoneNumber.containsIgnoreCase(kw))
-                    .or(profile.fullName.containsIgnoreCase(kw)))
-                .orElse(null)
-        };
-
-        List<UserResponse> content = queryFactory
-            .select(profile, account)
-            .from(account)
-            .innerJoin(profile).on(profile.accountId.eq(account.id))
-            .where(predicates)
-            .orderBy(account.createdAt.desc())
-            .offset(pageable.getOffset())
-            .limit(pageable.getPageSize())
-            .fetch()
-            .stream()
-            .map(tuple -> userMapper.toUserResponse(tuple.get(profile), tuple.get(account)))
-            .toList();
-
-        JPAQuery<Long> countQuery = queryFactory
-            .select(account.count())
-            .from(account)
-            .innerJoin(profile).on(profile.accountId.eq(account.id))
-            .where(predicates);
-
-        return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
+    public Page<UserResponse> getAllUsers(int page, int size, UserSearchRequest request) {
+        Pageable pageable = PageRequest.of(Math.max(0, page - 1), size);
+        return userProfileRepository
+            .search(request, pageable)
+            .map(item -> userMapper.toUserResponse(item.profile(), item.account()));
     }
 
     @Override
@@ -182,28 +142,28 @@ public class UserServiceImpl implements UserService {
     public void bulkAction(BulkActionRequest request) {
         Set<UUID> accountIds = request.ids();
         String action = request.action().toUpperCase();
+        List<Account> accounts = accountRepository.findAllById(accountIds);
         switch (action) {
             case "ACTIVE", "INACTIVE", "BANNED", "LOCKED" -> {
                 SecurityUtil.requireAuthority("USER_UPDATE");
-                List<Account> accounts = accountRepository.findAllById(accountIds);
                 accounts.forEach(account -> account.setStatus(AccountStatus.valueOf(action)));
                 log.info("Bulk update status {} user with accountIds: {}", action, accountIds);
             }
             case "SOFT_DELETE" -> {
                 SecurityUtil.requireAuthority("USER_TRASH");
-                List<Account> accounts = accountRepository.findAllById(accountIds);
                 accounts.forEach(this::softDelete);
                 log.info("Bulk action soft delete user with accountIds: {}", accountIds);
             }
             case "RESTORE" -> {
                 SecurityUtil.requireAuthority("USER_TRASH");
-                List<Account> accounts = accountRepository.findAllById(accountIds);
                 accounts.forEach(this::restore);
                 log.info("Bulk action restore user with accountIds: {}", accountIds);
             }
             case "DELETE" -> {
                 SecurityUtil.requireAuthority("USER_DELETE");
-                accountRepository.deleteAllByIdInAndIsDeletedTrue(accountIds);
+                accountRepository.deleteAllInBatch(
+                    accounts.stream().filter(BaseEntity::getIsDeleted).toList()
+                );
                 log.info("Bulk action delete user with accountIds: {}", accountIds);
             }
         }

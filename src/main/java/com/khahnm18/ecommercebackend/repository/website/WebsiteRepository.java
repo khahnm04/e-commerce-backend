@@ -7,7 +7,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface WebsiteInfoRepository extends JpaRepository<WebsiteInfo, UUID> {
+public interface WebsiteRepository extends JpaRepository<WebsiteInfo, UUID> {
 
     Optional<WebsiteInfo> findFirstByOrderByCreatedAtDesc();
 

@@ -7,7 +7,7 @@ import java.util.UUID;
 
 @Builder(toBuilder = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public record WebsiteInfoResponse(
+public record WebsiteResponse(
 
     UUID id,
     String name,

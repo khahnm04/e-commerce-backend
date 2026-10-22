@@ -12,7 +12,7 @@ import java.util.Set;
 import java.util.UUID;
 
 @Repository
-public interface CategoryRepository extends JpaRepository<Category, UUID> {
+public interface CategoryRepository extends JpaRepository<Category, UUID>, CustomCategoryRepository {
 
     Optional<Category> findByIdAndIsDeletedFalse(UUID id);
     Optional<Category> findByIdAndIsDeletedTrue(UUID id);

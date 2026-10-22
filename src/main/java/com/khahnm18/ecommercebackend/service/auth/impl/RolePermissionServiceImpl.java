@@ -15,8 +15,10 @@ import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import java.time.Instant;
+import java.util.stream.Collectors;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Slf4j(topic = "ROLE-PERMISSION-SERVICE")
@@ -40,30 +42,24 @@ public class RolePermissionServiceImpl implements RolePermissionService {
     @Transactional
     public List<Permission> replacePermissionsForRole(Role role, List<UUID> newPermissionIds) {
         List<Permission> newPermissions = getPermissionsByPermissionIds(newPermissionIds);
-        List<UUID> currentPermissionIds = permissionRepository.findPermissionsByRoleId(role.getId())
-            .stream()
-            .map(Permission::getId)
-            .toList();
+        Set<UUID> newIds = newPermissions.stream().map(Permission::getId).collect(Collectors.toSet());
 
-        // Remove
-        List<UUID> permissionIdsToRemove = currentPermissionIds.stream()
-            .filter(currentPermissionId -> !newPermissionIds.contains(currentPermissionId))
-            .toList();
-        if (!permissionIdsToRemove.isEmpty()) {
-            rolePermissionRepository.deleteByRoleIdAndPermissionIdIn(role.getId(), permissionIdsToRemove);
+        List<RolePermission> current = rolePermissionRepository.findByRoleId(role.getId());
+        Set<UUID> currentIds = current.stream().map(RolePermission::getPermissionId).collect(Collectors.toSet());
+
+        rolePermissionRepository.deleteAllInBatch(current.stream()
+            .filter(rp -> !newIds.contains(rp.getPermissionId()))
+            .toList());
+
+        saveRolePermissions(role, newPermissions.stream()
+            .filter(permission -> !currentIds.contains(permission.getId()))
+            .toList());
+
+        if (!currentIds.equals(newIds)) {
+            role.setUpdatedAt(Instant.now());
+            role.setUpdatedBy(SecurityUtil.getCurrentAccount());
+            permissionCacheService.evictAll();
         }
-
-        // Add
-        List<Permission> permissionsToAdd = newPermissions.stream()
-            .filter(newPermission -> !currentPermissionIds.contains(newPermission.getId()))
-            .toList();
-        if (!permissionsToAdd.isEmpty()) {
-            this.saveRolePermissions(role, permissionsToAdd);
-        }
-
-        role.setUpdatedAt(Instant.now());
-        role.setUpdatedBy(SecurityUtil.getCurrentAccount());
-        permissionCacheService.evictAll();
         return newPermissions;
     }
 

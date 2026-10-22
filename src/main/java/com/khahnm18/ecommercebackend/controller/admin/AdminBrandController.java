@@ -3,6 +3,7 @@ package com.khahnm18.ecommercebackend.controller.admin;
 import com.khahnm18.ecommercebackend.enums.BrandStatus;
 import com.khahnm18.ecommercebackend.dto.request.BulkActionRequest;
 import com.khahnm18.ecommercebackend.dto.request.product.BrandRequest;
+import com.khahnm18.ecommercebackend.dto.request.product.BrandSearchRequest;
 import com.khahnm18.ecommercebackend.dto.response.ApiResponse;
 import com.khahnm18.ecommercebackend.dto.response.PageResponse;
 import com.khahnm18.ecommercebackend.dto.response.product.BrandResponse;
@@ -30,11 +31,11 @@ import lombok.extern.slf4j.Slf4j;
 import java.time.Instant;
 import java.util.UUID;
 
-@Slf4j(topic = "BRAND-CONTROLLER")
+@Slf4j(topic = "ADMIN-BRAND-CONTROLLER")
 @RestController
-@RequestMapping("${api.prefix}/brands")
+@RequestMapping("${api.prefix}/admin/brands")
 @RequiredArgsConstructor
-@Tag(name = "Brand Controller", description = "Brand management APIs")
+@Tag(name = "Admin Brand Controller", description = "Admin Brand Management APIs")
 public class AdminBrandController {
 
     private final Translator translator;
@@ -59,23 +60,15 @@ public class AdminBrandController {
     @Operation(summary = "Get all brands")
     @PreAuthorize("hasAuthority('BRAND_VIEW')")
     PageResponse<BrandResponse> getAllBrands(
-        @RequestParam(defaultValue = "1") int page,
-        @RequestParam(defaultValue = "10") int size,
-        @RequestParam(defaultValue = "false") boolean isDeleted,
-        @RequestParam(required = false) String keyword,
-        @RequestParam(required = false) Instant startDate,
-        @RequestParam(required = false) Instant endDate,
-        @RequestParam(required = false) BrandStatus status
+        @RequestParam(required = false, defaultValue = "1") int page,
+        @RequestParam(required = false, defaultValue = "10") int size,
+        BrandSearchRequest request
     ) {
         log.info("Get all brands");
         Page<BrandResponse> brandPage = brandService.getAllBrands(
             page,
             size,
-            keyword,
-            isDeleted,
-            startDate,
-            endDate,
-            status
+            request
         );
         return PageResponse.<BrandResponse>builder()
             .status(HttpStatus.OK.value())

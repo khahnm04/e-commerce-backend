@@ -1,9 +1,9 @@
 package com.khahnm18.ecommercebackend.controller.admin;
 
 import com.khahnm18.ecommercebackend.dto.response.ApiResponse;
-import com.khahnm18.ecommercebackend.dto.request.website.WebsiteInfoRequest;
-import com.khahnm18.ecommercebackend.dto.response.website.WebsiteInfoResponse;
-import com.khahnm18.ecommercebackend.service.website.WebsiteInfoService;
+import com.khahnm18.ecommercebackend.dto.request.website.WebsiteRequest;
+import com.khahnm18.ecommercebackend.dto.response.website.WebsiteResponse;
+import com.khahnm18.ecommercebackend.service.website.WebsiteService;
 import com.khahnm18.ecommercebackend.util.Translator;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,51 +19,51 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import java.util.List;
 
-@Slf4j(topic = "WEBSITE-CONTROLLER")
+@Slf4j(topic = "ADMIN-WEBSITE-CONTROLLER")
 @RestController
-@RequestMapping("${api.prefix}/website-info")
+@RequestMapping("${api.prefix}/admin/website")
 @RequiredArgsConstructor
-@Tag(name = "Website Info Controller", description = "Website Info management APIs")
+@Tag(name = "Admin Website Controller", description = "Admin Website Management APIs")
 public class AdminWebsiteController {
 
-    private final WebsiteInfoService websiteInfoService;
+    private final WebsiteService websiteService;
     private final Translator translator;
 
     @GetMapping
     @Operation(summary = "Get website info")
-    @PreAuthorize("hasAuthority('WEBSITE_INFO_UPDATE')")
-    ApiResponse<WebsiteInfoResponse> getWebsiteInfo() {
+    @PreAuthorize("hasAuthority('WEBSITE_UPDATE')")
+    ApiResponse<WebsiteResponse> getWebsiteInfo() {
         log.info("Get website info");
-        return ApiResponse.<WebsiteInfoResponse>builder()
+        return ApiResponse.<WebsiteResponse>builder()
             .status(HttpStatus.OK.value())
-            .data(websiteInfoService.getWebsiteInfo())
-            .message(translator.toLocale("website-info.detail.success"))
+            .data(websiteService.getWebsiteInfo())
+            .message(translator.toLocale("website.detail.success"))
             .build();
     }
 
     @GetMapping("/history")
-    @Operation(summary = "Get website info history")
-    @PreAuthorize("hasAuthority('WEBSITE_INFO_VIEW')")
-    ApiResponse<List<WebsiteInfoResponse>> getWebsiteInfoHistory() {
-        log.info("Get website info history");
-        return ApiResponse.<List<WebsiteInfoResponse>>builder()
+    @Operation(summary = "Get website history")
+    @PreAuthorize("hasAuthority('WEBSITE_VIEW')")
+    ApiResponse<List<WebsiteResponse>> getWebsiteInfoHistory() {
+        log.info("Get website history");
+        return ApiResponse.<List<WebsiteResponse>>builder()
             .status(HttpStatus.OK.value())
-            .data(websiteInfoService.getWebsiteInfoHistory())
-            .message(translator.toLocale("website-info.history.success"))
+            .data(websiteService.getWebsiteInfoHistory())
+            .message(translator.toLocale("website.history.success"))
             .build();
     }
 
     @PutMapping
-    @Operation(summary = "Update website info")
-    @PreAuthorize("hasAuthority('WEBSITE_INFO_UPDATE')")
-    ApiResponse<WebsiteInfoResponse> updateWebsiteInfo(
-        @Valid @RequestBody WebsiteInfoRequest request
+    @Operation(summary = "Update website")
+    @PreAuthorize("hasAuthority('WEBSITE_UPDATE')")
+    ApiResponse<WebsiteResponse> updateWebsiteInfo(
+        @Valid @RequestBody WebsiteRequest request
     ) {
-        log.info("Update website info");
-        return ApiResponse.<WebsiteInfoResponse>builder()
+        log.info("Update website");
+        return ApiResponse.<WebsiteResponse>builder()
             .status(HttpStatus.OK.value())
-            .data(websiteInfoService.updateWebsiteInfo(request))
-            .message(translator.toLocale("website-info.update.success"))
+            .data(websiteService.updateWebsiteInfo(request))
+            .message(translator.toLocale("website.update.success"))
             .build();
     }
 

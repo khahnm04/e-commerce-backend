@@ -1,5 +1,6 @@
 package com.khahnm18.ecommercebackend.util;
 
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.access.AccessDeniedException;
@@ -9,6 +10,11 @@ import java.util.UUID;
 
 @UtilityClass
 public class SecurityUtil {
+
+    public boolean isAuthenticated() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        return auth != null && auth.isAuthenticated() && !(auth instanceof AnonymousAuthenticationToken);
+    }
 
     public UUID getCurrentAccount() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

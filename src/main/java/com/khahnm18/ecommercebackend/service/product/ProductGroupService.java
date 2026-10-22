@@ -2,6 +2,7 @@ package com.khahnm18.ecommercebackend.service.product;
 
 import com.khahnm18.ecommercebackend.dto.request.BulkActionRequest;
 import com.khahnm18.ecommercebackend.dto.request.product.ProductGroupRequest;
+import com.khahnm18.ecommercebackend.dto.request.product.ProductGroupSearchRequest;
 import com.khahnm18.ecommercebackend.dto.response.product.ProductGroupResponse;
 import org.springframework.data.domain.Page;
 import java.time.Instant;
@@ -14,11 +15,7 @@ public interface ProductGroupService {
     Page<ProductGroupResponse> getAllProductGroups(
         int page,
         int size,
-        String keyword,
-        boolean isDeleted,
-        Instant startDate,
-        Instant endDate,
-        UUID categoryId
+        ProductGroupSearchRequest request
     );
 
     ProductGroupResponse createProductGroup(ProductGroupRequest request);

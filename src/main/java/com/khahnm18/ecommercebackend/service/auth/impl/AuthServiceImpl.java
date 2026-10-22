@@ -47,10 +47,10 @@ import static com.khahnm18.ecommercebackend.constant.EmailTemplateConstant.WELCO
 public class AuthServiceImpl implements AuthService {
 
     private final PasswordEncoder passwordEncoder;
-    private final MailService mailService;
     private final AccountMapper accountMapper;
     private final UserMapper userMapper;
     private final JwtService jwtService;
+    private final MailService mailService;
     private final RedisService redisService;
     private final RoleRepository roleRepository;
     private final AccountRepository accountRepository;

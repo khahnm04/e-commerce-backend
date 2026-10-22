@@ -19,11 +19,11 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-@Slf4j(topic = "AUTH-CONTROLLER")
+@Slf4j(topic = "ADMIN-AUTH-CONTROLLER")
 @RestController
 @RequestMapping("${api.prefix}/admin/auth")
 @RequiredArgsConstructor
-@Tag(name = "Auth Controller", description = "Auth management APIs")
+@Tag(name = "Admin Auth Controller", description = "Admin Auth Management APIs")
 public class AdminAuthController {
 
     private final AuthService authService;
@@ -48,7 +48,7 @@ public class AdminAuthController {
     public ApiResponse<Void> logout(
         @Valid @RequestBody LogoutRequest request
     ) {
-        log.info("Logout");
+        log.info("Logout admin");
         authService.logout(request);
         return ApiResponse.<Void>builder()
             .status(HttpStatus.OK.value())
@@ -61,7 +61,7 @@ public class AdminAuthController {
     ApiResponse<RefreshTokenResponse> refresh(
         @Valid @RequestBody RefreshTokenRequest request
     ) {
-        log.info("Refresh token");
+        log.info("Refresh token admin");
         return ApiResponse.<RefreshTokenResponse>builder()
             .status(HttpStatus.OK.value())
             .message(translator.toLocale("auth.refresh.success"))

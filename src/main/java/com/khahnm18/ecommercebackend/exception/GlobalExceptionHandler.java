@@ -89,6 +89,30 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(errorCode.getStatusCode()).body(problem);
     }
 
+    @ExceptionHandler(RateLimitException.class)
+    public ResponseEntity<ProblemDetail> handleRateLimitException(
+        RateLimitException ex,
+        HttpServletRequest request
+    ) {
+        ErrorCode errorCode = ErrorCode.TOO_MANY_REQUESTS;
+        log.warn("Rate limit exceeded at {}: retry after {}s", request.getRequestURI(), ex.getRetryAfterSeconds());
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+            errorCode.getStatusCode(),
+            translator.toLocale(errorCode.name(), errorCode.getMessage())
+        );
+        problem.setTitle(buildTitle(errorCode.name()));
+        problem.setType(URI.create(
+            "https://ecommerce.com/errors/" +
+                errorCode.name().toLowerCase().replace("_", "-")
+        ));
+        problem.setInstance(URI.create(request.getRequestURI()));
+        problem.setProperty("errorCode", errorCode.name());
+        problem.setProperty("retryAfterSeconds", ex.getRetryAfterSeconds());
+        return ResponseEntity.status(errorCode.getStatusCode())
+            .header("Retry-After", String.valueOf(ex.getRetryAfterSeconds()))
+            .body(problem);
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ProblemDetail> handleValidation(
         MethodArgumentNotValidException ex,

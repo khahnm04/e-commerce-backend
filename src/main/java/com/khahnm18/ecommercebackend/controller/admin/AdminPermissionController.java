@@ -6,10 +6,10 @@ import com.khahnm18.ecommercebackend.service.auth.PermissionService;
 import com.khahnm18.ecommercebackend.service.auth.cache.PermissionCacheService;
 import com.khahnm18.ecommercebackend.util.SecurityUtil;
 import com.khahnm18.ecommercebackend.util.Translator;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.http.HttpStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -17,11 +17,11 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.List;
 import java.util.UUID;
 
-@Slf4j(topic = "PERMISSION-CONTROLLER")
+@Slf4j(topic = "ADMIN-PERMISSION-CONTROLLER")
 @RestController
-@RequestMapping("${api.prefix}/permissions")
+@RequestMapping("${api.prefix}/admin/permissions")
 @RequiredArgsConstructor
-@Tag(name = "Permission Controller", description = "Permission management APIs")
+@Tag(name = "Admin Permission Controller", description = "Admin Permission Management APIs")
 public class AdminPermissionController {
 
     private final Translator translator;

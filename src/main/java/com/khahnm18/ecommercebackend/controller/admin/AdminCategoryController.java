@@ -3,6 +3,7 @@ package com.khahnm18.ecommercebackend.controller.admin;
 import com.khahnm18.ecommercebackend.enums.CategoryStatus;
 import com.khahnm18.ecommercebackend.dto.request.BulkActionRequest;
 import com.khahnm18.ecommercebackend.dto.request.product.CategoryRequest;
+import com.khahnm18.ecommercebackend.dto.request.product.CategorySearchRequest;
 import com.khahnm18.ecommercebackend.dto.response.ApiResponse;
 import com.khahnm18.ecommercebackend.dto.response.PageResponse;
 import com.khahnm18.ecommercebackend.dto.response.product.CategoryResponse;
@@ -30,11 +31,11 @@ import lombok.extern.slf4j.Slf4j;
 import java.time.Instant;
 import java.util.UUID;
 
-@Slf4j(topic = "CATEGORY-CONTROLLER")
+@Slf4j(topic = "ADMIN-CATEGORY-CONTROLLER")
 @RestController
-@RequestMapping("${api.prefix}/categories")
+@RequestMapping("${api.prefix}/admin/categories")
 @RequiredArgsConstructor
-@Tag(name = "Category Controller", description = "Category management APIs")
+@Tag(name = "Admin Category Controller", description = "Admin Category Management APIs")
 public class AdminCategoryController {
 
     private final Translator translator;
@@ -59,25 +60,15 @@ public class AdminCategoryController {
     @Operation(summary = "Get all categories")
     @PreAuthorize("hasAuthority('CATEGORY_VIEW')")
     PageResponse<CategoryResponse> getAllCategories(
-        @RequestParam(defaultValue = "1") int page,
-        @RequestParam(defaultValue = "10") int size,
-        @RequestParam(defaultValue = "false") boolean isDeleted,
-        @RequestParam(required = false) String keyword,
-        @RequestParam(required = false) Instant startDate,
-        @RequestParam(required = false) Instant endDate,
-        @RequestParam(required = false) CategoryStatus status,
-        @RequestParam(required = false) UUID parentId
+        @RequestParam(required = false, defaultValue = "1") int page,
+        @RequestParam(required = false, defaultValue = "10") int size,
+        CategorySearchRequest request
     ) {
         log.info("Get all categories");
         Page<CategoryResponse> categoryPage = categoryService.getAllCategories(
             page,
             size,
-            keyword,
-            isDeleted,
-            startDate,
-            endDate,
-            status,
-            parentId
+            request
         );
         return PageResponse.<CategoryResponse>builder()
             .status(HttpStatus.OK.value())

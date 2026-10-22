@@ -2,6 +2,7 @@ package com.khahnm18.ecommercebackend.service.product;
 
 import com.khahnm18.ecommercebackend.dto.request.BulkActionRequest;
 import com.khahnm18.ecommercebackend.dto.request.product.ProductVersionRequest;
+import com.khahnm18.ecommercebackend.dto.request.product.ProductVersionSearchRequest;
 import com.khahnm18.ecommercebackend.dto.response.product.ProductVersionResponse;
 import org.springframework.data.domain.Page;
 import java.time.Instant;
@@ -14,11 +15,7 @@ public interface ProductVersionService {
     Page<ProductVersionResponse> getAllProductVersions(
         int page,
         int size,
-        String keyword,
-        boolean isDeleted,
-        Instant startDate,
-        Instant endDate,
-        UUID groupId
+        ProductVersionSearchRequest request
     );
 
     ProductVersionResponse createProductVersion(ProductVersionRequest request);

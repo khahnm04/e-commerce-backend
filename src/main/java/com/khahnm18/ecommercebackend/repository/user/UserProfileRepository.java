@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Repository
-public interface UserProfileRepository extends JpaRepository<UserProfile, UUID> {
+public interface UserProfileRepository extends JpaRepository<UserProfile, UUID>, CustomUserProfileRepository {
 
     boolean existsByAccountIdAndIsDeletedFalse(UUID accountId);
 

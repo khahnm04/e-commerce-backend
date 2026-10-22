@@ -1,7 +1,7 @@
 package com.khahnm18.ecommercebackend.mapper;
 
-import com.khahnm18.ecommercebackend.dto.request.website.WebsiteInfoRequest;
-import com.khahnm18.ecommercebackend.dto.response.website.WebsiteInfoResponse;
+import com.khahnm18.ecommercebackend.dto.request.website.WebsiteRequest;
+import com.khahnm18.ecommercebackend.dto.response.website.WebsiteResponse;
 import com.khahnm18.ecommercebackend.entity.website.WebsiteInfo;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.ReportingPolicy;
@@ -15,11 +15,11 @@ import org.mapstruct.Mapper;
 )
 public interface WebsiteMapper {
 
-    WebsiteInfo toWebsiteInfo(WebsiteInfoRequest request);
+    WebsiteInfo toWebsiteInfo(WebsiteRequest request);
 
-    WebsiteInfoResponse toResponse(WebsiteInfo websiteInfo);
+    WebsiteResponse toResponse(WebsiteInfo websiteInfo);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    void updateWebsiteInfo(@MappingTarget WebsiteInfo websiteInfo, WebsiteInfoRequest request);
+    void updateWebsiteInfo(@MappingTarget WebsiteInfo websiteInfo, WebsiteRequest request);
 
 }

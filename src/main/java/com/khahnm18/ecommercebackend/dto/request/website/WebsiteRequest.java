@@ -2,7 +2,7 @@ package com.khahnm18.ecommercebackend.dto.request.website;
 
 import jakarta.validation.constraints.NotBlank;
 
-public record WebsiteInfoRequest(
+public record WebsiteRequest(
 
     @NotBlank(message = "website-info.name.required")
     String name,

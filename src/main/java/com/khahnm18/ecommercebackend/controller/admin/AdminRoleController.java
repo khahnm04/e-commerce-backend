@@ -2,6 +2,7 @@ package com.khahnm18.ecommercebackend.controller.admin;
 
 import com.khahnm18.ecommercebackend.dto.request.BulkActionRequest;
 import com.khahnm18.ecommercebackend.dto.request.auth.RoleRequest;
+import com.khahnm18.ecommercebackend.dto.request.auth.RoleSearchRequest;
 import com.khahnm18.ecommercebackend.dto.response.ApiResponse;
 import com.khahnm18.ecommercebackend.dto.response.PageResponse;
 import com.khahnm18.ecommercebackend.dto.response.auth.RoleResponse;
@@ -26,14 +27,13 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import java.time.Instant;
 import java.util.UUID;
 
-@Slf4j(topic = "ROLE-CONTROLLER")
+@Slf4j(topic = "ADMIN-ROLE-CONTROLLER")
 @RestController
-@RequestMapping("${api.prefix}/roles")
+@RequestMapping("${api.prefix}/admin/roles")
 @RequiredArgsConstructor
-@Tag(name = "Role Controller", description = "Role management APIs")
+@Tag(name = "Admin Role Controller", description = "Admin Role Management APIs")
 public class AdminRoleController {
 
     private final RoleService roleService;
@@ -58,22 +58,12 @@ public class AdminRoleController {
     @Operation(summary = "Get all roles")
     @PreAuthorize("hasAuthority('ROLE_VIEW')")
     PageResponse<RoleResponse> getAllRoles(
-        @RequestParam(defaultValue = "1") int page,
-        @RequestParam(defaultValue = "10") int size,
-        @RequestParam(defaultValue = "false") boolean isDeleted,
-        @RequestParam(required = false) String keyword,
-        @RequestParam(required = false) Instant startDate,
-        @RequestParam(required = false) Instant endDate
+        @RequestParam(required = false, defaultValue = "1") int page,
+        @RequestParam(required = false, defaultValue = "10") int size,
+        RoleSearchRequest request
     ) {
         log.info("Get all roles");
-        Page<RoleResponse> rolePage = roleService.getAllRoles(
-            page,
-            size,
-            keyword,
-            isDeleted,
-            startDate,
-            endDate
-        );
+        Page<RoleResponse> rolePage = roleService.getAllRoles(page, size, request);
         return PageResponse.<RoleResponse>builder()
             .status(HttpStatus.OK.value())
             .data(rolePage.getContent())

@@ -1,8 +1,10 @@
 package com.khahnm18.ecommercebackend.security;
 
+import com.khahnm18.ecommercebackend.filter.RateLimitFilter;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
@@ -35,6 +37,7 @@ public class SecurityConfig {
     private final JwtAuthenticationConverterConfig jwtAuthenticationConverterConfig;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
+    private final RateLimitFilter rateLimitFilter;
 
     @Bean
     public SecurityFilterChain adminFilterChain(HttpSecurity http) throws Exception {
@@ -53,6 +56,7 @@ public class SecurityConfig {
                     .authenticationEntryPoint(jwtAuthenticationEntryPoint)
                     .accessDeniedHandler(jwtAccessDeniedHandler)
             )
+            .addFilterAfter(rateLimitFilter, AnonymousAuthenticationFilter.class)
             .csrf(AbstractHttpConfigurer::disable)
             .cors(cors -> cors.configurationSource(corsConfigurationSource()));
         return http.build();

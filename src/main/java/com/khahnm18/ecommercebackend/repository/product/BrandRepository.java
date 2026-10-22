@@ -9,7 +9,7 @@ import java.util.Set;
 import java.util.UUID;
 
 @Repository
-public interface BrandRepository extends JpaRepository<Brand, UUID> {
+public interface BrandRepository extends JpaRepository<Brand, UUID>, CustomBrandRepository {
 
     Optional<Brand> findByIdAndIsDeletedFalse(UUID id);
 

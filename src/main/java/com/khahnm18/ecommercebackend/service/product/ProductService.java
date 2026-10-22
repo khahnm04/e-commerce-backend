@@ -2,6 +2,7 @@ package com.khahnm18.ecommercebackend.service.product;
 
 import com.khahnm18.ecommercebackend.dto.request.BulkActionRequest;
 import com.khahnm18.ecommercebackend.dto.request.product.ProductRequest;
+import com.khahnm18.ecommercebackend.dto.request.product.ProductSearchRequest;
 import com.khahnm18.ecommercebackend.dto.response.product.ProductResponse;
 import com.khahnm18.ecommercebackend.enums.ProductStatus;
 import org.springframework.data.domain.Page;
@@ -15,12 +16,7 @@ public interface ProductService {
     Page<ProductResponse> getAllProducts(
         int page,
         int size,
-        String keyword,
-        boolean isDeleted,
-        Instant startDate,
-        Instant endDate,
-        ProductStatus status,
-        UUID versionId
+        ProductSearchRequest request
     );
 
     ProductResponse createProduct(ProductRequest request);

@@ -3,6 +3,7 @@ package com.khahnm18.ecommercebackend.service.product;
 import com.khahnm18.ecommercebackend.enums.BrandStatus;
 import com.khahnm18.ecommercebackend.dto.request.BulkActionRequest;
 import com.khahnm18.ecommercebackend.dto.request.product.BrandRequest;
+import com.khahnm18.ecommercebackend.dto.request.product.BrandSearchRequest;
 import com.khahnm18.ecommercebackend.dto.response.product.BrandResponse;
 import org.springframework.data.domain.Page;
 import java.time.Instant;
@@ -15,11 +16,7 @@ public interface BrandService {
     Page<BrandResponse> getAllBrands(
         int page,
         int size,
-        String keyword,
-        boolean isDeleted,
-        Instant startDate,
-        Instant endDate,
-        BrandStatus status
+        BrandSearchRequest request
     );
 
     BrandResponse createBrand(BrandRequest request);

@@ -1,5 +1,6 @@
 package com.khahnm18.ecommercebackend.controller.client;
 
+import com.khahnm18.ecommercebackend.annotation.ratelimit.RateLimit;
 import com.khahnm18.ecommercebackend.dto.request.auth.LoginRequest;
 import com.khahnm18.ecommercebackend.dto.request.auth.LogoutRequest;
 import com.khahnm18.ecommercebackend.dto.request.auth.RefreshTokenRequest;
@@ -33,6 +34,7 @@ public class AuthController {
 
     @PostMapping("/login")
     @Operation(summary = "Login")
+    @RateLimit(keyPrefix = "auth_login", capacity = 5, refillSeconds = 60)
     public ApiResponse<LoginResponse> login(
         @Valid @RequestBody LoginRequest request
     ) {
@@ -46,7 +48,7 @@ public class AuthController {
 
     @PostMapping("/register")
     @Operation(summary = "Register")
-    public ApiResponse<RegisterResponse> login(
+    public ApiResponse<RegisterResponse> register(
         @Valid @RequestBody RegisterRequest request
     ) {
         log.info("Register client: email={}", request.email());

@@ -2,9 +2,9 @@ package com.khahnm18.ecommercebackend.service.product.impl;
 
 import com.khahnm18.ecommercebackend.dto.request.BulkActionRequest;
 import com.khahnm18.ecommercebackend.dto.request.product.ProductRequest;
+import com.khahnm18.ecommercebackend.dto.request.product.ProductSearchRequest;
 import com.khahnm18.ecommercebackend.dto.response.product.ProductResponse;
 import com.khahnm18.ecommercebackend.entity.product.Product;
-import com.khahnm18.ecommercebackend.entity.product.QProduct;
 import com.khahnm18.ecommercebackend.enums.ProductStatus;
 import com.khahnm18.ecommercebackend.exception.AppException;
 import com.khahnm18.ecommercebackend.exception.ErrorCode;
@@ -13,14 +13,10 @@ import com.khahnm18.ecommercebackend.repository.product.ProductRepository;
 import com.khahnm18.ecommercebackend.repository.product.ProductVersionRepository;
 import com.khahnm18.ecommercebackend.service.product.ProductService;
 import com.khahnm18.ecommercebackend.util.SecurityUtil;
-import com.querydsl.core.types.Predicate;
-import com.querydsl.jpa.impl.JPAQuery;
-import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -37,7 +33,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ProductServiceImpl implements ProductService {
 
-    private final JPAQueryFactory queryFactory;
     private final ProductMapper productMapper;
     private final ProductRepository productRepository;
     private final ProductVersionRepository productVersionRepository;
@@ -54,49 +49,12 @@ public class ProductServiceImpl implements ProductService {
     public Page<ProductResponse> getAllProducts(
         int page,
         int size,
-        String keyword,
-        boolean isDeleted,
-        Instant startDate,
-        Instant endDate,
-        ProductStatus status,
-        UUID versionId
+        ProductSearchRequest request
     ) {
-        Pageable pageable = PageRequest.of(page - 1, size);
-        QProduct product = QProduct.product;
-
-        Predicate[] predicates = {
-            product.isDeleted.eq(isDeleted),
-            Optional.ofNullable(status).map(product.status::eq).orElse(null),
-            Optional.ofNullable(startDate).map(product.createdAt::goe).orElse(null),
-            Optional.ofNullable(endDate).map(product.createdAt::loe).orElse(null),
-            Optional.ofNullable(versionId).map(product.versionId::eq).orElse(null),
-            Optional.ofNullable(keyword)
-                .filter(kw -> !kw.isBlank())
-                .map(String::strip)
-                .map(kw -> product.name.containsIgnoreCase(kw)
-                    .or(product.slug.containsIgnoreCase(kw))
-                    .or(product.color.containsIgnoreCase(kw))
-                    .or(product.sku.containsIgnoreCase(kw)))
-                .orElse(null)
-        };
-
-        List<ProductResponse> content = queryFactory
-            .selectFrom(product)
-            .where(predicates)
-            .orderBy(product.createdAt.desc())
-            .offset(pageable.getOffset())
-            .limit(pageable.getPageSize())
-            .fetch()
-            .stream()
-            .map(productMapper::toProductResponse)
-            .toList();
-
-        JPAQuery<Long> countQuery = queryFactory
-            .select(product.count())
-            .from(product)
-            .where(predicates);
-
-        return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
+        Pageable pageable = PageRequest.of(Math.max(0, page - 1), size);
+        return productRepository
+            .search(request, pageable)
+            .map(productMapper::toProductResponse);
     }
 
     @Override
