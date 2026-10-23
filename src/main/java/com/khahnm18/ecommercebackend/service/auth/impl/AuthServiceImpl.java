@@ -1,13 +1,7 @@
 package com.khahnm18.ecommercebackend.service.auth.impl;
 
-import com.khahnm18.ecommercebackend.dto.request.auth.LoginRequest;
-import com.khahnm18.ecommercebackend.dto.request.auth.RegisterRequest;
-import com.khahnm18.ecommercebackend.dto.response.auth.LoginResponse;
-import com.khahnm18.ecommercebackend.dto.request.auth.LogoutRequest;
-import com.khahnm18.ecommercebackend.dto.request.auth.RefreshTokenRequest;
-import com.khahnm18.ecommercebackend.dto.response.auth.RefreshTokenResponse;
-import com.khahnm18.ecommercebackend.dto.response.auth.RegisterResponse;
-import com.khahnm18.ecommercebackend.dto.response.auth.TokenResponse;
+import com.khahnm18.ecommercebackend.dto.request.auth.*;
+import com.khahnm18.ecommercebackend.dto.response.auth.*;
 import com.khahnm18.ecommercebackend.entity.auth.Account;
 import com.khahnm18.ecommercebackend.entity.auth.AccountRole;
 import com.khahnm18.ecommercebackend.entity.auth.Role;
@@ -55,8 +49,8 @@ public class AuthServiceImpl implements AuthService {
     private final RoleRepository roleRepository;
     private final AccountRepository accountRepository;
     private final AccountRoleRepository accountRoleRepository;
-    private final AdminProfileRepository adminProfileRepository;
     private final UserProfileRepository userProfileRepository;
+    private final AdminProfileRepository adminProfileRepository;
 
     @Override
     public LoginResponse loginAdmin(LoginRequest request) {
@@ -143,7 +137,7 @@ public class AuthServiceImpl implements AuthService {
             Map.of("email", account.getEmail())
         );
 
-        log.info("User registered: fullName={}, email={}", userProfile.getFullName(), account.getEmail());
+        log.info("User registered: email={}", account.getEmail());
         return RegisterResponse.builder()
             .fullName(userProfile.getFullName())
             .email(account.getEmail())
