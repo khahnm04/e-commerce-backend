@@ -2,6 +2,7 @@ package com.khahnm18.ecommercebackend.service.redis;
 
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.types.Expiration;
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import java.util.concurrent.TimeUnit;
@@ -18,7 +19,7 @@ public class RedisService {
     }
 
     public void setWithTTL(String key, Object value, long timeout, TimeUnit timeUnit) {
-        redisTemplate.opsForValue().set(key, value, timeout, timeUnit);
+        redisTemplate.opsForValue().set(key, value, Expiration.from(timeout, timeUnit));
     }
 
     public Object get(String key) {
