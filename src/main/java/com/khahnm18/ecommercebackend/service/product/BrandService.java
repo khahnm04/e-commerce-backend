@@ -1,23 +1,17 @@
 package com.khahnm18.ecommercebackend.service.product;
 
-import com.khahnm18.ecommercebackend.enums.BrandStatus;
 import com.khahnm18.ecommercebackend.dto.request.BulkActionRequest;
 import com.khahnm18.ecommercebackend.dto.request.product.BrandRequest;
 import com.khahnm18.ecommercebackend.dto.request.product.BrandSearchRequest;
 import com.khahnm18.ecommercebackend.dto.response.product.BrandResponse;
 import org.springframework.data.domain.Page;
-import java.time.Instant;
 import java.util.UUID;
 
 public interface BrandService {
 
     BrandResponse getBrandDetailById(UUID brandId, boolean isDeleted);
 
-    Page<BrandResponse> getAllBrands(
-        int page,
-        int size,
-        BrandSearchRequest request
-    );
+    Page<BrandResponse> getAllAndSearchBrands(int page, int size, BrandSearchRequest request);
 
     BrandResponse createBrand(BrandRequest request);
 

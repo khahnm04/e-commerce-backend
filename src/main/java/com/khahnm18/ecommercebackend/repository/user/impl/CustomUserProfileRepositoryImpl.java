@@ -52,7 +52,7 @@ public class CustomUserProfileRepositoryImpl implements CustomUserProfileReposit
     private BooleanBuilder buildWhere(QAccount account, QUserProfile profile, UserSearchRequest request) {
         BooleanBuilder where = new BooleanBuilder();
         if (request.isDeleted() == null) {
-            where.and(account.isDeleted.isTrue());
+            where.and(account.isDeleted.isFalse());
         } else {
             where.and(account.isDeleted.eq(request.isDeleted()));
         }

@@ -13,7 +13,7 @@ spring:
     problemdetails:
       enabled: true
   datasource:
-    url: "jdbc:postgresql://localhost:5432/db_ecommerce"
+    url: "jdbc:postgresql://localhost:5432/db_ecommerce?reWriteBatchedInserts=true"
     driver-class-name: org.postgresql.Driver
     username: root
     password: root
@@ -25,6 +25,10 @@ spring:
       hibernate:
         format_sql: true
         default_schema: public
+        jdbc:
+          batch_size: 50
+        order_inserts: true
+        order_updates: true
   flyway:
     enabled: true
     baseline-on-migrate: true
@@ -33,6 +37,12 @@ spring:
     redis:
       host: localhost
       port: 6379
+  jackson:
+    mapper:
+      accept-case-insensitive-enums: true
+    datatype:
+      enum:
+        write-enums-to-lowercase: true
   mail:
     host: smtp.gmail.com
     port: 587

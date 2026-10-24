@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.List;
 import java.util.UUID;
 
@@ -34,7 +35,7 @@ public class JwtAuthenticationConverterConfig implements Converter<Jwt, Abstract
     @Override
     public AbstractAuthenticationToken convert(@NonNull Jwt jwt) {
         Collection<GrantedAuthority> defaultAuthorities = defaultAuthoritiesConverter.convert(jwt);
-        UUID accountId = UUID.fromString(jwt.getSubject());
+        UUID accountId = UUID.fromString(Objects.requireNonNull(jwt.getSubject()));
         boolean isAdmin = defaultAuthorities.stream()
             .anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
 

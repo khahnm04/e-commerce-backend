@@ -6,7 +6,8 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.MediaType;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.jspecify.annotations.NonNull;
+import tools.jackson.databind.json.JsonMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -19,13 +20,13 @@ import java.net.URI;
 @RequiredArgsConstructor
 public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
-    private final ObjectMapper objectMapper;
+    private final JsonMapper jsonMapper;
 
     @Override
     public void commence(
         HttpServletRequest request,
         HttpServletResponse response,
-        AuthenticationException authException
+        @NonNull AuthenticationException authException
     ) throws IOException {
         ErrorCode errorCode = ErrorCode.UNAUTHENTICATED;
         log.warn("Authentication failed at {}: {}", request.getRequestURI(), errorCode.getMessage());
@@ -34,7 +35,6 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
             errorCode.getStatusCode(),
             errorCode.getMessage()
         );
-
         problem.setTitle(errorCode.name());
         problem.setType(
             URI.create(
@@ -47,8 +47,7 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
         response.setStatus(errorCode.getStatusCode().value());
         response.setContentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE);
-
-        response.getWriter().write(objectMapper.writeValueAsString(problem));
+        response.getWriter().write(jsonMapper.writeValueAsString(problem));
         response.flushBuffer();
     }
 

@@ -8,18 +8,24 @@ import com.khahnm18.ecommercebackend.exception.ErrorCode;
 import com.khahnm18.ecommercebackend.config.properties.JwtProperties;
 import com.khahnm18.ecommercebackend.repository.auth.RoleRepository;
 import com.khahnm18.ecommercebackend.service.auth.JwtService;
-import com.nimbusds.jose.crypto.MACVerifier;
-import com.nimbusds.jwt.SignedJWT;
 import org.springframework.util.CollectionUtils;
 import org.springframework.stereotype.Service;
+import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jose.crypto.MACSigner;
+import com.nimbusds.jose.JOSEObjectType;
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jwt.JWTClaimsSet;
-import com.nimbusds.jose.*;
+import com.nimbusds.jose.JWSVerifier;
+import com.nimbusds.jose.JWSObject;
+import com.nimbusds.jose.JWSHeader;
+import com.nimbusds.jose.Payload;
+import com.nimbusds.jwt.SignedJWT;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import java.text.ParseException;
-import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.time.Instant;
 import java.util.StringJoiner;
 import java.util.Date;
 import java.util.List;
@@ -36,7 +42,9 @@ public class JwtServiceImpl implements JwtService {
     @Override
     public TokenResponse generateAccessToken(Account account) {
         JWSAlgorithm algorithm = JWSAlgorithm.HS512;
-        JWSHeader header = new JWSHeader(algorithm);
+        JWSHeader header = new JWSHeader.Builder(algorithm)
+            .type(JOSEObjectType.JWT)
+            .build();
 
         Date issueTime = new Date();
         Date expiredTime = new Date(Instant.now()
@@ -71,7 +79,9 @@ public class JwtServiceImpl implements JwtService {
     @Override
     public TokenResponse generateRefreshToken(Account account) {
         JWSAlgorithm algorithm = JWSAlgorithm.HS512;
-        JWSHeader header = new JWSHeader(algorithm);
+        JWSHeader header = new JWSHeader.Builder(algorithm)
+            .type(JOSEObjectType.JWT)
+            .build();
 
         Date issueTime = new Date();
         Date expiredTime = new Date(Instant.now()

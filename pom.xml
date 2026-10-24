@@ -5,10 +5,10 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.5.6</version>
+        <version>4.1.2</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
-    <groupId>com.khahnm04</groupId>
+    <groupId>com.khahnm18</groupId>
     <artifactId>e-commerce</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>e-commerce</name>
@@ -27,20 +27,17 @@
         <url/>
     </scm>
     <properties>
-        <java.version>21</java.version>
-        <projectlombok-lombok.version>1.18.30</projectlombok-lombok.version>
-        <mapstruct.version>1.5.5.Final</mapstruct.version>
+        <java.version>25</java.version>
+        <mapstruct.version>1.6.3</mapstruct.version>
         <lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
-        <spotless.version>2.43.0</spotless.version>
-        <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
-        <spring-cloud.version>2025.0.0</spring-cloud.version>
         <openfeign-querydsl.version>7.7</openfeign-querydsl.version>
     </properties>
 
     <dependencies>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
+            <artifactId>spring-boot-starter-webmvc</artifactId>
         </dependency>
 
         <dependency>
@@ -51,7 +48,13 @@
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-aop</artifactId>
+            <artifactId>spring-boot-starter-webmvc-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aspectj</artifactId>
         </dependency>
 
         <dependency>
@@ -93,8 +96,7 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>${projectlombok-lombok.version}</version>
-            <scope>provided</scope>
+            <optional>true</optional>
         </dependency>
 
         <dependency>
@@ -105,8 +107,8 @@
 
         <!-- Flyway -->
         <dependency>
-            <groupId>org.flywaydb</groupId>
-            <artifactId>flyway-core</artifactId>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-flyway</artifactId>
         </dependency>
 
         <dependency>
@@ -129,36 +131,41 @@
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
+            <artifactId>spring-boot-starter-security-oauth2-resource-server</artifactId>
         </dependency>
 
-        <!-- Swagger -->
+        <!--  Swagger OpenAPI: https://mvnrepository.com/artifact/org.springdoc/springdoc-openapi-starter-webmvc-ui -->
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-            <version>2.8.8</version>
-        </dependency>
-
-        <!-- Source: https://mvnrepository.com/artifact/software.amazon.awssdk/s3 -->
-        <dependency>
-            <groupId>software.amazon.awssdk</groupId>
-            <artifactId>s3</artifactId>
-            <version>2.55.0</version>
+            <version>3.1.1</version>
             <scope>compile</scope>
         </dependency>
 
-        <!-- Bucket4j Core & Redis Lettuce -->
+        <!-- SDK S3: https://mvnrepository.com/artifact/software.amazon.awssdk/s3 -->
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>s3</artifactId>
+            <version>2.57.3</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <!-- Bucket4j Core: https://mvnrepository.com/artifact/com.bucket4j/bucket4j_jdk17-core -->
         <dependency>
             <groupId>com.bucket4j</groupId>
             <artifactId>bucket4j_jdk17-core</artifactId>
-            <version>8.14.0</version>
+            <version>8.21.0</version>
+            <scope>compile</scope>
         </dependency>
 
+        <!-- Bucket4j Lettuce: https://mvnrepository.com/artifact/com.bucket4j/bucket4j_jdk17-lettuce -->
         <dependency>
             <groupId>com.bucket4j</groupId>
             <artifactId>bucket4j_jdk17-lettuce</artifactId>
-            <version>8.14.0</version>
+            <version>8.21.0</version>
+            <scope>compile</scope>
         </dependency>
+
     </dependencies>
 
     <build>
@@ -175,18 +182,15 @@
                     </excludes>
                 </configuration>
             </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>${maven-compiler-plugin.version}</version>
                 <configuration>
-                    <source>${java.version}</source>
-                    <target>${java.version}</target>
                     <annotationProcessorPaths>
                         <path>
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok</artifactId>
-                            <version>${projectlombok-lombok.version}</version>
                         </path>
                         <path>
                             <groupId>org.projectlombok</groupId>
@@ -207,12 +211,10 @@
                         <path>
                             <groupId>jakarta.persistence</groupId>
                             <artifactId>jakarta.persistence-api</artifactId>
-                            <version>3.1.0</version>
                         </path>
                         <path>
                             <groupId>jakarta.annotation</groupId>
                             <artifactId>jakarta.annotation-api</artifactId>
-                            <version>2.1.1</version>
                         </path>
                     </annotationProcessorPaths>
                     <compilerArgs>
@@ -224,5 +226,4 @@
             </plugin>
         </plugins>
     </build>
-
 </project>

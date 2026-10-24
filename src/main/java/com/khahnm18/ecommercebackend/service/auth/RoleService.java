@@ -13,7 +13,7 @@ public interface RoleService {
 
     RoleResponse getRoleDetailById(UUID id, boolean isDeleted);
 
-    Page<RoleResponse> getAllRoles(int page, int size, RoleSearchRequest request);
+    Page<RoleResponse> getAllAndSearchRoles(int page, int size, RoleSearchRequest request);
 
     RoleResponse updateRole(UUID id, RoleRequest request);
 

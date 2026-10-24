@@ -1,8 +1,7 @@
 package com.khahnm18.ecommercebackend.entity.product;
 
 import org.hibernate.annotations.DynamicUpdate;
-import org.hibernate.annotations.Generated;
-import org.hibernate.generator.EventType;
+import org.hibernate.annotations.UuidGenerator;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
@@ -25,13 +24,8 @@ import java.util.UUID;
 public class ProductGroupCategory {
 
     @Id
-    @Generated(event = EventType.INSERT)
-    @Column(
-        name = "id",
-        updatable = false,
-        nullable = false,
-        columnDefinition = "UUID DEFAULT uuidv7()"
-    )
+    @UuidGenerator(style = UuidGenerator.Style.VERSION_7)
+    @Column(name = "id", updatable = false, nullable = false)
     private UUID id;
 
     @Column(name = "group_id", nullable = false)

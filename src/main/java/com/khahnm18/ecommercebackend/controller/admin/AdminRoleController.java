@@ -55,15 +55,15 @@ public class AdminRoleController {
     }
 
     @GetMapping
-    @Operation(summary = "Get all roles")
+    @Operation(summary = "Get all and search roles (support pagination)")
     @PreAuthorize("hasAuthority('ROLE_VIEW')")
-    PageResponse<RoleResponse> getAllRoles(
+    PageResponse<RoleResponse> getAllAndSearchRoles(
         @RequestParam(required = false, defaultValue = "1") int page,
         @RequestParam(required = false, defaultValue = "10") int size,
         RoleSearchRequest request
     ) {
-        log.info("Get all roles");
-        Page<RoleResponse> rolePage = roleService.getAllRoles(page, size, request);
+        log.info("Get all and search roles");
+        Page<RoleResponse> rolePage = roleService.getAllAndSearchRoles(page, size, request);
         return PageResponse.<RoleResponse>builder()
             .status(HttpStatus.OK.value())
             .data(rolePage.getContent())
@@ -133,7 +133,7 @@ public class AdminRoleController {
     @PatchMapping("/bulk-action")
     @Operation(summary = "Bulk action role")
     @PreAuthorize("hasAnyAuthority('ROLE_UPDATE', 'ROLE_TRASH', 'ROLE_DELETE')")
-    ApiResponse<Void> deleteRole(
+    ApiResponse<Void> bulkAction(
         @Valid @RequestBody BulkActionRequest request
     ) {
         log.info("Bulk action role: roleIds={}", request.ids());

@@ -4,8 +4,55 @@ CREATE TYPE product_status AS ENUM (
     'DRAFT'
 );
 
+CREATE TYPE brand_status AS ENUM (
+    'ACTIVE',
+    'INACTIVE'
+);
+
+CREATE TYPE category_status AS ENUM (
+    'ACTIVE',
+    'INACTIVE'
+);
+
+CREATE TABLE brands (
+    id           UUID PRIMARY KEY DEFAULT uuidv7(),
+    name         VARCHAR(255) NOT NULL,
+    slug         VARCHAR(255) UNIQUE NOT NULL,
+    avatar       VARCHAR(500),
+    description  TEXT,
+    status       brand_status NOT NULL DEFAULT 'ACTIVE',
+    created_at   TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    created_by   UUID,
+    updated_at   TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_by   UUID,
+    deleted_at   TIMESTAMPTZ,
+    deleted_by   UUID,
+    is_deleted   BOOLEAN NOT NULL DEFAULT FALSE
+);
+
+CREATE TABLE categories (
+    id           UUID PRIMARY KEY DEFAULT uuidv7(),
+    parent_id    UUID,
+    name         VARCHAR(255) NOT NULL,
+    slug         VARCHAR(255) UNIQUE NOT NULL,
+    icon         VARCHAR(500),
+    avatar       VARCHAR(500),
+    description  TEXT,
+    status       category_status NOT NULL DEFAULT 'ACTIVE',
+    created_at   TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    created_by   UUID,
+    updated_at   TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_by   UUID,
+    deleted_at   TIMESTAMPTZ,
+    deleted_by   UUID,
+    is_deleted   BOOLEAN NOT NULL DEFAULT FALSE,
+
+    FOREIGN KEY (parent_id) REFERENCES categories (id) ON DELETE RESTRICT
+);
+
 CREATE TABLE product_groups (
     id          UUID PRIMARY KEY DEFAULT uuidv7(),
+    brand_id    UUID NOT NULL,
     name        VARCHAR(255) NOT NULL,
     slug        VARCHAR(255) UNIQUE NOT NULL,
     images      JSONB DEFAULT '[]',
@@ -16,7 +63,19 @@ CREATE TABLE product_groups (
     updated_by  UUID,
     deleted_at  TIMESTAMPTZ,
     deleted_by  UUID,
-    is_deleted  BOOLEAN NOT NULL DEFAULT FALSE
+    is_deleted  BOOLEAN NOT NULL DEFAULT FALSE,
+
+    FOREIGN KEY (brand_id) REFERENCES brands(id) ON DELETE RESTRICT
+);
+
+CREATE TABLE product_group_categories (
+    id           UUID PRIMARY KEY DEFAULT uuidv7(),
+    group_id     UUID NOT NULL,
+    category_id  UUID NOT NULL,
+
+    UNIQUE (group_id, category_id),
+    FOREIGN KEY (group_id) REFERENCES product_groups(id) ON DELETE CASCADE,
+    FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE RESTRICT
 );
 
 CREATE TABLE product_versions (
@@ -71,14 +130,4 @@ CREATE TABLE products (
     is_deleted  BOOLEAN NOT NULL DEFAULT FALSE,
 
     FOREIGN KEY (version_id) REFERENCES product_versions(id) ON DELETE CASCADE
-);
-
-CREATE TABLE product_group_categories (
-    id           UUID PRIMARY KEY DEFAULT uuidv7(),
-    group_id     UUID NOT NULL,
-    category_id  UUID NOT NULL,
-
-    UNIQUE (group_id, category_id),
-    FOREIGN KEY (group_id) REFERENCES product_groups(id) ON DELETE CASCADE,
-    FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE RESTRICT
 );

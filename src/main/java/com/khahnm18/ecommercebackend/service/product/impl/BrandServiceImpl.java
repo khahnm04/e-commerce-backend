@@ -1,5 +1,6 @@
 package com.khahnm18.ecommercebackend.service.product.impl;
 
+import com.khahnm18.ecommercebackend.entity.BaseEntity;
 import com.khahnm18.ecommercebackend.enums.BrandStatus;
 import com.khahnm18.ecommercebackend.dto.request.BulkActionRequest;
 import com.khahnm18.ecommercebackend.dto.request.product.BrandRequest;
@@ -21,7 +22,6 @@ import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import java.time.Instant;
-import java.util.Optional;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -43,11 +43,7 @@ public class BrandServiceImpl implements BrandService {
     }
 
     @Override
-    public Page<BrandResponse> getAllBrands(
-        int page,
-        int size,
-        BrandSearchRequest request
-    ) {
+    public Page<BrandResponse> getAllAndSearchBrands(int page, int size, BrandSearchRequest request) {
         Pageable pageable = PageRequest.of(Math.max(0, page - 1), size);
         return brandRepository
             .search(request, pageable)
@@ -94,28 +90,28 @@ public class BrandServiceImpl implements BrandService {
     public void bulkAction(BulkActionRequest request) {
         Set<UUID> brandIds = request.ids();
         String action = request.action().toUpperCase();
+        List<Brand> brands = brandRepository.findAllById(brandIds);
         switch (action) {
             case "ACTIVE", "INACTIVE" -> {
                 SecurityUtil.requireAuthority("BRAND_UPDATE");
-                List<Brand> brands = brandRepository.findAllById(brandIds);
                 brands.forEach(brand -> brand.setStatus(BrandStatus.valueOf(action)));
                 log.info("Bulk update status {} brand with brandIds: {}", action, brandIds);
             }
             case "SOFT_DELETE" -> {
                 SecurityUtil.requireAuthority("BRAND_TRASH");
-                List<Brand> brands = brandRepository.findAllById(brandIds);
                 brands.forEach(this::softDelete);
                 log.info("Bulk action soft delete brand with brandIds: {}", brandIds);
             }
             case "RESTORE" -> {
                 SecurityUtil.requireAuthority("BRAND_TRASH");
-                List<Brand> brands = brandRepository.findAllById(brandIds);
                 brands.forEach(this::restore);
                 log.info("Bulk action restore brand with brandIds: {}", brandIds);
             }
             case "DELETE" -> {
                 SecurityUtil.requireAuthority("BRAND_DELETE");
-                brandRepository.deleteAllByIdInAndIsDeletedTrue(brandIds);
+                brandRepository.deleteAllInBatch(
+                    brands.stream().filter(BaseEntity::getIsDeleted).toList()
+                );
                 log.info("Bulk action delete brand with brandIds: {}", brandIds);
             }
         }

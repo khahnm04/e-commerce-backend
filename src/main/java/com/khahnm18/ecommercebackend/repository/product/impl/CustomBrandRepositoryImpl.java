@@ -1,18 +1,17 @@
 package com.khahnm18.ecommercebackend.repository.product.impl;
 
-import com.khahnm18.ecommercebackend.dto.request.product.BrandSearchRequest;
 import com.khahnm18.ecommercebackend.entity.product.Brand;
 import com.khahnm18.ecommercebackend.entity.product.QBrand;
+import com.khahnm18.ecommercebackend.dto.request.product.BrandSearchRequest;
 import com.khahnm18.ecommercebackend.repository.product.CustomBrandRepository;
-import com.querydsl.core.BooleanBuilder;
-import com.querydsl.jpa.impl.JPAQuery;
-import com.querydsl.jpa.impl.JPAQueryFactory;
-import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
-
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Page;
+import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.querydsl.core.BooleanBuilder;
+import com.querydsl.jpa.impl.JPAQuery;
+import lombok.RequiredArgsConstructor;
 import java.util.List;
 
 @Repository
@@ -44,8 +43,9 @@ public class CustomBrandRepositoryImpl implements CustomBrandRepository {
 
     private BooleanBuilder buildWhere(QBrand brand, BrandSearchRequest request) {
         BooleanBuilder where = new BooleanBuilder();
-
-        if (request.isDeleted() != null) {
+        if (request.isDeleted() == null) {
+            where.and(brand.isDeleted.isFalse());
+        } else {
             where.and(brand.isDeleted.eq(request.isDeleted()));
         }
         if (request.status() != null) {
@@ -62,9 +62,7 @@ public class CustomBrandRepositoryImpl implements CustomBrandRepository {
             where.and(brand.name.containsIgnoreCase(kw)
                 .or(brand.slug.containsIgnoreCase(kw)));
         }
-
         return where;
     }
 
 }
-

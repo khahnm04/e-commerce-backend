@@ -1,6 +1,5 @@
 package com.khahnm18.ecommercebackend.controller.admin;
 
-import com.khahnm18.ecommercebackend.enums.BrandStatus;
 import com.khahnm18.ecommercebackend.dto.request.BulkActionRequest;
 import com.khahnm18.ecommercebackend.dto.request.product.BrandRequest;
 import com.khahnm18.ecommercebackend.dto.request.product.BrandSearchRequest;
@@ -28,7 +27,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import java.time.Instant;
 import java.util.UUID;
 
 @Slf4j(topic = "ADMIN-BRAND-CONTROLLER")
@@ -38,8 +36,8 @@ import java.util.UUID;
 @Tag(name = "Admin Brand Controller", description = "Admin Brand Management APIs")
 public class AdminBrandController {
 
-    private final Translator translator;
     private final BrandService brandService;
+    private final Translator translator;
 
     @GetMapping("/{id}")
     @Operation(summary = "Get brand detail by id")
@@ -57,19 +55,15 @@ public class AdminBrandController {
     }
 
     @GetMapping
-    @Operation(summary = "Get all brands")
+    @Operation(summary = "Get all and search brands (support pagination)")
     @PreAuthorize("hasAuthority('BRAND_VIEW')")
-    PageResponse<BrandResponse> getAllBrands(
+    PageResponse<BrandResponse> getAllAndSearchBrands(
         @RequestParam(required = false, defaultValue = "1") int page,
         @RequestParam(required = false, defaultValue = "10") int size,
         BrandSearchRequest request
     ) {
-        log.info("Get all brands");
-        Page<BrandResponse> brandPage = brandService.getAllBrands(
-            page,
-            size,
-            request
-        );
+        log.info("Get all and search brands");
+        Page<BrandResponse> brandPage = brandService.getAllAndSearchBrands(page, size, request);
         return PageResponse.<BrandResponse>builder()
             .status(HttpStatus.OK.value())
             .data(brandPage.getContent())

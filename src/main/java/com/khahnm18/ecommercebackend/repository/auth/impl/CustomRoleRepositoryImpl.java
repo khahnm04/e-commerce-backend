@@ -46,7 +46,7 @@ public class CustomRoleRepositoryImpl implements CustomRoleRepository {
     private BooleanBuilder buildWhere(QRole role, RoleSearchRequest request) {
         BooleanBuilder where = new BooleanBuilder();
         if (request.isDeleted() == null) {
-            where.and(role.isDeleted.isTrue());
+            where.and(role.isDeleted.isFalse());
         } else {
             where.and(role.isDeleted.eq(request.isDeleted()));
         }

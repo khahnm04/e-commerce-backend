@@ -52,7 +52,7 @@ public class CustomAdminProfileRepositoryImpl implements CustomAdminProfileRepos
     private BooleanBuilder buildWhere(QAccount account, QAdminProfile profile, AdminSearchRequest request) {
         BooleanBuilder where = new BooleanBuilder();
         if (request.isDeleted() == null) {
-            where.and(account.isDeleted.isTrue());
+            where.and(account.isDeleted.isFalse());
         } else {
             where.and(account.isDeleted.eq(request.isDeleted()));
         }

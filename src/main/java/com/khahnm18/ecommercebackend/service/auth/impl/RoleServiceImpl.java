@@ -48,7 +48,7 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
-    public Page<RoleResponse> getAllRoles(int page, int size, RoleSearchRequest request) {
+    public Page<RoleResponse> getAllAndSearchRoles(int page, int size, RoleSearchRequest request) {
         Pageable pageable = PageRequest.of(Math.max(0, page - 1), size);
         return roleRepository
             .search(request, pageable)

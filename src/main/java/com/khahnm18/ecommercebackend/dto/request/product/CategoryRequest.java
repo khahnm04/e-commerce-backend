@@ -14,6 +14,7 @@ public record CategoryRequest(
     @NotBlank(message = "category.slug.required")
     String slug,
 
+    String icon,
     String avatar,
     String description,
     CategoryStatus status

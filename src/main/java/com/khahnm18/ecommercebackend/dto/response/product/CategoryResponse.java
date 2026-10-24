@@ -14,6 +14,7 @@ public record CategoryResponse(
     UUID parentId,
     String name,
     String slug,
+    String icon,
     String avatar,
     String description,
     CategoryStatus status,
